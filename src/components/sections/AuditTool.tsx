@@ -17,6 +17,8 @@ import {
   ShieldCheck,
   Smartphone,
   BotMessageSquare,
+  Share2,
+  Link,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { fadeUp, stagger, ease } from '@/lib/animations'
@@ -440,6 +442,8 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [showMethodology, setShowMethodology] = useState(false)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [progressStep, setProgressStep] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const hasAutoRun = useRef(false)
 
   const MAX_URL_LENGTH = 2000
   const COOLDOWN_MS = 5000
@@ -454,6 +458,46 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     const timer = setTimeout(() => forceRender((n) => n + 1), remaining)
     return () => clearTimeout(timer)
   }, [cooldownUntil])
+
+  // Auto-run if ?url= query param is present
+  useEffect(() => {
+    if (hasAutoRun.current) return
+    const params = new URLSearchParams(window.location.search)
+    const queryUrl = params.get('url')
+    if (queryUrl) {
+      hasAutoRun.current = true
+      setUrl(queryUrl)
+      // Trigger submit after state update
+      setTimeout(() => {
+        const form = document.querySelector<HTMLFormElement>('[data-audit-form]')
+        form?.requestSubmit()
+      }, 100)
+    }
+  }, [])
+
+  function getShareUrl(): string {
+    const domain = url.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+    return `${window.location.origin}/audit?url=${encodeURIComponent(domain)}`
+  }
+
+  async function handleShare() {
+    const shareUrl = getShareUrl()
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Findability Check — ${url}`,
+          text: `I scored ${overallScore} on the Findability Check. See how your site stacks up.`,
+          url: shareUrl,
+        })
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   function normalizeUrl(input: string): string {
     let cleaned = input.trim()
@@ -511,6 +555,10 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
 
       setResult(auditResult)
       onResult?.(true)
+
+      // Update URL for sharing
+      const domain = normalized.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+      window.history.replaceState(null, '', `/audit?url=${encodeURIComponent(domain)}`)
     } catch {
       setError('Couldn\u2019t reach that site. Double-check the URL and try again \u2014 or drop me a message and I\u2019ll take a look.')
     } finally {
@@ -554,6 +602,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
 
       {/* ── Input form ─────────────────────────────────────────────────── */}
       <motion.form
+        data-audit-form
         onSubmit={handleSubmit}
         variants={fadeUp}
         initial="initial"
@@ -727,13 +776,22 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       <div className="mt-3">
                         <CategoryScoreBar items={allItems} />
                       </div>
-                      <button
-                        onClick={() => setShowMethodology(true)}
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-                      >
-                        <Info className="h-3 w-3" />
-                        How this score works
-                      </button>
+                      <div className="mt-3 flex flex-wrap items-center gap-4">
+                        <button
+                          onClick={() => setShowMethodology(true)}
+                          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+                        >
+                          <Info className="h-3 w-3" />
+                          How this score works
+                        </button>
+                        <button
+                          onClick={handleShare}
+                          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+                        >
+                          {copied ? <Link className="h-3 w-3" /> : <Share2 className="h-3 w-3" />}
+                          {copied ? 'Link copied' : 'Share results'}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
