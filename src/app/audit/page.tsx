@@ -36,7 +36,7 @@ export default function AuditPage() {
             <h1 className="mt-4 font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl">
               See if your website
               <br />
-              is ready to <span className="text-primary">be found.</span>
+              <span className="whitespace-nowrap">is ready to <span className="text-primary">be&nbsp;found.</span></span>
             </h1>
             <p className="mt-8 max-w-xl mx-auto text-lg leading-relaxed text-muted-foreground md:text-xl">
               Most businesses guess whether their site is working.
