@@ -173,12 +173,39 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Fetch page, robots.txt, and sitemap.xml in parallel
-  const [pageResult, robotsResult, sitemapResult] = await Promise.all([
+  // Fetch page and robots.txt first
+  const [pageResult, robotsResult] = await Promise.all([
     safeFetch(targetUrl, MAX_HTML),
     safeFetch(`${parsed.origin}/robots.txt`, MAX_AUX),
-    safeFetch(`${parsed.origin}/sitemap.xml`, MAX_AUX),
   ])
+
+  // Check robots.txt for a Sitemap: directive
+  const robotsBody =
+    robotsResult && robotsResult.status >= 200 && robotsResult.status < 400
+      ? robotsResult.body
+      : ''
+  const robotsSitemapMatch = robotsBody.match(/^sitemap:\s*(.+)/im)
+  const robotsSitemapUrl = robotsSitemapMatch?.[1]?.trim()
+
+  // Try sitemap paths: robots.txt directive first, then common CMS fallbacks
+  const sitemapPaths = [
+    robotsSitemapUrl,
+    `${parsed.origin}/sitemap.xml`,
+    `${parsed.origin}/sitemap_index.xml`,
+    `${parsed.origin}/wp-sitemap.xml`,
+  ].filter((p): p is string => !!p)
+
+  // Deduplicate
+  const uniquePaths = [...new Set(sitemapPaths)]
+
+  let sitemapResult: Awaited<ReturnType<typeof safeFetch>> = null
+  for (const path of uniquePaths) {
+    const result = await safeFetch(path, MAX_AUX)
+    if (result && result.status >= 200 && result.status < 400 && result.body.length > 100) {
+      sitemapResult = result
+      break
+    }
+  }
 
   // Check page response
   if (!pageResult || pageResult.status === 0 || pageResult.status >= 400) {
@@ -204,10 +231,7 @@ export async function GET(request: NextRequest) {
   const body = {
     url: pageResult.finalUrl,
     html: pageResult.body,
-    robotsTxt:
-      robotsResult && robotsResult.status >= 200 && robotsResult.status < 400
-        ? robotsResult.body
-        : '',
+    robotsTxt: robotsBody,
     sitemapXml:
       sitemapResult && sitemapResult.status >= 200 && sitemapResult.status < 400
         ? sitemapResult.body
