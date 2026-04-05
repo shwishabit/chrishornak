@@ -4,6 +4,7 @@ import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { AuditPageClient } from '@/components/sections/AuditPageClient'
 import { JsonLd } from '@/components/ui/JsonLd'
+import { PlatformBar } from '@/components/ui/PlatformBar'
 import { siteConfig, auditFaqs } from '@/lib/data'
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function AuditPage() {
               This is what I actually look at first — whether people,
               search engines, and AI can find you, trust you, and share you.
             </p>
+            <PlatformBar />
           </div>
 
           <AuditPageClient />
