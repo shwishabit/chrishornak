@@ -73,6 +73,11 @@
   border-color: var(--color-border);
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
