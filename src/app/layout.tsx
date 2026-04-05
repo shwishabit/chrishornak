@@ -76,6 +76,7 @@ export default function RootLayout({
     <html lang="en" className={`${sora.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://app.cal.com" />
+        <link rel="preload" as="image" href="/images/wordmark-dark.svg" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

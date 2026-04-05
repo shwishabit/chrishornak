@@ -55,14 +55,14 @@ const platforms = [
 export function PlatformBar() {
   return (
     <div className="mt-10">
-      <p className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
+      <p className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground/80">
         Where your next customer is already looking
       </p>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:gap-x-8">
         {platforms.map((p) => (
           <div
             key={p.name}
-            className="flex items-center gap-1.5 text-muted-foreground/40 transition-colors duration-200 hover:text-primary"
+            className="flex items-center gap-1.5 text-muted-foreground/60 transition-colors duration-200 hover:text-primary"
           >
             {p.icon}
             <span className="text-xs font-medium">{p.name}</span>

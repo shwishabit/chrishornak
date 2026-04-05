@@ -130,7 +130,7 @@ export function AuditPageClient() {
                     {item.desc}
                   </p>
                   {/* Mobile: always show description */}
-                  <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground/60 sm:hidden">
+                  <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground/80 sm:hidden">
                     {item.desc}
                   </p>
                 </div>
@@ -151,11 +151,11 @@ export function AuditPageClient() {
               </blockquote>
               <figcaption className="mt-4 text-sm">
                 <span className="font-semibold text-foreground">Meredith Smith</span>
-                <span className="text-muted-foreground/60">{' '}&middot; Marketing Manager</span>
+                <span className="text-muted-foreground/80">{' '}&middot; Marketing Manager</span>
               </figcaption>
             </figure>
 
-            <p className="mt-10 text-sm leading-relaxed text-muted-foreground/60">
+            <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
               This checks the on-page factors you can control right now — not
               page speed, backlink authority, or competitor positioning.
               That&apos;s the deeper work.
@@ -194,11 +194,11 @@ export function AuditPageClient() {
             </blockquote>
             <figcaption className="mt-4 text-sm">
               <span className="font-semibold text-foreground">Meredith Smith</span>
-              <span className="text-muted-foreground/60">{' '}&middot; Marketing Manager</span>
+              <span className="text-muted-foreground/80">{' '}&middot; Marketing Manager</span>
             </figcaption>
           </figure>
 
-          <p className="mt-10 text-sm leading-relaxed text-muted-foreground/60">
+          <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
             This checks the on-page factors you can control right now — not
             page speed, backlink authority, or competitor positioning.
             That&apos;s the deeper work.
