@@ -18,6 +18,21 @@ export const metadata: Metadata = {
     title: 'See if your website is ready to be found.',
     description:
       'Most businesses guess whether their site is working. See what a marketing strategist actually looks at first — free, instant, no signup.',
+    images: [
+      {
+        url: '/images/og-image-audit.png',
+        width: 1200,
+        height: 630,
+        alt: 'Findability Check — see if your website is ready to be found',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'See if your website is ready to be found.',
+    description:
+      'Most businesses guess whether their site is working. See what a marketing strategist actually looks at first — free, instant, no signup.',
+    images: ['/images/og-image-audit.png'],
   },
 }
 
