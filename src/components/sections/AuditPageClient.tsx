@@ -161,7 +161,7 @@ export function AuditPageClient() {
               That&apos;s the deeper work.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-5">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
@@ -204,7 +204,7 @@ export function AuditPageClient() {
             That&apos;s the deeper work.
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-5">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
