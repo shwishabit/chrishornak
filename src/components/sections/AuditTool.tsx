@@ -145,7 +145,7 @@ function AuditItemRow({ item }: { item: AuditItem }) {
           <span className="text-xs text-muted-foreground">{item.value}</span>
         </div>
         {item.extracted && (
-          <pre className="mt-1.5 overflow-x-auto whitespace-pre-wrap rounded-md border border-border/30 bg-muted/30 px-3 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
+          <pre className="mt-1.5 overflow-hidden whitespace-pre-wrap break-all rounded-md border border-border/30 bg-muted/30 px-3 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
             {item.extracted}
           </pre>
         )}
@@ -684,7 +684,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       <h3 className="font-heading text-xl font-bold">
                         Findability Score
                       </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 text-sm text-muted-foreground break-all">
                         {result.url}
                       </p>
 

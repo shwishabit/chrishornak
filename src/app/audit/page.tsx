@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function AuditPage() {
   return (
-    <main id="main-content" className="relative min-h-screen">
+    <main id="main-content" className="relative min-h-screen overflow-x-hidden">
       <BackgroundMesh />
       <Navigation />
       {/* Hero — same scale/spacing as homepage hero */}
