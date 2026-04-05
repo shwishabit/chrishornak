@@ -19,11 +19,19 @@ const initialState: ContactFormState = { success: false, message: '' }
 export function Connect() {
   const [state, formAction, isPending] = useActionState(submitContact, initialState)
   const [loadedAt] = useState(() => Date.now())
+  const [phone, setPhone] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
+
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 10)
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
 
   // Reset form on success
   useEffect(() => {
-    if (state.success) formRef.current?.reset()
+    if (state.success) { formRef.current?.reset(); setPhone('') }
   }, [state])
 
   // Re-trigger Cal.com's element detection after React mounts
@@ -147,6 +155,8 @@ export function Connect() {
                   name="phone"
                   placeholder="Phone (optional)"
                   autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
                   className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
                 />
               </div>
