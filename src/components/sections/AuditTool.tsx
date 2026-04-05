@@ -439,6 +439,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [activeTab, setActiveTab] = useState(OVERVIEW_TAB)
   const [showMethodology, setShowMethodology] = useState(false)
   const [cooldownUntil, setCooldownUntil] = useState(0)
+  const [progressStep, setProgressStep] = useState(0)
 
   const MAX_URL_LENGTH = 2000
   const COOLDOWN_MS = 5000
@@ -475,14 +476,21 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     setResult(null)
     setError(null)
     setActiveTab(OVERVIEW_TAB)
+    setProgressStep(0)
 
     const normalized = normalizeUrl(url)
+
+    // Progress step timers
+    const step1 = setTimeout(() => setProgressStep(1), 1500)
+    const step2 = setTimeout(() => setProgressStep(2), 3500)
 
     try {
       const res = await fetch(
         `/api/audit?url=${encodeURIComponent(normalized)}`,
       )
       const data = await res.json()
+      clearTimeout(step1)
+      clearTimeout(step2)
 
       if (!res.ok) {
         setError(data.error ?? 'Something went wrong fetching that URL.')
@@ -569,6 +577,9 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
           {loading ? 'Analyzing…' : 'Check findability'}
         </Button>
       </motion.form>
+      {!loading && !result && !error && (
+        <p className="mt-3 text-center text-xs text-muted-foreground/80">Usually takes a few seconds</p>
+      )}
 
       {/* ── Loading state ──────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -580,8 +591,10 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             className="mt-8 flex flex-col items-center gap-3 text-center"
           >
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              Fetching and analyzing the page…
+            <p className="text-sm text-muted-foreground" key={progressStep}>
+              {progressStep === 0 && 'Fetching your site…'}
+              {progressStep === 1 && 'Analyzing findability…'}
+              {progressStep === 2 && 'Building your report…'}
             </p>
           </motion.div>
         )}
