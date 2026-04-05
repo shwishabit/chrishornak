@@ -126,7 +126,7 @@ export function Work() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.title}</p>
+                  <p className="text-xs text-muted-foreground">{t.title}{t.company ? `, ${t.company}` : ''}</p>
                 </div>
               </div>
             </motion.div>

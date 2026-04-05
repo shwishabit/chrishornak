@@ -144,14 +144,14 @@ export function AuditPageClient() {
           <div className="mx-auto max-w-3xl border-t border-border/20 pt-12">
             <figure className="relative pl-5 border-l-2 border-primary/30">
               <blockquote className="text-base leading-relaxed text-muted-foreground italic">
-                &ldquo;Working with Chris feels like having an exceptional
-                strategist on staff. We brainstorm collaboratively, and he
-                turns ideas into high-quality content that actually
-                performs.&rdquo;
+                &ldquo;Chris has been an invaluable partner. He&apos;s a
+                hands-on problem solver who jumps right in when we face
+                technical challenges. His work is consistently reliable,
+                and the communication is always direct and collaborative.&rdquo;
               </blockquote>
               <figcaption className="mt-4 text-sm">
-                <span className="font-semibold text-foreground">Meredith Smith</span>
-                <span className="text-muted-foreground/80">{' '}&middot; Marketing Manager</span>
+                <span className="font-semibold text-foreground">Cheryl Cassidy</span>
+                <span className="text-muted-foreground/80">{' '}&middot; Marketing Executive, Rehab Essentials</span>
               </figcaption>
             </figure>
 

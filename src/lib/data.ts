@@ -37,32 +37,32 @@ export const aboutContent = {
 
 export const testimonials: Testimonial[] = [
   {
-    quote: 'I hired Chris to work with our organization\'s website and the results were outstanding. I\'ve since recommended him to several associates — they\'ve all hired him too.',
-    name: 'Jeff Woodard',
-    title: 'Executive Director',
-    company: '',
-    initials: 'JW',
-  },
-  {
-    quote: 'Working with Chris feels like having an exceptional strategist on staff. We brainstorm collaboratively, and he turns ideas into high-quality content that actually performs.',
-    name: 'Meredith Smith',
-    title: 'Marketing Manager',
-    company: '',
-    initials: 'MS',
+    quote: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand to investors, partners, and stakeholders. The result supports our future growth.',
+    name: 'David Horell',
+    title: 'Benefits and Payroll Coordinator',
+    company: 'Speranza Consulting and Investments',
+    initials: 'DH',
   },
   {
     quote: 'Chris\'s SEO strategy worked wonders — optimized content, smarter site structure, and the right technical tweaks skyrocketed our rankings and traffic.',
     name: 'Kerry Veith',
     title: 'Director of Operations',
-    company: '',
+    company: 'Gamma Light Therapy',
     initials: 'KV',
   },
   {
-    quote: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand. The result supports our future growth.',
-    name: 'David Horell',
-    title: 'Benefits and Payroll Coordinator',
-    company: 'SCI',
-    initials: 'DH',
+    quote: 'Chris has been an invaluable partner. He\'s a hands-on problem solver who jumps right in when we face technical challenges. His work is consistently reliable, and the communication is always direct and collaborative.',
+    name: 'Cheryl Cassidy',
+    title: 'Marketing Executive',
+    company: 'Rehab Essentials',
+    initials: 'CC',
+  },
+  {
+    quote: 'Chris grasped our strategic objectives quickly and delivered a comprehensive digital strategy that aligned seamlessly with our goals. His approach is professional, responsive, and results-driven.',
+    name: 'John Kleist III',
+    title: 'Chief Growth and Alliance Officer',
+    company: 'SkillsTX',
+    initials: 'JK',
   },
 ]
 

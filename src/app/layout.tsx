@@ -166,15 +166,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             itemListElement: [
               {
                 '@type': 'Review',
-                author: { '@type': 'Person', name: 'Jeff Woodard' },
-                reviewBody: 'I hired Chris to work with our organization\'s website and the results were outstanding. I\'ve since recommended him to several associates — they\'ve all hired him too.',
-                reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
-                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
-              },
-              {
-                '@type': 'Review',
-                author: { '@type': 'Person', name: 'Meredith Smith' },
-                reviewBody: 'Working with Chris feels like having an exceptional strategist on staff. We brainstorm collaboratively, and he turns ideas into high-quality content that actually performs.',
+                author: { '@type': 'Person', name: 'David Horell' },
+                reviewBody: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand to investors, partners, and stakeholders. The result supports our future growth.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
                 itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
@@ -187,8 +180,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               },
               {
                 '@type': 'Review',
-                author: { '@type': 'Person', name: 'David Horell' },
-                reviewBody: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand. The result supports our future growth.',
+                author: { '@type': 'Person', name: 'Cheryl Cassidy' },
+                reviewBody: 'Chris has been an invaluable partner. He\'s a hands-on problem solver who jumps right in when we face technical challenges. His work is consistently reliable, and the communication is always direct and collaborative.',
+                reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
+                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
+              },
+              {
+                '@type': 'Review',
+                author: { '@type': 'Person', name: 'John Kleist III' },
+                reviewBody: 'Chris grasped our strategic objectives quickly and delivered a comprehensive digital strategy that aligned seamlessly with our goals. His approach is professional, responsive, and results-driven.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
                 itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
