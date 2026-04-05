@@ -136,11 +136,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               url: `${siteConfig.domain}/#connect`,
               email: siteConfig.supportEmail,
             },
-            areaServed: [
-              { '@type': 'City', name: 'Pittsburgh', containedInPlace: { '@type': 'State', name: 'Pennsylvania' } },
-              { '@type': 'City', name: 'Wheeling', containedInPlace: { '@type': 'State', name: 'West Virginia' } },
-              { '@type': 'Country', name: 'United States' },
-            ],
           }}
         />
         <JsonLd
@@ -148,8 +143,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             '@context': 'https://schema.org',
             '@type': 'AggregateRating',
             itemReviewed: {
-              '@type': 'Person',
+              '@type': 'ProfessionalService',
               name: 'Chris Hornak',
+              url: siteConfig.domain,
+              areaServed: [
+                { '@type': 'City', name: 'Pittsburgh', containedInPlace: { '@type': 'State', name: 'Pennsylvania' } },
+                { '@type': 'City', name: 'Wheeling', containedInPlace: { '@type': 'State', name: 'West Virginia' } },
+                { '@type': 'Country', name: 'United States' },
+              ],
             },
             ratingValue: '5',
             bestRating: '5',
@@ -167,28 +168,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 author: { '@type': 'Person', name: 'Jeff Woodard' },
                 reviewBody: 'I hired Chris to work with our organization\'s website and the results were outstanding. I\'ve since recommended him to several associates — they\'ve all hired him too.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
-                itemReviewed: { '@type': 'Person', name: 'Chris Hornak' },
+                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
               {
                 '@type': 'Review',
                 author: { '@type': 'Person', name: 'Meredith Smith' },
                 reviewBody: 'Working with Chris feels like having an exceptional strategist on staff. We brainstorm collaboratively, and he turns ideas into high-quality content that actually performs.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
-                itemReviewed: { '@type': 'Person', name: 'Chris Hornak' },
+                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
               {
                 '@type': 'Review',
                 author: { '@type': 'Person', name: 'Kerry Veith' },
                 reviewBody: 'Chris\'s SEO strategy worked wonders — optimized content, smarter site structure, and the right technical tweaks skyrocketed our rankings and traffic.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
-                itemReviewed: { '@type': 'Person', name: 'Chris Hornak' },
+                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
               {
                 '@type': 'Review',
                 author: { '@type': 'Person', name: 'David Horell' },
                 reviewBody: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand. The result supports our future growth.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
-                itemReviewed: { '@type': 'Person', name: 'Chris Hornak' },
+                itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
             ],
           }}
