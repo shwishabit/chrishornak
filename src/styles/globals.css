@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/*
+ * ============================================================================
+ * GLOBALS.CSS — Chris Hornak Personal Brand
+ * ============================================================================
+ * Dark-first. Sora 700 headlines, Inter 400 body. Teal #2dd4a8 accent.
+ * ============================================================================
+ */
+
+/* -- Custom Theme Tokens -------------------------------------------------- */
+
+@theme {
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Sora', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, monospace;
+
+  /* Colors — Dark-first (default) */
+  --color-background: #0a0a0a;
+  --color-foreground: #f0f0f0;
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #999999;
+  --color-border: #1f1f1f;
+  --color-ring: #333333;
+
+  /* Colors — Brand */
+  --color-primary: #2dd4a8;
+  --color-primary-foreground: #0a0a0a;
+  --color-secondary: #1a1a1a;
+  --color-secondary-foreground: #f0f0f0;
+  --color-accent: #2dd4a8;
+  --color-accent-foreground: #2dd4a8;
+
+  /* Colors — Semantic */
+  --color-success: hsl(142 71% 45%);
+  --color-warning: hsl(38 92% 50%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-info: hsl(168 76% 50%);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* Shadows — teal glow variants */
+  --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
+  --shadow-glow: 0 0 24px #2dd4a8 / 0.25;
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Duration */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+}
+
+/* -- Base Styles ---------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide default cursor on pointer devices — custom teal dot cursor takes over */
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+
+  /* Restore text cursor in inputs so the caret and I-beam are visible */
+  input,
+  textarea,
+  [contenteditable="true"] {
+    cursor: text !important;
+    caret-color: var(--color-primary);
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  line-height: 1.6;
+}
+
+/* -- Glassmorphism Utilities ---------------------------------------------- */
+
+.glass {
+  background: hsl(0 0% 100% / 0.04);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  border-radius: var(--radius-xl);
+}
+
+.glass-card {
+  background: hsl(0 0% 100% / 0.05);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2);
+}
+
+/* -- Focus Styles --------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* -- Selection ------------------------------------------------------------ */
+
+::selection {
+  background-color: #2dd4a8 / 0.2;
+  color: var(--color-foreground);
+}
+
+/* -- Reduced Motion ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -- Premium Utility Recipes ---------------------------------------------- */
+
+.text-gradient {
+  background: linear-gradient(to bottom right, var(--color-foreground) 40%, var(--color-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-border {
+  position: relative;
+}
+
+.glow-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, var(--color-primary), transparent, var(--color-primary));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  border-radius: inherit;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.mask-fade {
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+/* -- Teal dot motif ------------------------------------------------------- */
+
+.teal-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+}

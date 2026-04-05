@@ -1,0 +1,128 @@
+// src/lib/data.ts — Chris Hornak personal brand hub
+
+import type { NavLink, SiteConfig, Testimonial } from './types'
+
+export const siteConfig: SiteConfig = {
+  brandName: 'Chris Hornak',
+  supportEmail: 'chris@chrishornak.com',
+  copyrightYear: new Date().getFullYear(),
+  defaultTitle: 'Chris Hornak | Marketing Strategist for Growing Businesses',
+  defaultDescription: 'Marketing strategist helping business owners get found and grow. From local shops to scaling companies — strategy that makes everything else work.',
+  domain: 'https://chrishornak.com',
+}
+
+export const navLinks: NavLink[] = [
+  { label: 'About', href: '/#about' },
+  { label: 'Approach', href: '/#services' },
+  { label: 'Work', href: '/#work' },
+  { label: 'Findability Check', href: '/audit' },
+]
+
+export const heroContent = {
+  headline: 'Your next customer is looking for you.',
+  headlineAccent: 'Let\'s make sure you get found.',
+  subheadline: 'I\'m Chris Hornak — marketing strategist for business owners who are done guessing and ready to grow. I bring the strategy that makes everything else work.',
+  ctaText: 'Let\'s talk',
+  ctaLink: 'https://cal.com/chris-hornak/30min',
+}
+
+export const aboutContent = {
+  headline: 'Strategy first. Everything else follows.',
+  body: [
+    'Most businesses hire marketers to check boxes — run some ads, write some blogs, fix the SEO. And most of it doesn\'t work because nobody asked the hard question first: what\'s actually going to move this business forward?',
+    'That\'s what I do. I\'ve built content companies, launched growth agencies, and helped businesses at every stage — from their first website to full-scale marketing operations. The principle is always the same: strategy before tactics.',
+    'For smaller projects, I work hands-on. For larger ones, I bring in the right people. Either way, you get someone who\'s thinking about your business — not just executing a checklist.',
+  ],
+}
+
+export const testimonials: Testimonial[] = [
+  {
+    quote: 'I hired Chris to work with our organization\'s website and the results were outstanding. I\'ve since recommended him to several associates — they\'ve all hired him too.',
+    name: 'Jeff Woodard',
+    title: 'Executive Director',
+    company: '',
+    initials: 'JW',
+  },
+  {
+    quote: 'Working with Chris feels like having an exceptional strategist on staff. We brainstorm collaboratively, and he turns ideas into high-quality content that actually performs.',
+    name: 'Meredith Smith',
+    title: 'Marketing Manager',
+    company: '',
+    initials: 'MS',
+  },
+  {
+    quote: 'Chris\'s SEO strategy worked wonders — optimized content, smarter site structure, and the right technical tweaks skyrocketed our rankings and traffic.',
+    name: 'Kerry Veith',
+    title: 'Director of Operations',
+    company: '',
+    initials: 'KV',
+  },
+  {
+    quote: 'Before working with Chris, we had no online presence. He built our website from scratch, helping us define and communicate our brand. The result supports our future growth.',
+    name: 'David Horell',
+    title: 'Benefits and Payroll Coordinator',
+    company: 'SCI',
+    initials: 'DH',
+  },
+]
+
+export const homeFaqs = [
+  {
+    question: 'What kind of businesses do you work with?',
+    answer: 'Everything from local shops getting online for the first time to established companies rethinking their marketing. The common thread is business owners who want a strategy — not just someone to run ads or write blogs.',
+  },
+  {
+    question: 'How is this different from hiring an agency?',
+    answer: 'Agencies sell deliverables. I start with the question most skip: what\'s actually going to move your business forward? You get a strategist thinking about your business, not a team executing a checklist.',
+  },
+  {
+    question: 'What does working together look like?',
+    answer: 'It starts with a conversation. I diagnose what\'s working and what isn\'t, build a strategy, then either execute hands-on or bring in the right team. I stay involved either way.',
+  },
+  {
+    question: 'Do you do the work yourself or outsource it?',
+    answer: 'Both. For smaller projects I work hands-on. For larger ones I bring in specialists through Blog Hands and Swift Growth Marketing — companies I built specifically for this. You always work with me directly on strategy.',
+  },
+  {
+    question: 'What if I just need a website?',
+    answer: 'I can do that. But I\'ll also ask why — because a website without strategy behind it is just a brochure. Even a simple build benefits from thinking through who you\'re trying to reach and what you want them to do.',
+  },
+  {
+    question: 'How do I know if I need a strategist or just a doer?',
+    answer: 'If you know exactly what needs to happen and just need someone to execute, you need a doer. If things aren\'t working and you\'re not sure why — or you\'re growing and don\'t know what to prioritize — that\'s where strategy makes the difference.',
+  },
+]
+
+export const auditFaqs = [
+  {
+    question: 'What does the Findability Check measure?',
+    answer: 'It checks 6 areas that determine whether people, search engines, and AI can find your business online: Search visibility, AI readiness, Social sharing, Mobile experience, Site structure, and Security. These are the on-page signals I look at first when evaluating any business.',
+  },
+  {
+    question: 'Is this really free?',
+    answer: 'Yes. No signup, no email required, no catch. I built this because it\'s the first thing I do when someone asks me to look at their site — and I wanted to make that step available to everyone.',
+  },
+  {
+    question: 'How is this different from other website audit tools?',
+    answer: 'Most tools spit out a list of technical errors. This checks what a strategist actually looks at first — whether your site can be found, trusted, and shared by the people and platforms that matter to your business.',
+  },
+  {
+    question: 'What should I do after I get my score?',
+    answer: 'Start with the red items — those are the things actively hurting your findability. If you want help prioritizing or need a deeper look at what\'s behind the numbers, that\'s what the conversation is for.',
+  },
+  {
+    question: 'Does a high score mean my marketing is working?',
+    answer: 'It means the foundation is solid. Findability is one piece — it tells you whether people can find you. Strategy, content, and positioning are what make them stay. This check gives you the starting point.',
+  },
+  {
+    question: 'How often should I run this check?',
+    answer: 'After any major site update — new pages, a redesign, switching hosts. Otherwise, once a quarter is enough to make sure nothing has slipped.',
+  },
+]
+
+export const connectContent = {
+  headline: 'Let\'s figure out what\'s next.',
+  body: 'Whether you need a strategy for growth, a partner to get you online, or just someone to think through a challenge with — I\'m up for the conversation.',
+  ctaText: 'Schedule a call',
+  ctaLink: 'https://cal.com/chris-hornak/30min',
+}
