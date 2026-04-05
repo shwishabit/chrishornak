@@ -7,6 +7,9 @@ import { siteConfig } from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
+  alternates: {
+    canonical: '/privacy',
+  },
   description: 'Privacy policy for chrishornak.com — how your information is collected, used, and protected.',
 }
 

@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Chris Hornak' }],
   creator: 'Chris Hornak',
   metadataBase: new URL(siteConfig.domain),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

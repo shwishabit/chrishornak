@@ -8,6 +8,9 @@ import { siteConfig, auditFaqs } from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'Findability Check',
+  alternates: {
+    canonical: '/audit',
+  },
   description:
     'Most businesses guess whether their site is working. See what a marketing strategist actually looks at first — whether people, search engines, and AI can find you, trust you, and share you.',
   openGraph: {
