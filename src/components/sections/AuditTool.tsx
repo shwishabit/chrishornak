@@ -777,7 +777,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                         </p>
                       )}
 
-                      <div className="mt-4 flex justify-center gap-5 sm:justify-start">
+                      <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 sm:justify-start">
                         <span className="flex items-center gap-1.5 text-sm text-emerald-400">
                           <CheckCircle2 className="h-3.5 w-3.5" /> {passes} passed
                         </span>
@@ -859,7 +859,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                           {activeCategory.icon}
                         </span>
                         <div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                             <h3 className="font-heading text-base font-bold">
                               {activeCategory.name}
                             </h3>
@@ -870,7 +870,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                               {CATEGORY_WEIGHTS[activeCategory.name] ?? 5}% of total score
                             </span>
                           </div>
-                          <div className="mt-1 w-48">
+                          <div className="mt-1 max-w-48">
                             <CategoryScoreBar items={activeCategory.items} />
                           </div>
                         </div>

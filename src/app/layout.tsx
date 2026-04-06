@@ -103,7 +103,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           Skip to main content
         </a>
         <CustomCursor />
+        <div className="overflow-x-clip" style={{ maxWidth: '100vw' }}>
         {children}
+        </div>
         <JsonLd
           data={{
             '@context': 'https://schema.org',
