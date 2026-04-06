@@ -104,11 +104,11 @@ export function AuditPageClient() {
 
           <div className="mx-auto max-w-3xl">
             <h2 className="font-heading text-xl font-bold md:text-2xl">
-              6 areas that determine whether you get found
+              6 signals that determine whether you get found
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Search engines, AI tools, and real people all evaluate your site differently.
-              This check covers the signals that matter most.
+              These are the signals that matter most.
             </p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {categories.map((item) => (
@@ -183,43 +183,79 @@ export function AuditPageClient() {
       {/* Post-result closing */}
       {hasResult && (
         <div className="mx-auto mt-16 max-w-3xl space-y-20 md:space-y-28">
-          <FaqSection />
-        <div className="border-t border-border/20 pt-12">
-          <figure className="relative pl-5 border-l-2 border-primary/30">
-            <blockquote className="text-base leading-relaxed text-muted-foreground italic">
-              &ldquo;Working with Chris feels like having an exceptional
-              strategist on staff. We brainstorm collaboratively, and he
-              turns ideas into high-quality content that actually
-              performs.&rdquo;
-            </blockquote>
-            <figcaption className="mt-4 text-sm">
-              <span className="font-semibold text-foreground">Meredith Smith</span>
-              <span className="text-muted-foreground/80">{' '}&middot; Marketing Manager</span>
-            </figcaption>
-          </figure>
-
-          <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
-            This checks the on-page factors you can control right now — not
-            page speed, backlink authority, or competitor positioning.
-            That&apos;s the deeper work.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/20"
-            >
-              Check your site &uarr;
-            </a>
-            <a
-              href="/#connect"
-              className="text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:text-foreground"
-            >
-              Or let&apos;s talk about it&nbsp;&rarr;
-            </a>
+          {/* What to read next — guides matched to audit categories */}
+          <div>
+            <h2 className="font-heading text-xl font-bold md:text-2xl">
+              Understand what your scores mean
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              The numbers tell you where your signal is weak. These guides explain why — and what to do about it.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                { number: '02', title: 'Your site is sitting in the dark', desc: 'Title tags, sitemaps, structured data — the infrastructure agencies skip.', href: '/signal/search-visibility' },
+                { number: '03', title: 'AI is recommending competitors', desc: 'What AI needs to cite your business — and why most sites give it nothing.', href: '/signal/ai-readiness' },
+                { number: '04', title: 'Reputation vs. website gap', desc: 'Your reviews are great. Your site tells a different story.', href: '/signal/website-trust' },
+                { number: '01', title: 'The full findability picture', desc: 'How all six signals connect — and where to start.', href: '/signal/findability' },
+              ].map((guide) => (
+                <a
+                  key={guide.number}
+                  href={guide.href}
+                  className="group flex gap-3 rounded-xl border border-border/20 bg-muted/10 p-4 transition-all duration-300 hover:border-primary/25 hover:bg-muted/20"
+                >
+                  <span className="font-heading text-xs font-bold tracking-widest text-primary/50">
+                    {guide.number}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold leading-snug transition-colors duration-300 group-hover:text-primary">
+                      {guide.title}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {guide.desc}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+
+          <FaqSection />
+
+          <div className="border-t border-border/20 pt-12">
+            <figure className="relative pl-5 border-l-2 border-primary/30">
+              <blockquote className="text-base leading-relaxed text-muted-foreground italic">
+                &ldquo;Working with Chris feels like having an exceptional
+                strategist on staff. We brainstorm collaboratively, and he
+                turns ideas into high-quality content that actually
+                performs.&rdquo;
+              </blockquote>
+              <figcaption className="mt-4 text-sm">
+                <span className="font-semibold text-foreground">Meredith Smith</span>
+                <span className="text-muted-foreground/80">{' '}&middot; Marketing Manager</span>
+              </figcaption>
+            </figure>
+
+            <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
+              This checks the on-page factors you can control right now — not
+              page speed, backlink authority, or competitor positioning.
+              That&apos;s the deeper work.
+            </p>
+
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
+              <a
+                href="/#connect"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/20"
+              >
+                Let&apos;s talk about it
+              </a>
+              <a
+                href="/signal"
+                className="text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              >
+                Read all the guides&nbsp;&rarr;
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </>

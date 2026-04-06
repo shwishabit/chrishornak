@@ -87,7 +87,7 @@ export function Footer() {
             &copy; {siteConfig.copyrightYear} {siteConfig.brandName}. All rights reserved.
           </p>
           <p className="mt-1 text-xs text-muted-foreground/80">
-            Pittsburgh, PA &middot; Wheeling, WV &middot; Serving businesses nationwide
+            Offices in Pittsburgh, PA and Wheeling, WV &mdash; Serving businesses nationwide
             <span className="mx-2">&middot;</span>
             <a href="/privacy" className="hover:text-muted-foreground transition-colors duration-200">Privacy Policy</a>
           </p>

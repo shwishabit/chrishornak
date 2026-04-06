@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     canonical: '/audit',
   },
   description:
-    'Most businesses guess whether their site is working. See what a marketing strategist actually looks at first — whether people, search engines, and AI can find you, trust you, and share you.',
+    'Your business puts out a signal — to search engines, to AI, to every person looking for what you do. This measures how strong that signal is. Free, instant, no signup.',
   openGraph: {
     title: 'See if your website is ready to be found.',
     description:
@@ -54,9 +54,9 @@ export default function AuditPage() {
               <span className="whitespace-nowrap">is ready to <span className="text-primary">be&nbsp;found.</span></span>
             </h1>
             <p className="mt-8 max-w-xl mx-auto text-lg leading-relaxed text-muted-foreground md:text-xl">
-              Most businesses guess whether their site is working.
-              This is what I actually look at first — whether people,
-              search engines, and AI can find you, trust you, and share you.
+              Your business puts out a signal — to search engines, to AI,
+              to every person looking for what you do.
+              This measures how strong that signal is.
             </p>
             <PlatformBar />
           </div>

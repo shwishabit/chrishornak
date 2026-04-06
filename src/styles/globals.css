@@ -187,3 +187,103 @@ body {
   background: var(--color-primary);
   border-radius: 50%;
 }
+
+/* -- Guide Prose ---------------------------------------------------------- */
+
+.guide-prose h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.375rem, 1rem + 1.5vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-foreground);
+  margin-top: 3.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.guide-prose h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.125rem, 0.875rem + 1vw, 1.375rem);
+  line-height: 1.3;
+  color: var(--color-foreground);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.guide-prose p {
+  font-size: clamp(1rem, 0.925rem + 0.3vw, 1.125rem);
+  line-height: 1.75;
+  color: var(--color-muted-foreground);
+  margin-bottom: 1.5rem;
+}
+
+.guide-prose p strong {
+  color: var(--color-foreground);
+  font-weight: 600;
+}
+
+.guide-prose ul,
+.guide-prose ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.guide-prose ul {
+  list-style: none;
+}
+
+.guide-prose ul li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: clamp(1rem, 0.925rem + 0.3vw, 1.125rem);
+  line-height: 1.75;
+  color: var(--color-muted-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.guide-prose ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
+.guide-prose ol li {
+  font-size: clamp(1rem, 0.925rem + 0.3vw, 1.125rem);
+  line-height: 1.75;
+  color: var(--color-muted-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.guide-prose blockquote {
+  border-left: 2px solid var(--color-primary);
+  padding-left: 1.25rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--color-muted-foreground);
+}
+
+.guide-prose a:not(.guide-cta) {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #2dd4a8 / 0.4;
+  transition: text-decoration-color 200ms;
+}
+
+.guide-prose a:not(.guide-cta):hover {
+  text-decoration-color: var(--color-primary);
+}
+
+.guide-prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, var(--color-primary) / 0.3, var(--color-primary) / 0.1, transparent);
+  margin: 3rem 0;
+}

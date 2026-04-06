@@ -15,6 +15,7 @@ export const navLinks: NavLink[] = [
   { label: 'About', href: '/#about' },
   { label: 'Approach', href: '/#services' },
   { label: 'Work', href: '/#work' },
+  { label: 'The Signal', href: '/signal' },
   { label: 'Findability Check', href: '/audit' },
 ]
 
@@ -29,7 +30,7 @@ export const heroContent = {
 export const aboutContent = {
   headline: 'Strategy first. Everything else follows.',
   body: [
-    'Most businesses hire marketers to check boxes — run some ads, write some blogs, fix the SEO. And most of it doesn\'t work because nobody asked the hard question first: what\'s actually going to move this business forward?',
+    'You don\'t have a marketing problem. You have a strategy problem. Most businesses hire marketers to check boxes — run some ads, write some blogs, fix the SEO. And most of it doesn\'t work because nobody asked the hard question first: what\'s actually going to move this business forward?',
     'That\'s what I do. I\'ve built content companies, launched growth agencies, and helped businesses at every stage — from their first website to full-scale marketing operations. The principle is always the same: strategy before tactics.',
     'For smaller projects, I work hands-on. For larger ones, I bring in the right people. Either way, you get someone who\'s thinking about your business — not just executing a checklist.',
   ],
@@ -96,7 +97,7 @@ export const homeFaqs = [
 export const auditFaqs = [
   {
     question: 'What does the Findability Check measure?',
-    answer: 'It checks 6 areas that determine whether people, search engines, and AI can find your business online: Search visibility, AI readiness, Social sharing, Mobile experience, Site structure, and Security. These are the on-page signals I look at first when evaluating any business.',
+    answer: 'It measures the strength of your signal — the 6 areas that determine whether people, search engines, and AI can find your business online: Search visibility, AI readiness, Social sharing, Mobile experience, Site structure, and Security. These are what I look at first when evaluating any business.',
   },
   {
     question: 'Is this really free?',
