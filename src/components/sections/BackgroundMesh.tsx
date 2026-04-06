@@ -1,6 +1,6 @@
 export function BackgroundMesh() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10">
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {/* Teal glow — top center */}
       <div
         className="absolute top-[-15%] left-[50%] h-[600px] w-[600px] -translate-x-1/2 rounded-full opacity-[0.08] blur-[140px]"
