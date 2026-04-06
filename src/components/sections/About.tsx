@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Code2, Users, PenLine, TrendingUp } from 'lucide-react'
 import { fadeUp, stagger, ease } from '@/lib/animations'
 
 const stats = [
@@ -13,10 +12,10 @@ const stats = [
 ]
 
 const milestones = [
-  { marker: 'Self-taught', detail: 'Learned to code, taught myself SEO, ranked on page one against agencies.', icon: Code2 },
-  { marker: 'Agency leadership', detail: 'Director of Ops — led a team of 10+ across SEO, design, and dev.', icon: Users },
-  { marker: 'Content company', detail: '500+ businesses served, 261% avg YoY organic traffic growth.', icon: PenLine },
-  { marker: 'Growth agency', detail: '500% organic traffic scaling, 92% net sales increase in one quarter.', icon: TrendingUp },
+  { marker: 'Self-taught', detail: 'Learned to code, taught myself SEO, ranked on page one against agencies.' },
+  { marker: 'Agency leadership', detail: 'Director of Ops — led a team of 10+ across SEO, design, and dev.' },
+  { marker: 'Content company', detail: '500+ businesses served, 261% avg YoY organic traffic growth.' },
+  { marker: 'Growth agency', detail: '500% organic traffic scaling, 92% net sales increase in one quarter.' },
 ]
 
 export function About() {
@@ -100,29 +99,21 @@ export function About() {
               >
                 Track record
               </motion.p>
-              <div className="flex flex-col gap-4">
-                {milestones.map((m, i) => {
-                  const Icon = m.icon
-                  return (
-                    <motion.div
-                      key={m.marker}
-                      initial={{ opacity: 0, y: 16 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: i * 0.1, ease }}
-                      className="flex items-start gap-3"
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <p className="text-sm pt-1">
-                        <span className="font-heading font-bold">{m.marker}</span>
-                        <span className="text-muted-foreground"> — {m.detail}</span>
-                      </p>
-                    </motion.div>
-                  )
-                })}
-              </div>
+              <ul className="space-y-3">
+                {milestones.map((m, i) => (
+                  <motion.li
+                    key={m.marker}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.1, ease }}
+                    className="text-sm list-disc ml-4 marker:text-primary"
+                  >
+                    <span className="font-heading font-bold">{m.marker}</span>
+                    <span className="text-muted-foreground"> — {m.detail}</span>
+                  </motion.li>
+                ))}
+              </ul>
             </div>
           </div>
 
