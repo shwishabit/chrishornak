@@ -847,12 +847,26 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                               {categorySummary(category.name, category.items)}
                             </p>
                           </div>
-                          <div className="mt-2 transition-opacity group-hover:[&_div]:opacity-100!">
-                            <div className="group-hover:hidden">
-                              <CategoryScoreBar items={category.items} muted />
-                            </div>
-                            <div className="hidden group-hover:block">
+                          <div className="mt-2">
+                            {/* Mobile: always colored, animate on scroll */}
+                            <motion.div
+                              className="sm:hidden"
+                              initial={{ scaleX: 0 }}
+                              whileInView={{ scaleX: 1 }}
+                              viewport={{ once: true, margin: '-20px' }}
+                              transition={{ duration: 0.6, ease }}
+                              style={{ transformOrigin: 'left' }}
+                            >
                               <CategoryScoreBar items={category.items} />
+                            </motion.div>
+                            {/* Desktop: muted, colored on hover */}
+                            <div className="hidden transition-opacity group-hover:[&_div]:opacity-100! sm:block">
+                              <div className="group-hover:hidden">
+                                <CategoryScoreBar items={category.items} muted />
+                              </div>
+                              <div className="hidden group-hover:block">
+                                <CategoryScoreBar items={category.items} />
+                              </div>
                             </div>
                           </div>
                         </div>
