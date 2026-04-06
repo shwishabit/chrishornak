@@ -86,7 +86,7 @@ export function Services() {
                     </div>
                   </div>
                 </motion.div>
-                <div className="flex py-3 pl-[18px]">
+                <div className="flex py-3 pl-[26px]">
                   <ArrowDown className="h-4 w-4 text-primary/30" />
                 </div>
               </div>
