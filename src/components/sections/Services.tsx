@@ -53,24 +53,83 @@ export function Services() {
           </motion.p>
         </motion.div>
 
-        <div className="mt-14 space-y-10">
-          {approaches.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: i * 0.08, ease }}
-              className="group relative pl-6 md:pl-8"
-            >
-              <span
-                className="absolute left-0 top-1 h-2.5 w-2.5 rounded-full bg-primary/40 transition-colors duration-300 group-hover:bg-primary"
-                aria-hidden
-              />
-              <p className="font-heading text-base font-bold md:text-lg">{item.lead}</p>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-            </motion.div>
-          ))}
+        {/* Desktop: horizontal progression */}
+        <div className="mt-16 hidden md:block">
+          {/* Timeline line */}
+          <div className="relative mx-auto max-w-4xl">
+            <div className="absolute top-3 left-0 right-0 h-px bg-primary/20" />
+            <div className="grid grid-cols-4 gap-6">
+              {approaches.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: i * 0.12, ease }}
+                  className="group relative pt-10"
+                >
+                  {/* Dot */}
+                  <div className="absolute top-0 left-0">
+                    <span className="relative flex h-6 w-6 items-center justify-center">
+                      <span className="absolute h-6 w-6 rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-150 group-hover:bg-primary/20" />
+                      <span className="relative h-2.5 w-2.5 rounded-full bg-primary transition-shadow duration-300 group-hover:shadow-[0_0_12px_rgba(45,212,168,0.5)]" />
+                    </span>
+                  </div>
+                  {/* Card */}
+                  <div className="rounded-xl border border-border/20 bg-muted/10 p-5 transition-all duration-300 hover:border-primary/20 hover:bg-muted/20">
+                    <p className="font-heading text-sm font-bold leading-snug">{item.lead}</p>
+                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: vertical progression */}
+        <div className="mt-14 md:hidden">
+          <div className="relative pl-8">
+            {/* Vertical line */}
+            <div className="absolute left-[7px] top-3 bottom-3 w-px bg-primary/20" />
+
+            <div className="space-y-8">
+              {approaches.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-30px' }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease }}
+                  className="relative"
+                >
+                  {/* Dot */}
+                  <div className="absolute -left-8 top-4">
+                    <span className="relative flex h-4 w-4 items-center justify-center">
+                      <motion.span
+                        className="absolute h-4 w-4 rounded-full bg-primary/15"
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: i * 0.08 + 0.2, ease }}
+                      />
+                      <motion.span
+                        className="relative h-2 w-2 rounded-full bg-primary"
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: i * 0.08 + 0.3, ease }}
+                      />
+                    </span>
+                  </div>
+                  {/* Card */}
+                  <div className="rounded-xl border border-border/20 bg-muted/10 p-5">
+                    <p className="font-heading text-sm font-bold leading-snug">{item.lead}</p>
+                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
