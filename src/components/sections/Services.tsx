@@ -53,82 +53,47 @@ export function Services() {
           </motion.p>
         </motion.div>
 
-        {/* Desktop: horizontal progression */}
-        <div className="mt-16 hidden md:block">
-          {/* Timeline line */}
-          <div className="relative mx-auto max-w-4xl">
-            <div className="absolute top-3 left-0 right-0 h-px bg-primary/20" />
-            <div className="grid grid-cols-4 gap-6">
-              {approaches.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ duration: 0.5, delay: i * 0.12, ease }}
-                  className="group relative pt-10"
-                >
-                  {/* Dot */}
-                  <div className="absolute top-0 left-0">
-                    <span className="relative flex h-6 w-6 items-center justify-center">
-                      <span className="absolute h-6 w-6 rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-150 group-hover:bg-primary/20" />
-                      <span className="relative h-2.5 w-2.5 rounded-full bg-primary transition-shadow duration-300 group-hover:shadow-[0_0_12px_rgba(45,212,168,0.5)]" />
-                    </span>
-                  </div>
-                  {/* Card */}
-                  <div className="rounded-xl border border-border/20 bg-muted/10 p-5 transition-all duration-300 hover:border-primary/20 hover:bg-muted/20">
-                    <p className="font-heading text-sm font-bold leading-snug">{item.lead}</p>
-                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <div className="mt-14 relative pl-8 md:pl-10 max-w-3xl">
+          {/* Vertical connecting line */}
+          <div className="absolute left-[7px] md:left-[9px] top-3 bottom-3 w-px bg-primary/20" />
 
-        {/* Mobile: vertical progression */}
-        <div className="mt-14 md:hidden">
-          <div className="relative pl-8">
-            {/* Vertical line */}
-            <div className="absolute left-[7px] top-3 bottom-3 w-px bg-primary/20" />
+          <div className="space-y-6 md:space-y-8">
+            {approaches.map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-30px' }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease }}
+                className="group relative"
+              >
+                {/* Dot with glow */}
+                <div className="absolute -left-8 md:-left-10 top-5">
+                  <span className="relative flex h-4 w-4 md:h-5 md:w-5 items-center justify-center">
+                    <motion.span
+                      className="absolute inset-0 rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-[2] group-hover:bg-primary/15"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: i * 0.08 + 0.2, ease }}
+                    />
+                    <motion.span
+                      className="relative h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-primary transition-shadow duration-300 group-hover:shadow-[0_0_12px_rgba(45,212,168,0.5)]"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: i * 0.08 + 0.3, ease }}
+                    />
+                  </span>
+                </div>
 
-            <div className="space-y-8">
-              {approaches.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-30px' }}
-                  transition={{ duration: 0.5, delay: i * 0.08, ease }}
-                  className="relative"
-                >
-                  {/* Dot */}
-                  <div className="absolute -left-8 top-4">
-                    <span className="relative flex h-4 w-4 items-center justify-center">
-                      <motion.span
-                        className="absolute h-4 w-4 rounded-full bg-primary/15"
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: i * 0.08 + 0.2, ease }}
-                      />
-                      <motion.span
-                        className="relative h-2 w-2 rounded-full bg-primary"
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.3, delay: i * 0.08 + 0.3, ease }}
-                      />
-                    </span>
-                  </div>
-                  {/* Card */}
-                  <div className="rounded-xl border border-border/20 bg-muted/10 p-5">
-                    <p className="font-heading text-sm font-bold leading-snug">{item.lead}</p>
-                    <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                {/* Card */}
+                <div className="rounded-xl border border-border/20 bg-muted/10 p-5 md:p-6 transition-all duration-300 group-hover:border-primary/20 group-hover:bg-muted/20">
+                  <p className="font-heading text-sm md:text-base font-bold leading-snug">{item.lead}</p>
+                  <p className="mt-3 text-xs md:text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>
