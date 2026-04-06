@@ -834,13 +834,18 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                           {category.icon}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-heading text-sm font-semibold text-muted-foreground transition-colors group-hover:text-foreground">
-                              {category.name}
-                            </span>
-                            <span className="ml-2 shrink-0 text-xs text-muted-foreground/60 transition-colors group-hover:text-muted-foreground">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-heading text-sm font-semibold text-muted-foreground transition-colors group-hover:text-foreground">
+                                {category.name}
+                              </span>
+                              <span className="ml-2 shrink-0 text-xs text-muted-foreground/80 transition-colors group-hover:text-muted-foreground hidden sm:inline">
+                                {categorySummary(category.name, category.items)}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-xs text-muted-foreground/80 sm:hidden">
                               {categorySummary(category.name, category.items)}
-                            </span>
+                            </p>
                           </div>
                           <div className="mt-2 transition-opacity group-hover:[&_div]:opacity-100!">
                             <div className="group-hover:hidden">
