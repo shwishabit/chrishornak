@@ -483,9 +483,10 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   async function handleShare() {
     const shareUrl = getShareUrl()
     const score = result ? computeOverallScore(result.categories) : 0
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
-    // Try native share first (mobile)
-    if (typeof navigator.share === 'function') {
+    // Native share only on mobile (desktop share dialogs are clunky)
+    if (isMobile && typeof navigator.share === 'function') {
       try {
         await navigator.share({
           title: `Findability Check`,
@@ -498,11 +499,10 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
       }
     }
 
-    // Fallback: copy to clipboard
+    // Copy to clipboard
     try {
       await navigator.clipboard.writeText(shareUrl)
     } catch {
-      // Clipboard API not available — use old-school fallback
       const input = document.createElement('input')
       input.value = shareUrl
       document.body.appendChild(input)
