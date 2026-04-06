@@ -46,7 +46,7 @@ export default function NotFound() {
         transition={{ duration: 0.6, delay: 0.3, ease }}
         className="mt-4 font-heading text-3xl font-bold tracking-tight md:text-5xl"
       >
-        This page wandered off.
+        Nothing here.
       </motion.h1>
 
       <motion.p
@@ -55,7 +55,7 @@ export default function NotFound() {
         transition={{ duration: 0.6, delay: 0.4, ease }}
         className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg"
       >
-        Looks like it couldn&apos;t be found. Ironic, coming from a findability guy.
+        Let&apos;s get you somewhere useful.
       </motion.p>
 
       <motion.div
