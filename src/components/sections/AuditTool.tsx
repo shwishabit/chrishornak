@@ -482,21 +482,36 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
 
   async function handleShare() {
     const shareUrl = getShareUrl()
-    if (navigator.share) {
+    const score = result ? computeOverallScore(result.categories) : 0
+
+    // Try native share first (mobile)
+    if (typeof navigator.share === 'function') {
       try {
         await navigator.share({
-          title: `Findability Check — ${url}`,
-          text: `I scored ${overallScore} on the Findability Check. See how your site stacks up.`,
+          title: `Findability Check`,
+          text: `I scored ${score} on the Findability Check. See how your site stacks up:`,
           url: shareUrl,
         })
+        return
       } catch {
-        // User cancelled share
+        // User cancelled or share failed — fall through to clipboard
       }
-    } else {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+    } catch {
+      // Clipboard API not available — use old-school fallback
+      const input = document.createElement('input')
+      input.value = shareUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   function normalizeUrl(input: string): string {
@@ -776,22 +791,13 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       <div className="mt-3">
                         <CategoryScoreBar items={allItems} />
                       </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-4">
-                        <button
-                          onClick={() => setShowMethodology(true)}
-                          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-                        >
-                          <Info className="h-3 w-3" />
-                          How this score works
-                        </button>
-                        <button
-                          onClick={handleShare}
-                          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-                        >
-                          {copied ? <Link className="h-3 w-3" /> : <Share2 className="h-3 w-3" />}
-                          {copied ? 'Link copied' : 'Share results'}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => setShowMethodology(true)}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+                      >
+                        <Info className="h-3 w-3" />
+                        How this score works
+                      </button>
                     </div>
                   </div>
 
@@ -915,15 +921,25 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                 I&apos;ll walk through your results with you and map out what
                 to prioritize — no strings attached.
               </p>
-              <button
-                type="button"
-                data-cal-link="chris-hornak/30min"
-                data-cal-namespace="30min"
-                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}'
-                className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
-              >
-                Let&apos;s walk through it
-              </button>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  data-cal-link="chris-hornak/30min"
+                  data-cal-namespace="30min"
+                  data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}'
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
+                >
+                  Let&apos;s walk through it
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2.5 text-sm font-semibold text-primary transition-colors duration-200 hover:bg-primary/20"
+                >
+                  {copied ? <Link className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+                  {copied ? 'Link copied!' : 'Share results'}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
