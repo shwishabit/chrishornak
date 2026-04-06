@@ -694,40 +694,57 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             className="mt-8"
           >
 
-            {/* ── Tab bar ────────────────────────────────────────────── */}
+            {/* ── Tab bar — dropdown on mobile, inline tabs on desktop ── */}
             <motion.div
               variants={fadeUp}
               transition={{ duration: 0.5, ease }}
-              className="relative mb-6"
+              className="mb-6"
             >
-            {/* Scroll fade hint — right edge on mobile */}
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l from-background to-transparent md:hidden" aria-hidden />
-            <div
-              className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none"
-            >
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab
-                const rankedCat = ranked.find((c) => c.name === tab)
-                const dotColor = rankedCat ? scoreColor(rankedCat.score).dot : ''
+              {/* Mobile: dropdown */}
+              <div className="md:hidden">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-border/50 bg-muted/30 px-4 py-3 text-sm font-medium text-foreground focus:border-primary/50 focus:outline-none"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                >
+                  {tabs.map((tab) => {
+                    const rankedCat = ranked.find((c) => c.name === tab)
+                    const catScore = rankedCat ? Math.round((rankedCat.items.filter(i => i.status === 'pass').length / rankedCat.items.length) * 100) : 0
+                    return (
+                      <option key={tab} value={tab}>
+                        {tab === OVERVIEW_TAB ? tab : `${tab} — ${catScore}%`}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
 
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`relative shrink-0 rounded-lg px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-primary/15 text-primary'
-                        : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
-                    }`}
-                  >
-                    {tab}
-                    {dotColor && !isActive && (
-                      <span className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+              {/* Desktop: inline tabs */}
+              <div className="hidden gap-1.5 md:flex">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab
+                  const rankedCat = ranked.find((c) => c.name === tab)
+                  const dotColor = rankedCat ? scoreColor(rankedCat.score).dot : ''
+
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`relative shrink-0 rounded-lg px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-primary/15 text-primary'
+                          : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                      }`}
+                    >
+                      {tab}
+                      {dotColor && !isActive && (
+                        <span className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </motion.div>
 
             {/* ── Overview tab ───────────────────────────────────────── */}
