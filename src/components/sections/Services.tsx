@@ -86,7 +86,7 @@ export function Services() {
                     </div>
                   </div>
                 </motion.div>
-                <div className="py-3" style={{ paddingLeft: '38px' }}>
+                <div className="py-3 pl-[38px] md:pl-[42px]">
                   <ArrowDown className="h-4 w-4 -translate-x-1/2 text-primary/30" />
                 </div>
               </div>
