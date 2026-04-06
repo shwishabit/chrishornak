@@ -634,7 +634,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             placeholder="Enter your website address (e.g. mybusiness.com)"
             maxLength={MAX_URL_LENGTH}
             required
-            className="h-11 w-full rounded-lg border border-border/50 bg-muted/50 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-border/50 bg-muted/50 pl-10 pr-4 text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
           />
         </div>
         <Button type="submit" size="md" isLoading={loading} disabled={loading || onCooldown} className="shrink-0">

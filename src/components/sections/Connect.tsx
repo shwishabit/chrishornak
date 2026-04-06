@@ -132,7 +132,7 @@ export function Connect() {
                   placeholder="Name"
                   required
                   autoComplete="name"
-                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
                 />
               </div>
               <div>
@@ -144,7 +144,7 @@ export function Connect() {
                   placeholder="Email"
                   required
                   autoComplete="email"
-                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
                 />
               </div>
               <div>
@@ -157,7 +157,7 @@ export function Connect() {
                   autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(formatPhone(e.target.value))}
-                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+                  className="w-full rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
                 />
               </div>
               <div>
@@ -169,7 +169,7 @@ export function Connect() {
                   rows={4}
                   required
                   minLength={10}
-                  className="w-full resize-none rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-border/50 bg-muted/50 px-4 py-3 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none"
                 />
               </div>
               <button
