@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Search, PenLine, Globe, Telescope } from 'lucide-react'
+import { Search, PenLine, Globe, Telescope, ArrowDown } from 'lucide-react'
 import { fadeUp, stagger, ease } from '@/lib/animations'
 
 const approaches = [
@@ -58,44 +58,40 @@ export function Services() {
           </motion.p>
         </motion.div>
 
-        <div className="mt-14 relative pl-12 md:pl-14 max-w-3xl">
-          {/* Vertical connecting line */}
-          <div className="absolute left-[15px] md:left-[17px] top-3 bottom-3 w-px bg-primary/20" />
-
-          <div className="space-y-6 md:space-y-8">
-            {approaches.map((item, i) => {
-              const Icon = item.icon
-              return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-30px' }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease }}
-                className="group relative"
-              >
-                {/* Icon on timeline */}
+        <div className="mt-14 max-w-3xl">
+          {approaches.map((item, i) => {
+            const Icon = item.icon
+            return (
+              <div key={i}>
                 <motion.div
-                  className="absolute -left-[44px] md:-left-[52px] top-4"
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.08 + 0.2, ease }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-30px' }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease }}
+                  className="group rounded-xl border border-border/20 bg-muted/10 p-5 md:p-6 transition-all duration-300 hover:border-primary/20 hover:bg-muted/20"
                 >
-                  <span className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary/20 group-hover:shadow-[0_0_16px_rgba(45,212,168,0.2)]">
-                    <Icon className="h-4 w-4" />
-                  </span>
+                  <div className="flex items-start gap-4">
+                    <motion.span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary/20 group-hover:shadow-[0_0_16px_rgba(45,212,168,0.2)]"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: i * 0.08 + 0.2, ease }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </motion.span>
+                    <div>
+                      <p className="font-heading text-sm md:text-base font-bold leading-snug">{item.lead}</p>
+                      <p className="mt-2 text-xs md:text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                    </div>
+                  </div>
                 </motion.div>
-
-                {/* Card */}
-                <div className="rounded-xl border border-border/20 bg-muted/10 p-5 md:p-6 transition-all duration-300 group-hover:border-primary/20 group-hover:bg-muted/20">
-                  <p className="font-heading text-sm md:text-base font-bold leading-snug">{item.lead}</p>
-                  <p className="mt-3 text-xs md:text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                <div className="flex justify-center py-3">
+                  <ArrowDown className="h-4 w-4 text-primary/30" />
                 </div>
-              </motion.div>
-              )
-            })}
-          </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

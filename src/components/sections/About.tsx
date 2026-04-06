@@ -14,8 +14,8 @@ const stats = [
 const milestones = [
   { marker: 'Self-taught', detail: 'Learned to code, taught myself SEO, ranked on page one against agencies.' },
   { marker: 'Agency leadership', detail: 'Director of Ops — led a team of 10+ across SEO, design, and dev.' },
-  { marker: 'Content company', detail: '500+ businesses served, 261% avg YoY organic traffic growth.' },
-  { marker: 'Growth agency', detail: '500% organic traffic scaling, 92% net sales increase in one quarter.' },
+  { marker: 'Built Blog Hands', detail: 'Content company serving businesses nationwide.' },
+  { marker: 'Founded Swift Growth', detail: 'Full-service growth agency for scaling companies.' },
 ]
 
 export function About() {
