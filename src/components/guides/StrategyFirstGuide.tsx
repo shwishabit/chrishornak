@@ -66,7 +66,7 @@ export function StrategyFirstGuide() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
               Typical order
             </p>
-            <div className="mt-3 grid grid-cols-6 gap-1.5">
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
               {[
                 { n: '01', label: 'Positioning' },
                 { n: '02', label: 'Messaging' },
@@ -79,22 +79,22 @@ export function StrategyFirstGuide() {
                 return (
                   <div
                     key={step.n}
-                    className={`flex flex-col items-center rounded-md border px-1.5 py-2.5 ${
+                    className={`flex flex-col items-center rounded-md border px-2 py-3 ${
                       isStart
                         ? 'border-red-400/40 bg-red-400/10'
                         : 'border-border/15 bg-background/40 opacity-50'
                     }`}
                   >
                     <span
-                      className={`font-mono text-[10px] font-bold ${
+                      className={`font-mono text-xs font-bold ${
                         isStart ? 'text-red-400' : 'text-muted-foreground/50'
                       }`}
                     >
                       {step.n}
                     </span>
                     <span
-                      className={`mt-1 text-center text-[9px] leading-tight md:text-[10px] ${
-                        isStart ? 'font-semibold text-foreground' : 'text-muted-foreground/60'
+                      className={`mt-1.5 text-center text-[11px] leading-tight ${
+                        isStart ? 'font-semibold text-foreground' : 'text-muted-foreground/70'
                       }`}
                     >
                       {step.label}
@@ -103,7 +103,7 @@ export function StrategyFirstGuide() {
                 )
               })}
             </div>
-            <p className="mt-2.5 text-[11px] text-muted-foreground/70">
+            <p className="mt-3 text-xs text-muted-foreground/80">
               Skip the first two. Build the website. Spend the rest of your budget bolting things on.
             </p>
           </div>
@@ -113,7 +113,7 @@ export function StrategyFirstGuide() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
               The right order
             </p>
-            <div className="mt-3 grid grid-cols-6 gap-1.5">
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
               {[
                 { n: '01', label: 'Positioning' },
                 { n: '02', label: 'Messaging' },
@@ -126,28 +126,28 @@ export function StrategyFirstGuide() {
                 return (
                   <div
                     key={step.n}
-                    className={`flex flex-col items-center rounded-md border px-1.5 py-2.5 ${
+                    className={`flex flex-col items-center rounded-md border px-2 py-3 ${
                       isStart
                         ? 'border-primary/50 bg-primary/10'
                         : 'border-border/20 bg-background/40'
                     }`}
-                    style={{ opacity: 0.55 + i * 0.075 }}
+                    style={{ opacity: 0.6 + i * 0.07 }}
                   >
                     <span
-                      className={`font-mono text-[10px] font-bold ${
+                      className={`font-mono text-xs font-bold ${
                         isStart ? 'text-primary' : 'text-primary/60'
                       }`}
                     >
                       {step.n}
                     </span>
-                    <span className="mt-1 text-center text-[9px] leading-tight text-foreground/80 md:text-[10px]">
+                    <span className="mt-1.5 text-center text-[11px] font-medium leading-tight text-foreground/85">
                       {step.label}
                     </span>
                   </div>
                 )
               })}
             </div>
-            <p className="mt-2.5 text-[11px] text-muted-foreground/70">
+            <p className="mt-3 text-xs text-muted-foreground/80">
               Each step earns the right to the next one. Compounding starts at step one.
             </p>
           </div>

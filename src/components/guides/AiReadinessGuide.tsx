@@ -75,53 +75,104 @@ export function AiReadinessGuide() {
       </p>
 
       {/* In-body figure: a typical AI answer */}
-      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
-        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
-          What the answer looks like
-        </p>
+      <div className="my-10 overflow-hidden rounded-xl border border-border/20 bg-background/60">
+        {/* Browser-style window chrome */}
+        <div className="flex items-center gap-2 border-b border-border/15 bg-muted/20 px-4 py-2.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
+          <div className="ml-3 flex flex-1 items-center gap-2 rounded-md bg-background/60 px-3 py-1 font-mono text-[10px] text-muted-foreground/60">
+            <span>chatgpt.com</span>
+          </div>
+        </div>
 
-        <div className="mt-5 space-y-4">
-          {/* User prompt bubble */}
+        <div className="p-6 md:p-8">
+          {/* User prompt — right aligned, soft pill */}
           <div className="flex justify-end">
-            <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-foreground/10 px-4 py-2.5 text-sm text-foreground/90">
-              Recommend a family law firm in Denver.
+            <div className="max-w-[85%] rounded-2xl rounded-br-md bg-foreground/8 px-4 py-2.5 text-sm text-foreground/90">
+              who&apos;s the best family law attorney in denver for custody?
             </div>
           </div>
 
-          {/* AI response */}
-          <div className="rounded-2xl rounded-bl-sm border border-border/15 bg-background/40 px-5 py-4">
-            <p className="text-sm text-muted-foreground">
-              Here are three highly regarded family law practices in Denver:
-            </p>
-            <ol className="mt-3 space-y-2.5 text-sm">
-              {[
-                { name: 'Mountain Ridge Family Law', tag: 'Custody & mediation specialists, 4.9★ across 180+ reviews.' },
-                { name: 'Ainsworth & Cole', tag: 'Denver-based since 2008, focused on collaborative divorce.' },
-                { name: 'Front Range Legal Group', tag: 'Family law, estate planning. Spanish-speaking attorneys on staff.' },
-              ].map((item, i) => (
-                <li key={item.name} className="flex gap-3">
-                  <span className="font-mono text-xs text-primary/60">{i + 1}.</span>
-                  <span>
-                    <span className="font-semibold text-foreground">{item.name}</span>
-                    <span className="text-muted-foreground"> — {item.tag}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
+          {/* AI response — left aligned with avatar */}
+          <div className="mt-5 flex gap-3">
+            {/* AI avatar */}
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground/6 ring-1 ring-border/30">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-foreground/60" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l2.39 4.84L20 8l-4 3.9.94 5.5L12 14.77 7.06 17.4 8 11.9 4 8l5.61-1.16L12 2z" />
+              </svg>
+            </div>
 
-            {/* Missing slot */}
-            <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-border/30 bg-background/40 px-3 py-2">
-              <span className="font-mono text-xs text-muted-foreground/50">—</span>
-              <span className="text-xs italic text-muted-foreground/60">
-                your business: no schema, no entity match, no citation
-              </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-foreground/70">ChatGPT</span>
+                <span className="rounded-full bg-foreground/6 px-1.5 py-px font-mono text-[9px] text-muted-foreground/70">
+                  GPT-5
+                </span>
+              </div>
+
+              <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                Based on reviews, specialization, and reputation in the Denver area, three attorneys consistently come up for custody cases:
+              </p>
+
+              <div className="mt-3 space-y-3">
+                {[
+                  {
+                    name: 'Mountain Ridge Family Law',
+                    tag: 'Custody and mediation specialists. 4.9★ across 180+ reviews. Free initial consult.',
+                    sources: ['google.com', 'avvo.com', 'yelp.com'],
+                  },
+                  {
+                    name: 'Ainsworth & Cole',
+                    tag: 'Denver-based since 2008. Focused on collaborative divorce and shared custody.',
+                    sources: ['google.com', 'lawyers.com'],
+                  },
+                  {
+                    name: 'Front Range Legal Group',
+                    tag: 'Family law and estate planning. Spanish-speaking attorneys on staff.',
+                    sources: ['google.com', 'martindale.com'],
+                  },
+                ].map((item, i) => (
+                  <div key={item.name} className="flex gap-3">
+                    <span className="mt-0.5 font-mono text-xs text-foreground/40">{i + 1}.</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                      <p className="mt-0.5 text-sm leading-snug text-muted-foreground">{item.tag}</p>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {item.sources.map((src) => (
+                          <span
+                            key={src}
+                            className="inline-flex items-center gap-1 rounded-full bg-foreground/5 px-2 py-0.5 font-mono text-[9px] text-muted-foreground/70 ring-1 ring-border/20"
+                          >
+                            <span className="h-1 w-1 rounded-full bg-primary/60" />
+                            {src}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* The missing slot — your business */}
+              <div className="mt-4 flex items-start gap-3 rounded-lg border border-dashed border-red-400/25 bg-red-400/3 p-3">
+                <span className="mt-0.5 font-mono text-xs text-red-400/60">4.</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground/50">
+                    <span className="italic">your firm</span> — not surfaced
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground/60">
+                    No schema markup. No entity match. Reviews exist on Google, but the site gives ChatGPT nothing structured to cite.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          The three competitors aren&apos;t better lawyers. They&apos;re better described — structured data, location, specialty, proof. AI cited what it could parse, and skipped what it couldn&apos;t.
-        </p>
+        <div className="border-t border-border/15 bg-muted/10 px-6 py-3 text-xs leading-relaxed text-muted-foreground md:px-8">
+          The three competitors aren&apos;t better lawyers. They&apos;re better described — schema, location, specialty, sources AI can verify. AI cited what it could parse, and skipped what it couldn&apos;t.
+        </div>
       </div>
 
       <p>

@@ -104,70 +104,102 @@ export function SearchVisibilityGuide() {
 
         <div className="mt-6 grid gap-5 md:grid-cols-2">
           {/* What humans see */}
-          <div>
+          <div className="flex flex-col">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
               What you see
             </p>
-            <div className="mt-2 space-y-2 rounded-lg border border-border/15 bg-background/40 p-4">
-              <div className="h-2 w-3/5 rounded bg-foreground/70" />
-              <div className="h-1.5 w-4/5 rounded bg-foreground/30" />
-              <div className="h-1.5 w-3/4 rounded bg-foreground/30" />
-              <div className="mt-3 h-16 rounded bg-foreground/10" />
-              <div className="mt-2 inline-block h-5 rounded bg-primary/40 px-3" style={{ width: '70px' }} />
-              <div className="mt-2 grid grid-cols-3 gap-2 pt-1">
-                <div className="h-8 rounded bg-foreground/10" />
-                <div className="h-8 rounded bg-foreground/10" />
-                <div className="h-8 rounded bg-foreground/10" />
+            <div className="mt-2 flex-1 space-y-2.5 rounded-lg border border-border/15 bg-background/40 p-4">
+              {/* Browser chrome */}
+              <div className="flex items-center gap-1 pb-1">
+                <span className="h-2 w-2 rounded-full bg-foreground/20" />
+                <span className="h-2 w-2 rounded-full bg-foreground/20" />
+                <span className="h-2 w-2 rounded-full bg-foreground/20" />
+                <span className="ml-2 h-2 flex-1 rounded bg-foreground/10" />
               </div>
+              {/* Headline */}
+              <div className="h-2.5 w-4/5 rounded bg-foreground/70" />
+              <div className="h-1.5 w-full rounded bg-foreground/30" />
+              <div className="h-1.5 w-3/4 rounded bg-foreground/30" />
+              {/* Hero image */}
+              <div className="mt-3 h-20 rounded bg-foreground/10" />
+              {/* CTA button */}
+              <div className="mt-2 flex">
+                <div className="h-6 w-20 rounded bg-primary/40" />
+              </div>
+              {/* Feature cards */}
+              <div className="mt-2 grid grid-cols-3 gap-2 pt-1">
+                <div className="h-10 rounded bg-foreground/10" />
+                <div className="h-10 rounded bg-foreground/10" />
+                <div className="h-10 rounded bg-foreground/10" />
+              </div>
+              {/* Footer hint */}
+              <div className="mt-2 h-1 w-1/3 rounded bg-foreground/15" />
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground/70">
-              Hero, image, button, three feature cards.
+              A polished homepage. Hero, image, button, three feature cards.
             </p>
           </div>
 
-          {/* What Google sees */}
-          <div>
+          {/* What machines see */}
+          <div className="flex flex-col">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
-              What Google sees
+              What machines see
             </p>
-            <div className="mt-2 space-y-1.5 rounded-lg border border-border/15 bg-background/40 p-4 font-mono text-[11px] leading-relaxed">
+            <div className="mt-2 flex-1 space-y-1.5 rounded-lg border border-border/15 bg-background/40 p-4 font-mono text-[10.5px] leading-relaxed md:text-[11px]">
               <div>
                 <span className="text-muted-foreground/60">{'<title>'}</span>
                 <span className="text-foreground/70"> Home | Your Company </span>
                 <span className="text-muted-foreground/60">{'</title>'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground/60">{'<meta description='}</span>
-                <span className="text-red-400/70">missing</span>
-                <span className="text-muted-foreground/60">{' />'}</span>
+                <span className="text-muted-foreground/60">{'<meta name="description" content="'}</span>
+                <span className="text-red-400/70">—</span>
+                <span className="text-muted-foreground/60">{'" />'}</span>
               </div>
               <div>
                 <span className="text-muted-foreground/60">{'<h1>'}</span>
-                <span className="text-red-400/70"> none </span>
+                <span className="text-red-400/70"> (none) </span>
                 <span className="text-muted-foreground/60">{'</h1>'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground/60">{'<img alt='}</span>
-                <span className="text-red-400/70">&quot;&quot;</span>
-                <span className="text-muted-foreground/60">{' />'}</span>
+                <span className="text-muted-foreground/60">{'<img src="hero.jpg" alt="'}</span>
+                <span className="text-red-400/70">—</span>
+                <span className="text-muted-foreground/60">{'" />'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground/60">schema:</span>
-                <span className="text-red-400/70"> none</span>
+                <span className="text-muted-foreground/60">{'<a href="#">'}</span>
+                <span className="text-foreground/70">Click here</span>
+                <span className="text-muted-foreground/60">{'</a>'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground/60">sitemap:</span>
+                <span className="text-muted-foreground/60">schema.org:</span>
+                <span className="text-red-400/70"> (none)</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">sitemap.xml:</span>
                 <span className="text-red-400/70"> not submitted</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">robots.txt:</span>
+                <span className="text-foreground/70"> default</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">canonical:</span>
+                <span className="text-red-400/70"> (none)</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">Open Graph:</span>
+                <span className="text-red-400/70"> (none)</span>
               </div>
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground/70">
-              A page with no name, no headline, no structure.
+              A page with no name, no headline, no structure. Nothing to cite.
             </p>
           </div>
         </div>
 
         <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          Both panels are the same URL. The left side is what your designer delivered. The right side is what every search engine and AI crawler actually sees. The gap is the reason you don&apos;t rank.
+          Both panels are the same URL. The left side is what your designer delivered. The right side is what every search engine and AI crawler actually reads. The gap is the reason you don&apos;t show up — in Google, in ChatGPT, in any answer at all.
         </p>
       </div>
 

@@ -139,7 +139,7 @@ export function ContentStructureGuide() {
                 ))}
                 {/* The single keyword they're all fighting over */}
                 <text x={100} y={130} textAnchor="middle" fill="white" fillOpacity={0.45} fontSize={9} fontFamily="ui-monospace, monospace">
-                  &quot;local seo tips&quot;
+                  &quot;how to fix a leaky faucet&quot;
                 </text>
               </svg>
             </div>
