@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { ContentStructureDiagram } from './ContentStructureDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -50,13 +49,6 @@ export function ContentStructureGuide() {
       <p>
         Her content wasn&apos;t underperforming. It was fighting itself.
       </p>
-
-      <figure className="my-10">
-        <ContentStructureDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          Twelve overlapping posts, all chasing the same query — none of them ranking.
-        </figcaption>
-      </figure>
 
       <PullQuote>
         The problem isn&apos;t that you&apos;re not creating enough content. The problem is that every piece you publish is competing with the last one — and Google can&apos;t tell which one matters.
@@ -111,6 +103,121 @@ export function ContentStructureGuide() {
       <p>
         Think of it like a textbook. The pillar page is the chapter overview. The spoke articles are the sections within the chapter. Together, they tell Google: &ldquo;This site knows this topic thoroughly, from the overview down to the details.&rdquo;
       </p>
+
+      {/* In-body figure: cannibalization vs hub-and-spoke */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          Cannibalization vs hub-and-spoke
+        </p>
+
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {/* LEFT: cannibalization */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              What you have now
+            </p>
+            <div className="mt-2 rounded-lg border border-border/15 bg-background/40 p-4">
+              <svg viewBox="0 0 200 140" className="h-auto w-full">
+                {/* Scattered, overlapping post dots — all chasing the same target */}
+                {[
+                  { x: 60, y: 50 }, { x: 80, y: 45 }, { x: 95, y: 60 },
+                  { x: 70, y: 70 }, { x: 110, y: 50 }, { x: 90, y: 80 },
+                  { x: 130, y: 55 }, { x: 75, y: 90 }, { x: 115, y: 75 },
+                  { x: 100, y: 95 }, { x: 125, y: 85 }, { x: 85, y: 105 },
+                ].map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r={9}
+                    fill="white"
+                    fillOpacity={0.18}
+                    stroke="white"
+                    strokeOpacity={0.25}
+                    strokeWidth={0.8}
+                  />
+                ))}
+                {/* The single keyword they're all fighting over */}
+                <text x={100} y={130} textAnchor="middle" fill="white" fillOpacity={0.45} fontSize={9} fontFamily="ui-monospace, monospace">
+                  &quot;local seo tips&quot;
+                </text>
+              </svg>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground/70">
+              12 posts, one keyword. Google can&apos;t pick a winner.
+            </p>
+          </div>
+
+          {/* RIGHT: hub and spoke */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              What you need
+            </p>
+            <div className="mt-2 rounded-lg border border-border/15 bg-background/40 p-4">
+              <svg viewBox="0 0 200 140" className="h-auto w-full">
+                {/* Spoke connector lines */}
+                {[
+                  { x: 100, y: 25 },
+                  { x: 165, y: 50 },
+                  { x: 150, y: 110 },
+                  { x: 50, y: 110 },
+                  { x: 35, y: 50 },
+                ].map((s, i) => (
+                  <line
+                    key={`l-${i}`}
+                    x1={100}
+                    y1={70}
+                    x2={s.x}
+                    y2={s.y}
+                    stroke="#2dd4a8"
+                    strokeOpacity={0.35}
+                    strokeWidth={1}
+                  />
+                ))}
+
+                {/* Spoke nodes */}
+                {[
+                  { x: 100, y: 25 },
+                  { x: 165, y: 50 },
+                  { x: 150, y: 110 },
+                  { x: 50, y: 110 },
+                  { x: 35, y: 50 },
+                ].map((s, i) => (
+                  <circle
+                    key={`s-${i}`}
+                    cx={s.x}
+                    cy={s.y}
+                    r={9}
+                    fill="white"
+                    fillOpacity={0.25}
+                    stroke="white"
+                    strokeOpacity={0.4}
+                    strokeWidth={1}
+                  />
+                ))}
+
+                {/* Pillar */}
+                <circle cx={100} cy={70} r={20} fill="#2dd4a8" fillOpacity={0.18} />
+                <circle cx={100} cy={70} r={14} fill="#2dd4a8" fillOpacity={0.6} />
+                <text x={100} y={73} textAnchor="middle" fill="#0a0a0a" fontSize={8} fontWeight={700} fontFamily="system-ui, sans-serif">
+                  PILLAR
+                </text>
+
+                <text x={100} y={130} textAnchor="middle" fill="white" fillOpacity={0.45} fontSize={9} fontFamily="ui-monospace, monospace">
+                  one topic, organized
+                </text>
+              </svg>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground/70">
+              One pillar, five focused spokes. Authority compounds.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Same number of posts. Same effort. The only difference is whether they reinforce each other or split the signal.
+        </p>
+      </div>
 
       <div className="my-10 space-y-5">
         {[

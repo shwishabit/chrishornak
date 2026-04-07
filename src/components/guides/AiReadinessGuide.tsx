@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { AiReadinessDiagram } from './AiReadinessDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -51,13 +50,6 @@ export function AiReadinessGuide() {
         His business was invisible in the fastest-growing discovery channel on the internet — and he had no idea it existed.
       </p>
 
-      <figure className="my-10">
-        <AiReadinessDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          Ask ChatGPT for a recommendation in your space — what comes back?
-        </figcaption>
-      </figure>
-
       <PullQuote>
         AI isn&apos;t replacing search. It&apos;s adding a new layer on top of it — and most businesses don&apos;t show up in that layer at all.
       </PullQuote>
@@ -81,6 +73,56 @@ export function AiReadinessGuide() {
       <p>
         The businesses that get recommended by AI aren&apos;t always the best in their category. They&apos;re the most clearly described. That&apos;s a different thing entirely.
       </p>
+
+      {/* In-body figure: a typical AI answer */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          What the answer looks like
+        </p>
+
+        <div className="mt-5 space-y-4">
+          {/* User prompt bubble */}
+          <div className="flex justify-end">
+            <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-foreground/10 px-4 py-2.5 text-sm text-foreground/90">
+              Recommend a family law firm in Denver.
+            </div>
+          </div>
+
+          {/* AI response */}
+          <div className="rounded-2xl rounded-bl-sm border border-border/15 bg-background/40 px-5 py-4">
+            <p className="text-sm text-muted-foreground">
+              Here are three highly regarded family law practices in Denver:
+            </p>
+            <ol className="mt-3 space-y-2.5 text-sm">
+              {[
+                { name: 'Mountain Ridge Family Law', tag: 'Custody & mediation specialists, 4.9★ across 180+ reviews.' },
+                { name: 'Ainsworth & Cole', tag: 'Denver-based since 2008, focused on collaborative divorce.' },
+                { name: 'Front Range Legal Group', tag: 'Family law, estate planning. Spanish-speaking attorneys on staff.' },
+              ].map((item, i) => (
+                <li key={item.name} className="flex gap-3">
+                  <span className="font-mono text-xs text-primary/60">{i + 1}.</span>
+                  <span>
+                    <span className="font-semibold text-foreground">{item.name}</span>
+                    <span className="text-muted-foreground"> — {item.tag}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+
+            {/* Missing slot */}
+            <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-border/30 bg-background/40 px-3 py-2">
+              <span className="font-mono text-xs text-muted-foreground/50">—</span>
+              <span className="text-xs italic text-muted-foreground/60">
+                your business: no schema, no entity match, no citation
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          The three competitors aren&apos;t better lawyers. They&apos;re better described — structured data, location, specialty, proof. AI cited what it could parse, and skipped what it couldn&apos;t.
+        </p>
+      </div>
 
       <p>
         Here&apos;s what separates businesses that AI recommends from businesses it ignores:

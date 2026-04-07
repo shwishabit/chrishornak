@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { StrategyFirstDiagram } from './StrategyFirstDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -33,13 +32,6 @@ export function StrategyFirstGuide() {
         Every piece was a reasonable investment on its own. Together, they were $192K spent doing the right things in the wrong order.
       </p>
 
-      <figure className="my-10">
-        <StrategyFirstDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          Right things, wrong sequence — the order is the strategy.
-        </figcaption>
-      </figure>
-
       <PullQuote>
         The most expensive mistake in marketing isn&apos;t choosing the wrong tactic. It&apos;s executing the right tactics before the strategy underneath them is clear. Everything works harder than it should — and nothing compounds.
       </PullQuote>
@@ -61,6 +53,110 @@ export function StrategyFirstGuide() {
       <p>
         It&apos;s like furnishing a house before pouring the foundation. Every individual purchase is fine. The house still falls down.
       </p>
+
+      {/* In-body figure: typical entry vs correct entry */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          Where most businesses start
+        </p>
+
+        <div className="mt-6 space-y-6">
+          {/* Typical entry */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              Typical order
+            </p>
+            <div className="mt-3 grid grid-cols-6 gap-1.5">
+              {[
+                { n: '01', label: 'Positioning' },
+                { n: '02', label: 'Messaging' },
+                { n: '03', label: 'Foundation' },
+                { n: '04', label: 'Content' },
+                { n: '05', label: 'Distribution' },
+                { n: '06', label: 'Optimization' },
+              ].map((step) => {
+                const isStart = step.n === '03' // most businesses start at Foundation/website
+                return (
+                  <div
+                    key={step.n}
+                    className={`flex flex-col items-center rounded-md border px-1.5 py-2.5 ${
+                      isStart
+                        ? 'border-red-400/40 bg-red-400/10'
+                        : 'border-border/15 bg-background/40 opacity-50'
+                    }`}
+                  >
+                    <span
+                      className={`font-mono text-[10px] font-bold ${
+                        isStart ? 'text-red-400' : 'text-muted-foreground/50'
+                      }`}
+                    >
+                      {step.n}
+                    </span>
+                    <span
+                      className={`mt-1 text-center text-[9px] leading-tight md:text-[10px] ${
+                        isStart ? 'font-semibold text-foreground' : 'text-muted-foreground/60'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-2.5 text-[11px] text-muted-foreground/70">
+              Skip the first two. Build the website. Spend the rest of your budget bolting things on.
+            </p>
+          </div>
+
+          {/* Correct entry */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              The right order
+            </p>
+            <div className="mt-3 grid grid-cols-6 gap-1.5">
+              {[
+                { n: '01', label: 'Positioning' },
+                { n: '02', label: 'Messaging' },
+                { n: '03', label: 'Foundation' },
+                { n: '04', label: 'Content' },
+                { n: '05', label: 'Distribution' },
+                { n: '06', label: 'Optimization' },
+              ].map((step, i) => {
+                const isStart = step.n === '01'
+                return (
+                  <div
+                    key={step.n}
+                    className={`flex flex-col items-center rounded-md border px-1.5 py-2.5 ${
+                      isStart
+                        ? 'border-primary/50 bg-primary/10'
+                        : 'border-border/20 bg-background/40'
+                    }`}
+                    style={{ opacity: 0.55 + i * 0.075 }}
+                  >
+                    <span
+                      className={`font-mono text-[10px] font-bold ${
+                        isStart ? 'text-primary' : 'text-primary/60'
+                      }`}
+                    >
+                      {step.n}
+                    </span>
+                    <span className="mt-1 text-center text-[9px] leading-tight text-foreground/80 md:text-[10px]">
+                      {step.label}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-2.5 text-[11px] text-muted-foreground/70">
+              Each step earns the right to the next one. Compounding starts at step one.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Same six steps. The only difference is the starting point. Start at step three and the rest is patchwork. Start at step one and the rest compounds.
+        </p>
+      </div>
 
       <h2 id="what-the-right-order-looks-like">What the right order actually looks like</h2>
 

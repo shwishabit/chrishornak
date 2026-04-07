@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight, FileText, Map, Tag, Gauge, Code2, Eye } from 'lucide-react'
-import { SearchVisibilityDiagram } from './SearchVisibilityDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -51,13 +50,6 @@ export function SearchVisibilityGuide() {
         His agency had built a beautiful website. Then they&apos;d left the lights off.
       </p>
 
-      <figure className="my-10">
-        <SearchVisibilityDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          A polished site with no signal — the building exists, the lights are off.
-        </figcaption>
-      </figure>
-
       <h2 id="having-a-website-is-not-being-online">Having a website is not the same as being online</h2>
 
       <p>
@@ -103,6 +95,81 @@ export function SearchVisibilityGuide() {
       <p>
         That&apos;s what &ldquo;sitting in the dark&rdquo; looks like. It&apos;s not broken. It was never turned on.
       </p>
+
+      {/* In-body figure: same page, two viewers */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          Same page, two viewers
+        </p>
+
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          {/* What humans see */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              What you see
+            </p>
+            <div className="mt-2 space-y-2 rounded-lg border border-border/15 bg-background/40 p-4">
+              <div className="h-2 w-3/5 rounded bg-foreground/70" />
+              <div className="h-1.5 w-4/5 rounded bg-foreground/30" />
+              <div className="h-1.5 w-3/4 rounded bg-foreground/30" />
+              <div className="mt-3 h-16 rounded bg-foreground/10" />
+              <div className="mt-2 inline-block h-5 rounded bg-primary/40 px-3" style={{ width: '70px' }} />
+              <div className="mt-2 grid grid-cols-3 gap-2 pt-1">
+                <div className="h-8 rounded bg-foreground/10" />
+                <div className="h-8 rounded bg-foreground/10" />
+                <div className="h-8 rounded bg-foreground/10" />
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground/70">
+              Hero, image, button, three feature cards.
+            </p>
+          </div>
+
+          {/* What Google sees */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              What Google sees
+            </p>
+            <div className="mt-2 space-y-1.5 rounded-lg border border-border/15 bg-background/40 p-4 font-mono text-[11px] leading-relaxed">
+              <div>
+                <span className="text-muted-foreground/60">{'<title>'}</span>
+                <span className="text-foreground/70"> Home | Your Company </span>
+                <span className="text-muted-foreground/60">{'</title>'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">{'<meta description='}</span>
+                <span className="text-red-400/70">missing</span>
+                <span className="text-muted-foreground/60">{' />'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">{'<h1>'}</span>
+                <span className="text-red-400/70"> none </span>
+                <span className="text-muted-foreground/60">{'</h1>'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">{'<img alt='}</span>
+                <span className="text-red-400/70">&quot;&quot;</span>
+                <span className="text-muted-foreground/60">{' />'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">schema:</span>
+                <span className="text-red-400/70"> none</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground/60">sitemap:</span>
+                <span className="text-red-400/70"> not submitted</span>
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground/70">
+              A page with no name, no headline, no structure.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Both panels are the same URL. The left side is what your designer delivered. The right side is what every search engine and AI crawler actually sees. The gap is the reason you don&apos;t rank.
+        </p>
+      </div>
 
       <h2 id="what-your-agency-never-set-up">The six things your agency probably never set up</h2>
 

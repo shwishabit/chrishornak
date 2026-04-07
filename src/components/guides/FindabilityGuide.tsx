@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight, Search, Bot, Share2, Smartphone, Code2, Shield } from 'lucide-react'
-import { FindabilityDiagram } from './FindabilityDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -59,13 +58,6 @@ export function FindabilityGuide() {
         Sarah&apos;s agency was measuring one signal. Her customers were looking at six.
       </p>
 
-      <figure className="my-10">
-        <FindabilityDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          One signal, six places it has to land — Google, ChatGPT, Bing, Perplexity, Gemini, Copilot.
-        </figcaption>
-      </figure>
-
       <PullQuote>
         Findability isn&apos;t a Google problem. It&apos;s an everywhere problem. And most businesses are solving for one platform while their customers have already moved to six.
       </PullQuote>
@@ -79,6 +71,50 @@ export function FindabilityGuide() {
       <p>
         That&apos;s not how people find businesses anymore. Today a potential customer might ask ChatGPT before they ever open Google. They might search Instagram or TikTok. They might check Google Maps, read Reddit threads, or look you up after a friend&apos;s recommendation. <strong>Every one of those moments is a findability moment</strong> — and most businesses are only showing up in one of them.
       </p>
+
+      {/* In-body figure: how the front door has fragmented */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          The front door has moved
+        </p>
+
+        <div className="mt-6 space-y-6">
+          {/* 2015 — single bar */}
+          <div>
+            <div className="flex items-baseline justify-between text-xs">
+              <span className="font-mono font-semibold text-muted-foreground">2015</span>
+              <span className="text-muted-foreground/60">One front door</span>
+            </div>
+            <div className="mt-2 h-11 overflow-hidden rounded-md">
+              <div className="flex h-full items-center justify-center bg-primary/30 text-xs font-semibold text-foreground">
+                Google
+              </div>
+            </div>
+          </div>
+
+          {/* 2026 — six segments */}
+          <div>
+            <div className="flex items-baseline justify-between text-xs">
+              <span className="font-mono font-semibold text-muted-foreground">2026</span>
+              <span className="text-muted-foreground/60">Six front doors</span>
+            </div>
+            <div className="mt-2 flex h-11 gap-1 overflow-hidden rounded-md">
+              {['Google', 'ChatGPT', 'Maps', 'YouTube', 'Reddit', 'Social'].map((name) => (
+                <div
+                  key={name}
+                  className="flex flex-1 items-center justify-center bg-primary/15 text-[10px] font-semibold text-foreground/80 md:text-xs"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Same customer, same intent — six different starting points. Showing up in only one of them isn&apos;t a strategy anymore. It&apos;s a leak.
+        </p>
+      </div>
 
       <p>
         Findability is whether a potential customer — at any moment, on any platform, through any kind of search — can discover that you exist and that you&apos;re worth their time. It&apos;s the signal your business puts out into the world.

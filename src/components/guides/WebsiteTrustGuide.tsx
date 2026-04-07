@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { WebsiteTrustDiagram } from './WebsiteTrustDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -51,13 +50,6 @@ export function WebsiteTrustGuide() {
         Not because the referral was wrong. Not because you&apos;re bad at what you do. But because your website told a different story than your reputation — and the website won.
       </p>
 
-      <figure className="my-10">
-        <WebsiteTrustDiagram />
-        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-          The trust gap: a 4.9-star reputation above, a missing signal below.
-        </figcaption>
-      </figure>
-
       <PullQuote>
         Your website isn&apos;t just a brochure. It&apos;s the place where every referral, every Google search, and every AI recommendation goes to decide whether to trust you. If it doesn&apos;t match your reputation, you lose customers you&apos;ll never know about.
       </PullQuote>
@@ -67,6 +59,78 @@ export function WebsiteTrustGuide() {
       <p>
         I call this the trust gap: the distance between what customers say about you and what your website communicates. Every business has a reputation — built through years of good work, word of mouth, repeat customers, five-star reviews. And almost every small business I work with has a website that dramatically undersells that reputation.
       </p>
+
+      {/* In-body figure: 2x2 reputation vs website matrix */}
+      <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
+        <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
+          Where most small businesses sit
+        </p>
+
+        <div className="mt-6">
+          <div className="grid grid-cols-[auto_1fr] gap-3">
+            {/* Y-axis label */}
+            <div className="flex items-center justify-end pr-1">
+              <span className="rotate-180 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60" style={{ writingMode: 'vertical-rl' }}>
+                Reputation →
+              </span>
+            </div>
+
+            {/* The 2x2 grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* Top-left: trust gap (highlighted) */}
+              <div className="relative rounded-lg border-2 border-primary/40 bg-primary/5 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  The trust gap
+                </p>
+                <p className="mt-1.5 text-xs leading-snug text-foreground">
+                  Strong reputation, weak website. Referrals don&apos;t convert. Most SMBs live here.
+                </p>
+                <span className="absolute -top-2 -right-2 h-3 w-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
+              </div>
+
+              {/* Top-right: compounding */}
+              <div className="rounded-lg border border-border/20 bg-muted/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  Compounding
+                </p>
+                <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+                  Strong both. Reputation and website tell the same story. Every visitor converts more easily.
+                </p>
+              </div>
+
+              {/* Bottom-left: invisible */}
+              <div className="rounded-lg border border-border/20 bg-muted/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  Invisible
+                </p>
+                <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+                  Weak both. No reputation to leverage, no site to convert with.
+                </p>
+              </div>
+
+              {/* Bottom-right: all hat */}
+              <div className="rounded-lg border border-border/20 bg-muted/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  All hat, no cattle
+                </p>
+                <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+                  Polished site, no proof. Looks great, doesn&apos;t deliver. Returns slow.
+                </p>
+              </div>
+            </div>
+
+            {/* X-axis spacer + label */}
+            <div />
+            <div className="mt-2 text-right text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              Website strength →
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          The teal dot is where almost every small business I audit lands: a reputation worth bragging about, on top of a website that quietly undersells it.
+        </p>
+      </div>
 
       <p>
         The trust gap is invisible to you because you live inside your reputation. You know the quality of your work. You know what clients say. You don&apos;t look at your own website the way a stranger does — with no context, no history, no relationship. Just a first impression.
