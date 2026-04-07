@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { WebsiteTrustDiagram } from './WebsiteTrustDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,13 @@ export function WebsiteTrustGuide() {
       <p>
         Not because the referral was wrong. Not because you&apos;re bad at what you do. But because your website told a different story than your reputation — and the website won.
       </p>
+
+      <figure className="my-10">
+        <WebsiteTrustDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          The trust gap: a 4.9-star reputation above, a missing signal below.
+        </figcaption>
+      </figure>
 
       <PullQuote>
         Your website isn&apos;t just a brochure. It&apos;s the place where every referral, every Google search, and every AI recommendation goes to decide whether to trust you. If it doesn&apos;t match your reputation, you lose customers you&apos;ll never know about.

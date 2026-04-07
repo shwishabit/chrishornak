@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, Search, Bot, Share2, Smartphone, Code2, Shield } from 'lucide-react'
+import { FindabilityDiagram } from './FindabilityDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -57,6 +58,13 @@ export function FindabilityGuide() {
       <p>
         Sarah&apos;s agency was measuring one signal. Her customers were looking at six.
       </p>
+
+      <figure className="my-10">
+        <FindabilityDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          One signal, six places it has to land — Google, ChatGPT, Bing, Perplexity, Gemini, Copilot.
+        </figcaption>
+      </figure>
 
       <PullQuote>
         Findability isn&apos;t a Google problem. It&apos;s an everywhere problem. And most businesses are solving for one platform while their customers have already moved to six.
@@ -160,19 +168,29 @@ export function FindabilityGuide() {
       </PullQuote>
 
       <p>
-        That&apos;s what the rest of this series is about. Each guide tackles one of the strategic realities I see business owners wrestle with — the gaps that no audit tool can measure but that determine whether your marketing actually works.
+        That&apos;s what this series is about. Each guide tackles one of the strategic realities I see business owners wrestle with — the gaps that no audit tool can measure but that determine whether your marketing actually works.
       </p>
 
-      {/* The 5 guide topics as a vertical arc — matches /signal page */}
+      {/* The 6 guide topics as a vertical arc — matches /signal page */}
       <div className="my-10 space-y-4">
         {[
+          {
+            number: '01',
+            headline: 'Findability: The Six Signals Your Site Sends',
+            role: 'You\'re here',
+            desc: 'The technical foundation — what search engines and AI need to see before strategy can do its work.',
+            slug: '/signal/findability',
+            published: true,
+            current: true,
+          },
           {
             number: '02',
             headline: 'You Built a Website. Now It\'s Sitting in the Dark.',
             role: 'Diagnoses',
             desc: 'Your site exists, but search engines can\'t read it and AI can\'t cite it. What your agency never set up — and why it matters.',
             slug: '/signal/search-visibility',
-            published: false,
+            published: true,
+            current: false,
           },
           {
             number: '03',
@@ -180,7 +198,8 @@ export function FindabilityGuide() {
             role: 'Creates urgency',
             desc: 'When someone asks ChatGPT for a recommendation in your space, what comes back? The specific signals your site is missing.',
             slug: '/signal/ai-readiness',
-            published: false,
+            published: true,
+            current: false,
           },
           {
             number: '04',
@@ -188,7 +207,8 @@ export function FindabilityGuide() {
             role: 'Shows the gap',
             desc: 'Customers love you. Your website tells a different story. The gap between reputation and online presence is costing you.',
             slug: '/signal/website-trust',
-            published: false,
+            published: true,
+            current: false,
           },
           {
             number: '05',
@@ -196,7 +216,8 @@ export function FindabilityGuide() {
             role: 'Reframes',
             desc: 'You\'re creating content consistently — and it\'s all fighting for the same keywords. More isn\'t better. Structure is.',
             slug: '/signal/content-structure',
-            published: false,
+            published: true,
+            current: false,
           },
           {
             number: '06',
@@ -204,24 +225,51 @@ export function FindabilityGuide() {
             role: 'Names root cause',
             desc: 'Ads before strategy. Content before positioning. This guide names the root cause — and gives you the sequence.',
             slug: '/signal/strategy-first',
-            published: false,
+            published: true,
+            current: false,
           },
-        ].map((guide) => (
-          <div
-            key={guide.number}
-            className="flex gap-4 rounded-xl border border-border/20 bg-muted/10 p-5 md:p-6"
-          >
-            <span className="font-heading text-lg font-bold text-primary/30">{guide.number}</span>
-            <div>
-              <p className="font-heading text-sm font-bold text-foreground md:text-base">
-                {guide.headline}
-              </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {guide.desc}
-              </p>
+        ].map((guide) => {
+          const cardClass = `flex gap-4 rounded-xl border p-5 md:p-6 transition-colors ${
+            guide.current
+              ? 'border-primary/40 bg-primary/5'
+              : 'border-border/20 bg-muted/10 hover:border-primary/25 hover:bg-muted/20'
+          }`
+          const inner = (
+            <>
+              <span
+                className={`font-heading text-lg font-bold ${
+                  guide.current ? 'text-primary' : 'text-primary/30'
+                }`}
+              >
+                {guide.number}
+              </span>
+              <div className="flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-heading text-sm font-bold text-foreground md:text-base">
+                    {guide.headline}
+                  </p>
+                  {guide.current && (
+                    <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-primary">
+                      You&apos;re here
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {guide.desc}
+                </p>
+              </div>
+            </>
+          )
+          return guide.current ? (
+            <div key={guide.number} className={cardClass}>
+              {inner}
             </div>
-          </div>
-        ))}
+          ) : (
+            <Link key={guide.number} href={guide.slug} className={`guide-cta no-underline ${cardClass}`}>
+              {inner}
+            </Link>
+          )
+        })}
       </div>
 
       <h2 id="how-it-connects">How the two layers work together</h2>

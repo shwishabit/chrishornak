@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight, FileText, Map, Tag, Gauge, Code2, Eye } from 'lucide-react'
+import { SearchVisibilityDiagram } from './SearchVisibilityDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -49,6 +50,13 @@ export function SearchVisibilityGuide() {
       <p>
         His agency had built a beautiful website. Then they&apos;d left the lights off.
       </p>
+
+      <figure className="my-10">
+        <SearchVisibilityDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          A polished site with no signal — the building exists, the lights are off.
+        </figcaption>
+      </figure>
 
       <h2 id="having-a-website-is-not-being-online">Having a website is not the same as being online</h2>
 

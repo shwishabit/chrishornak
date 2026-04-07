@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ContentStructureDiagram } from './ContentStructureDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,13 @@ export function ContentStructureGuide() {
       <p>
         Her content wasn&apos;t underperforming. It was fighting itself.
       </p>
+
+      <figure className="my-10">
+        <ContentStructureDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          Twelve overlapping posts, all chasing the same query — none of them ranking.
+        </figcaption>
+      </figure>
 
       <PullQuote>
         The problem isn&apos;t that you&apos;re not creating enough content. The problem is that every piece you publish is competing with the last one — and Google can&apos;t tell which one matters.

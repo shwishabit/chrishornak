@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { StrategyFirstDiagram } from './StrategyFirstDiagram'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -31,6 +32,13 @@ export function StrategyFirstGuide() {
       <p>
         Every piece was a reasonable investment on its own. Together, they were $192K spent doing the right things in the wrong order.
       </p>
+
+      <figure className="my-10">
+        <StrategyFirstDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          Right things, wrong sequence — the order is the strategy.
+        </figcaption>
+      </figure>
 
       <PullQuote>
         The most expensive mistake in marketing isn&apos;t choosing the wrong tactic. It&apos;s executing the right tactics before the strategy underneath them is clear. Everything works harder than it should — and nothing compounds.

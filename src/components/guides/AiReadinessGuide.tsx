@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { AiReadinessDiagram } from './AiReadinessDiagram'
 import { ArrowRight } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,13 @@ export function AiReadinessGuide() {
       <p>
         His business was invisible in the fastest-growing discovery channel on the internet — and he had no idea it existed.
       </p>
+
+      <figure className="my-10">
+        <AiReadinessDiagram />
+        <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          Ask ChatGPT for a recommendation in your space — what comes back?
+        </figcaption>
+      </figure>
 
       <PullQuote>
         AI isn&apos;t replacing search. It&apos;s adding a new layer on top of it — and most businesses don&apos;t show up in that layer at all.
