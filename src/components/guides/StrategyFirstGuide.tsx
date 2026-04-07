@@ -54,19 +54,87 @@ export function StrategyFirstGuide() {
         It&apos;s like furnishing a house before pouring the foundation. Every individual purchase is fine. The house still falls down.
       </p>
 
-      {/* In-body figure: typical entry vs correct entry */}
+      {/* In-body figure: typical entry vs correct entry — side by side */}
       <div className="my-10 rounded-xl border border-border/20 bg-muted/10 p-6 md:p-8">
         <p className="font-heading text-[11px] font-bold uppercase tracking-widest text-primary/70">
           Where most businesses start
         </p>
 
-        <div className="mt-6 space-y-6">
-          {/* Typical entry */}
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          {/* Typical order column */}
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
               Typical order
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+            <div className="mt-3 space-y-2">
+              {[
+                { n: '01', label: 'Positioning', state: 'skipped' as const },
+                { n: '02', label: 'Messaging', state: 'skipped' as const },
+                { n: '03', label: 'Foundation', state: 'start' as const },
+                { n: '04', label: 'Content', state: 'after' as const },
+                { n: '05', label: 'Distribution', state: 'after' as const },
+                { n: '06', label: 'Optimization', state: 'after' as const },
+              ].map((step) => {
+                const isStart = step.state === 'start'
+                const isSkipped = step.state === 'skipped'
+                return (
+                  <div
+                    key={step.n}
+                    className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
+                      isStart
+                        ? 'border-red-400/40 bg-red-400/10'
+                        : isSkipped
+                          ? 'border-dashed border-border/20 bg-background/20'
+                          : 'border-border/15 bg-background/40'
+                    }`}
+                  >
+                    <span
+                      className={`font-mono text-base font-bold ${
+                        isStart
+                          ? 'text-red-400'
+                          : isSkipped
+                            ? 'text-muted-foreground/30'
+                            : 'text-muted-foreground/60'
+                      }`}
+                    >
+                      {step.n}
+                    </span>
+                    <span
+                      className={`flex-1 text-sm font-medium ${
+                        isSkipped
+                          ? 'text-muted-foreground/40 line-through'
+                          : isStart
+                            ? 'font-semibold text-foreground'
+                            : 'text-foreground/80'
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                    {isStart && (
+                      <span className="rounded-full bg-red-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-400">
+                        Start
+                      </span>
+                    )}
+                    {isSkipped && (
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40">
+                        Skipped
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground/80">
+              Skip the first two. Build the website. Spend the rest of your budget bolting things on.
+            </p>
+          </div>
+
+          {/* Right order column */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+              The right order
+            </p>
+            <div className="mt-3 space-y-2">
               {[
                 { n: '01', label: 'Positioning' },
                 { n: '02', label: 'Messaging' },
@@ -75,79 +143,36 @@ export function StrategyFirstGuide() {
                 { n: '05', label: 'Distribution' },
                 { n: '06', label: 'Optimization' },
               ].map((step) => {
-                const isStart = step.n === '03' // most businesses start at Foundation/website
-                return (
-                  <div
-                    key={step.n}
-                    className={`flex flex-col items-center rounded-md border px-2 py-3 ${
-                      isStart
-                        ? 'border-red-400/40 bg-red-400/10'
-                        : 'border-border/15 bg-background/40 opacity-50'
-                    }`}
-                  >
-                    <span
-                      className={`font-mono text-xs font-bold ${
-                        isStart ? 'text-red-400' : 'text-muted-foreground/50'
-                      }`}
-                    >
-                      {step.n}
-                    </span>
-                    <span
-                      className={`mt-1.5 text-center text-[11px] leading-tight ${
-                        isStart ? 'font-semibold text-foreground' : 'text-muted-foreground/70'
-                      }`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground/80">
-              Skip the first two. Build the website. Spend the rest of your budget bolting things on.
-            </p>
-          </div>
-
-          {/* Correct entry */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
-              The right order
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
-              {[
-                { n: '01', label: 'Positioning' },
-                { n: '02', label: 'Messaging' },
-                { n: '03', label: 'Foundation' },
-                { n: '04', label: 'Content' },
-                { n: '05', label: 'Distribution' },
-                { n: '06', label: 'Optimization' },
-              ].map((step, i) => {
                 const isStart = step.n === '01'
                 return (
                   <div
                     key={step.n}
-                    className={`flex flex-col items-center rounded-md border px-2 py-3 ${
+                    className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
                       isStart
                         ? 'border-primary/50 bg-primary/10'
                         : 'border-border/20 bg-background/40'
                     }`}
-                    style={{ opacity: 0.6 + i * 0.07 }}
                   >
                     <span
-                      className={`font-mono text-xs font-bold ${
+                      className={`font-mono text-base font-bold ${
                         isStart ? 'text-primary' : 'text-primary/60'
                       }`}
                     >
                       {step.n}
                     </span>
-                    <span className="mt-1.5 text-center text-[11px] font-medium leading-tight text-foreground/85">
+                    <span className="flex-1 text-sm font-medium text-foreground/85">
                       {step.label}
                     </span>
+                    {isStart && (
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                        Start
+                      </span>
+                    )}
                   </div>
                 )
               })}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground/80">
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground/80">
               Each step earns the right to the next one. Compounding starts at step one.
             </p>
           </div>
