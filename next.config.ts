@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
   // experimental: {
   //   ppr: 'incremental',
   // },
+  async redirects() {
+    return [
+      {
+        source: '/wheeling-web-design',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {
