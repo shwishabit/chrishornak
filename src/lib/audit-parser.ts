@@ -1,11 +1,11 @@
 /* ── Real HTML Audit Parser ───────────────────────────────────────────────
  *
- * Accepts raw HTML + metadata from the fetch-url API and runs all 35
- * checks across 6 categories. Returns plain data (no React nodes) —
+ * Accepts raw HTML + metadata from the fetch-url API and runs all 42
+ * checks across 7 categories. Returns plain data (no React nodes) —
  * the component maps category names to icons.
  *
  * Categories (in order):
- *   Search (6) · AI (6) · Structure (6) · Social (5) · Mobile (6) · Security (6)
+ *   Search (6) · AI (6) · Structure (6) · Social (6) · Mobile (6) · Security (6) · Accessibility (6)
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { Status, AuditItem } from './audit-scoring'
@@ -887,7 +887,26 @@ function parseSocial(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 5. Social profiles
+  // 5. Open Graph type
+  const ogType = meta(html, 'og:type')
+  if (ogType) {
+    items.push({
+      label: 'Open Graph type',
+      status: 'pass',
+      value: `Type: ${ogType}`,
+      extracted: `<meta property="og:type" content="${ogType}" />`,
+    })
+  } else {
+    items.push({
+      label: 'Open Graph type',
+      status: 'warn',
+      value: 'Not set — defaults to "website"',
+      recommendation:
+        'The og:type tag tells social platforms what kind of content this is — website, article, product, etc. Without it, platforms assume "website," which means blog posts and product pages won\'t get the right preview format. Add: <meta property="og:type" content="website" /> (or "article" for blog posts).',
+    })
+  }
+
+  // 6. Social profiles
   const socialPatterns = [
     { name: 'Facebook', re: /facebook\.com\/(?!sharer)/i },
     { name: 'LinkedIn', re: /linkedin\.com\/(in|company)\//i },
@@ -1250,6 +1269,231 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
   return items
 }
 
+/* ── 7. Accessibility ──────────────────────────────────────────────── */
+
+function parseAccessibility(page: FetchedPage): AuditItem[] {
+  const { html } = page
+  const items: AuditItem[] = []
+
+  // 1. Language attribute — <html lang="...">
+  const langMatch = html.match(/<html[^>]*\slang=["']([^"']*)["']/i)
+  if (langMatch && langMatch[1].trim()) {
+    items.push({
+      label: 'Language attribute',
+      status: 'pass',
+      value: `Language set: ${langMatch[1].trim()}`,
+    })
+  } else {
+    items.push({
+      label: 'Language attribute',
+      status: 'fail',
+      value: 'No language declared',
+      recommendation:
+        'Screen readers need to know what language your page is in to pronounce words correctly. Add lang="en" (or your language) to the <html> tag.',
+    })
+  }
+
+  // 2. Skip navigation link
+  const hasSkipLink =
+    /href=["']#(main|content|main-content|maincontent|skip)["']/i.test(html) ||
+    /class=["'][^"']*(skip|sr-only|visually-hidden)[^"']*["'][^>]*>.*?(skip|jump|go) to/i.test(html)
+  if (hasSkipLink) {
+    items.push({
+      label: 'Skip navigation',
+      status: 'pass',
+      value: 'Skip link found',
+    })
+  } else {
+    items.push({
+      label: 'Skip navigation',
+      status: 'warn',
+      value: 'No skip navigation link',
+      recommendation:
+        'Keyboard users have to tab through every menu link to reach your content. A "Skip to content" link at the top of the page lets them jump straight to what matters.',
+    })
+  }
+
+  // 3. ARIA landmarks — <main>, <nav>, <header>, <footer>, role attributes
+  const hasMain = /<main[\s>]/i.test(html) || /role=["']main["']/i.test(html)
+  const hasNav = /<nav[\s>]/i.test(html) || /role=["']navigation["']/i.test(html)
+  const hasHeader = /<header[\s>]/i.test(html) || /role=["']banner["']/i.test(html)
+  const hasFooter = /<footer[\s>]/i.test(html) || /role=["']contentinfo["']/i.test(html)
+  const landmarks = [
+    hasMain && 'main',
+    hasNav && 'nav',
+    hasHeader && 'header',
+    hasFooter && 'footer',
+  ].filter(Boolean) as string[]
+
+  if (landmarks.length >= 3) {
+    items.push({
+      label: 'Page landmarks',
+      status: 'pass',
+      value: `${landmarks.length} landmark regions found`,
+      extracted: landmarks.join(', '),
+    })
+  } else if (landmarks.length >= 1) {
+    items.push({
+      label: 'Page landmarks',
+      status: 'warn',
+      value: `Only ${landmarks.length} landmark region${landmarks.length > 1 ? 's' : ''} found`,
+      extracted: landmarks.join(', '),
+      recommendation:
+        'Screen readers use landmark regions (<main>, <nav>, <header>, <footer>) to let users jump between sections of your page. Adding more landmarks makes your site easier to navigate.',
+    })
+  } else {
+    items.push({
+      label: 'Page landmarks',
+      status: 'fail',
+      value: 'No landmark regions found',
+      recommendation:
+        'Without landmarks, screen reader users have no way to jump between sections of your page. Use semantic HTML tags like <main>, <nav>, <header>, and <footer> to define the structure.',
+    })
+  }
+
+  // 4. Form labels — inputs should have associated <label> elements
+  const inputs = getAllSelfClosing(html, 'input')
+  const formInputs = inputs.filter((inp) => {
+    const type = attr(inp, 'type')?.toLowerCase() ?? 'text'
+    // Skip hidden, submit, button, image — they don't need visible labels
+    return !['hidden', 'submit', 'button', 'image', 'reset'].includes(type)
+  })
+
+  if (formInputs.length === 0) {
+    items.push({
+      label: 'Form labels',
+      status: 'pass',
+      value: 'No form inputs to check',
+    })
+  } else {
+    // Check each input for label association (id+for, aria-label, aria-labelledby, title, placeholder)
+    let labeled = 0
+    for (const inp of formInputs) {
+      const id = attr(inp, 'id')
+      const ariaLabel = attr(inp, 'aria-label')
+      const ariaLabelledby = attr(inp, 'aria-labelledby')
+      const title = attr(inp, 'title')
+      const hasForLabel = id
+        ? new RegExp(`<label[^>]*\\sfor=["']${escRe(id)}["']`, 'i').test(html)
+        : false
+      // Wrapping label (label > input)
+      const hasWrappingLabel = id
+        ? new RegExp(`<label[^>]*>[\\s\\S]*?id=["']${escRe(id)}["'][\\s\\S]*?</label>`, 'i').test(html)
+        : false
+
+      if (hasForLabel || hasWrappingLabel || ariaLabel || ariaLabelledby || title) {
+        labeled++
+      }
+    }
+
+    const ratio = labeled / formInputs.length
+    if (ratio >= 1) {
+      items.push({
+        label: 'Form labels',
+        status: 'pass',
+        value: `All ${formInputs.length} input${formInputs.length > 1 ? 's' : ''} labeled`,
+      })
+    } else if (ratio >= 0.5) {
+      items.push({
+        label: 'Form labels',
+        status: 'warn',
+        value: `${labeled} of ${formInputs.length} inputs labeled`,
+        score: Math.max(ratio, 0.25),
+        recommendation:
+          'Some form fields are missing labels. Screen readers announce the label when a user focuses an input — without one, they have no idea what to type. Add a <label> with a matching "for" attribute, or use aria-label.',
+      })
+    } else {
+      items.push({
+        label: 'Form labels',
+        status: 'fail',
+        value: labeled === 0 ? 'No inputs have labels' : `Only ${labeled} of ${formInputs.length} inputs labeled`,
+        score: Math.max(ratio, 0),
+        recommendation:
+          'Form fields need labels so screen reader users know what information to enter. Add a <label> element with a "for" attribute matching each input\'s "id", or add an aria-label attribute directly.',
+      })
+    }
+  }
+
+  // 5. Link purpose — generic link text like "click here", "read more", "learn more"
+  const linkRe = /<a\b[^>]*>([\s\S]*?)<\/a>/gi
+  const links: string[] = []
+  let linkMatch
+  while ((linkMatch = linkRe.exec(html)) !== null) {
+    const text = linkMatch[1].replace(/<[^>]+>/g, '').trim().toLowerCase()
+    if (text) links.push(text)
+  }
+  const genericPhrases = /^(click here|here|read more|more|learn more|link|this|click|go|download|submit|info|details|page)$/i
+  const genericLinks = links.filter((t) => genericPhrases.test(t))
+
+  if (links.length === 0) {
+    items.push({
+      label: 'Link purpose',
+      status: 'pass',
+      value: 'No links to check',
+    })
+  } else if (genericLinks.length === 0) {
+    items.push({
+      label: 'Link purpose',
+      status: 'pass',
+      value: 'All links have descriptive text',
+    })
+  } else if (genericLinks.length <= 2) {
+    items.push({
+      label: 'Link purpose',
+      status: 'warn',
+      value: `${genericLinks.length} generic link${genericLinks.length > 1 ? 's' : ''} found`,
+      extracted: [...new Set(genericLinks)].map((t) => `"${t}"`).join(', '),
+      recommendation:
+        'Screen reader users often navigate by tabbing through links. Generic text like "click here" or "read more" tells them nothing about where the link goes. Use descriptive text like "view our pricing" or "read the case study."',
+    })
+  } else {
+    items.push({
+      label: 'Link purpose',
+      status: 'fail',
+      value: `${genericLinks.length} generic links found`,
+      extracted: [...new Set(genericLinks)].slice(0, 5).map((t) => `"${t}"`).join(', '),
+      recommendation:
+        'Too many links use generic text like "click here" or "read more." Screen readers announce link text out of context — a user tabbing through links would just hear "click here, click here, read more." Make each link describe its destination.',
+    })
+  }
+
+  // 6. Focus visibility — detecting outline:none or outline:0 that kills focus indicators
+  const styleBlocks = getAllTags(html, 'style')
+  const allStyles = styleBlocks.join(' ')
+  const killsFocus =
+    /outline\s*:\s*(none|0)\b/i.test(allStyles) &&
+    !/outline\s*:\s*(none|0)[^}]*focus-visible/i.test(allStyles)
+  // Check for :focus { outline: none } pattern without a replacement
+  const focusOutlineKill = /:focus\s*\{[^}]*outline\s*:\s*(none|0)/i.test(allStyles)
+  const hasFocusVisible = /focus-visible/i.test(allStyles)
+
+  if (focusOutlineKill && !hasFocusVisible) {
+    items.push({
+      label: 'Focus indicators',
+      status: 'fail',
+      value: 'Focus outlines removed in CSS',
+      recommendation:
+        'Keyboard users rely on focus outlines to see which element is selected. Removing them with outline:none makes your site unusable for anyone not using a mouse. If the default outline doesn\'t match your design, replace it with a custom focus style — don\'t remove it.',
+    })
+  } else if (killsFocus && !hasFocusVisible) {
+    items.push({
+      label: 'Focus indicators',
+      status: 'warn',
+      value: 'Some outlines removed — verify focus is still visible',
+      recommendation:
+        'Your CSS removes outlines in some places. Make sure keyboard users can still see which element is focused. Consider using :focus-visible to show outlines only for keyboard navigation.',
+    })
+  } else {
+    items.push({
+      label: 'Focus indicators',
+      status: 'pass',
+      value: hasFocusVisible ? 'Custom focus styles detected' : 'Default focus indicators intact',
+    })
+  }
+
+  return items
+}
+
 /* ── Main Parser ─────────────────────────────────────────────────────── */
 
 export function parseAudit(page: FetchedPage): ParsedAuditResult {
@@ -1262,6 +1506,7 @@ export function parseAudit(page: FetchedPage): ParsedAuditResult {
       { name: 'Mobile', items: parseMobile(page) },
       { name: 'Structure', items: parseStructure(page) },
       { name: 'Security', items: parseSecurity(page) },
+      { name: 'Accessibility', items: parseAccessibility(page) },
     ],
   }
 }

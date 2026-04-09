@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Smartphone,
   BotMessageSquare,
+  Accessibility,
   ChevronDown,
 } from 'lucide-react'
 import { AuditTool } from '@/components/sections/AuditTool'
@@ -44,6 +45,11 @@ const categories = [
     title: 'Security',
     icon: <ShieldCheck className="h-4 w-4" />,
     desc: 'Do visitors trust your site? Secure connections, safe links, and the signals that tell both people and search engines your site is safe.',
+  },
+  {
+    title: 'Accessibility',
+    icon: <Accessibility className="h-4 w-4" />,
+    desc: 'Can everyone use your site? Screen reader support, keyboard navigation, form labels, and the basics that determine whether 25% of your audience can access your content.',
   },
 ]
 
@@ -104,14 +110,15 @@ export function AuditPageClient() {
 
           <div className="mx-auto max-w-3xl">
             <h2 className="font-heading text-xl font-bold md:text-2xl">
-              6 signals that determine whether you get found
+              7 signals that determine whether you get found
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               Search engines, AI tools, and real people all evaluate your site differently.
               These are the signals that matter most.
             </p>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {categories.map((item) => (
+            {/* Top row: 4 cards */}
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {categories.slice(0, 4).map((item) => (
                 <div
                   key={item.title}
                   className="group relative rounded-xl border border-border/30 bg-muted/10 p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/25"
@@ -129,7 +136,32 @@ export function AuditPageClient() {
                   >
                     {item.desc}
                   </p>
-                  {/* Mobile: always show description */}
+                  <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground/80 sm:hidden">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {/* Bottom row: 3 cards, centered */}
+            <div className="mt-3 flex justify-center gap-3">
+              {categories.slice(4).map((item) => (
+                <div
+                  key={item.title}
+                  className="group relative w-full rounded-xl border border-border/30 bg-muted/10 p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/25 sm:w-[calc(25%-0.375rem)]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20">
+                      {item.icon}
+                    </span>
+                    <span className="text-sm font-semibold text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
+                      {item.title}
+                    </span>
+                  </div>
+                  <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground/0 transition-all duration-300 group-hover:text-muted-foreground/80 max-h-0 overflow-hidden group-hover:max-h-24 sm:max-h-0 sm:group-hover:max-h-24"
+                     style={{ transitionProperty: 'max-height, color' }}
+                  >
+                    {item.desc}
+                  </p>
                   <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground/80 sm:hidden">
                     {item.desc}
                   </p>

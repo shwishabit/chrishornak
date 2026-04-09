@@ -29,6 +29,11 @@
  *   field exposure, and CSP. Trust signals for both users and search
  *   engines. (Google HTTPS ranking signal, Chrome security indicators)
  *
+ * - Accessibility (10%): Language attribute, skip navigation, ARIA
+ *   landmarks, form labels, link purpose, and focus indicators. If your
+ *   site isn't accessible, you're invisible to ~25% of the population.
+ *   (WCAG 2.1 AA, ADA compliance)
+ *
  * Within each category, every check is weighted equally. Scoring:
  *   pass = 100% | warn = 50% (or custom score) | fail = 0%
  * ─────────────────────────────────────────────────────────────────────────── */
@@ -70,6 +75,7 @@ export const CATEGORY_WEIGHTS: Record<string, number> = {
   'Social': 10,
   'Mobile': 10,
   'Security': 10,
+  'Accessibility': 10,
 }
 
 /** Unified color thresholds: 75+ green, 40-74 amber, <40 red */

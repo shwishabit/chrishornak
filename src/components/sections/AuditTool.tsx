@@ -19,6 +19,7 @@ import {
   BotMessageSquare,
   Share2,
   Link,
+  Accessibility,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { fadeUp, stagger, ease } from '@/lib/animations'
@@ -44,6 +45,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   'Social': <Globe className="h-4 w-4" />,
   'Mobile': <Smartphone className="h-4 w-4" />,
   'Security': <ShieldCheck className="h-4 w-4" />,
+  'Accessibility': <Accessibility className="h-4 w-4" />,
 }
 
 /* ── Status icon ──────────────────────────────────────────────────────────── */
@@ -194,6 +196,11 @@ const CATEGORY_SUMMARIES: Record<string, { good: string; minor: string; major: s
     minor: 'Minor security gaps that could affect trust',
     major: 'Security issues that put visitor trust at risk',
   },
+  'Accessibility': {
+    good: 'Your site is well-structured for assistive technology',
+    minor: 'Some accessibility gaps that could exclude visitors',
+    major: 'Accessibility issues that make your site hard to use for many people',
+  },
 }
 
 function categorySummary(name: string, items: AuditItem[]): string {
@@ -292,6 +299,12 @@ const methodologyCategories = [
     weight: 10,
     why: 'HTTPS has been a Google ranking signal since 2014, and Chrome marks non-HTTPS sites as "Not Secure." We also check whether external links are safe, whether forms submit data securely, and whether a Content Security Policy is in place. Visitors — and search engines — trust secure sites more.',
     sources: 'Google HTTPS Ranking Signal (2014), Chrome Security Indicators, OWASP Guidelines',
+  },
+  {
+    name: 'Accessibility',
+    weight: 10,
+    why: 'About 1 in 4 adults has a disability. If your site isn\'t accessible, you\'re invisible to a quarter of your potential audience — and potentially out of ADA compliance. We check whether screen readers can navigate your page (landmarks, labels, language), whether keyboard users can see what\'s focused, and whether links make sense out of context.',
+    sources: 'WCAG 2.1 AA Guidelines, ADA Title III, CDC Disability Statistics',
   },
 ]
 

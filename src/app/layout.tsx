@@ -121,6 +121,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             '@type': 'Person',
             name: 'Chris Hornak',
             url: siteConfig.domain,
+            image: `${siteConfig.domain}/images/chris-hornak.jpg`,
             jobTitle: 'Marketing Strategist',
             worksFor: [
               { '@type': 'Organization', name: 'Blog Hands' },
