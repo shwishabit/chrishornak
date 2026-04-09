@@ -1356,7 +1356,10 @@ function parseAccessibility(page: FetchedPage): AuditItem[] {
   const formInputs = inputs.filter((inp) => {
     const type = attr(inp, 'type')?.toLowerCase() ?? 'text'
     // Skip hidden, submit, button, image — they don't need visible labels
-    return !['hidden', 'submit', 'button', 'image', 'reset'].includes(type)
+    if (['hidden', 'submit', 'button', 'image', 'reset'].includes(type)) return false
+    // Skip aria-hidden inputs (honeypots, decorative)
+    if (attr(inp, 'aria-hidden') === 'true') return false
+    return true
   })
 
   if (formInputs.length === 0) {

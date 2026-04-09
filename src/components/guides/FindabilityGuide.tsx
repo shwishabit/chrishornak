@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Search, Bot, Share2, Smartphone, Code2, Shield } from 'lucide-react'
+import { ArrowRight, Search, Bot, Share2, Smartphone, Code2, Shield, Accessibility } from 'lucide-react'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -125,22 +125,23 @@ export function FindabilityGuide() {
       <h2 id="the-six-signals">What your signal is actually made of</h2>
 
       <p>
-        When I evaluate a business&apos;s online presence — whether it&apos;s a client engagement or a quick favor for a friend — I look at six things. Not because six is a magic number, but because these are the areas where I&apos;ve watched businesses lose customers they should have won.
+        When I evaluate a business&apos;s online presence — whether it&apos;s a client engagement or a quick favor for a friend — I look at seven things. Not because seven is a magic number, but because these are the areas where I&apos;ve watched businesses lose customers they should have won.
       </p>
 
       <p>
-        These are the same six signals the <Link href="/audit" className="guide-cta text-primary no-underline hover:underline">Findability Check</Link> measures. They&apos;re the technical foundation of your signal — the parts that can be diagnosed, scored, and fixed.
+        These are the same seven signals the <Link href="/audit" className="guide-cta text-primary no-underline hover:underline">Findability Check</Link> measures. They&apos;re the technical foundation of your signal — the parts that can be diagnosed, scored, and fixed.
       </p>
 
-      {/* 6 audit signals as compact cards */}
+      {/* 7 audit signals as compact cards */}
       <div className="my-10 grid gap-4 sm:grid-cols-2">
         {[
           { icon: Search, name: 'Search Visibility', desc: 'Can search engines find, read, and rank your pages? Indexing, metadata, site speed, structured data.' },
           { icon: Bot, name: 'AI Readiness', desc: 'Can AI assistants cite and recommend you? Content clarity, schema markup, entity recognition.' },
           { icon: Share2, name: 'Social Sharing', desc: 'When someone shares your link, does it look credible? Open Graph tags, preview images, platform presence.' },
           { icon: Smartphone, name: 'Mobile Experience', desc: 'Does your site work on the device most people use? Responsive design, tap targets, load time.' },
-          { icon: Code2, name: 'Site Structure', desc: 'Is your site built so machines and humans can navigate it? Headings, internal links, accessibility, sitemaps.' },
+          { icon: Code2, name: 'Site Structure', desc: 'Is your site built so machines and humans can navigate it? Headings, internal links, content depth, sitemaps.' },
           { icon: Shield, name: 'Security', desc: 'Does your site signal trust at a technical level? HTTPS, security headers, safe browsing status.' },
+          { icon: Accessibility, name: 'Accessibility', desc: 'Can everyone use your site? Screen reader support, keyboard navigation, form labels — the basics that 25% of your audience depends on.' },
         ].map(({ icon: Icon, name, desc }) => (
           <div key={name} className="rounded-xl border border-border/20 bg-muted/10 p-5">
             <div className="flex items-center gap-3">
@@ -177,7 +178,7 @@ export function FindabilityGuide() {
               How strong is your signal right now?
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-              The Findability Check scores all six signals in under a minute. See exactly where your foundation is solid — and where it&apos;s leaking.
+              The Findability Check scores all seven signals in under a minute. See exactly where your foundation is solid — and where it&apos;s leaking.
             </p>
             <Link
               href="/audit"
@@ -207,12 +208,12 @@ export function FindabilityGuide() {
         That&apos;s what this series is about. Each guide tackles one of the strategic realities I see business owners wrestle with — the gaps that no audit tool can measure but that determine whether your marketing actually works.
       </p>
 
-      {/* The 6 guide topics as a vertical arc — matches /signal page */}
+      {/* The 6 guide topics as a vertical arc (guides ≠ signals — 6 guides, 7 signals) */}
       <div className="my-10 space-y-4">
         {[
           {
             number: '01',
-            headline: 'Findability: The Six Signals Your Site Sends',
+            headline: 'Findability: The Seven Signals Your Site Sends',
             role: 'You\'re here',
             desc: 'The technical foundation — what search engines and AI need to see before strategy can do its work.',
             slug: '/signal/findability',
@@ -311,7 +312,7 @@ export function FindabilityGuide() {
       <h2 id="how-it-connects">How the two layers work together</h2>
 
       <p>
-        Think of it this way: the six technical signals are the instrument panel. They tell you whether the engine is running, whether the lights are on, whether the door is unlocked. The six guides are the driving lessons — where to go, why it matters, and what most people get wrong along the way.
+        Think of it this way: the seven technical signals are the instrument panel. They tell you whether the engine is running, whether the lights are on, whether the door is unlocked. The six guides are the driving lessons — where to go, why it matters, and what most people get wrong along the way.
       </p>
 
       {/* Connection table */}
@@ -327,7 +328,7 @@ export function FindabilityGuide() {
             { signal: 'AI Readiness', guide: 'Guide 03: AI is recommending competitors', bridge: 'The audit checks schema and structure. The guide shows what AI actually needs to cite you.' },
             { signal: 'Social Sharing', guide: 'Guide 04: Reputation vs. website gap', bridge: 'The audit checks OG tags. The guide addresses why your online presence doesn\'t match reality.' },
             { signal: 'Mobile + Structure', guide: 'Guide 05: Content competing with itself', bridge: 'The audit checks technical health. The guide fixes the content architecture underneath.' },
-            { signal: 'All 6 signals', guide: 'Guide 06: Right things, wrong order', bridge: 'The audit shows what\'s broken. The guide gives you the sequence to fix it.' },
+            { signal: 'All 7 signals', guide: 'Guide 06: Right things, wrong order', bridge: 'The audit shows what\'s broken. The guide gives you the sequence to fix it.' },
           ].map((row) => (
             <div key={row.signal} className="flex flex-col gap-1 px-6 py-3.5 md:flex-row md:items-start md:gap-4">
               <span className="w-32 shrink-0 text-sm font-semibold text-foreground">{row.signal}</span>
@@ -355,7 +356,7 @@ export function FindabilityGuide() {
 
       <div className="my-8 space-y-3">
         {[
-          'Their technical foundation is clean — the audit shows green across all six signals.',
+          'Their technical foundation is clean — the audit shows green across all seven signals.',
           'Their website clearly communicates what they do, who they help, and why someone should choose them.',
           'Search engines rank them. AI assistants recommend them. Both happen because the content is clear and structured.',
           'When someone gets a referral and looks them up, everything they find matches the reputation they just heard about.',
@@ -388,7 +389,7 @@ export function FindabilityGuide() {
           {
             step: '01',
             title: 'Measure your foundation',
-            body: 'Run the Findability Check. It takes under a minute and scores all six technical signals. Start with the red items — those are actively hurting you.',
+            body: 'Run the Findability Check. It takes under a minute and scores all seven technical signals. Start with the red items — those are actively hurting you.',
           },
           {
             step: '02',
@@ -434,7 +435,7 @@ export function FindabilityGuide() {
           Ready to see where you stand?
         </p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-          The Findability Check measures all six signals in under a minute. Start with your score — then read the guide that matters most.
+          The Findability Check measures all seven signals in under a minute. Start with your score — then read the guide that matters most.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link

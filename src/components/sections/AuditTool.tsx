@@ -359,9 +359,9 @@ function MethodologyModal({ onClose }: { onClose: () => void }) {
           <div>
             <h2 className="font-heading text-xl font-bold">How the score works</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your score is a weighted average across 6 categories covering
-              SEO fundamentals and AI search readiness. Categories that have
-              a bigger impact on your visibility are worth more points.
+              Your score is a weighted average across 7 categories covering
+              SEO fundamentals, AI search readiness, and accessibility. Categories
+              that have a bigger impact on your visibility are worth more points.
             </p>
           </div>
           <button
@@ -645,6 +645,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter your website address (e.g. mybusiness.com)"
+            aria-label="Website URL"
             maxLength={MAX_URL_LENGTH}
             required
             className="h-11 w-full rounded-lg border border-border/50 bg-muted/50 pl-10 pr-4 text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none"
@@ -718,6 +719,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                 <select
                   value={activeTab}
                   onChange={(e) => setActiveTab(e.target.value)}
+                  aria-label="Audit category"
                   className="w-full appearance-none rounded-lg border border-border/50 bg-muted/30 px-4 py-3 text-sm font-medium text-foreground focus:border-primary/50 focus:outline-none"
                   style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
                 >

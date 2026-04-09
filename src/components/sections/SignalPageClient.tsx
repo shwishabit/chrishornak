@@ -241,7 +241,7 @@ export function SignalPageClient() {
             transition={{ duration: 0.6, delay: 0.15, ease }}
             className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg"
           >
-            Not sure where to start? The Findability Check measures all six signals in under a minute. Start with your score, then read the guide that matters most.
+            Not sure where to start? The Findability Check measures all seven signals in under a minute. Start with your score, then read the guide that matters most.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}

@@ -228,7 +228,7 @@ export function AuditPageClient() {
                 { number: '02', title: 'Your site is sitting in the dark', desc: 'Title tags, sitemaps, structured data — the infrastructure agencies skip.', href: '/signal/search-visibility' },
                 { number: '03', title: 'AI is recommending competitors', desc: 'What AI needs to cite your business — and why most sites give it nothing.', href: '/signal/ai-readiness' },
                 { number: '04', title: 'Reputation vs. website gap', desc: 'Your reviews are great. Your site tells a different story.', href: '/signal/website-trust' },
-                { number: '01', title: 'The full findability picture', desc: 'How all six signals connect — and where to start.', href: '/signal/findability' },
+                { number: '01', title: 'The full findability picture', desc: 'How all seven signals connect — and where to start.', href: '/signal/findability' },
               ].map((guide) => (
                 <a
                   key={guide.number}

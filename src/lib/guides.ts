@@ -36,11 +36,11 @@ export const guides: Guide[] = [
     faq: [
       {
         question: 'What is findability?',
-        answer: 'Findability is whether a potential customer — at any moment, on any platform, through any kind of search — can discover that your business exists and is worth their time. It combines six technical signals (search visibility, AI readiness, social sharing, mobile experience, site structure, and security) with the strategic clarity that turns visibility into customers.',
+        answer: 'Findability is whether a potential customer — at any moment, on any platform, through any kind of search — can discover that your business exists and is worth their time. It combines seven technical signals (search visibility, AI readiness, social sharing, mobile experience, site structure, security, and accessibility) with the strategic clarity that turns visibility into customers.',
       },
       {
-        question: 'What are the six signals the Findability Check measures?',
-        answer: 'The Findability Check scores six technical signals: Search Visibility (can search engines find and rank you), AI Readiness (can AI assistants cite and recommend you), Social Sharing (do your links look credible when shared), Mobile Experience (does your site work on phones), Site Structure (can machines and humans navigate your site), and Security (does your site signal trust at a technical level).',
+        question: 'What are the seven signals the Findability Check measures?',
+        answer: 'The Findability Check scores seven technical signals: Search Visibility (can search engines find and rank you), AI Readiness (can AI assistants cite and recommend you), Social Sharing (do your links look credible when shared), Mobile Experience (does your site work on phones), Site Structure (can machines and humans navigate your site), Security (does your site signal trust at a technical level), and Accessibility (can everyone use your site, including people with disabilities).',
       },
       {
         question: 'Why is ranking on Google not enough anymore?',
@@ -48,11 +48,11 @@ export const guides: Guide[] = [
       },
       {
         question: 'What is the difference between the technical signals and the strategic guides?',
-        answer: 'The six technical signals are the foundation — they tell you whether search engines, AI, and visitors can access your site. The six strategic guides explain why those signals are weak and what to do about it. A perfect technical score with weak strategy still means no customers. Both layers matter.',
+        answer: 'The seven technical signals are the foundation — they tell you whether search engines, AI, and visitors can access your site. The six strategic guides explain why those signals are weak and what to do about it. A perfect technical score with weak strategy still means no customers. Both layers matter.',
       },
       {
         question: 'Where should I start if I don\'t know how findable my business is?',
-        answer: 'Start with the Findability Check — it scores all six technical signals in under a minute, free, no signup. Look at the red items first. Then read the guide that matches your biggest gap. If you\'d rather have someone evaluate the full picture, that\'s what the conversation is for.',
+        answer: 'Start with the Findability Check — it scores all seven technical signals in under a minute, free, no signup. Look at the red items first. Then read the guide that matches your biggest gap. If you\'d rather have someone evaluate the full picture, that\'s what the conversation is for.',
       },
     ],
   },
