@@ -7,7 +7,7 @@ export const siteConfig: SiteConfig = {
   supportEmail: 'chris@chrishornak.com',
   copyrightYear: new Date().getFullYear(),
   defaultTitle: 'Chris Hornak | Marketing Strategist for Growing Businesses',
-  defaultDescription: 'Marketing strategist helping business owners get found, stay found, and turn visibility into results. Strategy that makes everything else work.',
+  defaultDescription: 'Marketing strategist helping businesses get found, stay found, and turn visibility into results. Strategy that makes everything else work.',
   domain: 'https://chrishornak.com',
 }
 
@@ -22,7 +22,7 @@ export const navLinks: NavLink[] = [
 export const heroContent = {
   headline: 'Your next customer is looking for you.',
   headlineAccent: 'Let\'s make sure you get found.',
-  subheadline: 'I\'m Chris Hornak — marketing strategist for business owners who need to get found, stay found, and turn that visibility into results. I bring the strategy that makes everything else work.',
+  subheadline: 'I\'m Chris Hornak — marketing strategist for businesses that need to get found, stay found, and turn that visibility into results. I bring the strategy that makes everything else work.',
   ctaText: 'Let\'s talk',
   ctaLink: 'https://cal.com/chris-hornak/30min',
 }
@@ -70,7 +70,7 @@ export const testimonials: Testimonial[] = [
 export const homeFaqs = [
   {
     question: 'What kind of businesses do you work with?',
-    answer: 'Everything from local shops getting online for the first time to established companies rethinking their marketing. The common thread is business owners who want a strategy — not just someone to run ads or write blogs.',
+    answer: 'Everything from local shops getting online for the first time to established companies rethinking their marketing. I work with founders, CEOs, and marketing leaders who want a strategy — not just someone to run ads or write blogs.',
   },
   {
     question: 'How is this different from hiring an agency?',
@@ -131,7 +131,7 @@ export const auditFaqs = [
 
 export const connectContent = {
   headline: 'Let\'s figure out what\'s next.',
-  body: 'Whether you need a strategy for growth, a partner to get you online, or just someone to think through a challenge with — I\'m up for the conversation.',
+  body: 'Whether you need a strategy for growth, a partner to sharpen what you already have, or just someone to think through a challenge with — I\'m up for the conversation.',
   ctaText: 'Schedule a call',
   ctaLink: 'https://cal.com/chris-hornak/30min',
 }

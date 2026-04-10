@@ -17,7 +17,7 @@ const approaches = [
   },
   {
     lead: 'Your digital presence becomes a growth engine.',
-    body: 'Whether it\'s your first website or a full rethink, every site I build ships with a clear, trackable call to action — because being found doesn\'t matter if nobody takes the next step. I\'ve built that standard for brands like Giant Eagle and Hertz, and for hundreds of growing businesses.',
+    body: 'Whether it\'s a new build or a full rethink, every site I deliver ships with a clear, trackable call to action — because being found doesn\'t matter if nobody takes the next step. I\'ve built that standard for brands like Giant Eagle and Hertz, and for hundreds of growing businesses.',
     icon: Globe,
   },
   {
