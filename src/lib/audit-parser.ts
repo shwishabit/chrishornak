@@ -267,7 +267,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 4. Canonical URL
+  // 4. Canonical URL — warn instead of fail (many sites work fine without one)
   const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i)
     ?? html.match(/<link[^>]*href=["']([^"']*)["'][^>]*rel=["']canonical["']/i)
   if (canonicalMatch) {
@@ -280,12 +280,10 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   } else {
     items.push({
       label: 'Canonical URL',
-      status: 'fail',
-      value: 'Missing',
+      status: 'warn',
+      value: 'Not set',
       recommendation:
-        'Without a canonical tag, search engines might treat different URLs as duplicate pages. Add one to tell Google which version is the main one: <link rel="canonical" href="' +
-        url +
-        '" />',
+        'A canonical tag tells search engines which version of a page is the main one. Most single-page sites work fine without one, but it\'s good practice — especially if your content is accessible at multiple URLs.',
     })
   }
 
@@ -800,8 +798,9 @@ function parseStructure(page: FetchedPage): AuditItem[] {
     })
     items.push({
       label: 'Main headline (H1)',
-      status: 'warn',
+      status: h1s.length <= 2 ? 'warn' : 'fail',
       value: `${h1s.length} found — should be 1`,
+      score: h1s.length === 2 ? 0.7 : undefined,
       extracted: h1Texts.join(' | '),
       recommendation:
         'Multiple H1 tags can confuse search engines about the main topic of your page. Use one H1 for the page title and H2s for sections.',
@@ -930,7 +929,7 @@ function parseStructure(page: FetchedPage): AuditItem[] {
     }
   }
 
-  // 4. Content depth (moved from AI — it's about the page content itself)
+  // 4. Content depth — graduated: ≥800 pass, 300-799 warn (sliding), 100-299 warn (low), <100 fail
   const words = wordCount(html)
   if (words >= 800) {
     items.push({
@@ -939,20 +938,31 @@ function parseStructure(page: FetchedPage): AuditItem[] {
       value: `~${words.toLocaleString()} words`,
     })
   } else if (words >= 300) {
+    const depthScore = 0.5 + 0.5 * ((words - 300) / 500)
     items.push({
       label: 'Content depth',
       status: 'warn',
       value: `~${words.toLocaleString()} words — could go deeper`,
+      score: depthScore,
       recommendation:
         'Search engines and AI prefer pages with thorough, well-organized content. Expanding your key topics with more detail makes your page more likely to rank and get cited.',
+    })
+  } else if (words >= 100) {
+    items.push({
+      label: 'Content depth',
+      status: 'warn',
+      value: `~${words.toLocaleString()} words — light on content`,
+      score: 0.3,
+      recommendation:
+        'There isn\'t much text for search engines or AI to work with. Some pages are intentionally visual, but adding more context about what you do helps with findability.',
     })
   } else {
     items.push({
       label: 'Content depth',
       status: 'fail',
-      value: `~${words.toLocaleString()} words — thin content`,
+      value: `~${words.toLocaleString()} words — very thin`,
       recommendation:
-        'There isn\'t much content for search engines or AI to work with. Short pages rarely get cited or ranked well. Aim for comprehensive coverage of your main topics.',
+        'This page has almost no readable content. Search engines and AI need text to understand what the page is about. Add meaningful content that describes your business or topic.',
     })
   }
 
@@ -1461,12 +1471,14 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
       label: 'Content security policy',
       status: 'pass',
       value: cspHeader ? 'Set via HTTP header' : 'Set via meta tag',
+      weight: 0.5,
     })
   } else {
     items.push({
       label: 'Content security policy',
       status: 'warn',
       value: 'No CSP found',
+      weight: 0.5,
       recommendation:
         'A Content Security Policy tells browsers which scripts and resources are allowed to run on your page. Without one, your site is more vulnerable to code injection. This is an advanced setting — ask your developer about it.',
     })
@@ -1476,19 +1488,30 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
   const privacyRe = /href=["'][^"']*(privacy|datenschutz|privacidad|legal|terms|policies\/privacy|cookie-policy)[^"']*["']/i
   const privacyTextRe = />([^<]*(privacy policy|privacy notice|cookie policy)[^<]*)</i
   const hasPrivacyLink = privacyRe.test(html) || privacyTextRe.test(html)
+  const hasDataCollection = forms.length > 0 ||
+    /google-analytics|gtag|googletagmanager|facebook\.com\/tr|analytics|pixel/i.test(html)
+
   if (hasPrivacyLink) {
     items.push({
       label: 'Privacy policy',
       status: 'pass',
       value: 'Privacy policy link found',
     })
-  } else {
+  } else if (hasDataCollection) {
     items.push({
       label: 'Privacy policy',
       status: 'fail',
+      value: 'No privacy policy — but page collects data',
+      recommendation:
+        'Your page has forms or analytics tracking, which means you\'re collecting visitor data. A privacy policy is legally required in most regions. Add a link in your footer.',
+    })
+  } else {
+    items.push({
+      label: 'Privacy policy',
+      status: 'warn',
       value: 'No privacy policy link found',
       recommendation:
-        'A privacy policy is legally required in most regions if you collect any visitor data (contact forms, analytics, cookies). It also builds trust. Add a link in your footer.',
+        'A privacy policy builds trust and is legally required if you collect any visitor data. Even if this page doesn\'t collect data directly, it\'s good practice to have one linked.',
     })
   }
 
