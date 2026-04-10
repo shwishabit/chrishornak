@@ -71,8 +71,6 @@ function useTypingPlaceholder(domains: string[]) {
     let timer: ReturnType<typeof setTimeout>
 
     function tick() {
-      if (isGhost) setIsGhost(false)
-
       const domain = domains[idx.current]
 
       if (phase.current === 'typing') {
@@ -91,20 +89,22 @@ function useTypingPlaceholder(domains: string[]) {
         charPos.current--
         setText(domain.slice(0, charPos.current))
         if (charPos.current <= 0) {
+          // Ghost just finished deleting — flip to normal mode
+          if (isFirstCycle.current) {
+            setIsGhost(false)
+            isFirstCycle.current = false
+          }
           idx.current = (idx.current + 1) % domains.length
           phase.current = 'typing'
-          // 4s after ghost deletion, 2s for normal cycles
-          const pause = isFirstCycle.current ? 4000 : 2000
-          isFirstCycle.current = false
-          timer = setTimeout(tick, pause)
+          timer = setTimeout(tick, 2000)
         } else {
           timer = setTimeout(tick, 30)
         }
       }
     }
 
-    // Show ghost text for 4s, then start deleting
-    timer = setTimeout(tick, 4000)
+    // Show ghost text for 2s, then start deleting
+    timer = setTimeout(tick, 2000)
     return () => clearTimeout(timer)
   }, [domains, isGhost])
 
