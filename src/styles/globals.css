@@ -120,6 +120,32 @@ body {
   box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2);
 }
 
+/* -- Audit form glow ------------------------------------------------------ */
+
+@keyframes audit-glow {
+  0%, 100% {
+    border-color: hsl(0 0% 100% / 0.08);
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 0 0 transparent;
+  }
+  50% {
+    border-color: hsl(168 76% 50% / 0.35);
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 20px hsl(168 76% 50% / 0.12);
+  }
+}
+
+.audit-form-glow {
+  animation: audit-glow 2.8s ease-in-out infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.audit-cursor {
+  animation: cursor-blink 1s step-end infinite;
+}
+
 /* -- Focus Styles --------------------------------------------------------- */
 
 :focus-visible {

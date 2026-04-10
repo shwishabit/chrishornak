@@ -49,6 +49,61 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   'Security': <ShieldCheck className="h-4 w-4" />,
 }
 
+/* ── Typewriter placeholder ───────────────────────────────────────────────── */
+
+const EXAMPLE_DOMAINS = [
+  'mybusiness.com',
+  'localshop.co',
+  'yourbrand.com',
+  'bestpizza.com',
+  'janesmith.dev',
+]
+
+function useTypingPlaceholder(domains: string[]) {
+  const [text, setText] = useState('')
+  const idx = useRef(0)
+  const phase = useRef<'typing' | 'pausing' | 'deleting'>('typing')
+  const charPos = useRef(0)
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+
+    function tick() {
+      const domain = domains[idx.current]
+
+      if (phase.current === 'typing') {
+        charPos.current++
+        setText(domain.slice(0, charPos.current))
+        if (charPos.current >= domain.length) {
+          phase.current = 'pausing'
+          timer = setTimeout(tick, 2000)
+        } else {
+          timer = setTimeout(tick, 70 + Math.random() * 40)
+        }
+      } else if (phase.current === 'pausing') {
+        phase.current = 'deleting'
+        timer = setTimeout(tick, 30)
+      } else {
+        charPos.current--
+        setText(domain.slice(0, charPos.current))
+        if (charPos.current <= 0) {
+          idx.current = (idx.current + 1) % domains.length
+          phase.current = 'typing'
+          timer = setTimeout(tick, 400)
+        } else {
+          timer = setTimeout(tick, 30)
+        }
+      }
+    }
+
+    // Start typing immediately — cursor is already blinking via CSS
+    timer = setTimeout(tick, 400)
+    return () => clearTimeout(timer)
+  }, [domains])
+
+  return text
+}
+
 /* ── Status icon ──────────────────────────────────────────────────────────── */
 
 function StatusIcon({ status }: { status: Status }) {
@@ -459,6 +514,12 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [copied, setCopied] = useState(false)
   const [previousResult, setPreviousResult] = useState<AuditHistoryEntry | null>(null)
   const hasAutoRun = useRef(false)
+  const [inputFocused, setInputFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const typedPlaceholder = useTypingPlaceholder(EXAMPLE_DOMAINS)
+
+  // Show animated placeholder + cursor when empty, not focused, and no result
+  const showAnimatedPlaceholder = !url && !inputFocused && !result && !loading
 
   const MAX_URL_LENGTH = 2000
   const COOLDOWN_MS = 5000
@@ -661,20 +722,40 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
         initial="initial"
         animate="animate"
         transition={{ duration: 0.5, ease }}
-        className="glass-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-3"
+        className={`glass-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-3 ${!result && !loading ? 'audit-form-glow' : ''}`}
       >
-        <div className="relative flex-1">
+        <div
+          className="relative flex-1 cursor-text"
+          onClick={() => inputRef.current?.focus()}
+        >
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
+            ref={inputRef}
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Enter your website address (e.g. mybusiness.com)"
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
+            placeholder={inputFocused ? 'mybusiness.com' : ''}
             aria-label="Website URL"
             maxLength={MAX_URL_LENGTH}
             required
             className="h-11 w-full rounded-lg border border-border/50 bg-muted/50 pl-10 pr-4 text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none selection:bg-primary/30 selection:text-foreground"
           />
+          {/* Animated typewriter placeholder */}
+          {showAnimatedPlaceholder && (
+            <div
+              className="pointer-events-none absolute inset-0 flex items-center pl-10 pr-4"
+              aria-hidden="true"
+            >
+              <span className="text-base md:text-sm text-muted-foreground">
+                {typedPlaceholder}
+                <span
+                  className="audit-cursor inline-block w-[8px] h-[1.15em] align-text-bottom bg-primary/80 ml-px rounded-sm"
+                />
+              </span>
+            </div>
+          )}
         </div>
         <Button type="submit" size="md" isLoading={loading} disabled={loading || onCooldown} className="shrink-0">
           {loading ? 'Analyzing…' : 'Check findability'}
