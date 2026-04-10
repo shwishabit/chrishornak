@@ -8,18 +8,20 @@ import {
   ShieldCheck,
   Smartphone,
   BotMessageSquare,
+  Accessibility,
   CheckCircle2,
   AlertTriangle,
   XCircle,
 } from 'lucide-react'
 
 const categories = [
-  { icon: <Search className="h-3.5 w-3.5" />, label: 'Search', score: 75, pass: 4, total: 6 },
-  { icon: <BotMessageSquare className="h-3.5 w-3.5" />, label: 'AI', score: 25, pass: 1, total: 6 },
-  { icon: <Globe className="h-3.5 w-3.5" />, label: 'Social', score: 50, pass: 2, total: 5 },
-  { icon: <Smartphone className="h-3.5 w-3.5" />, label: 'Mobile', score: 80, pass: 5, total: 6 },
-  { icon: <Code2 className="h-3.5 w-3.5" />, label: 'Structure', score: 58, pass: 3, total: 6 },
-  { icon: <ShieldCheck className="h-3.5 w-3.5" />, label: 'Security', score: 58, pass: 3, total: 6 },
+  { icon: <Search className="h-3.5 w-3.5" />, label: 'Search', score: 72, pass: 6, total: 10 },
+  { icon: <BotMessageSquare className="h-3.5 w-3.5" />, label: 'AI', score: 30, pass: 2, total: 8 },
+  { icon: <Code2 className="h-3.5 w-3.5" />, label: 'Structure', score: 58, pass: 4, total: 7 },
+  { icon: <Globe className="h-3.5 w-3.5" />, label: 'Social', score: 50, pass: 3, total: 6 },
+  { icon: <Smartphone className="h-3.5 w-3.5" />, label: 'Mobile', score: 83, pass: 5, total: 6 },
+  { icon: <ShieldCheck className="h-3.5 w-3.5" />, label: 'Security', score: 57, pass: 4, total: 7 },
+  { icon: <Accessibility className="h-3.5 w-3.5" />, label: 'Accessibility', score: 67, pass: 4, total: 6 },
 ]
 
 export function AuditPreview() {
@@ -57,20 +59,20 @@ export function AuditPreview() {
                   strokeDasharray="163" strokeDashoffset="75"
                 />
               </svg>
-              <span className="absolute font-heading text-base font-bold text-amber-400/70">54</span>
+              <span className="absolute font-heading text-base font-bold text-amber-400/70">56</span>
             </div>
             <div className="flex-1">
               <p className="font-heading text-sm font-bold text-foreground/80">Findability Score</p>
               <p className="mt-0.5 text-xs text-muted-foreground/50">yourbusiness.com</p>
               <div className="mt-2 flex gap-4">
                 <span className="flex items-center gap-1 text-[11px] text-emerald-400/70">
-                  <CheckCircle2 className="h-3 w-3" /> 19 passed
+                  <CheckCircle2 className="h-3 w-3" /> 28 passed
                 </span>
                 <span className="flex items-center gap-1 text-[11px] text-amber-400/70">
-                  <AlertTriangle className="h-3 w-3" /> 8 warnings
+                  <AlertTriangle className="h-3 w-3" /> 12 warnings
                 </span>
                 <span className="flex items-center gap-1 text-[11px] text-red-400/70">
-                  <XCircle className="h-3 w-3" /> 8 failed
+                  <XCircle className="h-3 w-3" /> 10 failed
                 </span>
               </div>
             </div>
