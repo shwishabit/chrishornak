@@ -5,7 +5,7 @@
  * the component maps category names to icons.
  *
  * Categories (in order):
- *   Search (10) · AI (7) · Structure (7) · Social (6) · Mobile (6) · Security (7) · Accessibility (6)
+ *   Search (10) · AI (8) · Social (6) · Mobile (6) · Structure (7) · Accessibility (6) · Security (7)
  *
  * Harmful-signal checks (these actively hurt findability):
  *   noindex/nofollow (zeros Search), conflicting canonicals, meta refresh,
@@ -1960,8 +1960,8 @@ export function parseAudit(page: FetchedPage): ParsedAuditResult {
       { name: 'Social', items: parseSocial(page) },
       { name: 'Mobile', items: parseMobile(page) },
       { name: 'Structure', items: parseStructure(page) },
-      { name: 'Security', items: parseSecurity(page) },
       { name: 'Accessibility', items: parseAccessibility(page) },
+      { name: 'Security', items: parseSecurity(page) },
     ],
   }
 }

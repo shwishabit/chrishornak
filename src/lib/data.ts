@@ -105,7 +105,7 @@ export const homeFaqs = [
 export const auditFaqs = [
   {
     question: 'What does the Findability Check measure?',
-    answer: 'It measures the strength of your signal — the 7 areas that determine whether people, search engines, and AI can find your business online: Search visibility, AI readiness, Social sharing, Mobile experience, Site structure, Security, and Accessibility. These are what I look at first when evaluating any business.',
+    answer: 'It measures the strength of your signal — the 7 areas that determine whether people, search engines, and AI can find your business online: Search visibility, AI readiness, Social sharing, Mobile experience, Site structure, Accessibility, and Security. These are what I look at first when evaluating any business.',
   },
   {
     question: 'Is this really free?',

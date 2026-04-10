@@ -2,37 +2,26 @@
  *
  * Weights are based on documented ranking factor research:
  *
- * - Search (25%): Indexability, page title, description, canonical,
- *   crawl permissions, and sitemap. The technical foundation — if search
- *   engines can't find and index your page, nothing else matters.
- *   (Google Search Central, Moz)
+ * 1. Search (25%): Can search engines find you?
+ *    (Google Search Central, Moz)
  *
- * - AI (25%): Structured data, answerable content, trust signals,
- *   citability, entity clarity, and business description. The signals
- *   AI tools use to find, understand, and cite your content.
- *   (Authoritas GEO study, 2024; Princeton LLM citation research)
+ * 2. AI (25%): Does AI know you exist?
+ *    (Authoritas GEO study, 2024; Princeton LLM citation research)
  *
- * - Structure (20%): Heading hierarchy, images, alt text, content depth,
- *   internal links, and link quality. On-page factors that affect crawl
- *   comprehension, featured snippets, accessibility, and UX.
- *   (Ahrefs, SEMrush, WCAG 2.1)
+ * 3. Social (10%): Do you look good when shared?
+ *    (Open Graph Protocol, X Docs)
  *
- * - Social (10%): OG/Twitter tags, share image, and social profile links.
- *   Controls how your page appears in social shares and brand connections.
- *   (Open Graph Protocol, X Docs)
+ * 4. Mobile (10%): Does it work on their phone?
+ *    (Google Mobile-First Indexing, Google Search Central)
  *
- * - Mobile (10%): Viewport, doctype, charset, tap targets, text
- *   readability, and image formats. Mobile-first indexing is Google's
- *   default since 2023. (Google Search Central)
+ * 5. Structure (20%): Is your page well-built?
+ *    (Ahrefs, SEMrush, WCAG 2.1)
  *
- * - Security (10%): HTTPS, safe external links, form security, password
- *   field exposure, and CSP. Trust signals for both users and search
- *   engines. (Google HTTPS ranking signal, Chrome security indicators)
+ * 6. Accessibility (10%): Can everyone use your site?
+ *    (WCAG 2.1 AA, ADA Title III)
  *
- * - Accessibility (10%): Language attribute, skip navigation, ARIA
- *   landmarks, form labels, link purpose, and focus indicators. If your
- *   site isn't accessible, you're invisible to ~25% of the population.
- *   (WCAG 2.1 AA, ADA compliance)
+ * 7. Security (10%): Do visitors trust your site?
+ *    (Google HTTPS ranking signal, Chrome security indicators)
  *
  * Within each category, checks can have individual weights (default 1).
  * Higher weight = more influence on the category score.
@@ -76,11 +65,11 @@ export interface RankedCategory extends AuditCategory {
 export const CATEGORY_WEIGHTS: Record<string, number> = {
   'Search': 25,
   'AI': 25,
-  'Structure': 20,
   'Social': 10,
   'Mobile': 10,
-  'Security': 10,
+  'Structure': 20,
   'Accessibility': 10,
+  'Security': 10,
 }
 
 /** Unified color thresholds: 75+ green, 40-74 amber, <40 red */

@@ -24,12 +24,12 @@ const categories = [
   {
     title: 'AI',
     icon: <BotMessageSquare className="h-4 w-4" />,
-    desc: 'Can AI recommend your business? When someone asks ChatGPT or Google AI for a recommendation, the signals on your site determine whether you get mentioned.',
+    desc: 'Does AI know you exist? When someone asks ChatGPT or Google AI for a recommendation, the signals on your site determine whether you get mentioned.',
   },
   {
     title: 'Social',
     icon: <Globe className="h-4 w-4" />,
-    desc: 'How do you look when someone shares your link? The preview image, title, and description that show up on Facebook, LinkedIn, and in text messages.',
+    desc: 'Do you look good when shared? The preview image, title, and description that show up on Facebook, LinkedIn, Bluesky, and in text messages.',
   },
   {
     title: 'Mobile',
@@ -42,14 +42,14 @@ const categories = [
     desc: 'Is your page well-built? Headings, image descriptions, content depth, internal links — whether search engines and visitors can follow the story your page is telling.',
   },
   {
-    title: 'Security',
-    icon: <ShieldCheck className="h-4 w-4" />,
-    desc: 'Do visitors trust your site? Secure connections, safe links, and the signals that tell both people and search engines your site is safe.',
-  },
-  {
     title: 'Accessibility',
     icon: <Accessibility className="h-4 w-4" />,
     desc: 'Can everyone use your site? Screen reader support, keyboard navigation, form labels, and the basics that determine whether 25% of your audience can access your content.',
+  },
+  {
+    title: 'Security',
+    icon: <ShieldCheck className="h-4 w-4" />,
+    desc: 'Do visitors trust your site? Secure connections, safe links, and the signals that tell both people and search engines your site is safe.',
   },
 ]
 

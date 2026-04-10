@@ -17,11 +17,11 @@ import {
 const categories = [
   { icon: <Search className="h-3.5 w-3.5" />, label: 'Search', score: 72, pass: 6, total: 10 },
   { icon: <BotMessageSquare className="h-3.5 w-3.5" />, label: 'AI', score: 30, pass: 2, total: 8 },
-  { icon: <Code2 className="h-3.5 w-3.5" />, label: 'Structure', score: 58, pass: 4, total: 7 },
   { icon: <Globe className="h-3.5 w-3.5" />, label: 'Social', score: 50, pass: 3, total: 6 },
   { icon: <Smartphone className="h-3.5 w-3.5" />, label: 'Mobile', score: 83, pass: 5, total: 6 },
-  { icon: <ShieldCheck className="h-3.5 w-3.5" />, label: 'Security', score: 57, pass: 4, total: 7 },
+  { icon: <Code2 className="h-3.5 w-3.5" />, label: 'Structure', score: 58, pass: 4, total: 7 },
   { icon: <Accessibility className="h-3.5 w-3.5" />, label: 'Accessibility', score: 67, pass: 4, total: 6 },
+  { icon: <ShieldCheck className="h-3.5 w-3.5" />, label: 'Security', score: 57, pass: 4, total: 7 },
 ]
 
 export function AuditPreview() {

@@ -42,11 +42,11 @@ import { getPreviousResult, saveAuditResult, type AuditHistoryEntry } from '@/li
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   'Search': <Search className="h-4 w-4" />,
   'AI': <BotMessageSquare className="h-4 w-4" />,
-  'Structure': <Code2 className="h-4 w-4" />,
   'Social': <Globe className="h-4 w-4" />,
   'Mobile': <Smartphone className="h-4 w-4" />,
-  'Security': <ShieldCheck className="h-4 w-4" />,
+  'Structure': <Code2 className="h-4 w-4" />,
   'Accessibility': <Accessibility className="h-4 w-4" />,
+  'Security': <ShieldCheck className="h-4 w-4" />,
 }
 
 /* ── Status icon ──────────────────────────────────────────────────────────── */
@@ -268,44 +268,44 @@ const methodologyCategories = [
   {
     name: 'Search',
     weight: 25,
-    why: 'The foundation. If search engines can\'t find, access, and index your page, nothing else matters. We check indexability (the single most critical signal — if this fails, the whole category scores zero), your page title, meta description, canonical URL, crawl permissions, sitemap, URL redirects, and response time.',
+    why: 'Can search engines find you? If they can\'t find, access, and index your page, nothing else matters. We check indexability (the single most critical signal — if this fails, the whole category scores zero), your page title, meta description, canonical URL, crawl permissions, sitemap, URL redirects, and response time.',
     sources: 'Google Search Central, Moz Beginner\'s Guide to SEO',
   },
   {
     name: 'AI',
     weight: 25,
-    why: 'AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, and whether you have an llms.txt file for AI crawlers. This is where most sites have the biggest gap today.',
+    why: 'Does AI know you exist? AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, whether AI crawlers can access your site, and whether you have an llms.txt file. This is where most sites have the biggest gap today.',
     sources: 'Authoritas GEO Study (2024), Princeton LLM Citation Research, Schema.org',
   },
   {
     name: 'Social',
     weight: 10,
-    why: 'Open Graph and Twitter Card tags control how your links appear when shared on Facebook, LinkedIn, and X. Social profile links help search engines connect your brand across the web. These don\'t directly affect Google rankings, but they drive the traffic and engagement that does.',
+    why: 'Do you look good when shared? Open Graph and Twitter Card tags control how your links appear when shared on Facebook, LinkedIn, Bluesky, and X. Social profile links help search engines connect your brand across the web. These don\'t directly affect Google rankings, but they drive the traffic and engagement that does.',
     sources: 'Facebook Open Graph Protocol, X Developer Documentation',
   },
   {
     name: 'Mobile',
     weight: 10,
-    why: 'Google has used mobile-first indexing as the default since 2023, meaning it primarily uses the mobile version of your site for ranking. We check viewport configuration, HTML5 standards, tap target spacing, text readability, and image formats. If your site doesn\'t work well on phones, it doesn\'t work well in Google.',
+    why: 'Does it work on their phone? Google has used mobile-first indexing as the default since 2023, meaning it primarily uses the mobile version of your site for ranking. We check viewport configuration, HTML5 standards, tap target spacing, text readability, and image formats. If your site doesn\'t work well on phones, it doesn\'t work well in Google.',
     sources: 'Google Mobile-First Indexing Documentation, Google Search Central',
   },
   {
     name: 'Structure',
     weight: 20,
-    why: 'How your page is built. Proper heading hierarchy helps Google understand your topic. Image descriptions are an accessibility requirement and a ranking signal. Internal links distribute ranking power across your site. Content depth determines whether search engines and AI have enough to work with.',
+    why: 'Is your page well-built? Proper heading hierarchy helps Google understand your topic. Image descriptions are an accessibility requirement and a ranking signal. Internal links distribute ranking power across your site. Content depth determines whether search engines and AI have enough to work with.',
     sources: 'Ahrefs Featured Snippet Research, SEMrush Ranking Factors, WCAG 2.1 Guidelines',
-  },
-  {
-    name: 'Security',
-    weight: 10,
-    why: 'HTTPS has been a Google ranking signal since 2014, and Chrome marks non-HTTPS sites as "Not Secure." We also check whether external links are safe, whether forms submit data securely, and whether a Content Security Policy is in place. Visitors — and search engines — trust secure sites more.',
-    sources: 'Google HTTPS Ranking Signal (2014), Chrome Security Indicators, OWASP Guidelines',
   },
   {
     name: 'Accessibility',
     weight: 10,
-    why: 'About 1 in 4 adults has a disability. If your site isn\'t accessible, you\'re invisible to a quarter of your potential audience — and potentially out of ADA compliance. We check whether screen readers can navigate your page (landmarks, labels, language), whether keyboard users can see what\'s focused, and whether links make sense out of context.',
+    why: 'Can everyone use your site? About 1 in 4 adults has a disability. If your site isn\'t accessible, you\'re invisible to a quarter of your potential audience — and potentially out of ADA compliance. We check whether screen readers can navigate your page (landmarks, labels, language), whether keyboard users can see what\'s focused, and whether links make sense out of context.',
     sources: 'WCAG 2.1 AA Guidelines, ADA Title III, CDC Disability Statistics',
+  },
+  {
+    name: 'Security',
+    weight: 10,
+    why: 'Do visitors trust your site? HTTPS has been a Google ranking signal since 2014, and Chrome marks non-HTTPS sites as "Not Secure." We also check for mixed content, whether external links are safe, whether forms submit data securely, and whether a Content Security Policy is in place. Visitors — and search engines — trust secure sites more.',
+    sources: 'Google HTTPS Ranking Signal (2014), Chrome Security Indicators, OWASP Guidelines',
   },
 ]
 
