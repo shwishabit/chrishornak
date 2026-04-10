@@ -89,12 +89,13 @@ function useTypingPlaceholder(domains: string[]) {
         charPos.current--
         setText(domain.slice(0, charPos.current))
         if (charPos.current <= 0) {
-          // Ghost just finished deleting — flip to normal mode
+          // Ghost just finished — retype mybusiness.com with "try" prefix
           if (isFirstCycle.current) {
             setIsGhost(false)
             isFirstCycle.current = false
+          } else {
+            idx.current = (idx.current + 1) % domains.length
           }
-          idx.current = (idx.current + 1) % domains.length
           phase.current = 'typing'
           timer = setTimeout(tick, 2000)
         } else {
@@ -103,8 +104,8 @@ function useTypingPlaceholder(domains: string[]) {
       }
     }
 
-    // Show ghost text for 2s, then start deleting
-    timer = setTimeout(tick, 2000)
+    // Show ghost text for 3s, then start deleting
+    timer = setTimeout(tick, 3000)
     return () => clearTimeout(timer)
   }, [domains, isGhost])
 
