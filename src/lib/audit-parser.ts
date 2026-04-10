@@ -319,46 +319,64 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 5. Crawl permissions (robots.txt)
-  if (robotsTxt) {
-    // Check if User-agent: * section has a blanket Disallow: /
-    const wildCardBlocks = robotsTxt
-      .split(/(?=User-agent:)/i)
-      .filter((block) => /User-agent:\s*\*/i.test(block))
-    const blanketDisallow = wildCardBlocks.some((block) =>
-      /Disallow:\s*\/\s*$/m.test(block),
-    )
+  // 5. Crawl permissions (robots.txt) + search engine specific blocks
+  // Parse robots.txt blocks by user-agent
+  const robotsBlocks = robotsTxt
+    ? robotsTxt.split(/(?=User-agent:)/i).map((block) => {
+        const agentMatch = block.match(/User-agent:\s*(.+)/i)
+        const agent = agentMatch?.[1]?.trim().toLowerCase() ?? ''
+        const hasDisallow = /Disallow:\s*\/\s*$/m.test(block)
+        return { agent, hasDisallow, block }
+      })
+    : []
 
-    // Check if robots.txt blocks CSS or JS (prevents Google from rendering)
-    const blocksCssJs = /Disallow:.*\.(css|js)/im.test(robotsTxt)
+  const blanketDisallow = robotsBlocks.some((b) => b.agent === '*' && b.hasDisallow)
+  const blocksCssJs = robotsTxt ? /Disallow:.*\.(css|js)/im.test(robotsTxt) : false
 
-    if (blanketDisallow) {
-      items.push({
-        label: 'Crawl permissions',
-        status: 'fail',
-        value: 'robots.txt blocks all crawlers',
-        extracted: truncate(robotsTxt, 300),
-        recommendation:
-          'Your robots.txt is telling search engines not to crawl your site. If your site should be findable, change "Disallow: /" to "Allow: /".',
-      })
-    } else if (blocksCssJs) {
-      items.push({
-        label: 'Crawl permissions',
-        status: 'fail',
-        value: 'robots.txt blocks CSS or JavaScript files',
-        extracted: truncate(robotsTxt, 300),
-        recommendation:
-          'Your robots.txt is preventing Google from loading your CSS or JavaScript. This means Google sees your raw HTML instead of your actual page — layouts, menus, and content can all appear broken. Remove the lines blocking .css and .js files.',
-      })
-    } else {
-      items.push({
-        label: 'Crawl permissions',
-        status: 'pass',
-        value: 'robots.txt allows crawling',
-        extracted: truncate(robotsTxt, 300),
-      })
-    }
+  // Check for search-engine-specific blocks
+  const searchBots = ['googlebot', 'bingbot', 'yandexbot', 'slurp']
+  const blockedSearchBots = searchBots.filter((bot) =>
+    robotsBlocks.some((b) => b.agent === bot && b.hasDisallow),
+  )
+
+  if (blanketDisallow) {
+    items.push({
+      label: 'Crawl permissions',
+      status: 'fail',
+      value: 'robots.txt blocks all crawlers',
+      extracted: truncate(robotsTxt, 300),
+      recommendation:
+        'Your robots.txt is telling search engines not to crawl your site. If your site should be findable, change "Disallow: /" to "Allow: /".',
+    })
+  } else if (blockedSearchBots.length > 0) {
+    items.push({
+      label: 'Crawl permissions',
+      status: 'fail',
+      value: `robots.txt blocks ${blockedSearchBots.join(', ')}`,
+      extracted: truncate(robotsTxt, 300),
+      weight: 1.5,
+      recommendation:
+        `Your robots.txt is specifically blocking ${blockedSearchBots.join(' and ')} from crawling your site. If this isn't intentional, remove the Disallow rules for ${blockedSearchBots.length > 1 ? 'these crawlers' : 'this crawler'}.`,
+    })
+  } else if (blocksCssJs) {
+    items.push({
+      label: 'Crawl permissions',
+      status: 'fail',
+      value: 'robots.txt blocks CSS or JavaScript files',
+      extracted: truncate(robotsTxt, 300),
+      recommendation:
+        'Your robots.txt is preventing Google from loading your CSS or JavaScript. This means Google sees your raw HTML instead of your actual page — layouts, menus, and content can all appear broken. Remove the lines blocking .css and .js files.',
+    })
   } else {
+    items.push({
+      label: 'Crawl permissions',
+      status: 'pass',
+      value: 'robots.txt allows crawling',
+      extracted: truncate(robotsTxt, 300),
+    })
+  }
+
+  if (!robotsTxt) {
     items.push({
       label: 'Crawl permissions',
       status: 'warn',
@@ -838,7 +856,51 @@ function parseAI(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 7. AI site summary (llms.txt) — low weight, emerging standard
+  // 7. AI crawler access — check if robots.txt blocks AI crawlers
+  const aiCrawlers = [
+    { name: 'GPTBot', agent: 'gptbot' },
+    { name: 'ClaudeBot', agent: 'claudebot' },
+    { name: 'Google-Extended', agent: 'google-extended' },
+    { name: 'CCBot', agent: 'ccbot' },
+    { name: 'PerplexityBot', agent: 'perplexitybot' },
+    { name: 'Bytespider', agent: 'bytespider' },
+  ]
+
+  if (page.robotsTxt) {
+    const aiRobotsBlocks = page.robotsTxt.split(/(?=User-agent:)/i).map((block) => {
+      const agentMatch = block.match(/User-agent:\s*(.+)/i)
+      const agent = agentMatch?.[1]?.trim().toLowerCase() ?? ''
+      const hasDisallow = /Disallow:\s*\/\s*$/m.test(block)
+      return { agent, hasDisallow }
+    })
+
+    const blockedAI = aiCrawlers.filter((crawler) =>
+      aiRobotsBlocks.some((b) => b.agent === crawler.agent && b.hasDisallow),
+    )
+
+    if (blockedAI.length >= 4) {
+      items.push({
+        label: 'AI crawler access',
+        status: 'fail',
+        value: `Blocking ${blockedAI.length} AI crawlers`,
+        extracted: blockedAI.map((c) => c.name).join(', '),
+        weight: 1.5,
+        recommendation:
+          'Your robots.txt is blocking most AI crawlers from accessing your site. This means ChatGPT, Claude, Perplexity, and other AI tools can\'t read your content — and can\'t recommend your business. If you want to be found by AI, remove these blocks.',
+      })
+    } else if (blockedAI.length > 0) {
+      items.push({
+        label: 'AI crawler access',
+        status: 'warn',
+        value: `Blocking ${blockedAI.length} AI crawler${blockedAI.length > 1 ? 's' : ''}`,
+        extracted: blockedAI.map((c) => c.name).join(', '),
+        recommendation:
+          `Your robots.txt blocks ${blockedAI.map((c) => c.name).join(' and ')} from reading your site. These AI tools can\'t recommend you if they can\'t see your content. If this is intentional, you\'re trading AI visibility for content control.`,
+      })
+    }
+  }
+
+  // 8. AI site summary (llms.txt) — low weight, emerging standard
   const llmsTxt = page.llmsTxt?.trim() ?? ''
   if (llmsTxt.length > 50) {
     items.push({
