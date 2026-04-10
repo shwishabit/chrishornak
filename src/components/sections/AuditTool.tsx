@@ -103,8 +103,8 @@ function useTypingPlaceholder(domains: string[]) {
       }
     }
 
-    // Start deleting ghost text immediately
-    timer = setTimeout(tick, 100)
+    // Show ghost text for 4s, then start deleting
+    timer = setTimeout(tick, 4000)
     return () => clearTimeout(timer)
   }, [domains, isGhost])
 
