@@ -750,8 +750,11 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             >
               <span className="text-base md:text-sm text-muted-foreground">
                 <span className="text-muted-foreground/50">try </span>{typedPlaceholder}
-                <span
-                  className="audit-cursor inline-block w-[8px] h-[1.15em] align-text-bottom bg-primary/80 ml-px rounded-sm"
+                <motion.span
+                  className="inline-block w-[8px] h-[1em] align-middle ml-px rounded-sm"
+                  style={{ backgroundColor: '#2dd4a8' }}
+                  animate={{ opacity: [1, 0, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, times: [0, 0.5, 0.5] }}
                 />
               </span>
             </div>
