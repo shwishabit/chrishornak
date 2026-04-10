@@ -65,12 +65,12 @@ function useTypingPlaceholder(domains: string[]) {
   const idx = useRef(0)
   const phase = useRef<'deleting' | 'typing' | 'pausing'>('deleting')
   const charPos = useRef(domains[0].length)
+  const isFirstCycle = useRef(true)
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
 
     function tick() {
-      // First tick: transition from ghost to active
       if (isGhost) setIsGhost(false)
 
       const domain = domains[idx.current]
@@ -93,15 +93,18 @@ function useTypingPlaceholder(domains: string[]) {
         if (charPos.current <= 0) {
           idx.current = (idx.current + 1) % domains.length
           phase.current = 'typing'
-          timer = setTimeout(tick, 2000)
+          // 4s after ghost deletion, 2s for normal cycles
+          const pause = isFirstCycle.current ? 4000 : 2000
+          isFirstCycle.current = false
+          timer = setTimeout(tick, pause)
         } else {
           timer = setTimeout(tick, 30)
         }
       }
     }
 
-    // Ghost text visible for 4s, then start deleting it
-    timer = setTimeout(tick, 4000)
+    // Start deleting ghost text immediately
+    timer = setTimeout(tick, 100)
     return () => clearTimeout(timer)
   }, [domains, isGhost])
 
