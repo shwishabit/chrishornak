@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
   const robotsSitemapMatch = robotsBody.match(/^sitemap:\s*(.+)/im)
   const robotsSitemapUrl = robotsSitemapMatch?.[1]?.trim()
 
-  // Try sitemap paths: robots.txt directive first, then common CMS fallbacks
+  // Try sitemap paths in parallel — take the first valid one
   const sitemapPaths = [
     robotsSitemapUrl,
     `${parsed.origin}/sitemap.xml`,
@@ -195,17 +195,14 @@ export async function GET(request: NextRequest) {
     `${parsed.origin}/wp-sitemap.xml`,
   ].filter((p): p is string => !!p)
 
-  // Deduplicate
   const uniquePaths = [...new Set(sitemapPaths)]
 
-  let sitemapResult: Awaited<ReturnType<typeof safeFetch>> = null
-  for (const path of uniquePaths) {
-    const result = await safeFetch(path, MAX_AUX)
-    if (result && result.status >= 200 && result.status < 400 && result.body.length > 100) {
-      sitemapResult = result
-      break
-    }
-  }
+  const sitemapResults = await Promise.all(
+    uniquePaths.map((path) => safeFetch(path, MAX_AUX)),
+  )
+  const sitemapResult = sitemapResults.find(
+    (r) => r && r.status >= 200 && r.status < 400 && r.body.length > 100,
+  ) ?? null
 
   // Check page response
   if (!pageResult || pageResult.status === 0 || pageResult.status >= 400) {

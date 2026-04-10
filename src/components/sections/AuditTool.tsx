@@ -556,10 +556,16 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     const step1 = setTimeout(() => setProgressStep(1), 1500)
     const step2 = setTimeout(() => setProgressStep(2), 3500)
 
+    // Abort if the API takes too long (large sites may have slow sitemaps)
+    const controller = new AbortController()
+    const fetchTimeout = setTimeout(() => controller.abort(), 20_000)
+
     try {
       const res = await fetch(
         `/api/audit?url=${encodeURIComponent(normalized)}`,
+        { signal: controller.signal },
       )
+      clearTimeout(fetchTimeout)
       const data = await res.json()
       clearTimeout(step1)
       clearTimeout(step2)
@@ -587,9 +593,14 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
       // Update URL for sharing
       const domain = normalized.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
       window.history.replaceState(null, '', `/audit?url=${encodeURIComponent(domain)}`)
-    } catch {
-      setError('Couldn\u2019t reach that site. Double-check the URL and try again \u2014 or drop me a message and I\u2019ll take a look.')
+    } catch (err) {
+      const msg =
+        err instanceof DOMException && err.name === 'AbortError'
+          ? 'That site took too long to respond. It may be blocking automated requests.'
+          : 'Couldn\u2019t reach that site. Double-check the URL and try again \u2014 or drop me a message and I\u2019ll take a look.'
+      setError(msg)
     } finally {
+      clearTimeout(fetchTimeout)
       setLoading(false)
       setCooldownUntil(Date.now() + COOLDOWN_MS)
     }
