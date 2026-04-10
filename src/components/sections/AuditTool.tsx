@@ -76,7 +76,7 @@ function useTypingPlaceholder(domains: string[]) {
         setText(domain.slice(0, charPos.current))
         if (charPos.current >= domain.length) {
           phase.current = 'pausing'
-          timer = setTimeout(tick, 2000)
+          timer = setTimeout(tick, 2400)
         } else {
           timer = setTimeout(tick, 70 + Math.random() * 40)
         }
@@ -89,15 +89,15 @@ function useTypingPlaceholder(domains: string[]) {
         if (charPos.current <= 0) {
           idx.current = (idx.current + 1) % domains.length
           phase.current = 'typing'
-          timer = setTimeout(tick, 400)
+          timer = setTimeout(tick, 1200)
         } else {
           timer = setTimeout(tick, 30)
         }
       }
     }
 
-    // Start typing immediately — cursor is already blinking via CSS
-    timer = setTimeout(tick, 400)
+    // Brief blink before first domain starts typing
+    timer = setTimeout(tick, 1000)
     return () => clearTimeout(timer)
   }, [domains])
 
@@ -749,7 +749,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
               aria-hidden="true"
             >
               <span className="text-base md:text-sm text-muted-foreground">
-                {typedPlaceholder}
+                <span className="text-muted-foreground/50">try </span>{typedPlaceholder}
                 <span
                   className="audit-cursor inline-block w-[8px] h-[1.15em] align-text-bottom bg-primary/80 ml-px rounded-sm"
                 />

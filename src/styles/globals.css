@@ -135,6 +135,14 @@ body {
 
 .audit-form-glow {
   animation: audit-glow 2.8s ease-in-out infinite;
+  cursor: text;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.audit-form-glow:hover {
+  animation: none;
+  border-color: hsl(168 76% 50% / 0.45);
+  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 24px hsl(168 76% 50% / 0.15);
 }
 
 @keyframes cursor-blink {
