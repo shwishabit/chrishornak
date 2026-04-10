@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/(.*)',
+        source: '/((?!docs/).*)',
         headers: [
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
