@@ -146,6 +146,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   )
 
   // 2. Page title (high weight — most visible element in search results)
+  //    Graduated scoring: ≤60 pass, 61-80 warn (sliding score), >80 fail
   const title = getTag(html, 'title')
   if (!title) {
     items.push({
@@ -156,14 +157,29 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       recommendation:
         'The page title is the first thing people see in search results and browser tabs. Every page needs a clear, descriptive title.',
     })
+  } else if (title.length > 80) {
+    items.push({
+      label: 'Page title',
+      status: 'fail',
+      value: `${title.length} characters — will be heavily truncated`,
+      extracted: `<title>${truncate(title, 120)}</title>`,
+      weight: 1.5,
+      recommendation: 'Your title is way too long — Google will cut it off and visitors won\'t see your full message. Aim for under 60 characters.',
+    })
   } else if (title.length > 60) {
+    const titleScore = Math.max((80 - title.length) / 20, 0.1)
     items.push({
       label: 'Page title',
       status: 'warn',
-      value: `${title.length} characters — may be truncated in search results`,
+      value: title.length <= 65
+        ? `${title.length} characters — slightly over, but likely fine`
+        : `${title.length} characters — may be truncated in search results`,
       extracted: `<title>${truncate(title, 120)}</title>`,
+      score: titleScore,
       weight: 1.5,
-      recommendation: 'Keep your title under 60 characters so it displays fully in search results.',
+      recommendation: title.length <= 65
+        ? 'Your title is a few characters over the ideal 60-character limit. It\'ll probably display fine, but trimming it slightly would be safer.'
+        : 'Keep your title under 60 characters so it displays fully in search results.',
     })
   } else {
     items.push({
@@ -175,7 +191,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 3. Page description
+  // 3. Page description — graduated scoring like title
   const desc = meta(html, 'description')
   if (!desc) {
     items.push({
@@ -185,14 +201,28 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       recommendation:
         'The meta description is the short summary that appears under your link in Google. Without one, Google will pick a random snippet from your page. Add a compelling 120–160 character description.',
     })
+  } else if (desc.length > 220) {
+    items.push({
+      label: 'Page description',
+      status: 'fail',
+      value: `${desc.length} characters — will be heavily truncated`,
+      extracted: `<meta name="description" content="${truncate(desc, 200)}" />`,
+      recommendation:
+        'Your description is far too long — Google will cut it off and the message won\'t land. Aim for 120–160 characters.',
+    })
   } else if (desc.length > 160) {
+    const descScore = Math.max((220 - desc.length) / 60, 0.1)
     items.push({
       label: 'Page description',
       status: 'warn',
-      value: `${desc.length} characters — may be cut off in search results`,
+      value: desc.length <= 170
+        ? `${desc.length} characters — slightly over, but likely fine`
+        : `${desc.length} characters — may be cut off in search results`,
       extracted: `<meta name="description" content="${truncate(desc, 200)}" />`,
-      recommendation:
-        'This is the short summary under your link in Google. Keep it under 160 characters so it doesn\'t get cut off.',
+      score: descScore,
+      recommendation: desc.length <= 170
+        ? 'Your description is a few characters over the ideal 160-character limit. It\'ll probably display fine, but trimming it slightly would be safer.'
+        : 'This is the short summary under your link in Google. Keep it under 160 characters so it doesn\'t get cut off.',
     })
   } else if (desc.length < 50) {
     items.push({
