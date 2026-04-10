@@ -147,7 +147,12 @@ function parseSearch(page: FetchedPage): AuditItem[] {
 
   // 2. Page title (high weight — most visible element in search results)
   //    Graduated scoring: ≤60 pass, 61-80 warn (sliding score), >80 fail
+  //    Also flags generic titles ("Homepage") and too-short titles
   const title = getTag(html, 'title')
+  const isGenericTitle = title
+    ? /^(home\s*page|welcome|untitled|website|my site|site title|page title)$/i.test(title.trim())
+    : false
+
   if (!title) {
     items.push({
       label: 'Page title',
@@ -156,6 +161,26 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       weight: 1.5,
       recommendation:
         'The page title is the first thing people see in search results and browser tabs. Every page needs a clear, descriptive title.',
+    })
+  } else if (isGenericTitle) {
+    items.push({
+      label: 'Page title',
+      status: 'fail',
+      value: `Generic title: "${title}"`,
+      extracted: `<title>${title}</title>`,
+      weight: 1.5,
+      recommendation:
+        'Your title says "' + title + '" — that tells search engines and visitors nothing about what this page is. Replace it with a clear, specific title that describes your business or the page content.',
+    })
+  } else if (title.length < 15) {
+    items.push({
+      label: 'Page title',
+      status: 'warn',
+      value: `${title.length} characters — too short to be descriptive`,
+      extracted: `<title>${title}</title>`,
+      weight: 1.5,
+      recommendation:
+        'Your title is very short. A good page title tells searchers exactly what this page is about and why they should click. Aim for 30–60 characters.',
     })
   } else if (title.length > 80) {
     items.push({
