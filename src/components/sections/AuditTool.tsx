@@ -96,8 +96,8 @@ function useTypingPlaceholder(domains: string[]) {
       }
     }
 
-    // Blink for 4s before first domain starts typing
-    timer = setTimeout(tick, 4000)
+    // Blink for 6s before first domain starts typing
+    timer = setTimeout(tick, 6000)
     return () => clearTimeout(timer)
   }, [domains])
 
