@@ -123,7 +123,7 @@ export async function generateMetadata({
       publishedTime: guide.datePublished ? `${guide.datePublished}T00:00:00Z` : undefined,
       modifiedTime: guide.dateModified ? `${guide.dateModified}T00:00:00Z` : undefined,
       authors: ['Chris Hornak'],
-      section: 'The Signal',
+      section: 'Be The Signal',
     },
     twitter: {
       card: 'summary_large_image',
@@ -191,7 +191,7 @@ export default async function GuidePage({
               isPartOf: {
                 '@type': 'WebPage',
                 '@id': `${siteConfig.domain}/signal`,
-                name: 'The Signal',
+                name: 'Be The Signal',
               },
               speakable: {
                 '@type': 'SpeakableSpecification',
@@ -202,7 +202,7 @@ export default async function GuidePage({
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
-                { '@type': 'ListItem', position: 2, name: 'The Signal', item: `${siteConfig.domain}/signal` },
+                { '@type': 'ListItem', position: 2, name: 'Be The Signal', item: `${siteConfig.domain}/signal` },
                 { '@type': 'ListItem', position: 3, name: guide.headline, item: `${siteConfig.domain}/signal/${guide.slug}` },
               ],
             },

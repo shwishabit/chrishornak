@@ -29,7 +29,7 @@ export function SignalPreview() {
           >
             <div>
               <p className="text-sm font-medium uppercase tracking-widest text-primary">
-                The Signal
+                Be The Signal
               </p>
               <div className="mt-2 h-px w-12 bg-primary/40" />
               <p className="mt-6 max-w-lg text-lg text-muted-foreground">

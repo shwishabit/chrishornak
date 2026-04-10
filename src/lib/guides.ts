@@ -1,4 +1,4 @@
-// src/lib/guides.ts — The Signal guide metadata
+// src/lib/guides.ts — Be The Signal guide metadata
 
 export interface GuideFaq {
   question: string

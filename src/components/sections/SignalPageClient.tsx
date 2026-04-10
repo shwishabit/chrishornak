@@ -64,7 +64,7 @@ export function SignalPageClient() {
                 transition={{ duration: 0.6, ease }}
                 className="text-sm font-medium uppercase tracking-widest text-primary"
               >
-                The Signal
+                Be The Signal
               </motion.p>
               <motion.h1
                 variants={fadeUp}

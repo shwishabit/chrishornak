@@ -7,20 +7,20 @@ import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'The Signal',
+  title: 'Be The Signal',
   alternates: {
     canonical: '/signal',
   },
   description:
     'Your business puts out a signal. These 6 guides show you how to strengthen it — so the right people find you, trust you, and choose you.',
   openGraph: {
-    title: 'The Signal — Guides to Getting Found',
+    title: 'Be The Signal — Guides to Getting Found',
     description:
       'Your business puts out a signal. These guides show you how to strengthen it — so the right people find you, trust you, and choose you.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Signal — Guides to Getting Found',
+    title: 'Be The Signal — Guides to Getting Found',
     description:
       'Your business puts out a signal. These guides show you how to strengthen it — so the right people find you, trust you, and choose you.',
   },
@@ -39,7 +39,7 @@ export default function SignalPage() {
           '@type': 'BreadcrumbList',
           itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
-            { '@type': 'ListItem', position: 2, name: 'The Signal', item: `${siteConfig.domain}/signal` },
+            { '@type': 'ListItem', position: 2, name: 'Be The Signal', item: `${siteConfig.domain}/signal` },
           ],
         }}
       />

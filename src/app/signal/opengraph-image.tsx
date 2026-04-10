@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const alt = 'The Signal — Guides from Chris Hornak'
+export const alt = 'Be The Signal — Guides from Chris Hornak'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -47,7 +47,7 @@ export default async function OGImage() {
               color: '#2dd4a8',
             }}
           >
-            The Signal
+            Be The Signal
           </span>
         </div>
 

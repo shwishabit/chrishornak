@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { getGuideBySlug } from '@/lib/guides'
 
-export const alt = 'The Signal — Guide'
+export const alt = 'Be The Signal — Guide'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -11,7 +11,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
   const { slug } = await params
   const guide = getGuideBySlug(slug)
 
-  const headline = guide?.headline ?? 'The Signal'
+  const headline = guide?.headline ?? 'Be The Signal'
   const number = guide?.number ?? '01'
 
   return new ImageResponse(
@@ -48,7 +48,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
               color: '#2dd4a8',
             }}
           >
-            The Signal &middot; Guide {number}
+            Be The Signal &middot; Guide {number}
           </span>
         </div>
 

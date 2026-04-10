@@ -35,7 +35,7 @@ export function GuideLayout({ guide, prev, next, toc, heroVisual, children }: Gu
             </li>
             <li><ChevronRight className="h-3 w-3" /></li>
             <li>
-              <Link href="/signal" className="transition-colors hover:text-foreground">The Signal</Link>
+              <Link href="/signal" className="transition-colors hover:text-foreground">Be The Signal</Link>
             </li>
             <li><ChevronRight className="h-3 w-3" /></li>
             <li className="text-foreground/80 truncate max-w-[200px] md:max-w-none">
@@ -191,7 +191,7 @@ export function GuideLayout({ guide, prev, next, toc, heroVisual, children }: Gu
                 href="/signal"
                 className="group flex items-center gap-2 rounded-xl border border-border/20 bg-muted/10 px-6 py-5 text-sm font-semibold transition-all duration-300 hover:border-primary/25 hover:bg-muted/20 sm:ml-auto sm:text-right"
               >
-                Back to The Signal
+                Back to Be The Signal
                 <ArrowRight className="h-4 w-4 text-primary transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             )}
