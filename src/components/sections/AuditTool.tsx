@@ -60,15 +60,19 @@ const EXAMPLE_DOMAINS = [
 ]
 
 function useTypingPlaceholder(domains: string[]) {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(domains[0])
+  const [isGhost, setIsGhost] = useState(true)
   const idx = useRef(0)
-  const phase = useRef<'typing' | 'pausing' | 'deleting'>('typing')
-  const charPos = useRef(0)
+  const phase = useRef<'deleting' | 'typing' | 'pausing'>('deleting')
+  const charPos = useRef(domains[0].length)
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
 
     function tick() {
+      // First tick: transition from ghost to active
+      if (isGhost) setIsGhost(false)
+
       const domain = domains[idx.current]
 
       if (phase.current === 'typing') {
@@ -96,12 +100,12 @@ function useTypingPlaceholder(domains: string[]) {
       }
     }
 
-    // Blink for 4s before first domain starts typing
+    // Ghost text visible for 4s, then start deleting it
     timer = setTimeout(tick, 4000)
     return () => clearTimeout(timer)
-  }, [domains])
+  }, [domains, isGhost])
 
-  return text
+  return { text, isGhost }
 }
 
 /* ── Status icon ──────────────────────────────────────────────────────────── */
@@ -516,7 +520,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const hasAutoRun = useRef(false)
   const [inputFocused, setInputFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const typedPlaceholder = useTypingPlaceholder(EXAMPLE_DOMAINS)
+  const { text: typedPlaceholder, isGhost } = useTypingPlaceholder(EXAMPLE_DOMAINS)
 
   // Show animated placeholder + cursor when empty, not focused, and no result
   const showAnimatedPlaceholder = !url && !inputFocused && !result && !loading
@@ -748,8 +752,8 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
               className="pointer-events-none absolute inset-0 flex items-center pl-10 pr-4"
               aria-hidden="true"
             >
-              <span className="text-base md:text-sm text-muted-foreground">
-                <span className="text-muted-foreground/50">try </span>{typedPlaceholder}
+              <span className={`text-base md:text-sm transition-opacity duration-300 ${isGhost ? 'text-muted-foreground/30' : 'text-muted-foreground'}`}>
+                <span className={isGhost ? 'hidden' : 'text-muted-foreground/50'}>try </span>{typedPlaceholder}
                 <motion.span
                   className="inline-block w-[8px] h-[1em] align-middle ml-px rounded-sm"
                   style={{ backgroundColor: '#2dd4a8' }}
