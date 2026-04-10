@@ -1,11 +1,11 @@
 /* ── Real HTML Audit Parser ───────────────────────────────────────────────
  *
- * Accepts raw HTML + metadata from the fetch-url API and runs all 42
+ * Accepts raw HTML + metadata from the fetch-url API and runs all 45
  * checks across 7 categories. Returns plain data (no React nodes) —
  * the component maps category names to icons.
  *
  * Categories (in order):
- *   Search (6) · AI (6) · Structure (6) · Social (6) · Mobile (6) · Security (6) · Accessibility (6)
+ *   Search (8) · AI (7) · Structure (6) · Social (6) · Mobile (6) · Security (6) · Accessibility (6)
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { Status, AuditItem } from './audit-scoring'
@@ -22,12 +22,15 @@ export interface ParsedAuditResult {
 
 export interface FetchedPage {
   url: string
+  requestedUrl: string
   html: string
   robotsTxt: string
   sitemapXml: string
+  llmsTxt: string
   headers: Record<string, string>
   statusCode: number
   isHttps: boolean
+  responseTimeMs: number
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -294,6 +297,72 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
+  // 7. URL redirects
+  try {
+    const reqUrl = new URL(page.requestedUrl)
+    const finUrl = new URL(page.url)
+    const issues: string[] = []
+
+    if (reqUrl.protocol !== finUrl.protocol) {
+      issues.push(`${reqUrl.protocol.replace(':', '')} → ${finUrl.protocol.replace(':', '')}`)
+    }
+    if (reqUrl.hostname !== finUrl.hostname) {
+      issues.push(`${reqUrl.hostname} → ${finUrl.hostname}`)
+    }
+    if (reqUrl.pathname.replace(/\/+$/, '') !== finUrl.pathname.replace(/\/+$/, '')) {
+      issues.push(`path changed`)
+    }
+
+    if (issues.length === 0) {
+      items.push({
+        label: 'URL redirects',
+        status: 'pass',
+        value: 'No redirects detected',
+      })
+    } else {
+      items.push({
+        label: 'URL redirects',
+        status: 'warn',
+        value: `Redirect detected (${issues.join(', ')})`,
+        extracted: `${page.requestedUrl} → ${page.url}`,
+        recommendation:
+          'Your URL redirects before reaching the final page. While this works, it adds a small delay and can dilute SEO signals. Update links to point directly to the final URL.',
+      })
+    }
+  } catch {
+    items.push({
+      label: 'URL redirects',
+      status: 'pass',
+      value: 'No redirects detected',
+    })
+  }
+
+  // 8. Response time
+  const ms = page.responseTimeMs
+  if (ms < 1000) {
+    items.push({
+      label: 'Response time',
+      status: 'pass',
+      value: `${ms}ms`,
+    })
+  } else if (ms < 3000) {
+    items.push({
+      label: 'Response time',
+      status: 'warn',
+      value: `${ms}ms — slower than ideal`,
+      recommendation:
+        'Your page took over a second to respond. Slow pages get crawled less frequently by search engines and frustrate visitors. Check your hosting, reduce server-side processing, or add caching.',
+    })
+  } else {
+    items.push({
+      label: 'Response time',
+      status: 'fail',
+      value: `${ms}ms — too slow`,
+      recommendation:
+        'Your page took over 3 seconds to respond. Google allocates a limited crawl budget per site, and slow pages eat into it. This also hurts user experience. Talk to your hosting provider or developer about server performance.',
+    })
+  }
+
   return items
 }
 
@@ -310,22 +379,71 @@ function parseAI(page: FetchedPage): AuditItem[] {
   )
   const hasMicrodata = /itemscope|itemtype/i.test(html)
 
-  // 1. Structured data (JSON-LD or microdata)
+  // 1. Structured data (JSON-LD or microdata) with schema depth validation
+  const SCHEMA_REQUIRED: Record<string, string[]> = {
+    LocalBusiness: ['name', 'address', 'telephone'],
+    Organization: ['name', 'url'],
+    Person: ['name', 'jobTitle'],
+    Product: ['name', 'description', 'offers'],
+    WebSite: ['name', 'url'],
+    Article: ['headline', 'author', 'datePublished'],
+    BlogPosting: ['headline', 'author', 'datePublished'],
+    ProfessionalService: ['name', 'address', 'telephone'],
+    Restaurant: ['name', 'address', 'telephone'],
+  }
+
   if (jsonLdBlocks && jsonLdBlocks.length > 0) {
     const types: string[] = []
+    const missingFields: string[] = []
+
     for (const block of jsonLdBlocks) {
       const content = block.replace(/<[^>]+>/g, '')
-      const typeMatch = content.match(/"@type"\s*:\s*"([^"]+)"/g)
-      if (typeMatch) {
-        types.push(...typeMatch.map((t) => t.replace(/"@type"\s*:\s*"/, '').replace('"', '')))
+      try {
+        const parsed = JSON.parse(content)
+        // Handle @graph arrays and single objects
+        const entities = parsed['@graph'] ? parsed['@graph'] : [parsed]
+        for (const entity of entities) {
+          const type = entity['@type']
+          if (!type) continue
+          // Handle array types like ["LocalBusiness", "Store"]
+          const typeList = Array.isArray(type) ? type : [type]
+          for (const t of typeList) {
+            types.push(t)
+            const required = SCHEMA_REQUIRED[t]
+            if (required) {
+              const missing = required.filter((f) => !entity[f])
+              if (missing.length > 0) {
+                missingFields.push(`${t}: missing ${missing.join(', ')}`)
+              }
+            }
+          }
+        }
+      } catch {
+        // Malformed JSON-LD — still count the block, extract types via regex
+        const typeMatch = content.match(/"@type"\s*:\s*"([^"]+)"/g)
+        if (typeMatch) {
+          types.push(...typeMatch.map((t) => t.replace(/"@type"\s*:\s*"/, '').replace('"', '')))
+        }
       }
     }
-    items.push({
-      label: 'Structured data',
-      status: 'pass',
-      value: `${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} found`,
-      extracted: types.length > 0 ? `Schema types: ${types.join(', ')}` : undefined,
-    })
+
+    if (missingFields.length > 0) {
+      items.push({
+        label: 'Structured data',
+        status: 'warn',
+        value: `${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} — incomplete`,
+        extracted: missingFields.join('; '),
+        recommendation:
+          'Your structured data exists but is missing fields that Google uses for rich results. Filling in the missing fields gives you a better shot at enhanced search listings.',
+      })
+    } else {
+      items.push({
+        label: 'Structured data',
+        status: 'pass',
+        value: `${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} found`,
+        extracted: types.length > 0 ? `Schema types: ${types.join(', ')}` : undefined,
+      })
+    }
   } else if (hasMicrodata) {
     items.push({
       label: 'Structured data',
@@ -544,6 +662,25 @@ function parseAI(page: FetchedPage): AuditItem[] {
       value: 'No clear business description found',
       recommendation:
         'AI tools can\'t figure out what your business does. Your headline and opening content should clearly state what you offer and who you serve — in plain language, not marketing jargon.',
+    })
+  }
+
+  // 7. AI site summary (llms.txt)
+  const llmsTxt = page.llmsTxt?.trim() ?? ''
+  if (llmsTxt.length > 50) {
+    items.push({
+      label: 'AI site summary (llms.txt)',
+      status: 'pass',
+      value: `Found (${llmsTxt.length.toLocaleString()} characters)`,
+      extracted: truncate(llmsTxt, 200),
+    })
+  } else {
+    items.push({
+      label: 'AI site summary (llms.txt)',
+      status: 'warn',
+      value: 'No llms.txt found',
+      recommendation:
+        'llms.txt is an emerging standard that helps AI tools understand your site. It\'s a plain-text file at /llms.txt that describes what your site is about, what pages matter, and how to cite you — like a README for AI crawlers.',
     })
   }
 

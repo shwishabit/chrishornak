@@ -35,6 +35,7 @@ import {
   rankCategories,
 } from '@/lib/audit-scoring'
 import { parseAudit, type FetchedPage } from '@/lib/audit-parser'
+import { getPreviousResult, saveAuditResult, type AuditHistoryEntry } from '@/lib/audit-history'
 
 /* ── Category icon map ───────────────────────────────────────────────── */
 
@@ -267,13 +268,13 @@ const methodologyCategories = [
   {
     name: 'Search',
     weight: 25,
-    why: 'The foundation. If search engines can\'t find, access, and index your page, nothing else matters. We check indexability (the single most critical signal — if this fails, the whole category scores zero), your page title, meta description, canonical URL, crawl permissions, and sitemap.',
+    why: 'The foundation. If search engines can\'t find, access, and index your page, nothing else matters. We check indexability (the single most critical signal — if this fails, the whole category scores zero), your page title, meta description, canonical URL, crawl permissions, sitemap, URL redirects, and response time.',
     sources: 'Google Search Central, Moz Beginner\'s Guide to SEO',
   },
   {
     name: 'AI',
     weight: 25,
-    why: 'AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data, Q&A content, trust signals, citability, entity clarity, and whether AI can quickly understand what your business does. This is where most sites have the biggest gap today.',
+    why: 'AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, and whether you have an llms.txt file for AI crawlers. This is where most sites have the biggest gap today.',
     sources: 'Authoritas GEO Study (2024), Princeton LLM Citation Research, Schema.org',
   },
   {
@@ -456,6 +457,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [progressStep, setProgressStep] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [previousResult, setPreviousResult] = useState<AuditHistoryEntry | null>(null)
   const hasAutoRun = useRef(false)
 
   const MAX_URL_LENGTH = 2000
@@ -547,6 +549,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     setLoading(true)
     setResult(null)
     setError(null)
+    setPreviousResult(null)
     setActiveTab(OVERVIEW_TAB)
     setProgressStep(0)
 
@@ -589,6 +592,17 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
 
       setResult(auditResult)
       onResult?.(true)
+
+      // Before/after tracking — load previous, then save current
+      const prev = getPreviousResult(normalized)
+      setPreviousResult(prev)
+
+      const overall = computeOverallScore(auditResult.categories)
+      const catScores: Record<string, number> = {}
+      for (const cat of rankCategories(auditResult.categories)) {
+        catScores[cat.name] = cat.score
+      }
+      saveAuditResult(normalized, overall, catScores)
 
       // Update URL for sharing
       const domain = normalized.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
@@ -786,7 +800,14 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                 >
                   {/* Score card */}
                   <div className="glass-card flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start sm:gap-10">
-                    <ScoreRing score={overallScore} />
+                    <div className="relative">
+                      <ScoreRing score={overallScore} />
+                      {previousResult && overallScore !== previousResult.overall && (
+                        <span className={`absolute -right-1 -top-1 rounded-full px-1.5 py-0.5 text-xs font-semibold ${overallScore > previousResult.overall ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                          {overallScore > previousResult.overall ? '+' : ''}{overallScore - previousResult.overall}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="font-heading text-xl font-bold">
                         Findability Score
@@ -798,8 +819,10 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       {/* Micro executive summary */}
                       {bestCategory && worstCategory && (
                         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                          {bestCategory.name === worstCategory.name ? (
-                            <>All categories scored similarly — a balanced foundation to build on.</>
+                          {overallScore === 100 ? (
+                            <>Perfect score across every signal. Your site is well-built and highly findable.</>
+                          ) : bestCategory.name === worstCategory.name ? (
+                            <>All categories scored similarly{overallScore >= 75 ? ' — solid across the board' : ' — a balanced foundation to build on'}.</>
                           ) : (
                             <>
                               {bestCategory.name} is your strongest area
@@ -864,6 +887,11 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                             <div className="flex items-center justify-between">
                               <span className="font-heading text-sm font-semibold text-muted-foreground transition-colors group-hover:text-foreground">
                                 {category.name}
+                                {previousResult?.categories[category.name] != null && category.score !== previousResult.categories[category.name] && (
+                                  <span className={`ml-1.5 text-xs font-medium ${category.score > previousResult.categories[category.name] ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {category.score > previousResult.categories[category.name] ? '+' : ''}{Math.round(category.score - previousResult.categories[category.name])}
+                                  </span>
+                                )}
                               </span>
                               <span className="ml-2 shrink-0 text-xs text-muted-foreground/80 transition-colors group-hover:text-muted-foreground hidden sm:inline">
                                 {categorySummary(category.name, category.items)}

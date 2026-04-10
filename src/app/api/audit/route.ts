@@ -75,9 +75,10 @@ async function resolveAndCheck(hostname: string): Promise<boolean> {
 async function safeFetch(
   url: string,
   maxBytes: number,
-): Promise<{ body: string; status: number; finalUrl: string; headers: Headers } | null> {
+): Promise<{ body: string; status: number; finalUrl: string; headers: Headers; responseTimeMs: number } | null> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+  const start = Date.now()
 
   try {
     const res = await fetch(url, {
@@ -97,6 +98,7 @@ async function safeFetch(
       status: res.status,
       finalUrl: res.url,
       headers: res.headers,
+      responseTimeMs: Date.now() - start,
     }
   } catch {
     clearTimeout(timeout)
@@ -180,9 +182,10 @@ export async function GET(request: NextRequest) {
     `${parsed.origin}/wp-sitemap.xml`,
   ]
 
-  const [pageResult, robotsResult, ...sitemapResults] = await Promise.all([
+  const [pageResult, robotsResult, llmsTxtResult, ...sitemapResults] = await Promise.all([
     safeFetch(targetUrl, MAX_HTML),
     safeFetch(`${parsed.origin}/robots.txt`, MAX_AUX),
+    safeFetch(`${parsed.origin}/llms.txt`, MAX_AUX),
     ...commonSitemaps.map((path) => safeFetch(path, MAX_AUX)),
   ])
 
@@ -223,18 +226,24 @@ export async function GET(request: NextRequest) {
     if (val) securityHeaders[key] = val
   }
 
-  // Build response — matches proxy.mjs JSON shape exactly
+  // Build response
   const body = {
     url: pageResult.finalUrl,
+    requestedUrl: targetUrl,
     html: pageResult.body,
     robotsTxt: robotsBody,
     sitemapXml:
       sitemapResult && sitemapResult.status >= 200 && sitemapResult.status < 400
         ? sitemapResult.body
         : '',
+    llmsTxt:
+      llmsTxtResult && llmsTxtResult.status >= 200 && llmsTxtResult.status < 400
+        ? llmsTxtResult.body
+        : '',
     headers: securityHeaders,
     statusCode: pageResult.status,
     isHttps: pageResult.finalUrl.startsWith('https'),
+    responseTimeMs: pageResult.responseTimeMs,
   }
 
   return NextResponse.json(body, { status: 200, headers })
