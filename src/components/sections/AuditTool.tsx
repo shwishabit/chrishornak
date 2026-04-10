@@ -76,7 +76,7 @@ function useTypingPlaceholder(domains: string[]) {
         setText(domain.slice(0, charPos.current))
         if (charPos.current >= domain.length) {
           phase.current = 'pausing'
-          timer = setTimeout(tick, 2400)
+          timer = setTimeout(tick, 2000)
         } else {
           timer = setTimeout(tick, 70 + Math.random() * 40)
         }
@@ -89,15 +89,15 @@ function useTypingPlaceholder(domains: string[]) {
         if (charPos.current <= 0) {
           idx.current = (idx.current + 1) % domains.length
           phase.current = 'typing'
-          timer = setTimeout(tick, 1200)
+          timer = setTimeout(tick, 2000)
         } else {
           timer = setTimeout(tick, 30)
         }
       }
     }
 
-    // Brief blink before first domain starts typing
-    timer = setTimeout(tick, 1000)
+    // Blink for 2s before first domain starts typing
+    timer = setTimeout(tick, 2000)
     return () => clearTimeout(timer)
   }, [domains])
 
