@@ -132,6 +132,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
           extracted: `<meta name="robots" content="${robotsMeta}" />`,
           recommendation:
             'Your page has a "noindex" tag, which tells Google not to show it in search results. If this page should be findable, remove the noindex directive.',
+          weight: 2,
         }
       : {
           label: 'Indexability',
@@ -140,16 +141,18 @@ function parseSearch(page: FetchedPage): AuditItem[] {
           extracted: robotsMeta
             ? `<meta name="robots" content="${robotsMeta}" />`
             : 'No robots meta tag found (defaults to indexable)',
+          weight: 2,
         },
   )
 
-  // 2. Page title
+  // 2. Page title (high weight — most visible element in search results)
   const title = getTag(html, 'title')
   if (!title) {
     items.push({
       label: 'Page title',
       status: 'fail',
       value: 'Missing',
+      weight: 1.5,
       recommendation:
         'The page title is the first thing people see in search results and browser tabs. Every page needs a clear, descriptive title.',
     })
@@ -159,6 +162,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       status: 'warn',
       value: `${title.length} characters — may be truncated in search results`,
       extracted: `<title>${truncate(title, 120)}</title>`,
+      weight: 1.5,
       recommendation: 'Keep your title under 60 characters so it displays fully in search results.',
     })
   } else {
@@ -167,6 +171,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: `${title.length} characters`,
       extracted: `<title>${title}</title>`,
+      weight: 1.5,
     })
   }
 
@@ -301,32 +306,50 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   try {
     const reqUrl = new URL(page.requestedUrl)
     const finUrl = new URL(page.url)
-    const issues: string[] = []
 
-    if (reqUrl.protocol !== finUrl.protocol) {
-      issues.push(`${reqUrl.protocol.replace(':', '')} → ${finUrl.protocol.replace(':', '')}`)
-    }
-    if (reqUrl.hostname !== finUrl.hostname) {
-      issues.push(`${reqUrl.hostname} → ${finUrl.hostname}`)
-    }
-    if (reqUrl.pathname.replace(/\/+$/, '') !== finUrl.pathname.replace(/\/+$/, '')) {
-      issues.push(`path changed`)
-    }
+    // Classify redirect types
+    const httpUpgrade = reqUrl.protocol === 'http:' && finUrl.protocol === 'https:'
+    const wwwNormalize =
+      reqUrl.hostname.replace(/^www\./, '') === finUrl.hostname.replace(/^www\./, '') &&
+      reqUrl.hostname !== finUrl.hostname
+    const pathNormalize =
+      reqUrl.pathname.replace(/\/+$/, '') === finUrl.pathname.replace(/\/+$/, '')
+    const unexpectedHostChange =
+      reqUrl.hostname.replace(/^www\./, '') !== finUrl.hostname.replace(/^www\./, '')
+    const unexpectedPathChange = !pathNormalize
 
-    if (issues.length === 0) {
+    if (unexpectedHostChange || unexpectedPathChange) {
+      // Real redirect issue — different domain or path changed
+      const issues: string[] = []
+      if (unexpectedHostChange) issues.push(`${reqUrl.hostname} → ${finUrl.hostname}`)
+      if (unexpectedPathChange) issues.push('path changed')
+      items.push({
+        label: 'URL redirects',
+        status: 'warn',
+        value: `Unexpected redirect (${issues.join(', ')})`,
+        extracted: `${page.requestedUrl} → ${page.url}`,
+        recommendation:
+          'Your URL redirects to a different destination than expected. This can dilute SEO signals. Make sure links point directly to the final URL.',
+        weight: 0.5,
+      })
+    } else if (httpUpgrade || wwwNormalize) {
+      // Normal domain normalization — this is good practice
+      const details: string[] = []
+      if (httpUpgrade) details.push('HTTPS upgrade')
+      if (wwwNormalize) details.push('www normalization')
       items.push({
         label: 'URL redirects',
         status: 'pass',
-        value: 'No redirects detected',
+        value: `Preferred domain set (${details.join(', ')})`,
+        extracted: `${page.requestedUrl} → ${page.url}`,
+        weight: 0.5,
       })
     } else {
       items.push({
         label: 'URL redirects',
-        status: 'warn',
-        value: `Redirect detected (${issues.join(', ')})`,
-        extracted: `${page.requestedUrl} → ${page.url}`,
-        recommendation:
-          'Your URL redirects before reaching the final page. While this works, it adds a small delay and can dilute SEO signals. Update links to point directly to the final URL.',
+        status: 'pass',
+        value: 'No redirects detected',
+        weight: 0.5,
       })
     }
   } catch {
@@ -334,16 +357,18 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       label: 'URL redirects',
       status: 'pass',
       value: 'No redirects detected',
+      weight: 0.5,
     })
   }
 
-  // 8. Response time
+  // 8. Response time (lower weight — influenced by network/server factors outside the page)
   const ms = page.responseTimeMs
   if (ms < 1000) {
     items.push({
       label: 'Response time',
       status: 'pass',
       value: `${ms}ms`,
+      weight: 0.5,
     })
   } else if (ms < 3000) {
     items.push({
@@ -352,6 +377,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       value: `${ms}ms — slower than ideal`,
       recommendation:
         'Your page took over a second to respond. Slow pages get crawled less frequently by search engines and frustrate visitors. Check your hosting, reduce server-side processing, or add caching.',
+      weight: 0.5,
     })
   } else {
     items.push({
@@ -360,6 +386,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       value: `${ms}ms — too slow`,
       recommendation:
         'Your page took over 3 seconds to respond. Google allocates a limited crawl budget per site, and slow pages eat into it. This also hurts user experience. Talk to your hosting provider or developer about server performance.',
+      weight: 0.5,
     })
   }
 
@@ -433,6 +460,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
         status: 'warn',
         value: `${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} — incomplete`,
         extracted: missingFields.join('; '),
+        weight: 1.5,
         recommendation:
           'Your structured data exists but is missing fields that Google uses for rich results. Filling in the missing fields gives you a better shot at enhanced search listings.',
       })
@@ -442,6 +470,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
         status: 'pass',
         value: `${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} found`,
         extracted: types.length > 0 ? `Schema types: ${types.join(', ')}` : undefined,
+        weight: 1.5,
       })
     }
   } else if (hasMicrodata) {
@@ -449,12 +478,14 @@ function parseAI(page: FetchedPage): AuditItem[] {
       label: 'Structured data',
       status: 'pass',
       value: 'Microdata markup found',
+      weight: 1.5,
     })
   } else {
     items.push({
       label: 'Structured data',
       status: 'fail',
       value: 'None found',
+      weight: 1.5,
       recommendation:
         'Structured data is like a cheat sheet for Google and AI tools. It tells them exactly what your business is, what you offer, and how to display your content in rich search results. Add JSON-LD schema markup.',
     })
@@ -665,7 +696,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 7. AI site summary (llms.txt)
+  // 7. AI site summary (llms.txt) — low weight, emerging standard
   const llmsTxt = page.llmsTxt?.trim() ?? ''
   if (llmsTxt.length > 50) {
     items.push({
@@ -673,12 +704,14 @@ function parseAI(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: `Found (${llmsTxt.length.toLocaleString()} characters)`,
       extracted: truncate(llmsTxt, 200),
+      weight: 0.25,
     })
   } else {
     items.push({
       label: 'AI site summary (llms.txt)',
       status: 'warn',
       value: 'No llms.txt found',
+      weight: 0.25,
       recommendation:
         'llms.txt is an emerging standard that helps AI tools understand your site. It\'s a plain-text file at /llms.txt that describes what your site is about, what pages matter, and how to cite you — like a README for AI crawlers.',
     })
@@ -1260,11 +1293,12 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
   // 1. HTTPS
   items.push(
     isHttps
-      ? { label: 'HTTPS', status: 'pass' as Status, value: 'Secure connection' }
+      ? { label: 'HTTPS', status: 'pass' as Status, value: 'Secure connection', weight: 2 }
       : {
           label: 'HTTPS',
           status: 'fail' as Status,
           value: 'Not using HTTPS',
+          weight: 2,
           recommendation:
             'Your site is not using a secure connection. Browsers mark HTTP sites as "Not Secure" and Google uses HTTPS as a ranking signal. Switch to HTTPS — most hosting providers offer free SSL certificates.',
         },

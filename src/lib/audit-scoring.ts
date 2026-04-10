@@ -34,8 +34,9 @@
  *   site isn't accessible, you're invisible to ~25% of the population.
  *   (WCAG 2.1 AA, ADA compliance)
  *
- * Within each category, every check is weighted equally. Scoring:
- *   pass = 100% | warn = 50% (or custom score) | fail = 0%
+ * Within each category, checks can have individual weights (default 1).
+ * Higher weight = more influence on the category score.
+ * Scoring: pass = 100% | warn = 50% (or custom score) | fail = 0%
  * ─────────────────────────────────────────────────────────────────────────── */
 
 export type Status = 'pass' | 'fail' | 'warn'
@@ -49,6 +50,10 @@ export interface AuditItem {
   /** Override the default status-based score (0–1). Use for percentage-based
    *  checks like "6 of 7 images have alt text" → score: 0.86 */
   score?: number
+  /** Weight of this check within its category (default 1). Higher = more
+   *  influence on the category score. Use 0.5 for informational checks,
+   *  2 for critical ones. */
+  weight?: number
 }
 
 export interface AuditCategory {
@@ -106,8 +111,14 @@ export function scoreCategoryPercent(name: string, items: AuditItem[]): number {
     if (criticalItem && criticalItem.status === 'fail') return 0
   }
 
-  const total = items.reduce((sum, item) => sum + scoreItem(item), 0)
-  return total / items.length
+  let weightedTotal = 0
+  let totalWeight = 0
+  for (const item of items) {
+    const w = item.weight ?? 1
+    weightedTotal += scoreItem(item) * w
+    totalWeight += w
+  }
+  return totalWeight > 0 ? weightedTotal / totalWeight : 0
 }
 
 export function computeOverallScore(categories: AuditCategory[]): number {
