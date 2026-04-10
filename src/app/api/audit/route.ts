@@ -173,13 +173,20 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Fetch page and robots.txt first
-  const [pageResult, robotsResult] = await Promise.all([
+  // Fetch page, robots.txt, and common sitemap paths all in parallel
+  const commonSitemaps = [
+    `${parsed.origin}/sitemap.xml`,
+    `${parsed.origin}/sitemap_index.xml`,
+    `${parsed.origin}/wp-sitemap.xml`,
+  ]
+
+  const [pageResult, robotsResult, ...sitemapResults] = await Promise.all([
     safeFetch(targetUrl, MAX_HTML),
     safeFetch(`${parsed.origin}/robots.txt`, MAX_AUX),
+    ...commonSitemaps.map((path) => safeFetch(path, MAX_AUX)),
   ])
 
-  // Check robots.txt for a Sitemap: directive
+  // Check robots.txt for a Sitemap: directive we haven't already tried
   const robotsBody =
     robotsResult && robotsResult.status >= 200 && robotsResult.status < 400
       ? robotsResult.body
@@ -187,19 +194,11 @@ export async function GET(request: NextRequest) {
   const robotsSitemapMatch = robotsBody.match(/^sitemap:\s*(.+)/im)
   const robotsSitemapUrl = robotsSitemapMatch?.[1]?.trim()
 
-  // Try sitemap paths in parallel — take the first valid one
-  const sitemapPaths = [
-    robotsSitemapUrl,
-    `${parsed.origin}/sitemap.xml`,
-    `${parsed.origin}/sitemap_index.xml`,
-    `${parsed.origin}/wp-sitemap.xml`,
-  ].filter((p): p is string => !!p)
+  // If robots.txt points to a sitemap we didn't already fetch, grab it now
+  if (robotsSitemapUrl && !commonSitemaps.includes(robotsSitemapUrl)) {
+    sitemapResults.push(await safeFetch(robotsSitemapUrl, MAX_AUX))
+  }
 
-  const uniquePaths = [...new Set(sitemapPaths)]
-
-  const sitemapResults = await Promise.all(
-    uniquePaths.map((path) => safeFetch(path, MAX_AUX)),
-  )
   const sitemapResult = sitemapResults.find(
     (r) => r && r.status >= 200 && r.status < 400 && r.body.length > 100,
   ) ?? null
