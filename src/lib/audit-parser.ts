@@ -334,7 +334,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   const blocksCssJs = robotsTxt ? /Disallow:.*\.(css|js)/im.test(robotsTxt) : false
 
   // Check for search-engine-specific blocks
-  const searchBots = ['googlebot', 'bingbot', 'applebot']
+  const searchBots = ['googlebot', 'bingbot', 'applebot', 'yandexbot', 'slurp', 'baiduspider']
   const blockedSearchBots = searchBots.filter((bot) =>
     robotsBlocks.some((b) => b.agent === bot && b.hasDisallow),
   )
