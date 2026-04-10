@@ -17,12 +17,12 @@ const approaches = [
   },
   {
     lead: 'Your digital presence becomes a growth engine.',
-    body: 'Whether it\'s your first website or a full rethink, I build what converts. I\'ve done it for brands like Giant Eagle and Hertz, and for hundreds of growing businesses finding their footing online.',
+    body: 'Whether it\'s your first website or a full rethink, every site I build ships with a clear, trackable call to action — because being found doesn\'t matter if nobody takes the next step. I\'ve built that standard for brands like Giant Eagle and Hertz, and for hundreds of growing businesses.',
     icon: Globe,
   },
   {
     lead: 'And we plan for what\'s next — including what most agencies haven\'t caught up to.',
-    body: 'GEO, AEO, AI visibility — the way people find businesses is changing fast. I build that into the roadmap from day one, not as an afterthought.',
+    body: 'The way people find businesses is changing fast. Rankings you earned last year can disappear when AI starts answering instead of linking. I build AI visibility, GEO, and AEO into the roadmap from day one — so you don\'t wake up invisible.',
     icon: Telescope,
   },
 ]

@@ -85,6 +85,13 @@ export function About() {
                 >
                   Most businesses hire marketers to check boxes. I help them figure out which boxes actually matter.
                 </motion.p>
+                <motion.p
+                  variants={fadeUp}
+                  transition={{ duration: 0.6, ease }}
+                  className="mt-4 text-sm leading-relaxed text-muted-foreground"
+                >
+                  I built the <a href="/audit" className="font-semibold text-foreground underline decoration-primary/40 underline-offset-2 transition-colors hover:decoration-primary">Findability Check</a> to measure what I look at first — the signals that determine whether a business gets found online. My own sites score 100. That&apos;s the baseline, not the goal.
+                </motion.p>
               </motion.div>
             </div>
 

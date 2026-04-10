@@ -113,8 +113,7 @@ export function AuditPageClient() {
               7 signals that determine whether you get found
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Search engines, AI tools, and real people all evaluate your site differently.
-              These are the signals that matter most.
+              Whether you&apos;re checking for the first time, rebuilding after a drop, or wondering why traffic isn&apos;t converting — these are the signals that matter most.
             </p>
             {/* Top row: 4 cards */}
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">

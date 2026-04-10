@@ -1008,8 +1008,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                     : "Here\u2019s where I\u2019d start."}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                I&apos;ll walk through your results with you and map out what
-                to prioritize — no strings attached.
+                A strong score means you&apos;re findable. The next question is whether visitors are taking action. That&apos;s the conversation.
               </p>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
                 <button

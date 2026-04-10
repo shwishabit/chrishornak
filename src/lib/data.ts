@@ -7,7 +7,7 @@ export const siteConfig: SiteConfig = {
   supportEmail: 'chris@chrishornak.com',
   copyrightYear: new Date().getFullYear(),
   defaultTitle: 'Chris Hornak | Marketing Strategist for Growing Businesses',
-  defaultDescription: 'Marketing strategist helping business owners get found and grow. From local shops to scaling companies — strategy that makes everything else work.',
+  defaultDescription: 'Marketing strategist helping business owners get found, stay found, and turn visibility into results. From local shops to scaling companies — strategy that makes everything else work.',
   domain: 'https://chrishornak.com',
 }
 
@@ -22,7 +22,7 @@ export const navLinks: NavLink[] = [
 export const heroContent = {
   headline: 'Your next customer is looking for you.',
   headlineAccent: 'Let\'s make sure you get found.',
-  subheadline: 'I\'m Chris Hornak — marketing strategist for business owners who are done guessing and ready to grow. I bring the strategy that makes everything else work.',
+  subheadline: 'I\'m Chris Hornak — marketing strategist for business owners who need to get found, stay found, and turn that visibility into results. I bring the strategy that makes everything else work.',
   ctaText: 'Let\'s talk',
   ctaLink: 'https://cal.com/chris-hornak/30min',
 }
@@ -92,6 +92,14 @@ export const homeFaqs = [
     question: 'How do I know if I need a strategist or just a doer?',
     answer: 'If you know exactly what needs to happen and just need someone to execute, you need a doer. If things aren\'t working and you\'re not sure why — or you\'re growing and don\'t know what to prioritize — that\'s where strategy makes the difference.',
   },
+  {
+    question: 'My site gets traffic but nobody calls. Is that a marketing problem?',
+    answer: 'Usually it\'s a CTA problem. If visitors can find you but don\'t know what to do next — or the next step isn\'t clear, compelling, and trackable — you\'re leaking the value your marketing already earned. Every site I build has one primary call to action that\'s measurable, so we know exactly what\'s working.',
+  },
+  {
+    question: 'We used to rank well. What changed?',
+    answer: 'Usually one of three things: Google updated its algorithm, a competitor invested in the same keywords, or AI started answering the question instead of linking to your page. The fix depends on which one it is. Run the Findability Check to see where your signals stand now — that\'s the fastest way to diagnose it.',
+  },
 ]
 
 export const auditFaqs = [
@@ -113,7 +121,7 @@ export const auditFaqs = [
   },
   {
     question: 'Does a high score mean my marketing is working?',
-    answer: 'It means the foundation is solid. Findability is one piece — it tells you whether people can find you. Strategy, content, and positioning are what make them stay. This check gives you the starting point.',
+    answer: 'It means the foundation is solid. Findability is one piece — it tells you whether people can find you. Strategy, content, and positioning are what make them stay. This check gives you the starting point. It\'s the same starting point I set for every project I take on.',
   },
   {
     question: 'How often should I run this check?',
