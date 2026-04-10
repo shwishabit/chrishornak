@@ -1,11 +1,15 @@
 /* ── Real HTML Audit Parser ───────────────────────────────────────────────
  *
- * Accepts raw HTML + metadata from the fetch-url API and runs all 45
- * checks across 7 categories. Returns plain data (no React nodes) —
+ * Accepts raw HTML + metadata from the fetch-url API and runs checks
+ * across 7 categories. Returns plain data (no React nodes) —
  * the component maps category names to icons.
  *
  * Categories (in order):
- *   Search (8) · AI (7) · Structure (6) · Social (6) · Mobile (6) · Security (6) · Accessibility (6)
+ *   Search (10) · AI (7) · Structure (7) · Social (6) · Mobile (6) · Security (7) · Accessibility (6)
+ *
+ * Harmful-signal checks (these actively hurt findability):
+ *   noindex/nofollow (zeros Search), conflicting canonicals, meta refresh,
+ *   hidden text, mixed content, internal nofollow, blocked CSS/JS
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { Status, AuditItem } from './audit-scoring'
@@ -120,30 +124,42 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   const { html, robotsTxt, sitemapXml, url } = page
   const items: AuditItem[] = []
 
-  // 1. Indexability
+  // 1. Indexability (critical — noindex or nofollow zeros the category)
   const robotsMeta = meta(html, 'robots') ?? ''
   const isNoindex = /noindex/i.test(robotsMeta)
-  items.push(
-    isNoindex
-      ? {
-          label: 'Indexability',
-          status: 'fail',
-          value: 'Page is blocked from indexing',
-          extracted: `<meta name="robots" content="${robotsMeta}" />`,
-          recommendation:
-            'Your page has a "noindex" tag, which tells Google not to show it in search results. If this page should be findable, remove the noindex directive.',
-          weight: 2,
-        }
-      : {
-          label: 'Indexability',
-          status: 'pass',
-          value: 'Page is indexable',
-          extracted: robotsMeta
-            ? `<meta name="robots" content="${robotsMeta}" />`
-            : 'No robots meta tag found (defaults to indexable)',
-          weight: 2,
-        },
-  )
+  const isNofollow = /nofollow/i.test(robotsMeta)
+
+  if (isNoindex) {
+    items.push({
+      label: 'Indexability',
+      status: 'fail',
+      value: 'Page is blocked from indexing',
+      extracted: `<meta name="robots" content="${robotsMeta}" />`,
+      weight: 2,
+      recommendation:
+        'Your page has a "noindex" tag, which tells Google not to show it in search results. If this page should be findable, remove the noindex directive.',
+    })
+  } else if (isNofollow) {
+    items.push({
+      label: 'Indexability',
+      status: 'fail',
+      value: 'Page blocks all link following',
+      extracted: `<meta name="robots" content="${robotsMeta}" />`,
+      weight: 2,
+      recommendation:
+        'Your page has a "nofollow" directive, which tells Google not to follow any links on this page. This kills your internal linking structure and prevents Google from discovering your other pages. Remove the nofollow directive.',
+    })
+  } else {
+    items.push({
+      label: 'Indexability',
+      status: 'pass',
+      value: 'Page is indexable',
+      extracted: robotsMeta
+        ? `<meta name="robots" content="${robotsMeta}" />`
+        : 'No robots meta tag found (defaults to indexable)',
+      weight: 2,
+    })
+  }
 
   // 2. Page title (high weight — most visible element in search results)
   //    Graduated scoring: ≤60 pass, 61-80 warn (sliding score), >80 fail
@@ -267,15 +283,31 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 4. Canonical URL — warn instead of fail (many sites work fine without one)
-  const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i)
-    ?? html.match(/<link[^>]*href=["']([^"']*)["'][^>]*rel=["']canonical["']/i)
-  if (canonicalMatch) {
+  // 4. Canonical URL — check for missing, conflicting, or self-referencing
+  const canonicalRe1 = /<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/gi
+  const canonicalRe2 = /<link[^>]*href=["']([^"']*)["'][^>]*rel=["']canonical["']/gi
+  const canonicalUrls = new Set<string>()
+  let cMatch
+  while ((cMatch = canonicalRe1.exec(html)) !== null) canonicalUrls.add(cMatch[1])
+  while ((cMatch = canonicalRe2.exec(html)) !== null) canonicalUrls.add(cMatch[1])
+
+  if (canonicalUrls.size > 1) {
+    items.push({
+      label: 'Canonical URL',
+      status: 'fail',
+      value: `${canonicalUrls.size} conflicting canonical tags`,
+      extracted: [...canonicalUrls].join(' vs '),
+      weight: 1.5,
+      recommendation:
+        'Your page has multiple canonical tags pointing to different URLs. This sends contradictory signals to Google — it\'s worse than having no canonical at all. Remove the extras and keep one.',
+    })
+  } else if (canonicalUrls.size === 1) {
+    const canonical = [...canonicalUrls][0]
     items.push({
       label: 'Canonical URL',
       status: 'pass',
       value: 'Set',
-      extracted: `<link rel="canonical" href="${canonicalMatch[1]}" />`,
+      extracted: `<link rel="canonical" href="${canonical}" />`,
     })
   } else {
     items.push({
@@ -297,6 +329,9 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       /Disallow:\s*\/\s*$/m.test(block),
     )
 
+    // Check if robots.txt blocks CSS or JS (prevents Google from rendering)
+    const blocksCssJs = /Disallow:.*\.(css|js)/im.test(robotsTxt)
+
     if (blanketDisallow) {
       items.push({
         label: 'Crawl permissions',
@@ -305,6 +340,15 @@ function parseSearch(page: FetchedPage): AuditItem[] {
         extracted: truncate(robotsTxt, 300),
         recommendation:
           'Your robots.txt is telling search engines not to crawl your site. If your site should be findable, change "Disallow: /" to "Allow: /".',
+      })
+    } else if (blocksCssJs) {
+      items.push({
+        label: 'Crawl permissions',
+        status: 'fail',
+        value: 'robots.txt blocks CSS or JavaScript files',
+        extracted: truncate(robotsTxt, 300),
+        recommendation:
+          'Your robots.txt is preventing Google from loading your CSS or JavaScript. This means Google sees your raw HTML instead of your actual page — layouts, menus, and content can all appear broken. Remove the lines blocking .css and .js files.',
       })
     } else {
       items.push({
@@ -440,6 +484,51 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       recommendation:
         'Your page took over 3 seconds to respond. Google allocates a limited crawl budget per site, and slow pages eat into it. This also hurts user experience. Talk to your hosting provider or developer about server performance.',
       weight: 0.5,
+    })
+  }
+
+  // 9. Meta refresh redirect — outdated, harmful to SEO
+  const metaRefresh = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']([^"']*)["']/i)
+  if (metaRefresh) {
+    const content = metaRefresh[1]
+    const hasRedirect = /url=/i.test(content)
+    if (hasRedirect) {
+      items.push({
+        label: 'Meta refresh redirect',
+        status: 'fail',
+        value: 'Page uses meta refresh to redirect',
+        extracted: `<meta http-equiv="refresh" content="${truncate(content, 100)}" />`,
+        weight: 1.5,
+        recommendation:
+          'Your page uses a meta refresh tag to redirect visitors. This is an outdated technique that search engines handle poorly — it can split your link equity and confuse crawlers. Use a server-side 301 redirect instead.',
+      })
+    }
+  }
+
+  // 10. Hidden text patterns — potential search engine penalty
+  const styleBlocks = getAllTags(html, 'style')
+  const inlineStyles = styleBlocks.join(' ')
+  // Look for suspicious patterns: display:none with large text blocks, font-size:0, text-indent off-screen
+  const hasHiddenTextCSS =
+    /display\s*:\s*none[^}]*\{[^}]*\b(keyword|seo|tag)/i.test(inlineStyles) ||
+    /font-size\s*:\s*0(?:px|em|rem|%)?[^}]*[a-z]{20,}/i.test(inlineStyles)
+  // Check for large hidden divs with lots of text content
+  const hiddenDivs = html.match(/<div[^>]*style=["'][^"']*display\s*:\s*none[^"']*["'][^>]*>[\s\S]{500,}?<\/div>/gi)
+  const hasHiddenTextBlock = hiddenDivs?.some((div) => {
+    const text = div.replace(/<[^>]+>/g, '').trim()
+    // If the hidden block has 200+ characters of text, it's suspicious
+    // (skip if it looks like a menu/nav — those legitimately use display:none)
+    return text.length > 200 && !/nav|menu|modal|dialog|dropdown|accordion|tab/i.test(div)
+  }) ?? false
+
+  if (hasHiddenTextCSS || hasHiddenTextBlock) {
+    items.push({
+      label: 'Hidden text',
+      status: 'fail',
+      value: 'Suspicious hidden text detected',
+      weight: 2,
+      recommendation:
+        'Your page appears to have large blocks of hidden text. Google has penalized sites for hiding text from visitors while showing it to crawlers. If this is intentional (like accordion content), make sure it\'s accessible via user interaction, not permanently hidden.',
     })
   }
 
@@ -1037,6 +1126,34 @@ function parseStructure(page: FetchedPage): AuditItem[] {
     })
   }
 
+  // 7. Nofollow on internal links — actively bleeds PageRank
+  const internalLinkReFull = /<a\b[^>]*href=["']([^"']*?)["'][^>]*>/gi
+  let ilMatch
+  const nofollowedInternal: string[] = []
+  while ((ilMatch = internalLinkReFull.exec(html)) !== null) {
+    const href = ilMatch[1]
+    const fullTag = ilMatch[0]
+    const isInternal =
+      href.startsWith('/') ||
+      href.startsWith('#') ||
+      href.startsWith(parsedUrl.origin)
+    if (isInternal && /rel=["'][^"']*nofollow/i.test(fullTag)) {
+      nofollowedInternal.push(href)
+    }
+  }
+
+  if (nofollowedInternal.length > 0) {
+    items.push({
+      label: 'Internal link nofollow',
+      status: 'fail',
+      value: `${nofollowedInternal.length} internal link${nofollowedInternal.length > 1 ? 's' : ''} marked nofollow`,
+      extracted: nofollowedInternal.slice(0, 5).join(', '),
+      weight: 1.5,
+      recommendation:
+        'Some links to your own pages have rel="nofollow", which tells Google not to follow them. This bleeds ranking power from your own site. Remove the nofollow attribute from internal links.',
+    })
+  }
+
   return items
 }
 
@@ -1369,7 +1486,31 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
         },
   )
 
-  // 2. Safe external links
+  // 2. Mixed content — HTTPS page loading HTTP resources (browsers block these)
+  if (isHttps) {
+    const httpResources = html.match(/(?:src|href)=["']http:\/\/[^"']+["']/gi) ?? []
+    // Filter out mailto: and tel: false positives, and only flag actual resource loads
+    const realMixed = httpResources.filter((r) =>
+      !/:\/\/[^"']*\.(pdf|doc|docx)["']/i.test(r) // PDFs/docs linking is fine
+    )
+    if (realMixed.length > 0) {
+      const examples = realMixed.slice(0, 3).map((r) => {
+        const urlMatch = r.match(/["'](http:\/\/[^"']+)["']/i)
+        return urlMatch ? urlMatch[1].split('/').pop() ?? urlMatch[1] : r
+      })
+      items.push({
+        label: 'Mixed content',
+        status: 'fail',
+        value: `${realMixed.length} resource${realMixed.length > 1 ? 's' : ''} loaded over HTTP`,
+        extracted: examples.join(', '),
+        weight: 1.5,
+        recommendation:
+          'Your page is HTTPS but loads some resources (images, scripts, stylesheets) over insecure HTTP. Browsers block these, so images may not display and scripts may not run. Change all resource URLs to use https://.',
+      })
+    }
+  }
+
+  // 3. Safe external links
   const extLinkRe = /<a\b[^>]*href=["']https?:\/\/[^"']*["'][^>]*>/gi
   const extLinks = [...html.matchAll(extLinkRe)].map((m) => m[0])
   let parsedOrigin: string
@@ -1407,7 +1548,7 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 3. Form action security
+  // 4. Form action security
   const forms = getAllTags(html, 'form')
   const insecureForms = forms.filter((form) => {
     const action = attr(form, 'action') ?? ''
@@ -1435,7 +1576,7 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 4. Password fields
+  // 5. Password fields
   const passwordFields = getAllSelfClosing(html, 'input').filter(
     (input) => attr(input, 'type')?.toLowerCase() === 'password',
   )
