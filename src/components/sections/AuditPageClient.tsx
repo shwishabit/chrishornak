@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import {
   Search,
   Globe,
@@ -12,20 +11,9 @@ import {
   Accessibility,
   ChevronDown,
 } from 'lucide-react'
+import { AuditTool } from '@/components/sections/AuditTool'
 import { AuditPreview } from '@/components/sections/AuditPreview'
 import { auditFaqs } from '@/lib/data'
-
-const AuditTool = dynamic(
-  () => import('@/components/sections/AuditTool').then((m) => ({ default: m.AuditTool })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="mx-auto max-w-2xl">
-        <div className="h-14 animate-pulse rounded-full border border-border/30 bg-muted/10" />
-      </div>
-    ),
-  }
-)
 
 const categories = [
   {
