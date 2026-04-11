@@ -142,11 +142,11 @@ export function AuditPageClient() {
               ))}
             </div>
             {/* Bottom row: 3 cards, centered */}
-            <div className="mt-3 flex justify-center gap-3">
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
               {categories.slice(4).map((item) => (
                 <div
                   key={item.title}
-                  className="group relative w-full rounded-xl border border-border/30 bg-muted/10 p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/25 sm:w-[calc(25%-0.375rem)]"
+                  className="group relative w-[calc(50%-0.375rem)] rounded-xl border border-border/30 bg-muted/10 p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/25 sm:w-[calc(25%-0.375rem)]"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20">
