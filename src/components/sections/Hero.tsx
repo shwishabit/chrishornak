@@ -3,23 +3,14 @@
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { heroContent } from '@/lib/data'
-import { fadeUp, stagger, ease } from '@/lib/animations'
+import { ease } from '@/lib/animations'
 
 export function Hero() {
   return (
-    <motion.section
-      variants={stagger}
-      initial="initial"
-      animate="animate"
-      className="relative flex min-h-[85vh] flex-col justify-center px-6 pt-28 md:min-h-screen md:pt-24 md:px-12 lg:px-24"
-    >
+    <section className="relative flex min-h-[85vh] flex-col justify-center px-6 pt-28 md:min-h-screen md:pt-24 md:px-12 lg:px-24">
       <div className="relative mx-auto w-full max-w-5xl">
-        {/* H1 — asymmetric, left-aligned */}
-        <motion.h1
-          variants={fadeUp}
-          transition={{ duration: 0.7, ease }}
-          className="max-w-3xl font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl"
-        >
+        {/* H1 — asymmetric, left-aligned. Plain HTML for instant LCP. */}
+        <h1 className="max-w-3xl font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl">
           {heroContent.headline}
           <br />
           {/* Wrapper for teal line + dot alignment */}
@@ -50,23 +41,15 @@ export function Hero() {
               <span className="absolute -bottom-16 right-8 h-1.5 w-1.5 rounded-full bg-primary/15" />
             </motion.span>
           </span>
-        </motion.h1>
+        </h1>
 
-        {/* Subheadline */}
-        <motion.p
-          variants={fadeUp}
-          transition={{ duration: 0.7, ease }}
-          className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl"
-        >
+        {/* Subheadline — plain HTML, this is the LCP element */}
+        <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
           {heroContent.subheadline}
-        </motion.p>
+        </p>
 
         {/* CTA */}
-        <motion.div
-          variants={fadeUp}
-          transition={{ duration: 0.7, ease }}
-          className="mt-10 flex flex-wrap items-center gap-5"
-        >
+        <div className="mt-10 flex flex-wrap items-center gap-5">
           <motion.a
             href="/#connect"
             whileHover={{ scale: 1.03 }}
@@ -81,8 +64,8 @@ export function Hero() {
           >
             Check your findability <ArrowRight className="h-4 w-4" />
           </a>
-        </motion.div>
+        </div>
       </div>
-    </motion.section>
+    </section>
   )
 }

@@ -63,10 +63,10 @@ export function SignalPreview() {
                   className="group flex flex-col rounded-xl border border-border/20 bg-muted/10 p-5 transition-all duration-300 hover:border-primary/25 hover:bg-muted/20 md:p-6"
                 >
                   <div className="flex items-baseline gap-3">
-                    <span className="font-heading text-xs font-bold tracking-widest text-primary/60">
+                    <span className="font-heading text-xs font-bold tracking-widest text-primary">
                       {guide.number}
                     </span>
-                    <span className="text-xs text-muted-foreground/60">
+                    <span className="text-xs text-muted-foreground">
                       {guide.role}
                     </span>
                   </div>
@@ -76,7 +76,7 @@ export function SignalPreview() {
                   <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground md:text-sm">
                     {guide.teaser}
                   </p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary/70 transition-colors duration-200 group-hover:text-primary">
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary transition-opacity duration-200 group-hover:opacity-80">
                     Read guide <ArrowRight className="h-3 w-3" />
                   </span>
                 </Link>
@@ -95,14 +95,18 @@ export function SignalPreview() {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             {[0, 1].map((i) => (
               <button
                 key={i}
                 onClick={() => setPage(i)}
                 aria-label={`Page ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${page === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/20 hover:bg-muted-foreground/40'}`}
-              />
+                className="group flex h-6 w-6 items-center justify-center"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${page === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/20 group-hover:bg-muted-foreground/40'}`}
+                />
+              </button>
             ))}
           </div>
           <button
