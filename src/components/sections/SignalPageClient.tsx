@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { testimonials } from '@/lib/data'
-import { fadeUp, stagger, ease } from '@/lib/animations'
+import { ease } from '@/lib/animations'
 
 const clients = [
   { name: 'Hilton', logo: '/images/logos/hilton-international-logo.png', size: 'default' as const },
@@ -49,70 +49,42 @@ const guides = guideData.map((g) => ({
 export function SignalPageClient() {
   return (
     <>
-      {/* Compact Hero */}
-      <motion.section
-        variants={stagger}
-        initial="initial"
-        animate="animate"
-        className="px-6 pt-32 pb-12 md:px-12 md:pt-36 md:pb-16 lg:px-24"
-      >
+      {/* Compact Hero — plain HTML for instant LCP */}
+      <section className="px-6 pt-32 pb-12 md:px-12 md:pt-36 md:pb-16 lg:px-24">
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
-              <motion.p
-                variants={fadeUp}
-                transition={{ duration: 0.6, ease }}
-                className="text-sm font-medium uppercase tracking-widest text-primary"
-              >
+              <p className="text-sm font-medium uppercase tracking-widest text-primary">
                 Be The Signal
-              </motion.p>
-              <motion.h1
-                variants={fadeUp}
-                transition={{ duration: 0.7, ease }}
-                className="mt-4 font-heading text-3xl leading-[1.15] font-bold tracking-tight md:text-4xl lg:text-5xl"
-              >
+              </p>
+              <h1 className="mt-4 font-heading text-3xl leading-[1.15] font-bold tracking-tight md:text-4xl lg:text-5xl">
                 Your signal is either working for you or against you
-              </motion.h1>
-              <motion.p
-                variants={fadeUp}
-                transition={{ duration: 0.7, ease }}
-                className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg"
-              >
+              </h1>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 What determines whether customers find you, trust you, and choose you — and what most businesses get wrong.
-              </motion.p>
+              </p>
             </div>
-            <motion.div
-              variants={fadeUp}
-              transition={{ duration: 0.7, ease }}
-              className="shrink-0"
-            >
+            <div className="shrink-0">
               <a
                 href="/audit"
                 className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:bg-primary/20"
               >
                 Measure your signal <ArrowRight className="h-4 w-4" />
               </a>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* Guide Grid — 2 columns × 3 rows */}
       <section className="px-6 pb-24 md:px-12 md:pb-32 lg:px-24">
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-6 md:grid-cols-2">
-            {guides.map((guide, i) => {
+            {guides.map((guide) => {
               const Diagram = diagramMap[guide.rawSlug]
 
               return (
-                <motion.div
-                  key={guide.slug}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.5, delay: i * 0.06, ease }}
-                  className="group"
-                >
+                <div key={guide.slug} className="group">
                   {guide.published ? (
                     <Link
                       href={guide.slug}
@@ -125,13 +97,13 @@ export function SignalPageClient() {
                       )}
                       <div className="flex flex-1 flex-col p-5 md:p-6">
                         <div className="flex items-baseline gap-3">
-                          <span className="font-heading text-xs font-bold tracking-widest text-primary/60">
+                          <span className="font-heading text-xs font-bold tracking-widest text-primary">
                             {guide.number}
                           </span>
-                          <span className="text-xs text-muted-foreground/60">
+                          <span className="text-xs text-muted-foreground">
                             {guide.role}
                           </span>
-                          <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary/80 transition-colors duration-200 group-hover:text-primary">
+                          <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary transition-opacity duration-200 group-hover:opacity-80">
                             Read <ArrowRight className="h-3 w-3" />
                           </span>
                         </div>
@@ -147,13 +119,13 @@ export function SignalPageClient() {
                     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border/20 bg-muted/10 transition-all duration-300 hover:border-primary/25 hover:bg-muted/20">
                       <div className="flex flex-1 flex-col p-5 md:p-6">
                         <div className="flex items-baseline gap-3">
-                          <span className="font-heading text-xs font-bold tracking-widest text-primary/60">
+                          <span className="font-heading text-xs font-bold tracking-widest text-primary">
                             {guide.number}
                           </span>
-                          <span className="text-xs text-muted-foreground/60">
+                          <span className="text-xs text-muted-foreground">
                             {guide.role}
                           </span>
-                          <span className="ml-auto rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-primary/70">
+                          <span className="ml-auto rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-primary">
                             Coming soon
                           </span>
                         </div>
@@ -166,7 +138,7 @@ export function SignalPageClient() {
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </div>
               )
             })}
           </div>
