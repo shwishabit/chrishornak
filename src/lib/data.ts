@@ -43,13 +43,15 @@ export const testimonials: Testimonial[] = [
     title: 'Benefits and Payroll Coordinator',
     company: 'Speranza Consulting and Investments',
     initials: 'DH',
+    image: '/images/testimonials/david-horell.jpg',
   },
   {
-    quote: 'Chris\'s SEO strategy worked wonders — optimized content, smarter site structure, and the right technical tweaks skyrocketed our rankings and traffic.',
-    name: 'Kerry Veith',
-    title: 'Director of Operations',
-    company: 'Gamma Light Therapy',
-    initials: 'KV',
+    quote: 'Working with Blog Hands is like having a writer on staff! We are able to collaborate to develop topics lists and then Blog Hands talented writers take it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
+    name: 'Meredith Smith',
+    title: 'Marketing Manager',
+    company: 'StrucSure Home Warranty',
+    initials: 'MS',
+    image: '/images/testimonials/meredith-smith.jpg',
   },
   {
     quote: 'Chris has been an invaluable partner. He\'s a hands-on problem solver who jumps right in when we face technical challenges. His work is consistently reliable, and the communication is always direct and collaborative.',
@@ -57,6 +59,7 @@ export const testimonials: Testimonial[] = [
     title: 'Marketing Executive',
     company: 'Rehab Essentials',
     initials: 'CC',
+    image: '/images/testimonials/cheryl-cassidy.jpg',
   },
   {
     quote: 'Chris grasped our strategic objectives quickly and delivered a comprehensive digital strategy that aligned seamlessly with our goals. His approach is professional, responsive, and results-driven.',
@@ -64,6 +67,7 @@ export const testimonials: Testimonial[] = [
     title: 'Chief Growth and Alliance Officer',
     company: 'SkillsTX',
     initials: 'JK',
+    image: '/images/testimonials/john-kleist.jpg',
   },
 ]
 

@@ -171,8 +171,8 @@ export default function RootLayout({
               },
               {
                 '@type': 'Review',
-                author: { '@type': 'Person', name: 'Kerry Veith' },
-                reviewBody: 'Chris\'s SEO strategy worked wonders — optimized content, smarter site structure, and the right technical tweaks skyrocketed our rankings and traffic.',
+                author: { '@type': 'Person', name: 'Meredith Smith' },
+                reviewBody: 'Working with Blog Hands is like having a writer on staff! We are able to collaborate to develop topics lists and then Blog Hands talented writers take it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
                 itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },

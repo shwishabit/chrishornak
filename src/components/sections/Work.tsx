@@ -121,9 +121,19 @@ export function Work() {
                 &ldquo;{t.quote}&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
-                  {t.initials}
-                </div>
+                {t.image ? (
+                  <Image
+                    src={t.image}
+                    alt={t.name}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    {t.initials}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-semibold">{t.name}</p>
                   <p className="text-xs text-muted-foreground">{t.title}{t.company ? `, ${t.company}` : ''}</p>

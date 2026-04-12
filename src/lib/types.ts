@@ -11,6 +11,7 @@ export interface Testimonial {
   title: string
   company: string
   initials: string
+  image?: string
 }
 
 export interface SiteConfig {
