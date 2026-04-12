@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Sora 700, same as 31 but bump up size slightly, tighten letter-spacing -->
+  <text x="35" y="100" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chris hornak</text>
+
+  <!-- Accent dot on the i -->
+  <circle cx="122" cy="48" r="6" fill="#e8572a"/>
+
+  <!-- Accent bar + descriptor — wider bar -->
+  <rect x="35" y="118" width="36" height="5" rx="2.5" fill="#e8572a"/>
+  <text x="80" y="123" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="13" font-weight="400" fill="#555555" letter-spacing="3">marketing strategist</text>
+</svg>

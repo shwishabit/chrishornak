@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak — Logo Final</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #141414;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 40px;
+      gap: 60px;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .label {
+      color: #888;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .panel {
+      padding: 60px 80px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .dark { background: #0a0a0a; }
+    .light { background: #ffffff; border: 1px solid #e0e0e0; }
+
+    .row-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .row-label-dark { color: #333; }
+    .row-label-light { color: #bbb; }
+
+    .sub-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icons-row {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .icon-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .size-label { font-size: 10px; }
+    .size-label-dark { color: #333; }
+    .size-label-light { color: #aaa; }
+
+    /* ===== WORDMARK ===== */
+    .wordmark {
+      font-size: 55px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .wm-dark { color: #f0f0f0; }
+    .wm-light { color: #0a0a0a; }
+
+    .i-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .i-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* ===== ICONS ===== */
+    .icon-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .icon-120 { width: 120px; height: 120px; border-radius: 24px; }
+    .icon-64 { width: 64px; height: 64px; border-radius: 14px; }
+    .icon-32 { width: 32px; height: 32px; border-radius: 7px; }
+
+    .icon-dark { background: #0a0a0a; }
+    .icon-light { background: #ffffff; border: 1px solid #e0e0e0; }
+
+    .icon-text {
+      font-weight: 700;
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .icon-text-dark { color: #f0f0f0; }
+    .icon-text-light { color: #0a0a0a; }
+
+    .icon-120 .icon-text { font-size: 46px; letter-spacing: -2px; }
+    .icon-64 .icon-text { font-size: 24px; letter-spacing: -1px; }
+    .icon-32 .icon-text { font-size: 13px; letter-spacing: -0.5px; }
+
+    .icon-dot {
+      background: #2dd4a8;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .icon-120 .icon-dot { width: 10px; height: 10px; margin-left: 2px; top: 2px; }
+    .icon-64 .icon-dot { width: 5px; height: 5px; margin-left: 1px; top: 1px; }
+    .icon-32 .icon-dot { width: 3px; height: 3px; margin-left: 1px; top: 1px; }
+
+    /* ===== SPECS ===== */
+    .specs {
+      color: #444;
+      font-size: 13px;
+      line-height: 2;
+      text-align: left;
+      max-width: 400px;
+    }
+
+    .specs dt { color: #666; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-top: 12px; }
+    .specs dd { color: #f0f0f0; }
+    .color-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== DARK ========== -->
+  <div class="section">
+    <div class="label">Dark</div>
+    <div class="panel dark">
+      <div class="sub-section">
+        <div class="row-label row-label-dark">WORDMARK</div>
+        <div class="wordmark wm-dark">chr<span class="i-wrap">ı<span class="i-dot"></span></span>s hornak</div>
+      </div>
+      <div class="sub-section">
+        <div class="row-label row-label-dark">ICONS</div>
+        <div class="icons-row">
+          <div class="icon-group">
+            <div class="icon-box icon-120 icon-dark">
+              <span class="icon-text icon-text-dark">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-dark">120px</div>
+          </div>
+          <div class="icon-group">
+            <div class="icon-box icon-64 icon-dark">
+              <span class="icon-text icon-text-dark">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-dark">64px</div>
+          </div>
+          <div class="icon-group">
+            <div class="icon-box icon-32 icon-dark">
+              <span class="icon-text icon-text-dark">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-dark">32px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== LIGHT ========== -->
+  <div class="section">
+    <div class="label">Light</div>
+    <div class="panel light">
+      <div class="sub-section">
+        <div class="row-label row-label-light">WORDMARK</div>
+        <div class="wordmark wm-light">chr<span class="i-wrap">ı<span class="i-dot"></span></span>s hornak</div>
+      </div>
+      <div class="sub-section">
+        <div class="row-label row-label-light">ICONS</div>
+        <div class="icons-row">
+          <div class="icon-group">
+            <div class="icon-box icon-120 icon-light">
+              <span class="icon-text icon-text-light">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-light">120px</div>
+          </div>
+          <div class="icon-group">
+            <div class="icon-box icon-64 icon-light">
+              <span class="icon-text icon-text-light">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-light">64px</div>
+          </div>
+          <div class="icon-group">
+            <div class="icon-box icon-32 icon-light">
+              <span class="icon-text icon-text-light">ch<span class="icon-dot"></span></span>
+            </div>
+            <div class="size-label size-label-light">32px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== BRAND SPECS ========== -->
+  <div class="section">
+    <div class="label">Brand Specs</div>
+    <div class="panel dark">
+      <dl class="specs">
+        <dt>Font</dt>
+        <dd>Sora 700</dd>
+
+        <dt>Case</dt>
+        <dd>Lowercase</dd>
+
+        <dt>Primary Accent</dt>
+        <dd><span class="color-swatch" style="background:#2dd4a8;"></span>#2dd4a8 — Teal</dd>
+
+        <dt>Dark Background</dt>
+        <dd><span class="color-swatch" style="background:#0a0a0a; border:1px solid #222;"></span>#0a0a0a</dd>
+
+        <dt>Dark Text</dt>
+        <dd><span class="color-swatch" style="background:#f0f0f0;"></span>#f0f0f0</dd>
+
+        <dt>Light Background</dt>
+        <dd><span class="color-swatch" style="background:#ffffff; border:1px solid #ddd;"></span>#ffffff</dd>
+
+        <dt>Light Text</dt>
+        <dd><span class="color-swatch" style="background:#0a0a0a;"></span>#0a0a0a</dd>
+
+        <dt>Mark</dt>
+        <dd>Teal dot replaces the i-dot in "chris"</dd>
+
+        <dt>Icon</dt>
+        <dd>"ch" + teal dot — used for avatars, favicons, social</dd>
+
+        <dt>Lockups</dt>
+        <dd>Wordmark (primary) · Icon (social/favicon)</dd>
+      </dl>
+    </div>
+  </div>
+
+</body>
+</html>

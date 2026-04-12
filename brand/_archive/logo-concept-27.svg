@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 160" width="620" height="160">
+  <rect width="620" height="160" fill="#0a0a0a"/>
+
+  <!-- Wordmark: lowercase, rounded sans-serif, bold -->
+  <text x="40" y="100" font-family="'Nunito Sans', 'Nunito', 'Helvetica Neue', sans-serif" font-size="58" font-weight="800" fill="#f0f0f0" letter-spacing="1">chris hornak</text>
+
+  <!-- Small double chevron at superscript position — like Elevate style -->
+  <g transform="translate(540, 42)">
+    <polyline points="0,18 10,8 20,18" stroke="#e8572a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="0,28 10,18 20,28" stroke="#ff8c42" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

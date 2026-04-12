@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Bold wordmark, slightly larger -->
+  <text x="40" y="105" font-family="'Sora', 'Nunito Sans', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="0">chris hornak</text>
+
+  <!-- Accent dot on the i — slightly larger for the bigger type -->
+  <circle cx="126" cy="52" r="6" fill="#e8572a"/>
+
+  <!-- Full-width thin accent line + right-aligned descriptor -->
+  <line x1="40" y1="120" x2="580" y2="120" stroke="#1a1a1a" stroke-width="1"/>
+  <rect x="40" y="117" width="40" height="6" rx="2" fill="#e8572a"/>
+  <text x="410" y="140" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4" text-anchor="start">marketing strategist</text>
+</svg>

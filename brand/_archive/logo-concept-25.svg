@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c25grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: Layered angular brackets — framing, structure, emphasis -->
+  <!-- Like editorial brackets that say "pay attention to what's inside" -->
+  <g transform="translate(50, 90)">
+    <!-- Outer bracket pair -->
+    <polyline points="-35,-40 -50,0 -35,40" stroke="#1e1e1e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="35,-40 50,0 35,40" stroke="#1e1e1e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Middle bracket pair -->
+    <polyline points="-18,-30 -33,0 -18,30" stroke="#444444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="18,-30 33,0 18,30" stroke="#444444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Inner bracket pair — accent -->
+    <polyline points="-2,-18 -14,0 -2,18" stroke="url(#c25grad)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="2,-18 14,0 2,18" stroke="url(#c25grad)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="145" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

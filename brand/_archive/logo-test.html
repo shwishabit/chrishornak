@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak Logo Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 60px;
+      padding: 40px;
+    }
+
+    .logo {
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 60px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    /* Hide the default i dot by making chris use a dotless approach */
+    .logo-text .i-replace {
+      display: inline-block;
+      position: relative;
+    }
+
+    /* The teal dot system */
+    .dot-main {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .dot-trail-1 {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      opacity: 0.45;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-80%);
+    }
+
+    .dot-trail-2 {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      opacity: 0.25;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-110%);
+    }
+
+    .label {
+      font-family: 'Sora', sans-serif;
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Icon version */
+    .icon {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 24px;
+      border: 1px solid #1a1a1a;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon .dot-main {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      top: 30px;
+      left: 55px;
+      transform: none;
+    }
+
+    .icon .dot-trail-1 {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 48px;
+      left: 38px;
+      transform: none;
+    }
+
+    .icon .dot-trail-2 {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      top: 62px;
+      left: 24px;
+      transform: none;
+    }
+
+    /* Favicon test */
+    .favicon {
+      width: 32px;
+      height: 32px;
+      background: #0a0a0a;
+      border-radius: 6px;
+      border: 1px solid #1a1a1a;
+      position: relative;
+    }
+
+    .favicon .dot-main {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      top: 7px;
+      left: 15px;
+      transform: none;
+    }
+
+    .favicon .dot-trail-1 {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      top: 13px;
+      left: 10px;
+      transform: none;
+    }
+
+    .favicon .dot-trail-2 {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      top: 18px;
+      left: 6px;
+      transform: none;
+    }
+
+    .row {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full wordmark -->
+  <div class="section">
+    <div class="label">Full Wordmark</div>
+    <div class="logo">
+      <span class="logo-text">chr<span class="i-replace">ı<span class="dot-trail-2"></span><span class="dot-trail-1"></span><span class="dot-main"></span></span>s hornak</span>
+    </div>
+  </div>
+
+  <!-- Icon + Favicon -->
+  <div class="section">
+    <div class="label">Icon &amp; Favicon</div>
+    <div class="row">
+      <div class="icon">
+        <div class="dot-trail-2"></div>
+        <div class="dot-trail-1"></div>
+        <div class="dot-main"></div>
+      </div>
+      <div class="favicon">
+        <div class="dot-trail-2"></div>
+        <div class="dot-trail-1"></div>
+        <div class="dot-main"></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- Monogram: C and H fused with ascending stroke -->
+  <g transform="translate(40, 30)">
+    <!-- C shape -->
+    <path d="M 45 10 Q 10 10 10 50 Q 10 90 45 90 L 50 90"
+          stroke="#f0f0f0" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- H vertical left (shared with C) -->
+    <line x1="50" y1="10" x2="50" y2="90" stroke="#f0f0f0" stroke-width="6" stroke-linecap="round"/>
+    <!-- H crossbar -->
+    <line x1="50" y1="50" x2="85" y2="50" stroke="#f0f0f0" stroke-width="6" stroke-linecap="round"/>
+    <!-- H vertical right with ascending growth stroke -->
+    <line x1="85" y1="90" x2="85" y2="50" stroke="#f0f0f0" stroke-width="6" stroke-linecap="round"/>
+    <line x1="85" y1="50" x2="85" y2="10" stroke="url(#accentGrad)" stroke-width="6" stroke-linecap="round"/>
+    <!-- Growth arrow tip -->
+    <polyline points="78,20 85,6 92,20" stroke="url(#accentGrad)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="165" y="90" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="52" font-weight="700" fill="#f0f0f0" letter-spacing="3">HORNAK</text>
+
+  <!-- Descriptor line -->
+  <text x="168" y="118" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="13" font-weight="400" fill="#888888" letter-spacing="6">GROWTH STRATEGIST</text>
+</svg>

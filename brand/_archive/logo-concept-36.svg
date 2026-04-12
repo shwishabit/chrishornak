@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Sora 700, same base but no descriptor — cleaner lockup -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chris hornak</text>
+
+  <!-- Accent dot on the i -->
+  <circle cx="122" cy="53" r="6" fill="#e8572a"/>
+
+  <!-- Just the accent bar, no text — a signature underline -->
+  <rect x="35" y="120" width="42" height="5" rx="2.5" fill="#e8572a"/>
+</svg>

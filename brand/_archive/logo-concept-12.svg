@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="c12grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- Mark: Concentric broken rings — orbit/influence/reach -->
+  <g transform="translate(75, 100)">
+    <!-- Outer ring — darkest, broken arc -->
+    <path d="M -48,-10 A 50,50 0 0,1 40,-30" stroke="#222222" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M 45,-25 A 50,50 0 0,1 20,45" stroke="#222222" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Middle ring -->
+    <path d="M -30,-8 A 35,35 0 0,1 28,-22" stroke="#444444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M 32,-18 A 35,35 0 0,1 10,33" stroke="#444444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Inner ring — accent -->
+    <path d="M -15,-5 A 20,20 0 0,1 16,-12" stroke="url(#c12grad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M 18,-9 A 20,20 0 0,1 5,19" stroke="url(#c12grad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- Center point -->
+    <circle cx="0" cy="0" r="3" fill="url(#c12grad)"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="165" y="105" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+
+  <!-- Descriptor -->
+  <text x="165" y="132" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="11" font-weight="400" fill="#555555" letter-spacing="5">GROWTH STRATEGIST</text>
+</svg>

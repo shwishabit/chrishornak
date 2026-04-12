@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak Logo v7</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 40px;
+      gap: 60px;
+    }
+
+    .label {
+      font-family: 'Sora', sans-serif;
+      color: #666;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* ===== DARK PANEL ===== */
+    .dark-panel {
+      background: #0a0a0a;
+      padding: 60px 80px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    /* ===== LIGHT PANEL ===== */
+    .light-panel {
+      background: #ffffff;
+      padding: 60px 80px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+      max-width: 800px;
+      border: 1px solid #e0e0e0;
+    }
+
+    /* ===== WORDMARK — TEAL DOT ON I ===== */
+    .wordmark {
+      display: inline-block;
+      position: relative;
+    }
+
+    .wordmark svg { display: block; }
+
+    /* ===== WORDMARK — TEAL PERIOD AT END ===== */
+
+    /* ===== ICONS ===== */
+    .icons-row {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .icon-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .size-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .size-label-dark { color: #333; }
+    .size-label-light { color: #999; }
+
+    .row-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .row-label-dark { color: #444; }
+    .row-label-light { color: #aaa; }
+
+    .sub-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    body { background: #141414; }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== OPTION A: Teal dot on the i ==================== -->
+  <div class="section">
+    <div class="label" style="color:#888;">Option A — Teal dot on the i</div>
+
+    <!-- Dark version -->
+    <div class="dark-panel">
+      <div class="sub-section">
+        <div class="row-label row-label-dark">WORDMARK</div>
+        <div class="wordmark">
+          <svg viewBox="0 0 520 70" width="520" height="70" xmlns="http://www.w3.org/2000/svg">
+            <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+            <text x="0" y="55" font-family="'Sora', sans-serif" font-size="55" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chris hornak</text>
+            <!-- Teal dot above the i — covers default dot -->
+            <rect x="83" y="6" width="14" height="14" fill="#0a0a0a"/>
+            <circle cx="90" cy="10" r="6" fill="#2dd4a8"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sub-section">
+        <div class="row-label row-label-dark">ICONS</div>
+        <div class="icons-row">
+          <!-- 120px avatar -->
+          <div class="icon-group">
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="120" height="120" rx="24" fill="#0a0a0a"/>
+              <text x="18" y="76" font-family="'Sora', sans-serif" font-size="46" font-weight="700" fill="#f0f0f0" letter-spacing="-2">ch</text>
+              <circle cx="92" cy="68" r="6" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">120px</div>
+          </div>
+          <!-- 64px -->
+          <div class="icon-group">
+            <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+              <text x="9" y="42" font-family="'Sora', sans-serif" font-size="26" font-weight="700" fill="#f0f0f0" letter-spacing="-1">ch</text>
+              <circle cx="50" cy="37" r="3.5" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">64px</div>
+          </div>
+          <!-- 32px favicon -->
+          <div class="icon-group">
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+              <text x="4" y="22" font-family="'Sora', sans-serif" font-size="14" font-weight="700" fill="#f0f0f0" letter-spacing="-1">ch</text>
+              <circle cx="26" cy="19" r="2" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">32px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== OPTION B: Teal period at end ==================== -->
+  <div class="section">
+    <div class="label" style="color:#888;">Option B — Teal period at end</div>
+
+    <!-- Dark version -->
+    <div class="dark-panel">
+      <div class="sub-section">
+        <div class="row-label row-label-dark">WORDMARK</div>
+        <div class="wordmark">
+          <svg viewBox="0 0 540 70" width="540" height="70" xmlns="http://www.w3.org/2000/svg">
+            <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+            <text x="0" y="55" font-family="'Sora', sans-serif" font-size="55" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chris hornak</text>
+            <circle cx="520" cy="50" r="6" fill="#2dd4a8"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sub-section">
+        <div class="row-label row-label-dark">ICONS</div>
+        <div class="icons-row">
+          <div class="icon-group">
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="120" height="120" rx="24" fill="#0a0a0a"/>
+              <text x="18" y="76" font-family="'Sora', sans-serif" font-size="46" font-weight="700" fill="#f0f0f0" letter-spacing="-2">ch</text>
+              <circle cx="92" cy="68" r="6" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">120px</div>
+          </div>
+          <div class="icon-group">
+            <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+              <text x="9" y="42" font-family="'Sora', sans-serif" font-size="26" font-weight="700" fill="#f0f0f0" letter-spacing="-1">ch</text>
+              <circle cx="50" cy="37" r="3.5" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">64px</div>
+          </div>
+          <div class="icon-group">
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+              <text x="4" y="22" font-family="'Sora', sans-serif" font-size="14" font-weight="700" fill="#f0f0f0" letter-spacing="-1">ch</text>
+              <circle cx="26" cy="19" r="2" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-dark">32px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LIGHT VERSIONS ==================== -->
+  <div class="section">
+    <div class="label" style="color:#888;">Light Background Versions</div>
+
+    <div class="light-panel">
+      <div class="sub-section">
+        <div class="row-label row-label-light">A — DOT ON I</div>
+        <div class="wordmark">
+          <svg viewBox="0 0 520 70" width="520" height="70" xmlns="http://www.w3.org/2000/svg">
+            <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+            <text x="0" y="55" font-family="'Sora', sans-serif" font-size="55" font-weight="700" fill="#0a0a0a" letter-spacing="-1">chris hornak</text>
+            <rect x="83" y="6" width="14" height="14" fill="#ffffff"/>
+            <circle cx="90" cy="10" r="6" fill="#2dd4a8"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sub-section">
+        <div class="row-label row-label-light">B — PERIOD AT END</div>
+        <div class="wordmark">
+          <svg viewBox="0 0 540 70" width="540" height="70" xmlns="http://www.w3.org/2000/svg">
+            <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+            <text x="0" y="55" font-family="'Sora', sans-serif" font-size="55" font-weight="700" fill="#0a0a0a" letter-spacing="-1">chris hornak</text>
+            <circle cx="520" cy="50" r="6" fill="#2dd4a8"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sub-section">
+        <div class="row-label row-label-light">ICONS</div>
+        <div class="icons-row">
+          <div class="icon-group">
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="120" height="120" rx="24" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+              <text x="18" y="76" font-family="'Sora', sans-serif" font-size="46" font-weight="700" fill="#0a0a0a" letter-spacing="-2">ch</text>
+              <circle cx="92" cy="68" r="6" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-light">120px</div>
+          </div>
+          <div class="icon-group">
+            <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="64" height="64" rx="14" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+              <text x="9" y="42" font-family="'Sora', sans-serif" font-size="26" font-weight="700" fill="#0a0a0a" letter-spacing="-1">ch</text>
+              <circle cx="50" cy="37" r="3.5" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-light">64px</div>
+          </div>
+          <div class="icon-group">
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700');</style>
+              <rect width="32" height="32" rx="6" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+              <text x="4" y="22" font-family="'Sora', sans-serif" font-size="14" font-weight="700" fill="#0a0a0a" letter-spacing="-1">ch</text>
+              <circle cx="26" cy="19" r="2" fill="#2dd4a8"/>
+            </svg>
+            <div class="size-label size-label-light">32px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

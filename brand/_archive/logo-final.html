@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak Logo — Final</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 40px;
+      gap: 80px;
+    }
+
+    .label {
+      font-family: 'Sora', sans-serif;
+      color: #333;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== FULL WORDMARK ===== */
+    .wordmark {
+      font-family: 'Sora', sans-serif;
+      font-size: 60px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .wordmark .i-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .wordmark .i-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* ===== ICON (ch.) ===== */
+    .icons-row {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .icon {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .icon-text .teal-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      margin-left: 2px;
+      vertical-align: baseline;
+      position: relative;
+      top: 2px;
+    }
+
+    /* Favicon */
+    .favicon {
+      width: 32px;
+      height: 32px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .favicon-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .favicon-text .teal-dot {
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      margin-left: 1px;
+      vertical-align: baseline;
+      position: relative;
+      top: 1px;
+    }
+
+    /* Medium icon */
+    .icon-md {
+      width: 64px;
+      height: 64px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-md-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .icon-md-text .teal-dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      margin-left: 1px;
+      vertical-align: baseline;
+      position: relative;
+      top: 1px;
+    }
+
+    .size-label {
+      font-family: 'Sora', sans-serif;
+      color: #333;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .icon-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full Wordmark -->
+  <div class="section">
+    <div class="label">Wordmark</div>
+    <div class="wordmark">chr<span class="i-wrap">ı<span class="i-dot"></span></span>s hornak</div>
+  </div>
+
+  <!-- Icon at multiple sizes -->
+  <div class="section">
+    <div class="label">Icon — all sizes</div>
+    <div class="icons-row">
+
+      <div class="icon-group">
+        <div class="icon">
+          <span class="icon-text">ch<span class="teal-dot"></span></span>
+        </div>
+        <div class="size-label">120px — Avatar</div>
+      </div>
+
+      <div class="icon-group">
+        <div class="icon-md">
+          <span class="icon-md-text">ch<span class="teal-dot"></span></span>
+        </div>
+        <div class="size-label">64px — Small</div>
+      </div>
+
+      <div class="icon-group">
+        <div class="favicon">
+          <span class="favicon-text">ch<span class="teal-dot"></span></span>
+        </div>
+        <div class="size-label">32px — Favicon</div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

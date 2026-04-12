@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c21grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8c42;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8572a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: Stacked horizontal lines — abstracted text block / editorial signal -->
+  <!-- Different lengths create rhythm, like a content hierarchy -->
+  <g transform="translate(25, 42)">
+    <line x1="0" y1="0" x2="85" y2="0" stroke="url(#c21grad)" stroke-width="4" stroke-linecap="round"/>
+    <line x1="0" y1="20" x2="60" y2="20" stroke="#666666" stroke-width="4" stroke-linecap="round"/>
+    <line x1="0" y1="40" x2="72" y2="40" stroke="#444444" stroke-width="4" stroke-linecap="round"/>
+    <line x1="0" y1="60" x2="48" y2="60" stroke="#333333" stroke-width="4" stroke-linecap="round"/>
+    <line x1="0" y1="80" x2="55" y2="80" stroke="#222222" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="145" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

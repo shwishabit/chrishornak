@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 160" width="620" height="160">
+  <rect width="620" height="160" fill="#0a0a0a"/>
+
+  <!-- Wordmark: large, bold, lowercase -->
+  <text x="40" y="100" font-family="'Sora', 'Nunito Sans', 'Helvetica Neue', sans-serif" font-size="56" font-weight="700" fill="#f0f0f0" letter-spacing="1">chris hornak</text>
+
+  <!-- Accent bar before descriptor — Borcelle style -->
+  <rect x="40" y="115" width="30" height="5" rx="2" fill="#e8572a"/>
+  <text x="78" y="120" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="13" font-weight="400" fill="#666666" letter-spacing="3">marketing strategist</text>
+</svg>

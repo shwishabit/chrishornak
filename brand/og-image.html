@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OG Image — Chris Hornak</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Sora:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #0a0a0a;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      padding: 80px 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Circle effect — matches homepage hero */
+    .circle-group {
+      position: absolute;
+      right: 100px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .circle-outer-glow {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: rgba(45,212,168,0.05);
+      filter: blur(40px);
+    }
+
+    .circle-mid-glow {
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: rgba(45,212,168,0.08);
+      filter: blur(20px);
+    }
+
+    .circle-main {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(45,212,168,0.25);
+    }
+
+    .circle-inner {
+      position: absolute;
+      inset: 16px;
+      border-radius: 50%;
+      background: rgba(45,212,168,0.4);
+    }
+
+    .circle-core {
+      position: absolute;
+      inset: 40px;
+      border-radius: 50%;
+      background: #2dd4a8;
+    }
+
+    /* Orbiting dots */
+    .dot {
+      position: absolute;
+      border-radius: 50%;
+      background: #2dd4a8;
+    }
+
+    .dot-1 { width: 10px; height: 10px; top: -30px; right: -10px; opacity: 0.5; }
+    .dot-2 { width: 7px; height: 7px; bottom: -20px; left: -30px; opacity: 0.3; }
+    .dot-3 { width: 5px; height: 5px; top: 20px; left: -50px; opacity: 0.2; }
+    .dot-4 { width: 8px; height: 8px; right: -40px; bottom: 30px; opacity: 0.4; }
+    .dot-5 { width: 5px; height: 5px; bottom: -45px; right: 30px; opacity: 0.15; }
+
+    /* Wordmark */
+    .wordmark {
+      line-height: 1;
+      user-select: none;
+    }
+
+    .wordmark img {
+      height: 80px;
+      width: auto;
+    }
+
+    /* Tagline */
+    .tagline {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 42px;
+      color: #f0f0f0;
+      margin-top: 32px;
+      line-height: 1.25;
+      max-width: 700px;
+    }
+
+    .tagline span {
+      color: #2dd4a8;
+    }
+
+    /* Bottom accent */
+    .accent-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(to right, #2dd4a8, transparent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="circle-group">
+      <div class="circle-outer-glow"></div>
+      <div class="circle-mid-glow"></div>
+      <div class="circle-main">
+        <div class="circle-inner"></div>
+        <div class="circle-core"></div>
+      </div>
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+      <div class="dot dot-4"></div>
+      <div class="dot dot-5"></div>
+    </div>
+
+    <div class="wordmark"><img src="wordmark-dark.png" alt="chris hornak"></div>
+
+    <div class="tagline">Marketing strategist for businesses ready to <span>grow.</span></div>
+
+    <div class="accent-line"></div>
+  </div>
+</body>
+</html>

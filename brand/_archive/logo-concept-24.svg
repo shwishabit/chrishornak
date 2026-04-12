@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c24grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: The Catalyst — angular lines converging at an ignition point -->
+  <!-- Like a spark. Strategy + action meeting at one decisive point. -->
+  <g transform="translate(55, 90)">
+    <!-- Lines converging from different angles -->
+    <line x1="-40" y1="35" x2="0" y2="0" stroke="#222222" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="-42" y1="-10" x2="0" y2="0" stroke="#3a3a3a" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="-20" y1="-40" x2="0" y2="0" stroke="#555555" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Burst lines outward from the point — accent -->
+    <line x1="0" y1="0" x2="30" y2="-25" stroke="url(#c24grad)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="38" y2="5" stroke="url(#c24grad)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="20" y2="30" stroke="url(#c24grad)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- The point itself -->
+    <circle cx="0" cy="0" r="4" fill="url(#c24grad)"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="150" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

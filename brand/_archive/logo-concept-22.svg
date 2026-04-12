@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c22grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: Interlocking squares — mosaic, building blocks, structure emerging -->
+  <g transform="translate(22, 35)">
+    <!-- Row 1 -->
+    <rect x="0" y="0" width="30" height="30" rx="2" fill="#161616" stroke="#1e1e1e" stroke-width="0.5"/>
+    <rect x="36" y="0" width="30" height="30" rx="2" fill="#1e1e1e" stroke="#282828" stroke-width="0.5"/>
+    <rect x="72" y="0" width="30" height="30" rx="2" fill="#282828" stroke="#333333" stroke-width="0.5"/>
+    <!-- Row 2 — offset -->
+    <rect x="18" y="36" width="30" height="30" rx="2" fill="#333333" stroke="#444444" stroke-width="0.5"/>
+    <rect x="54" y="36" width="30" height="30" rx="2" fill="#444444" stroke="#555555" stroke-width="0.5"/>
+    <!-- Row 3 — single accent block -->
+    <rect x="36" y="72" width="30" height="30" rx="2" fill="url(#c22grad)"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="145" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

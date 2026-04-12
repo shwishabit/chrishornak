@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 120" width="580" height="120">
+  <rect width="580" height="120" fill="#0a0a0a"/>
+
+  <!-- Wordmark with dotless i -->
+  <text x="30" y="82" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Ghost trail — coming from lower-left, moving up toward the i dot position -->
+  <circle cx="112" cy="42" r="3" fill="#2dd4a8" opacity="0.25"/>
+  <circle cx="118" cy="35" r="4.5" fill="#2dd4a8" opacity="0.45"/>
+
+  <!-- Main dot — directly above the i stem (i is the 4th char in "chris", approx x=120) -->
+  <circle cx="124" cy="26" r="6" fill="#2dd4a8"/>
+</svg>

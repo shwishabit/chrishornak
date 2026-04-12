@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>i vs dotless-i comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; }
+    body {
+      background: #0a0a0a;
+      padding: 40px;
+      font-family: 'Sora', sans-serif;
+    }
+    .row {
+      display: flex;
+      gap: 40px;
+      align-items: flex-end;
+      margin-bottom: 40px;
+    }
+    .glyph {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .label {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .char {
+      font-size: 200px;
+      font-weight: 700;
+      color: #f0f0f0;
+      line-height: 1;
+      background: #1a1a1a;
+      padding: 20px;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <div class="glyph">
+      <div class="label">Regular i (U+0069)</div>
+      <div class="char" id="regular-i">i</div>
+    </div>
+    <div class="glyph">
+      <div class="label">Dotless i (U+0131)</div>
+      <div class="char" id="dotless-i">ı</div>
+    </div>
+    <div class="glyph">
+      <div class="label">l (lowercase L)</div>
+      <div class="char">l</div>
+    </div>
+  </div>
+</body>
+</html>

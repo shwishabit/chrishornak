@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Sora 700, accent dot + bar, but try different accent color — cooler tone -->
+  <text x="35" y="100" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="58" font-weight="700" fill="#f0f0f0" letter-spacing="0">chris hornak</text>
+
+  <!-- Accent dot on the i — try a teal/cyan instead of ember -->
+  <circle cx="122" cy="50" r="5.5" fill="#2dd4a8"/>
+
+  <!-- Accent bar + descriptor in matching teal -->
+  <rect x="35" y="117" width="30" height="4" rx="2" fill="#2dd4a8"/>
+  <text x="73" y="121" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

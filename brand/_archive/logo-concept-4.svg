@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="splitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- The Split H — geometric, two halves: strategy (left/light) + execution (right/accent) -->
+  <g transform="translate(42, 40)">
+    <!-- Left vertical of H — white -->
+    <rect x="0" y="0" width="10" height="120" fill="#f0f0f0"/>
+    <!-- Right vertical of H — accent -->
+    <rect x="50" y="0" width="10" height="120" fill="url(#splitGrad)"/>
+    <!-- Crossbar — splits at the midpoint: left half white, right half accent -->
+    <rect x="10" y="52" width="20" height="10" fill="#f0f0f0"/>
+    <rect x="30" y="52" width="20" height="10" fill="url(#splitGrad)"/>
+  </g>
+
+  <!-- Name: first name light, last name bold -->
+  <text x="130" y="82" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="16" font-weight="300" fill="#555555" letter-spacing="8">CHRIS</text>
+  <text x="130" y="128" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="50" font-weight="700" fill="#f0f0f0" letter-spacing="3">HORNAK</text>
+
+  <!-- Thin rule under name -->
+  <line x1="130" y1="140" x2="440" y2="140" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="130" y="160" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="11" font-weight="400" fill="#444444" letter-spacing="6">GROWTH STRATEGIST</text>
+</svg>

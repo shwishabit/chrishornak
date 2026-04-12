@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Wordmark with dotless i -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Ghost trail: two dots trailing from lower-left -->
+  <circle cx="127" cy="58" r="3" fill="#2dd4a8" opacity="0.15"/>
+  <circle cx="132" cy="52" r="4.5" fill="#2dd4a8" opacity="0.3"/>
+
+  <!-- Main dot — directly above the i -->
+  <circle cx="137" cy="44" r="6" fill="#2dd4a8"/>
+
+  <!-- Accent bar echoes the ghost trail — three small bars ascending, same angle as dot trajectory -->
+  <rect x="35" y="124" width="8" height="3" rx="1.5" fill="#2dd4a8" opacity="0.15"/>
+  <rect x="46" y="121" width="12" height="3" rx="1.5" fill="#2dd4a8" opacity="0.3"/>
+  <rect x="61" y="118" width="18" height="4" rx="2" fill="#2dd4a8"/>
+  <text x="86" y="122" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

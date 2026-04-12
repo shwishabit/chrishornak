@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="c9grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="c9glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ff8c42;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- Name as the hero — full name, one line, generous size -->
+  <text x="40" y="100" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="48" font-weight="700" fill="#f0f0f0" letter-spacing="3">Chris Hornak</text>
+
+  <!-- Constellation integrated into the name — dots trail from the K -->
+  <g transform="translate(470, 55)">
+    <!-- Trailing dots emerging from the name, getting brighter -->
+    <circle cx="8" cy="32" r="3" fill="#333333"/>
+    <circle cx="26" cy="24" r="3.5" fill="#555555"/>
+    <circle cx="46" cy="14" r="4" fill="#888888"/>
+    <circle cx="68" cy="6" r="5" fill="url(#c9grad)"/>
+    <!-- Subtle glow on the lead dot -->
+    <circle cx="68" cy="6" r="18" fill="url(#c9glow)"/>
+    <!-- Whisper connections -->
+    <line x1="8" y1="32" x2="26" y2="24" stroke="#1e1e1e" stroke-width="0.7"/>
+    <line x1="26" y1="24" x2="46" y2="14" stroke="#2a2a2a" stroke-width="0.7"/>
+    <line x1="46" y1="14" x2="68" y2="6" stroke="#333333" stroke-width="0.7"/>
+  </g>
+
+  <!-- Descriptor below -->
+  <text x="42" y="130" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#444444" letter-spacing="5">GROWTH STRATEGIST</text>
+</svg>

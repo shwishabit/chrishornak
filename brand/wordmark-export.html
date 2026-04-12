@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wordmark Export</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .wordmark {
+      position: relative;
+      display: inline-flex;
+      align-items: baseline;
+      font-size: 120px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      white-space: nowrap;
+      padding: 30px 10px 10px 4px;
+    }
+
+    .wm-dark { color: #f0f0f0; }
+    .wm-light { color: #0a0a0a; }
+
+    /* The "i" wrapper holds the dotless-i stem and the teal dot */
+    .i-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    /*
+     * The dotless-i (ı) in Sora 700 has a small leftward flare at the top
+     * of the stem (~2px at 120px font size). In the wordmark context, this
+     * flare overlaps with the "r" glyph and is invisible at display size
+     * (h-10 = 40px in the nav). No clip needed.
+     */
+    .i-stem {
+      display: inline-block;
+    }
+
+    /* Teal dot positioned above the i-stem */
+    .i-dot {
+      position: absolute;
+      background: #2dd4a8;
+      border-radius: 50%;
+      /* Size proportional to 120px font: ~21% of font-size */
+      width: 25px;
+      height: 25px;
+      /* Center above the stem */
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Hidden helper for measurements */
+    .measure-helper {
+      position: absolute;
+      visibility: hidden;
+      font-family: 'Sora', sans-serif;
+      font-size: 120px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="dark">
+
+  <!-- Dark version -->
+  <div class="wordmark wm-dark" id="wordmark-dark">
+    <span>chr</span><span class="i-wrap"><span class="i-stem">ı</span><span class="i-dot"></span></span><span>s hornak</span>
+  </div>
+
+  <!-- Light version (hidden by default, toggled by script) -->
+  <div class="wordmark wm-light" id="wordmark-light" style="display:none;">
+    <span>chr</span><span class="i-wrap"><span class="i-stem">ı</span><span class="i-dot"></span></span><span>s hornak</span>
+  </div>
+
+  <!-- Measurement helpers -->
+  <span class="measure-helper" id="measure-chr">chr</span>
+  <span class="measure-helper" id="measure-chri">chri</span>
+  <span class="measure-helper" id="measure-full">chris hornak</span>
+
+</body>
+</html>

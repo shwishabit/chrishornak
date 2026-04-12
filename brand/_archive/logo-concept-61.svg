@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Wordmark with dotless i -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Ghost trail dots -->
+  <circle cx="127" cy="58" r="3" fill="#2dd4a8" opacity="0.15"/>
+  <circle cx="132" cy="52" r="4.5" fill="#2dd4a8" opacity="0.3"/>
+
+  <!-- Main dot above the i -->
+  <circle cx="137" cy="44" r="6" fill="#2dd4a8"/>
+
+  <!-- Two small dots before descriptor — same sizes as ghost trail, creating a visual rhyme -->
+  <circle cx="38" cy="122" r="2" fill="#2dd4a8" opacity="0.15"/>
+  <circle cx="46" cy="122" r="3" fill="#2dd4a8" opacity="0.3"/>
+  <text x="56" y="125" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

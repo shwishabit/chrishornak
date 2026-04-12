@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Wordmark with dotless i -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Ghost trail — boosted opacity -->
+  <circle cx="127" cy="58" r="3" fill="#2dd4a8" opacity="0.25"/>
+  <circle cx="132" cy="52" r="4.5" fill="#2dd4a8" opacity="0.45"/>
+
+  <!-- Main dot above the i -->
+  <circle cx="137" cy="44" r="6" fill="#2dd4a8"/>
+
+  <!-- Pill bar — now same opacity as descriptor, unified system -->
+  <rect x="35" y="119" width="28" height="6" rx="3" fill="#2dd4a8" opacity="0.65"/>
+  <!-- Descriptor — readable teal -->
+  <text x="70" y="125" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="500" fill="#2dd4a8" letter-spacing="4" opacity="0.65">marketing strategist</text>
+</svg>

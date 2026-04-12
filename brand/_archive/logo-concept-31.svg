@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Bold lowercase wordmark with accent dot on the i -->
+  <text x="40" y="100" font-family="'Sora', 'Nunito Sans', 'Helvetica Neue', sans-serif" font-size="56" font-weight="700" fill="#f0f0f0" letter-spacing="1">chris hornak</text>
+
+  <!-- Accent dot on the i in chris -->
+  <circle cx="121" cy="52" r="5.5" fill="#e8572a"/>
+
+  <!-- Accent bar + descriptor below -->
+  <rect x="40" y="118" width="28" height="4" rx="2" fill="#e8572a"/>
+  <text x="76" y="122" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

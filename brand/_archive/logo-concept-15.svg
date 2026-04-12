@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c15grad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Chevrons — tighter spacing, sharper angle, more energy -->
+  <g transform="translate(35, 38)">
+    <polyline points="0,85 40,58 80,85" stroke="#1e1e1e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="0,68 40,41 80,68" stroke="#333333" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="0,51 40,24 80,51" stroke="#666666" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="0,34 40,7 80,34" stroke="url(#c15grad)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Full name — no descriptor baked in -->
+  <text x="150" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

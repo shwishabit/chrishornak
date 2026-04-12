@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Spell out letters individually for precise i-dot control -->
+  <!-- Sora 700, 60px -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chr</text>
+  <!-- Leave gap for custom i -->
+  <text x="130" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">i</text>
+  <text x="145" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">s hornak</text>
+
+  <!-- Hide the default i dot with background color -->
+  <rect x="128" y="48" width="18" height="16" fill="#0a0a0a"/>
+
+  <!-- Custom accent dot on the i — positioned HIGHER than normal, it's rising -->
+  <circle cx="137" cy="45" r="6" fill="#e8572a"/>
+
+  <!-- Movement trail — two small fading dots below showing upward motion -->
+  <circle cx="137" cy="56" r="3" fill="#3a1a0e" opacity="0.6"/>
+  <circle cx="137" cy="64" r="2" fill="#2a1209" opacity="0.35"/>
+
+  <!-- Accent bar + descriptor -->
+  <rect x="35" y="120" width="30" height="4" rx="2" fill="#e8572a"/>
+  <text x="73" y="124" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="dotGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- Dot matrix mark — abstract constellation, no literal letter -->
+  <!-- Suggests network/connection/momentum without being a chart -->
+  <g transform="translate(35, 35)">
+    <!-- Scattered dots at varying sizes and opacities -->
+    <circle cx="10" cy="95" r="4" fill="#222222"/>
+    <circle cx="30" cy="75" r="5" fill="#333333"/>
+    <circle cx="18" cy="52" r="3" fill="#2a2a2a"/>
+    <circle cx="52" cy="85" r="6" fill="#444444"/>
+    <circle cx="48" cy="55" r="4" fill="#555555"/>
+    <circle cx="70" cy="65" r="7" fill="#666666"/>
+    <circle cx="65" cy="38" r="5" fill="#777777"/>
+    <circle cx="90" cy="48" r="8" fill="#999999"/>
+    <circle cx="88" cy="20" r="5" fill="#aaaaaa"/>
+    <circle cx="112" cy="30" r="10" fill="url(#dotGrad)"/>
+    <!-- Faint connecting lines between key dots -->
+    <line x1="30" y1="75" x2="52" y2="85" stroke="#1a1a1a" stroke-width="1"/>
+    <line x1="52" y1="85" x2="70" y2="65" stroke="#1a1a1a" stroke-width="1"/>
+    <line x1="70" y1="65" x2="90" y2="48" stroke="#222222" stroke-width="1"/>
+    <line x1="90" y1="48" x2="112" y2="30" stroke="#333333" stroke-width="1"/>
+  </g>
+
+  <!-- Name — large, left-aligned below the mark conceptually but right of it spatially -->
+  <text x="185" y="78" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="14" font-weight="300" fill="#555555" letter-spacing="10">CHRIS</text>
+  <text x="185" y="120" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="52" font-weight="700" fill="#f0f0f0" letter-spacing="3">HORNAK</text>
+
+  <!-- No descriptor — the mark speaks. Descriptor added contextually on the site. -->
+</svg>

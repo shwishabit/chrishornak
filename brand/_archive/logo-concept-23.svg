@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c23grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: Overlapping diamonds — rotated squares, layered with transparency -->
+  <g transform="translate(55, 90)">
+    <!-- Back diamond — largest, darkest -->
+    <rect x="-38" y="-38" width="76" height="76" rx="4" fill="none" stroke="#1e1e1e" stroke-width="2" transform="rotate(45)"/>
+    <!-- Middle diamond -->
+    <rect x="-26" y="-26" width="52" height="52" rx="3" fill="none" stroke="#555555" stroke-width="2" transform="rotate(45)"/>
+    <!-- Front diamond — accent, smallest -->
+    <rect x="-14" y="-14" width="28" height="28" rx="2" fill="url(#c23grad)" transform="rotate(45)" opacity="0.9"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="150" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

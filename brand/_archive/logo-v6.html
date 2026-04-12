@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak Logo v6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 40px;
+      gap: 70px;
+    }
+
+    .label {
+      font-family: 'Sora', sans-serif;
+      color: #333;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== WORDMARKS ===== */
+    .wordmark {
+      font-family: 'Sora', sans-serif;
+      font-size: 60px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .teal-dot {
+      color: #2dd4a8;
+    }
+
+    /* Smaller dot version */
+    .dot-separator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      margin: 0 4px;
+      vertical-align: baseline;
+      position: relative;
+      top: -2px;
+    }
+
+    .dot-mid {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      margin: 0 6px;
+      vertical-align: middle;
+    }
+
+    /* ===== VARIATIONS ROW ===== */
+    .variations {
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .var-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .var-label {
+      font-family: 'Sora', sans-serif;
+      color: #444;
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- A: Period character in teal (like seths.blog) -->
+  <div class="section">
+    <div class="var-row">
+      <div class="wordmark">chris<span class="teal-dot">.</span>hornak</div>
+      <div class="var-label">A — Teal period (seths.blog style)</div>
+    </div>
+  </div>
+
+  <!-- B: Dot separator, baseline aligned -->
+  <div class="section">
+    <div class="var-row">
+      <div class="wordmark">chris<span class="dot-separator"></span>hornak</div>
+      <div class="var-label">B — Small dot at baseline</div>
+    </div>
+  </div>
+
+  <!-- C: Dot separator, vertically centered -->
+  <div class="section">
+    <div class="var-row">
+      <div class="wordmark">chris<span class="dot-mid"></span>hornak</div>
+      <div class="var-label">C — Small dot, centered</div>
+    </div>
+  </div>
+
+  <!-- D: Period + also keep teal i-dot -->
+  <div class="section">
+    <div class="var-row">
+      <div class="wordmark" style="position:relative; display:inline-block;">
+        chr<span style="position:relative; display:inline-block;">ı<span style="position:absolute; width:10px; height:10px; background:#2dd4a8; border-radius:50%; top:-2px; left:50%; transform:translateX(-50%);"></span></span>s<span class="teal-dot">.</span>hornak
+      </div>
+      <div class="var-label">D — Teal i-dot + teal period (both)</div>
+    </div>
+  </div>
+
+</body>
+</html>

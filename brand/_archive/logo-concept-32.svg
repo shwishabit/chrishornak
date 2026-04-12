@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170">
+  <rect width="620" height="170" fill="#0a0a0a"/>
+
+  <!-- Heavier weight, tighter tracking -->
+  <text x="40" y="100" font-family="'Manrope', 'Nunito Sans', 'Helvetica Neue', sans-serif" font-size="54" font-weight="800" fill="#f0f0f0" letter-spacing="0">chris hornak</text>
+
+  <!-- Accent dot on the i -->
+  <circle cx="118" cy="54" r="5" fill="#e8572a"/>
+
+  <!-- Descriptor with accent dot echo — no bar, just a matching dot before the text -->
+  <circle cx="44" cy="122" r="3" fill="#e8572a"/>
+  <text x="56" y="126" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

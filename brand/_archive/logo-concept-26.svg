@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <defs>
+    <linearGradient id="c26grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="180" fill="#0a0a0a"/>
+
+  <!-- Mark: Shattered grid — ordered structure breaking open at one corner -->
+  <!-- 3x3 grid where top-right cells fracture and shift, accent fills the break -->
+  <g transform="translate(18, 33)">
+    <!-- Base grid cells -->
+    <rect x="0" y="0" width="28" height="28" rx="2" fill="#141414"/>
+    <rect x="33" y="0" width="28" height="28" rx="2" fill="#181818"/>
+    <rect x="0" y="33" width="28" height="28" rx="2" fill="#181818"/>
+    <rect x="33" y="33" width="28" height="28" rx="2" fill="#1e1e1e"/>
+    <rect x="0" y="66" width="28" height="28" rx="2" fill="#1e1e1e"/>
+    <rect x="33" y="66" width="28" height="28" rx="2" fill="#252525"/>
+    <!-- Intact third column bottom -->
+    <rect x="66" y="66" width="28" height="28" rx="2" fill="#333333"/>
+    <!-- Fractured cells — shifted, rotated, breaking free -->
+    <rect x="70" y="30" width="28" height="28" rx="2" fill="#444444" transform="rotate(6, 84, 44)"/>
+    <rect x="75" y="-8" width="28" height="28" rx="2" fill="url(#c26grad)" transform="rotate(12, 89, 6)"/>
+  </g>
+
+  <!-- Full name -->
+  <text x="140" y="100" font-family="'Space Grotesk', 'Helvetica Neue', sans-serif" font-size="42" font-weight="700" fill="#f0f0f0" letter-spacing="2">CHRIS HORNAK</text>
+</svg>

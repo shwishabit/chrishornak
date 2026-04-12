@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Wordmark with dotless i -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Dot displaced right and up — clean, no trail. Just the displacement itself tells the story. -->
+  <circle cx="148" cy="44" r="6" fill="#2dd4a8"/>
+
+  <!-- Accent bar + descriptor -->
+  <rect x="35" y="120" width="30" height="4" rx="2" fill="#2dd4a8"/>
+  <text x="73" y="124" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

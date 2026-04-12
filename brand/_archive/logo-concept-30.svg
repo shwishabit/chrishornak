@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 160" width="620" height="160">
+  <rect width="620" height="160" fill="#0a0a0a"/>
+
+  <!-- Pure wordmark — no separate mark. The accent IS the dot on the i -->
+  <!-- Lowercase, heavy, rounded -->
+  <text x="40" y="100" font-family="'Nunito Sans', 'Nunito', 'Helvetica Neue', sans-serif" font-size="58" font-weight="800" fill="#f0f0f0" letter-spacing="1">chris hornak</text>
+
+  <!-- Accent dot replacing the i dot — positioned over the i in "chris" -->
+  <!-- Approximate position of the dot above the 'i' -->
+  <circle cx="125" cy="55" r="6" fill="#e8572a"/>
+</svg>

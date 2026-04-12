@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 170" width="660" height="170">
+  <rect width="660" height="170" fill="#0a0a0a"/>
+
+  <!-- Wordmark — write "chris hornak" but use dotless i character -->
+  <text x="35" y="105" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="60" font-weight="700" fill="#f0f0f0" letter-spacing="-1">chrıs hornak</text>
+
+  <!-- Teal dot shifted right and slightly up from where the normal i dot would be -->
+  <!-- Normal i dot position would be ~137, 58. Moving it right and up. -->
+  <circle cx="145" cy="48" r="6" fill="#2dd4a8"/>
+
+  <!-- Faint trail showing the path — two ghost dots from origin to current position -->
+  <circle cx="137" cy="56" r="2.5" fill="#2dd4a8" opacity="0.12"/>
+  <circle cx="141" cy="52" r="3" fill="#2dd4a8" opacity="0.2"/>
+
+  <!-- Accent bar + descriptor -->
+  <rect x="35" y="120" width="30" height="4" rx="2" fill="#2dd4a8"/>
+  <text x="73" y="124" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#555555" letter-spacing="4">marketing strategist</text>
+</svg>

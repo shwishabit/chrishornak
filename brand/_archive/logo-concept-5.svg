@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="kGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8572a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#0a0a0a"/>
+
+  <!-- Pure wordmark — HORNA in white, K in accent with extended diagonal -->
+  <text x="40" y="120" font-family="'Sora', 'Helvetica Neue', sans-serif" font-size="72" font-weight="800" fill="#f0f0f0" letter-spacing="5">HORNA</text>
+
+  <!-- Custom K — built from strokes, not font. Diagonal extends past baseline. -->
+  <g transform="translate(390, 52)">
+    <!-- K vertical stem -->
+    <line x1="0" y1="0" x2="0" y2="68" stroke="url(#kGrad)" stroke-width="9" stroke-linecap="square"/>
+    <!-- K upper diagonal -->
+    <line x1="0" y1="36" x2="32" y2="0" stroke="url(#kGrad)" stroke-width="9" stroke-linecap="square"/>
+    <!-- K lower diagonal — extended past baseline for personality -->
+    <line x1="0" y1="36" x2="38" y2="78" stroke="url(#kGrad)" stroke-width="9" stroke-linecap="square"/>
+  </g>
+
+  <!-- Descriptor tucked right -->
+  <text x="40" y="152" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="12" font-weight="400" fill="#444444" letter-spacing="5">GROWTH STRATEGIST</text>
+</svg>

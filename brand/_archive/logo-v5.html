@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris Hornak Logo v5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 40px;
+      gap: 80px;
+    }
+
+    .label {
+      font-family: 'Sora', sans-serif;
+      color: #333;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== FULL WORDMARK ===== */
+    .wordmark {
+      position: relative;
+      display: inline-block;
+    }
+
+    .wordmark-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 60px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .wordmark-text .i-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .wordmark-text .i-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* ===== ICON OPTIONS ===== */
+    .icons-row {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    .icon-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-label {
+      font-family: 'Sora', sans-serif;
+      color: #444;
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    /* Icon A: "ch" with teal dot */
+    .icon-a {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 24px;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .icon-a-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 52px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    /* Icon B: Stacked "chris hornak" compact */
+    .icon-b {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 24px;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      position: relative;
+    }
+
+    .icon-b .line1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -0.5px;
+      line-height: 1;
+      position: relative;
+    }
+
+    .icon-b .line1 .i-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .icon-b .line1 .i-dot {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      top: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .icon-b .line2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    /* Icon C: Large "C" with teal dot as period */
+    .icon-c {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 24px;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .icon-c-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 64px;
+      font-weight: 700;
+      color: #f0f0f0;
+      line-height: 1;
+    }
+
+    .icon-c .teal-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2dd4a8;
+      border-radius: 50%;
+      bottom: 26px;
+      right: 26px;
+    }
+
+    /* Icon D: "CH" monogram, teal underline accent */
+    .icon-d {
+      width: 120px;
+      height: 120px;
+      background: #0a0a0a;
+      border-radius: 24px;
+      border: 1px solid #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .icon-d-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: #f0f0f0;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .icon-d .accent-bar {
+      width: 30px;
+      height: 4px;
+      background: #2dd4a8;
+      border-radius: 2px;
+    }
+
+    /* Small versions */
+    .icon-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid #1a1a1a;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .icon-small .s-text {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: #f0f0f0;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full Wordmark -->
+  <div class="section">
+    <div class="label">Wordmark</div>
+    <div class="wordmark">
+      <span class="wordmark-text">chr<span class="i-wrap">ı<span class="i-dot"></span></span>s hornak</span>
+    </div>
+  </div>
+
+  <!-- Icon Options -->
+  <div class="section">
+    <div class="label">Icon Options</div>
+    <div class="icons-row">
+
+      <!-- A: "ch" with dot -->
+      <div class="icon-group">
+        <div class="icon-a">
+          <span class="icon-a-text">ch<span style="color:#2dd4a8">.</span></span>
+        </div>
+        <div class="icon-small">
+          <span class="s-text" style="font-size:18px;">ch<span style="color:#2dd4a8">.</span></span>
+        </div>
+        <div class="icon-label">A: ch.</div>
+      </div>
+
+      <!-- B: Stacked name -->
+      <div class="icon-group">
+        <div class="icon-b">
+          <span class="line1">chr<span class="i-wrap">ı<span class="i-dot"></span></span>s</span>
+          <span class="line2">hornak</span>
+        </div>
+        <div class="icon-small" style="gap:1px;">
+          <span class="s-text" style="font-size:8px; position:relative;">chrıs</span>
+          <span class="s-text" style="font-size:8px;">hornak</span>
+        </div>
+        <div class="icon-label">B: Stacked</div>
+      </div>
+
+      <!-- C: Big C with dot -->
+      <div class="icon-group">
+        <div class="icon-c">
+          <span class="icon-c-text">C</span>
+          <div class="teal-dot"></div>
+        </div>
+        <div class="icon-small">
+          <span class="s-text" style="font-size:22px;">C</span>
+          <div style="position:absolute; width:4px; height:4px; background:#2dd4a8; border-radius:50%; bottom:8px; right:8px;"></div>
+        </div>
+        <div class="icon-label">C: Initial</div>
+      </div>
+
+      <!-- D: CH monogram -->
+      <div class="icon-group">
+        <div class="icon-d">
+          <span class="icon-d-text">CH</span>
+          <div class="accent-bar"></div>
+        </div>
+        <div class="icon-small" style="gap:2px;">
+          <span class="s-text" style="font-size:16px; letter-spacing:-1px;">CH</span>
+          <div style="width:12px; height:2px; background:#2dd4a8; border-radius:1px;"></div>
+        </div>
+        <div class="icon-label">D: Monogram</div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
