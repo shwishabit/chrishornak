@@ -125,9 +125,9 @@ export function Work() {
                   <Image
                     src={t.image}
                     alt={t.name}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover"
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 shrink-0 rounded-full object-cover"
                   />
                 ) : (
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
