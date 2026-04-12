@@ -46,7 +46,7 @@ export const testimonials: Testimonial[] = [
     image: '/images/testimonials/david-horell.jpg',
   },
   {
-    quote: 'Working with Blog Hands is like having a writer on staff! We are able to collaborate to develop topics lists and then Blog Hands talented writers take it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
+    quote: 'Working with Chris is like having a strategist on staff! We collaborate to develop topic lists and then his team takes it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
     name: 'Meredith Smith',
     title: 'Marketing Manager',
     company: 'StrucSure Home Warranty',

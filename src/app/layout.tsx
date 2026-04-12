@@ -172,7 +172,7 @@ export default function RootLayout({
               {
                 '@type': 'Review',
                 author: { '@type': 'Person', name: 'Meredith Smith' },
-                reviewBody: 'Working with Blog Hands is like having a writer on staff! We are able to collaborate to develop topics lists and then Blog Hands talented writers take it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
+                reviewBody: 'Working with Chris is like having a strategist on staff! We collaborate to develop topic lists and then his team takes it from there. I am impressed with their ability to research almost any topic and make suggestions. Perfect complement to our in-house capabilities.',
                 reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
                 itemReviewed: { '@type': 'ProfessionalService', name: 'Chris Hornak', url: siteConfig.domain },
               },
