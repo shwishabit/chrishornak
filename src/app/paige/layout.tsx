@@ -16,7 +16,9 @@ export const metadata: Metadata = {
     follow: false,
     googleBot: { index: false, follow: false },
   },
-  alternates: { canonical: undefined },
+  // Self-canonical — prevents link-preview tools from following the
+  // site-wide canonical back to the homepage.
+  alternates: { canonical: '/paige' },
 }
 
 export default function PaigeLayout({ children }: { children: React.ReactNode }) {

@@ -219,15 +219,22 @@ export default function PaigeMascot() {
     reactionTimerRef.current = setTimeout(() => setReaction(null), 250)
   }
 
-  // Compute lockup centering and kick off the reveal choreography
+  // Compute lockup centering and kick off the reveal choreography.
+  // Scale is capped so the lockup always fits within ~85% of viewport width,
+  // so narrow phones don't push the centered lockup off-screen.
+  const [revealScale, setRevealScale] = useState(2.6)
   useEffect(() => {
     const CORNER_W = 190
     const CORNER_H = 44
-    const SCALE = 2.6
     const PAD = 24
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const maxScale = Math.min(2.6, (vw * 0.85) / CORNER_W)
+    const scale = Math.max(1, maxScale)
+    setRevealScale(scale)
     setCenterXY({
-      x: window.innerWidth / 2 - (CORNER_W * SCALE) / 2 - PAD,
-      y: window.innerHeight / 2 - (CORNER_H * SCALE) / 2 - PAD,
+      x: vw / 2 - (CORNER_W * scale) / 2 - PAD,
+      y: vh / 2 - (CORNER_H * scale) / 2 - PAD,
     })
     setMounted(true)
     const t1 = setTimeout(() => setSeparated(true), 3600)
@@ -535,7 +542,7 @@ export default function PaigeMascot() {
         animate={
           separated
             ? { x: 0, y: 0, scale: 1 }
-            : { x: centerXY.x, y: centerXY.y, scale: 2.6 }
+            : { x: centerXY.x, y: centerXY.y, scale: revealScale }
         }
         transition={{ type: 'spring', stiffness: 65, damping: 15, mass: 1 }}
       >
@@ -708,7 +715,7 @@ export default function PaigeMascot() {
           opacity: 0.3,
         }}
       >
-        paige · v1.6
+        paige · v1.7
       </div>
     </main>
   )
