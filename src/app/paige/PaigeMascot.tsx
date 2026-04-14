@@ -219,22 +219,25 @@ export default function PaigeMascot() {
     reactionTimerRef.current = setTimeout(() => setReaction(null), 250)
   }
 
-  // Compute lockup centering and kick off the reveal choreography.
-  // Scale is capped so the lockup always fits within ~85% of viewport width,
-  // so narrow phones don't push the centered lockup off-screen.
+  // Lockup follows Blog Hands canonical rules: mark 26 + gap 8 + "Blog Hands"
+  // at Manrope 600 / 24px / -0.025em. The corner size is measured once via
+  // ref so centering is exact, then all reveal math flows from that.
+  const lockupRef = useRef<HTMLDivElement>(null)
   const [revealScale, setRevealScale] = useState(2.6)
   useEffect(() => {
-    const CORNER_W = 190
-    const CORNER_H = 44
+    if (!lockupRef.current) return
+    const rect = lockupRef.current.getBoundingClientRect()
+    const cornerW = rect.width
+    const cornerH = rect.height
     const PAD = 24
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const maxScale = Math.min(2.6, (vw * 0.85) / CORNER_W)
+    const maxScale = Math.min(2.6, (vw * 0.85) / cornerW)
     const scale = Math.max(1, maxScale)
     setRevealScale(scale)
     setCenterXY({
-      x: vw / 2 - (CORNER_W * scale) / 2 - PAD,
-      y: vh / 2 - (CORNER_H * scale) / 2 - PAD,
+      x: vw / 2 - (cornerW * scale) / 2 - PAD,
+      y: vh / 2 - (cornerH * scale) / 2 - PAD,
     })
     setMounted(true)
     const t1 = setTimeout(() => setSeparated(true), 3600)
@@ -526,12 +529,11 @@ export default function PaigeMascot() {
         .paige-btn { cursor: pointer !important; }
       `}</style>
 
-      {/* Blog Hands lockup: starts centered big, lands in the top-left corner.
-          Only rendered once mounted so centerXY/revealScale are computed — otherwise
-          the first paint would place the lockup at top-left with scale 2.6 and
-          framer-motion would animate it into the center visibly. */}
-      {mounted && (
+      {/* Blog Hands lockup — canonical composition matching the Blog Hands nav:
+          26px mark + 8px gap + Manrope 600 / 24px / -0.025em "Blog Hands".
+          Rendered hidden on first pass for measurement, then revealed centered. */}
       <motion.div
+        ref={lockupRef}
         className="pointer-events-none select-none"
         style={{
           position: 'absolute',
@@ -539,41 +541,49 @@ export default function PaigeMascot() {
           left: 24,
           transformOrigin: 'top left',
           zIndex: 20,
+          opacity: mounted ? 1 : 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 8,
+          fontFamily: 'var(--font-paige), Manrope, system-ui, sans-serif',
         }}
-        initial={separated ? { x: 0, y: 0, scale: 1 } : { x: centerXY.x, y: centerXY.y, scale: revealScale }}
+        initial={false}
         animate={
-          separated
+          !mounted
             ? { x: 0, y: 0, scale: 1 }
-            : { x: centerXY.x, y: centerXY.y, scale: revealScale }
+            : separated
+              ? { x: 0, y: 0, scale: 1 }
+              : { x: centerXY.x, y: centerXY.y, scale: revealScale }
         }
         transition={{ type: 'spring', stiffness: 65, damping: 15, mass: 1 }}
       >
-        <svg width={190} height={44} viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
-          <g transform="translate(40, 28) scale(6)">
-            <path
-              d="M20 21l-8-5-8 5V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16z"
-              fill="none"
-              stroke={COBALT}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx={12} cy={9.5} r={3} fill={COBALT} />
-          </g>
-          <text
-            x={210}
-            y={125}
-            fontFamily="Manrope, system-ui, sans-serif"
-            fontWeight={600}
-            fontSize={72}
-            letterSpacing={-2}
-            fill={INK}
-          >
-            Blog Hands
-          </text>
+        <svg
+          width={26}
+          height={26}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={COBALT}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M20 21l-8-5-8 5V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16z" />
+          <circle cx={12} cy={9.5} r={3} fill={COBALT} stroke="none" />
         </svg>
+        <span
+          style={{
+            fontFamily: 'var(--font-paige), Manrope, system-ui, sans-serif',
+            fontWeight: 600,
+            fontSize: '24px',
+            letterSpacing: '-0.025em',
+            color: INK,
+            lineHeight: 1,
+          }}
+        >
+          Blog Hands
+        </span>
       </motion.div>
-      )}
 
       <motion.div
         aria-hidden
@@ -718,7 +728,7 @@ export default function PaigeMascot() {
           opacity: 0.3,
         }}
       >
-        paige · v1.8
+        paige · v1.9
       </div>
     </main>
   )
