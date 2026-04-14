@@ -496,17 +496,6 @@ export default function PaigeMascot() {
     ? { duration: spec.duration / speed, ease: 'easeInOut' as const }
     : { duration: blink ? 0.14 : 0.3, ease: 'easeInOut' as const }
 
-  const glowOpacity =
-    reaction === 'hug' ? 0.42 :
-    reaction === 'pet' ? 0.32 :
-    reaction === 'dizzy' ? 0.4 :
-    reaction === 'sing' ? 0.38 :
-    reaction === 'wave' ? 0.32 :
-    reaction === 'dance' ? 0.36 :
-    reaction === 'sleep' ? 0.08 :
-    reaction ? 0.3 :
-    [0.1, 0.18, 0.1]
-
   const frameStroke = reaction ? 2.2 : 2
 
   return (
@@ -619,18 +608,6 @@ export default function PaigeMascot() {
               animate={creatureAnimate}
               transition={creatureTransition as any}
             >
-              {/* Glow behind */}
-              <motion.circle
-                cx={12}
-                cy={9.5}
-                r={5.5}
-                fill={COBALT}
-                style={{ filter: 'blur(3.5px)' }}
-                initial={false}
-                animate={{ opacity: glowOpacity }}
-                transition={reaction ? { duration: 0.4 } : { duration: 4.2, ease: 'easeInOut', repeat: Infinity }}
-              />
-
               {/* Bookmark body */}
               <motion.path
                 d="M20 21l-8-5-8 5V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16z"
@@ -731,7 +708,7 @@ export default function PaigeMascot() {
           opacity: 0.3,
         }}
       >
-        paige · v1.5
+        paige · v1.6
       </div>
     </main>
   )
