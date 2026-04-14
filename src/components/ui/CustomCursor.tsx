@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 
 export function CustomCursor() {
+  const pathname = usePathname()
   const [visible, setVisible] = useState(false)
   const [hovering, setHovering] = useState(false)
   const cursorX = useMotionValue(0)
@@ -44,6 +46,7 @@ export function CustomCursor() {
   }, [cursorX, cursorY, visible])
 
   if (!visible) return null
+  if (pathname?.startsWith('/paige')) return null
 
   return (
     <>
