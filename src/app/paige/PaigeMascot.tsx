@@ -527,7 +527,10 @@ export default function PaigeMascot() {
       `}</style>
 
       {/* Blog Hands lockup: starts centered big, lands in the top-left corner.
-          The viewer sees the same mark transition from brand-logo to corner → stage. */}
+          Only rendered once mounted so centerXY/revealScale are computed — otherwise
+          the first paint would place the lockup at top-left with scale 2.6 and
+          framer-motion would animate it into the center visibly. */}
+      {mounted && (
       <motion.div
         className="pointer-events-none select-none"
         style={{
@@ -536,9 +539,8 @@ export default function PaigeMascot() {
           left: 24,
           transformOrigin: 'top left',
           zIndex: 20,
-          opacity: mounted ? 1 : 0,
         }}
-        initial={false}
+        initial={separated ? { x: 0, y: 0, scale: 1 } : { x: centerXY.x, y: centerXY.y, scale: revealScale }}
         animate={
           separated
             ? { x: 0, y: 0, scale: 1 }
@@ -571,6 +573,7 @@ export default function PaigeMascot() {
           </text>
         </svg>
       </motion.div>
+      )}
 
       <motion.div
         aria-hidden
@@ -715,7 +718,7 @@ export default function PaigeMascot() {
           opacity: 0.3,
         }}
       >
-        paige · v1.7
+        paige · v1.8
       </div>
     </main>
   )

@@ -3,9 +3,12 @@ import { Manrope } from 'next/font/google'
 
 const manrope = Manrope({
   subsets: ['latin'],
-  display: 'swap',
+  // 'block' holds text invisible briefly until Manrope is loaded,
+  // preventing the flash from fallback font → Manrope on the lockup.
+  display: 'block',
   variable: '--font-paige',
   weight: ['500', '600', '700'],
+  preload: true,
 })
 
 export const metadata: Metadata = {
