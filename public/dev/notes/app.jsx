@@ -71,8 +71,23 @@ function nextMarkAfterCarry(mark) {
   return "?";
 }
 
+// === Boot config ===
+// Read once from <div id="root" data-namespace data-admin data-seed>. Each
+// HTML host (e.g. /dev/notes vs /dev/notes-test) writes its own attributes
+// so the same source ships two app instances with isolated localStorage and
+// a different chrome — no fork, no build flag, no URL sniffing.
+const _bootRoot = (typeof document !== "undefined") ? document.getElementById("root") : null;
+const STORAGE_NS = (_bootRoot && _bootRoot.getAttribute("data-namespace")) || "dn";
+const ADMIN_VISIBLE = !!(_bootRoot && _bootRoot.getAttribute("data-admin") === "true");
+const SEED_DEMO = !!(_bootRoot && _bootRoot.getAttribute("data-seed") === "true");
+// Expose for deferred modules (screens-rituals.jsx fetches at mount).
+if (typeof window !== "undefined") {
+  window.STORAGE_NS = STORAGE_NS;
+  window.SEED_DEMO = SEED_DEMO;
+}
+
 // === Persistence ===
-const STORAGE_KEY = "dailynow.state.v1";
+const STORAGE_KEY = `${STORAGE_NS}:state.v1`;
 // Bump SCHEMA_VERSION when the persisted shape changes, and add a case to
 // migrate() so older saves are upgraded in place rather than silently zeroed.
 const SCHEMA_VERSION = 1;
@@ -101,12 +116,15 @@ function savePersisted(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, __schema: SCHEMA_VERSION })); } catch (e) {}
 }
 function wipeAllDailyNow() {
-  // Clears the main state blob AND any per-day journal entries.
+  // Clears the main state blob AND any per-day journal entries within the
+  // active namespace only. Other instances (e.g. /dev/notes vs /dev/notes-test
+  // sharing the chrishornak.com origin) are untouched.
+  const prefix = `${STORAGE_NS}:`;
   try {
     const keys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith("dailynow.")) keys.push(k);
+      if (k && k.startsWith(prefix)) keys.push(k);
     }
     keys.forEach(k => localStorage.removeItem(k));
   } catch (e) {}
@@ -224,8 +242,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=14"),
-        loadBabelScript("screens-rituals.jsx?v=14"),
+        loadBabelScript("screens-flows.jsx?v=15"),
+        loadBabelScript("screens-rituals.jsx?v=15"),
       ]);
     }
     loadAll()
@@ -1013,7 +1031,7 @@ function App() {
 
       {toast && <WinToast text={toast.text} action={toast.action}/>}
 
-      {!(sheet && sheet.kind === "admin") && (
+      {ADMIN_VISIBLE && !(sheet && sheet.kind === "admin") && (
         <button
           className="admin-trigger"
           onClick={() => setSheet({ kind: "admin" })}
@@ -1029,7 +1047,7 @@ function App() {
         </div>
       )}
 
-      {sheet && sheet.kind === "admin" && (
+      {ADMIN_VISIBLE && sheet && sheet.kind === "admin" && (
         <>
           <div className="sheet-backdrop" onClick={() => setSheet(null)}/>
           <div className="sheet">

@@ -775,11 +775,14 @@ function promptForDay() {
   return JOURNAL_PROMPTS[doy % JOURNAL_PROMPTS.length];
 }
 
+function journalKeyForIso(iso) {
+  return `${window.STORAGE_NS || "dn"}:journal.${iso}`;
+}
 function journalKeyFor(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  return `dailynow.journal.${y}-${m}-${d}`;
+  return journalKeyForIso(`${y}-${m}-${d}`);
 }
 
 function isoFromDate(d) {
@@ -796,11 +799,12 @@ function dateFromIso(iso) {
 
 function listJournalEntries() {
   const out = [];
+  const prefix = `${window.STORAGE_NS || "dn"}:journal.`;
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (!k || !k.startsWith("dailynow.journal.")) continue;
-      const iso = k.slice("dailynow.journal.".length);
+      if (!k || !k.startsWith(prefix)) continue;
+      const iso = k.slice(prefix.length);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) continue;
       const text = localStorage.getItem(k) || "";
       if (!text.trim()) continue;
@@ -813,8 +817,10 @@ function listJournalEntries() {
 
 // Used by Journal to seed dev demo entries on first run so the calendar /
 // history is not empty when previewing. Idempotent — only seeds if NO entries
-// exist at all.
+// exist at all. Gated on data-seed="true" on the root div so the real
+// user-facing instance (/dev/notes) boots truly empty.
 function seedJournalIfEmpty() {
+  if (!window.SEED_DEMO) return;
   try {
     if (listJournalEntries().length > 0) return;
     const today = new Date();
@@ -845,7 +851,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   });
 
   const isToday = viewingIso === todayIso;
-  const storageKey = `dailynow.journal.${viewingIso}`;
+  const storageKey = journalKeyForIso(viewingIso);
   const prompt = promptForDay(); // today's prompt for write mode
   // For viewing past, use the prompt that would have been shown on that day.
   const promptForViewing = (() => {
@@ -856,7 +862,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   })();
 
   const [text, setText] = useState(() => {
-    try { return localStorage.getItem(`dailynow.journal.${todayIso}`) || ""; } catch (e) { return ""; }
+    try { return localStorage.getItem(journalKeyForIso(todayIso)) || ""; } catch (e) { return ""; }
   });
 
   // When viewing a past entry, pull its text fresh from storage.
@@ -870,7 +876,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   // Autosave today's entry — debounce 600ms after last keystroke.
   useEffect(() => {
     if (mode !== "write") return;
-    const todayKey = `dailynow.journal.${todayIso}`;
+    const todayKey = journalKeyForIso(todayIso);
     if (text === "") {
       try { localStorage.removeItem(todayKey); } catch (e) {}
       setSavedAt(null);
@@ -894,7 +900,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   useEffect(() => {
     if (mode !== "write") return;
     setViewingIso(todayIso);
-    try { setText(localStorage.getItem(`dailynow.journal.${todayIso}`) || ""); } catch (e) {}
+    try { setText(localStorage.getItem(journalKeyForIso(todayIso)) || ""); } catch (e) {}
   }, [todayIso, mode]);
 
   const remaining = MAX - text.length;
