@@ -130,6 +130,15 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <circle cx="14.8" cy="16.4" r="0.45" fill="currentColor"/>
         </svg>
       );
+    case "highlight":
+      // angled marker pen with a stroke beneath — "mark this important"
+      return (
+        <svg viewBox="0 0 20 20" style={s}>
+          <path d="M12 3 L17 8 L8 17 L3 12 z" {...common}/>
+          <line x1="11" y1="4" x2="13" y2="6" {...common} strokeOpacity="0.5"/>
+          <line x1="2.5" y1="17.5" x2="13" y2="17.5" {...common} strokeOpacity="0.4"/>
+        </svg>
+      );
     default:
       return null;
   }

@@ -1080,7 +1080,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
         </div>
       </div>
 
-      <div style={{display: "flex", justifyContent: "center", marginTop: 22}}>
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center", marginTop: 22, gap: 12}}>
         <button onClick={onClose} className="ascend" style={{
           background: "var(--ink)", color: "var(--paper)", border: "none",
           borderRadius: 999, padding: "12px 28px",
@@ -1089,6 +1089,14 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
         }}>
           {text ? "kept. carry on" : "carry on"}
         </button>
+        {hasHistory && (
+          <button onClick={() => setMode("calendar")} className="ascend ghost-btn" style={{
+            color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic",
+            padding: "4px 8px", animationDelay: "260ms",
+          }}>
+            past entries →
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1096,7 +1104,10 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
 
 // ---------- Journal Calendar (entry-day picker) ----------
 function JournalCalendar({ entries, todayIso, onPickToday, onPickPast, onClose }) {
-  const today = new Date();
+  // Derive "today" from the prop so the calendar opens to the right month
+  // when the 3am boundary is in effect (1-2am would otherwise show next
+  // month with no highlighted today cell).
+  const today = dateFromIso(todayIso);
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const entrySet = new Set(entries.map(e => e.iso));
 

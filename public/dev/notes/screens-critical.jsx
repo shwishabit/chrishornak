@@ -5,11 +5,12 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum }) {
+function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, priorityCarry, onKeepPriorities, onClearPriorities }) {
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
+  const showCarry = Array.isArray(priorityCarry) && priorityCarry.length > 0;
   return (
-    <div className="screen fade-soft" style={{justifyContent: "space-between", padding: "56px 32px 32px"}}>
+    <div className="screen fade-soft" style={{justifyContent: "space-between", padding: "56px 32px 32px", position: "relative"}}>
       <div style={{textAlign: "left"}} className="ascend">
         <div className="kicker" style={{marginBottom: 10}}>{weekday}</div>
         <div className="serif" style={{fontSize: 20, color: "var(--ink-soft)", letterSpacing: "0.01em"}}>
@@ -131,6 +132,64 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
           <span style={{fontSize: 18, opacity: 0.7}}>→</span>
         </button>
       </div>
+
+      {showCarry && (
+        <>
+          <div className="sheet-backdrop"/>
+          <div className="sheet" style={{maxHeight: "70%", overflowY: "auto"}}>
+            <div className="kicker" style={{marginBottom: 8}}>yesterday's priorities</div>
+            <div className="serif" style={{
+              fontSize: 18, color: "var(--ink)", fontStyle: "italic",
+              lineHeight: 1.4, marginBottom: 18,
+            }}>
+              still important?
+            </div>
+            <div style={{
+              display: "flex", flexDirection: "column", gap: 8,
+              borderTop: "1px solid var(--rule)",
+              paddingTop: 14, marginBottom: 22,
+            }}>
+              {priorityCarry.map(t => (
+                <div key={t.id} className="serif" style={{
+                  fontSize: 15, color: "var(--ink)", lineHeight: 1.45,
+                  padding: "4px 0",
+                }}>
+                  <span style={{
+                    background: "var(--highlight)",
+                    padding: "1px 4px",
+                    borderRadius: 2,
+                    boxDecorationBreak: "clone",
+                    WebkitBoxDecorationBreak: "clone",
+                  }}>{t.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{display: "flex", gap: 12, justifyContent: "stretch"}}>
+              <button
+                onClick={onClearPriorities}
+                className="ghost-btn"
+                style={{
+                  flex: 1, padding: "12px 18px",
+                  border: "1px solid var(--rule-strong)",
+                  borderRadius: 999, background: "transparent",
+                  fontFamily: "var(--serif)", fontSize: 15, fontStyle: "italic",
+                  color: "var(--ink-soft)", cursor: "pointer",
+                }}
+              >clear all</button>
+              <button
+                onClick={onKeepPriorities}
+                style={{
+                  flex: 1, padding: "12px 18px",
+                  border: "none", borderRadius: 999,
+                  background: "var(--ink)", color: "var(--paper)",
+                  fontFamily: "var(--serif)", fontSize: 15, fontStyle: "italic",
+                  cursor: "pointer",
+                }}
+              >keep</button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -200,7 +259,7 @@ function AnchorMenuItem({ label, hint, onClick, primary }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocumentOpen, onDelete, onKeyOpen, onTaskCompleted, onSetDownOpen, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocumentOpen, onDelete, onKeyOpen, onTaskCompleted, onSetDownOpen, onTogglePriority, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
     setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
@@ -287,6 +346,7 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocume
             onDelete={() => onDelete(t.id)}
             onSetDown={onSetDownOpen ? () => onSetDownOpen(t) : null}
             onAddNote={(noteText) => setNote(t.id, noteText)}
+            onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
             index={i}
           />
         ))}
@@ -452,11 +512,12 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   );
 }
 
-function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, onAddNote, index }) {
+function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, onAddNote, onTogglePriority, index }) {
   const isDecision = task.mark === "?";
   const isCarriedTwice = task.mark === ">>";
   const isCarriedOnce = task.mark === ">";
   const isCarried = isCarriedOnce || isCarriedTwice;
+  const isPriority = task.priority === true;
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
 
@@ -467,10 +528,11 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
 
   // Drawer button count drives the slide distance.
-  // Always-on actions: note, document, delete.
+  // Always-on actions: highlight (when handler), note, document, delete.
   // Conditional: set down + decide (only when ? AND not done).
   const drawerWidth = (() => {
     let n = 3; // note + document + delete
+    if (onTogglePriority && !task.done) n++; // highlight toggle
     if (isDecision && !task.done && onSetDown) n++; // set down
     if (!task.done) n++; // rethink/decide button always available
     return n * 80;
@@ -531,6 +593,25 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
               justifyContent: "center",
             }}
           ><Icon name={isDecision ? "decide" : "rethink"} size={20}/></button>
+        )}
+        {onTogglePriority && !task.done && (
+          <button
+            onClick={() => { setOpen(false); onTogglePriority(); }}
+            aria-label={isPriority ? "remove highlight" : "highlight as priority"}
+            title="highlight"
+            style={{
+              background: isPriority ? "var(--highlight)" : "var(--paper-deep)",
+              border: "none",
+              padding: "0 14px",
+              color: "var(--ink)",
+              cursor: "pointer",
+              borderLeft: "1px solid var(--rule)",
+              minWidth: 80,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          ><Icon name="highlight" size={20}/></button>
         )}
         <button
           onClick={() => {
@@ -637,7 +718,7 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
             </div>
           )}
           <div style={{display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap"}}>
-            <span className="task-text sans" style={{fontSize: 16, color: "var(--ink)", lineHeight: 1.4}}>
+            <span className={`task-text sans${isPriority ? " task-text--priority" : ""}`} style={{fontSize: 16, color: "var(--ink)", lineHeight: 1.4}}>
               {task.text}
             </span>
           </div>

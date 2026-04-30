@@ -42,8 +42,21 @@ const SEED_SHELF = [
   },
 ];
 
-function dateInfo(offset = 0) {
+// === Day boundary ===
+// "Today" runs 3am to 3am, not midnight to midnight. Late-night work (1am,
+// 2am) still rolls up to the prior calendar date — matches Chris's printable
+// Daily Now habit and ADHD-friendly day pacing. Single source of truth: any
+// "now" that drives day-of-the-week display, ISO key, or rollover passes
+// through effectiveNow() instead of `new Date()`.
+const DAY_BOUNDARY_HOUR = 3;
+function effectiveNow() {
   const d = new Date();
+  d.setHours(d.getHours() - DAY_BOUNDARY_HOUR);
+  return d;
+}
+
+function dateInfo(offset = 0) {
+  const d = effectiveNow();
   d.setDate(d.getDate() + offset);
   return {
     weekday: d.toLocaleDateString(undefined, { weekday: "long" }),
@@ -101,7 +114,7 @@ function wipeAllDailyNow() {
 
 // === Day math ===
 function isoFromOffset(offset = 0) {
-  const d = new Date();
+  const d = effectiveNow();
   d.setDate(d.getDate() + offset);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -126,20 +139,38 @@ function nextId() {
 }
 
 // === Marker ladder ===
-// Per Decisions log (2026-04-26): marker advances on every day boundary.
-//   ` `(null) → `>` → `>>` → `?` (sticks); `*` decays to `>`; `@` parks.
+// Per Decisions log (2026-04-26, revised 2026-04-30): marker advances on every
+// day boundary. ` `(null) → `>` → `>>` → `?` (sticks); `@` parks. Priority is
+// no longer a marker character — `*` was retired in favor of a separate
+// `priority` boolean field rendered as a highlighter on the task text. This
+// keeps the migration ladder visually consistent (one glyph in the gutter)
+// and decouples "important today" from "carried since".
 function advanceMarker(mark) {
   if (!mark) return ">";
   if (mark === ">") return ">>";
   if (mark === ">>") return "?";
   if (mark === "?") return "?";
-  if (mark === "*") return ">";
   return mark;
 }
 function walkMarker(mark, n) {
   let m = mark;
   for (let i = 0; i < n; i++) m = advanceMarker(m);
   return m;
+}
+
+// === Importance score (v1) ===
+// score = priority*6 + tierWeight - agePenalty, clamped [0, 11].
+// Used to nominate top-3 in Morning Anchor. Algorithm doesn't auto-set
+// priority — only the user does, via the highlighter swipe action.
+const TIER_WEIGHT = { null: 1, ">": 2, ">>": 3, "?": 5, "@": 0 };
+function priorityScore(task, nowMs = Date.now()) {
+  if (task.done || task.parked) return 0;
+  const priority = task.priority ? 1 : 0;
+  const tier = TIER_WEIGHT[task.mark || "null"] ?? 1;
+  const created = task.createdAt || nowMs;
+  const ageDays = Math.max(0, Math.floor((nowMs - created) / 86400000));
+  const agePenalty = Math.min(Math.floor(ageDays / 3), 4);
+  return Math.max(0, Math.min(11, priority * 6 + tier - agePenalty));
 }
 
 // Tiny placeholder shown while a deferred-screen module is still loading.
@@ -193,8 +224,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=12"),
-        loadBabelScript("screens-rituals.jsx?v=12"),
+        loadBabelScript("screens-flows.jsx?v=14"),
+        loadBabelScript("screens-rituals.jsx?v=14"),
       ]);
     }
     loadAll()
@@ -267,6 +298,11 @@ function App() {
   const [shelfSheet, setShelfSheet] = useState(null); // { kind, item }
   const [wins, setWins] = useState(boot.wins || []);
   const [recap, setRecap] = useState(null); // { wins, completed, prevDateStr }
+  // Set true by the day-rollover effect when there were flagged-priority tasks
+  // carrying into the new day. MorningAnchor reads this and surfaces the
+  // carry-sheet ("yesterday's priorities — keep / clear"). Clearing happens
+  // via the sheet itself, not auto.
+  const [rolloverPriorityPrompt, setRolloverPriorityPrompt] = useState(false);
   const [sheet, setSheet] = useState(null);
   const [showKey, setShowKey] = useState(false);
   const [toast, setToast] = useState(null);
@@ -314,12 +350,14 @@ function App() {
     }
     const gap = daysBetweenIso(lastOpenedDay, todayIso);
     if (gap <= 0) return;
+    const hadPriorities = tasks.some(t => t.priority && !t.done);
     setTasks(prev => prev.map(task => task.done ? task : { ...task, mark: walkMarker(task.mark, gap) }));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + gap })));
     setWins([]);
     setCompletionsSinceShelf(0);
     setReOfferDismissed({});
     setLastOpenedDay(todayIso);
+    if (hadPriorities) setRolloverPriorityPrompt(true);
   }, [todayIso]);
 
   // === Persist on every change ===
@@ -396,7 +434,13 @@ function App() {
 
   useEffect(() => { setShowTutorial(!tutorialDone && t.showTutorial); }, [t.showTutorial, tutorialDone]);
 
-  function addTask(task) { setTasks([task, ...tasks]); }
+  function addTask(task) { setTasks([{ createdAt: Date.now(), ...task }, ...tasks]); }
+  function togglePriority(id) {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: !t.priority } : t));
+  }
+  function clearAllPriorities() {
+    setTasks(prev => prev.map(t => t.priority ? { ...t, priority: false } : t));
+  }
   function addMomentumStep(originalTask, stepText) {
     // "Start with one" — add a tiny step ABOVE the original task. Parent
     // stays exactly where it is; this is just a momentum primer.
@@ -720,6 +764,9 @@ function App() {
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
+            priorityCarry={rolloverPriorityPrompt ? tasks.filter(t => t.priority && !t.done) : null}
+            onKeepPriorities={() => setRolloverPriorityPrompt(false)}
+            onClearPriorities={() => { clearAllPriorities(); setRolloverPriorityPrompt(false); }}
           />
         </div>
       )}
@@ -830,6 +877,7 @@ function App() {
               onKeyOpen={() => setShowKey(true)}
               onTaskCompleted={onTaskCompleted}
               onSetDownOpen={(task) => setSetDownContext(task)}
+              onTogglePriority={togglePriority}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {

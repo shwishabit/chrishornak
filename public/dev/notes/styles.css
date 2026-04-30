@@ -14,6 +14,7 @@
   --accent-soft: #B89B6E;
   --mark: #C2410C; /* friction marks (>>, ?) */
   --mark-soft: #E0BFA1;
+  --highlight: rgba(244, 200, 80, 0.42); /* user-flagged priority — marker stroke */
 
   --serif: "Source Serif 4", "Source Serif Pro", "Iowan Old Style", Georgia, serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -33,6 +34,7 @@
   --accent-soft: #A88656;
   --mark: #A53A0C;
   --mark-soft: #D5B187;
+  --highlight: rgba(220, 180, 70, 0.40);
 }
 
 [data-theme="dark"] {
@@ -48,6 +50,7 @@
   --accent-soft: #8E7553;
   --mark: #E68A5A;
   --mark-soft: #5A3F2A;
+  --highlight: rgba(230, 190, 90, 0.32);
 }
 
 * { box-sizing: border-box; }
@@ -421,6 +424,17 @@ body {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
   text-decoration-color: var(--ink-faint);
+}
+
+/* Priority — user-flagged via highlighter swipe action. Uses
+   box-decoration-break: clone so multi-line wrapping highlights each
+   line cleanly instead of one rectangle covering paragraph dead-space. */
+.task-text--priority {
+  background: var(--highlight);
+  padding: 1px 4px;
+  border-radius: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Tab bar — minimal */
