@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>The Daily Now</title>
 
+<base href="./">
+<script>
+  // Vercel strips trailing slashes (/dev/notes/ -> /dev/notes), which would
+  // make relative paths resolve against /dev/ and 404. Force base to the
+  // current "directory" so styles/scripts/fetch resolve under /dev/notes/.
+  // Works locally too: pathname "/" stays "/".
+  if (!location.pathname.endsWith("/")) {
+    document.querySelector("base").setAttribute("href", location.pathname + "/");
+  }
+</script>
+
 <meta name="theme-color" content="#F4EDE0"/>
 <link rel="manifest" href="manifest.webmanifest"/>
 <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
