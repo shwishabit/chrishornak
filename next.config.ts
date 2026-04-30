@@ -73,6 +73,33 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Daily Now prototype: React + Babel standalone loaded from unpkg, with
+      // in-browser JSX compilation via Babel.transform. Needs 'unsafe-eval' and
+      // explicit unpkg.com in script-src. Last-match-wins overrides the broader
+      // /dev/:path* CSP above for any /dev/notes/* URL. Robots/frame/referrer
+      // headers are restated so this rule is self-contained.
+      {
+        source: '/dev/notes/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: blob:",
+              "font-src 'self' https://fonts.gstatic.com",
+              "connect-src 'self'",
+              "manifest-src 'self'",
+              "frame-src 'none'",
+            ].join('; '),
+          },
+        ],
+      },
       {
         source: '/((?!docs/|dev/).*)',
         headers: [
