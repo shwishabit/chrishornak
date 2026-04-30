@@ -833,8 +833,7 @@ function seedJournalIfEmpty() {
   } catch (e) {}
 }
 
-function Journal({ onClose, dateStr, weekday }) {
-  const todayIso = isoFromDate(new Date());
+function Journal({ onClose, dateStr, weekday, todayIso }) {
   const MAX = 500;
 
   // Mode: 'write' (today, editable), 'view' (past entry, read-only), 'calendar' (picker)
@@ -886,6 +885,17 @@ function Journal({ onClose, dateStr, weekday }) {
     }, 600);
     return () => clearTimeout(id);
   }, [text, todayIso, mode]);
+
+  // Resync editor on day flip (admin advance / real midnight via App's
+  // visibility tick) — pulls the new day's stored entry into local state.
+  // Race safety: the autosave effect's cleanup runs first when deps change
+  // and clears its pending 600ms timer, so yesterday's text can't post-write
+  // itself into today's key after we've moved.
+  useEffect(() => {
+    if (mode !== "write") return;
+    setViewingIso(todayIso);
+    try { setText(localStorage.getItem(`dailynow.journal.${todayIso}`) || ""); } catch (e) {}
+  }, [todayIso, mode]);
 
   const remaining = MAX - text.length;
   const overSoft = remaining < 0;

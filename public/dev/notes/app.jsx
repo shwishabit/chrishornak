@@ -193,8 +193,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=11"),
-        loadBabelScript("screens-rituals.jsx?v=11"),
+        loadBabelScript("screens-flows.jsx?v=12"),
+        loadBabelScript("screens-rituals.jsx?v=12"),
       ]);
     }
     loadAll()
@@ -272,6 +272,29 @@ function App() {
   const [toast, setToast] = useState(null);
   const [dayOffset, setDayOffset] = useState(boot.dayOffset || 0);
   const [lastOpenedDay, setLastOpenedDay] = useState(boot.lastOpenedDay || null);
+
+  // Reactive effective today. Recomputes when dayOffset flips (admin advance),
+  // on visibilitychange / focus, and once a minute — so a long-lived PWA
+  // notices real midnight without a manual reload. Everything date-aware
+  // (rollover ladder, journal autosave) consumes this rather than calling
+  // new Date() at render time.
+  const [todayIso, setTodayIso] = useState(() => isoFromOffset(dayOffset));
+  useEffect(() => {
+    function tick() {
+      const next = isoFromOffset(dayOffset);
+      setTodayIso(prev => prev === next ? prev : next);
+    }
+    tick();
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    const id = setInterval(tick, 60000);
+    return () => {
+      document.removeEventListener("visibilitychange", tick);
+      window.removeEventListener("focus", tick);
+      clearInterval(id);
+    };
+  }, [dayOffset]);
+
   const [leftovers, setLeftovers] = useState(null);
   const [prevDateStr, setPrevDateStr] = useState(null);
   const [meditateSession, setMeditateSession] = useState(null); // {minutes, sound, guided}
@@ -279,14 +302,12 @@ function App() {
   // Each entry: { id, kind: 'task'|'shelf'|'note', payload, releasedAt }
   const [trash, setTrash] = useState(boot.trash || []);
 
-  // === Day rollover migration on mount ===
-  // Fires once. If today's effective ISO differs from lastOpenedDay, walk the
-  // marker ladder for every open task by the gap, bump shelf days-on, and
-  // clear today-scoped state (wins, completionsSinceShelf, reOffer dismissals).
-  // Multi-day gaps walk the ladder per day. Same-day or first-ever-open: no-op
-  // beyond stamping lastOpenedDay.
+  // === Day rollover migration ===
+  // Fires on mount AND whenever the effective day flips mid-session (admin
+  // advance, visibility resume across midnight). Walks the marker ladder by
+  // the day gap, bumps shelf days-on, clears today-scoped state. Idempotent —
+  // same-day re-runs compute gap=0 and no-op.
   useEffect(() => {
-    const todayIso = isoFromOffset(dayOffset);
     if (!lastOpenedDay) {
       setLastOpenedDay(todayIso);
       return;
@@ -299,7 +320,7 @@ function App() {
     setCompletionsSinceShelf(0);
     setReOfferDismissed({});
     setLastOpenedDay(todayIso);
-  }, []);
+  }, [todayIso]);
 
   // === Persist on every change ===
   useEffect(() => {
@@ -865,6 +886,7 @@ function App() {
                 onClose={() => setScreen("anchor")}
                 dateStr={dateStr}
                 weekday={weekday.toLowerCase()}
+                todayIso={todayIso}
               />
             ) : <DeferredFallback label="journal"/>}
           </div>
