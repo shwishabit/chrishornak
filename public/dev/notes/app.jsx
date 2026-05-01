@@ -65,6 +65,19 @@ function dateInfo(offset = 0) {
   };
 }
 
+// Build a dateInfo-shaped object from a stored ISO ("YYYY-MM-DD"), used by
+// the natural-day-flip Recap so prevDateStr reflects the actual last-opened
+// day (which may be 1, 3, or 14 days back) — not "yesterday."
+function dateStrFromIso(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  return {
+    weekday: dt.toLocaleDateString(undefined, { weekday: "long" }),
+    dateStr: dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }),
+    short: dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  };
+}
+
 function nextMarkAfterCarry(mark) {
   if (!mark) return ">";
   if (mark === ">") return ">>";
@@ -242,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=16"),
-        loadBabelScript("screens-rituals.jsx?v=16"),
+        loadBabelScript("screens-flows.jsx?v=17"),
+        loadBabelScript("screens-rituals.jsx?v=17"),
       ]);
     }
     loadAll()
@@ -320,7 +333,6 @@ function App() {
   // carrying into the new day. MorningAnchor reads this and surfaces the
   // carry-sheet ("yesterday's priorities — keep / clear"). Clearing happens
   // via the sheet itself, not auto.
-  const [rolloverPriorityPrompt, setRolloverPriorityPrompt] = useState(false);
   const [sheet, setSheet] = useState(null);
   const [showKey, setShowKey] = useState(false);
   const [toast, setToast] = useState(null);
@@ -358,9 +370,12 @@ function App() {
 
   // === Day rollover migration ===
   // Fires on mount AND whenever the effective day flips mid-session (admin
-  // advance, visibility resume across midnight). Walks the marker ladder by
-  // the day gap, bumps shelf days-on, clears today-scoped state. Idempotent —
-  // same-day re-runs compute gap=0 and no-op.
+  // advance, visibility resume across midnight). Captures last-day state for
+  // the Recap+Carry ritual, then walks the marker ladder by the day gap,
+  // bumps shelf days-on, and clears today-scoped state. Idempotent —
+  // same-day re-runs compute gap=0 and no-op. Always fires the Recap (empty
+  // case lands on phase-2 "fresh page" copy — never punishes a quiet or
+  // multi-day-gap return).
   useEffect(() => {
     if (!lastOpenedDay) {
       setLastOpenedDay(todayIso);
@@ -368,14 +383,26 @@ function App() {
     }
     const gap = daysBetweenIso(lastOpenedDay, todayIso);
     if (gap <= 0) return;
-    const hadPriorities = tasks.some(t => t.priority && !t.done);
+    const recapWins = wins;
+    const recapCompleted = tasks.filter(t => t.done);
+    const recapLeftovers = tasks
+      .filter(t => !t.done)
+      .map(task => ({ ...task, mark: walkMarker(task.mark, gap) }));
+    const recapPrevDateStr = dateStrFromIso(lastOpenedDay).dateStr;
     setTasks(prev => prev.map(task => task.done ? task : { ...task, mark: walkMarker(task.mark, gap) }));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + gap })));
     setWins([]);
     setCompletionsSinceShelf(0);
     setReOfferDismissed({});
     setLastOpenedDay(todayIso);
-    if (hadPriorities) setRolloverPriorityPrompt(true);
+    setRecap({
+      wins: recapWins,
+      completed: recapCompleted,
+      leftovers: recapLeftovers,
+      prevDateStr: recapPrevDateStr,
+      recapSource: "natural",
+    });
+    setScreen("recap");
   }, [todayIso]);
 
   // === Persist on every change ===
@@ -446,7 +473,11 @@ function App() {
     document.documentElement.setAttribute("data-theme", t.theme === "paper" ? "" : t.theme);
   }, [t.theme]);
 
+  // Skip first-mount fire — the useState init for `screen` already applies
+  // t.openOn. Re-firing on mount would clobber the day-rollover Recap path.
+  const openOnDirty = useRef(false);
   useEffect(() => {
+    if (!openOnDirty.current) { openOnDirty.current = true; return; }
     setScreen(t.openOn === "now" ? "now" : t.openOn === "return" ? "return" : "anchor");
   }, [t.openOn]);
 
@@ -455,9 +486,6 @@ function App() {
   function addTask(task) { setTasks([{ createdAt: Date.now(), ...task }, ...tasks]); }
   function togglePriority(id) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: !t.priority } : t));
-  }
-  function clearAllPriorities() {
-    setTasks(prev => prev.map(t => t.priority ? { ...t, priority: false } : t));
   }
   function addMomentumStep(originalTask, stepText) {
     // "Start with one" — add a tiny step ABOVE the original task. Parent
@@ -646,12 +674,16 @@ function App() {
     const unfinished = tasks.filter(t => !t.done);
     const completed = tasks.filter(t => t.done);
     const prev = dateInfo(dayOffset).dateStr;
-    setRecap({ wins, completed, leftovers: unfinished, prevDateStr: prev });
+    setRecap({ wins, completed, leftovers: unfinished, prevDateStr: prev, recapSource: "admin" });
     setScreen("recap");
   }
   function continueAfterRecap() {
-    // Recap → either go to carry, or go straight to anchor if no leftovers
-    setDayOffset(dayOffset + 1);
+    // Only bump dayOffset for admin "force next day · with recap." Natural
+    // day flips already advanced todayIso through effectiveNow(); bumping
+    // again would skip a day.
+    if (recap.recapSource === "admin") {
+      setDayOffset(dayOffset + 1);
+    }
     setPrevDateStr(recap.prevDateStr);
     setWins([]); // wins are celebrated; new day starts clean
     if (recap.leftovers.length === 0) {
@@ -782,9 +814,6 @@ function App() {
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
-            priorityCarry={rolloverPriorityPrompt ? tasks.filter(t => t.priority && !t.done) : null}
-            onKeepPriorities={() => setRolloverPriorityPrompt(false)}
-            onClearPriorities={() => { clearAllPriorities(); setRolloverPriorityPrompt(false); }}
           />
         </div>
       )}

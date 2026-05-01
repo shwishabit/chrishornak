@@ -5,10 +5,9 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, priorityCarry, onKeepPriorities, onClearPriorities }) {
+function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum }) {
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
-  const showCarry = Array.isArray(priorityCarry) && priorityCarry.length > 0;
   return (
     <div className="screen fade-soft" style={{justifyContent: "space-between", padding: "56px 32px 32px", position: "relative"}}>
       <div style={{textAlign: "left"}} className="ascend">
@@ -132,64 +131,6 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
           <span style={{fontSize: 18, opacity: 0.7}}>→</span>
         </button>
       </div>
-
-      {showCarry && (
-        <>
-          <div className="sheet-backdrop"/>
-          <div className="sheet" style={{maxHeight: "70%", overflowY: "auto"}}>
-            <div className="kicker" style={{marginBottom: 8}}>yesterday's priorities</div>
-            <div className="serif" style={{
-              fontSize: 18, color: "var(--ink)", fontStyle: "italic",
-              lineHeight: 1.4, marginBottom: 18,
-            }}>
-              still important?
-            </div>
-            <div style={{
-              display: "flex", flexDirection: "column", gap: 8,
-              borderTop: "1px solid var(--rule)",
-              paddingTop: 14, marginBottom: 22,
-            }}>
-              {priorityCarry.map(t => (
-                <div key={t.id} className="serif" style={{
-                  fontSize: 15, color: "var(--ink)", lineHeight: 1.45,
-                  padding: "4px 0",
-                }}>
-                  <span style={{
-                    background: "var(--highlight)",
-                    padding: "1px 4px",
-                    borderRadius: 2,
-                    boxDecorationBreak: "clone",
-                    WebkitBoxDecorationBreak: "clone",
-                  }}>{t.text}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{display: "flex", gap: 12, justifyContent: "stretch"}}>
-              <button
-                onClick={onClearPriorities}
-                className="ghost-btn"
-                style={{
-                  flex: 1, padding: "12px 18px",
-                  border: "1px solid var(--rule-strong)",
-                  borderRadius: 999, background: "transparent",
-                  fontFamily: "var(--serif)", fontSize: 15, fontStyle: "italic",
-                  color: "var(--ink-soft)", cursor: "pointer",
-                }}
-              >clear all</button>
-              <button
-                onClick={onKeepPriorities}
-                style={{
-                  flex: 1, padding: "12px 18px",
-                  border: "none", borderRadius: 999,
-                  background: "var(--ink)", color: "var(--paper)",
-                  fontFamily: "var(--serif)", fontSize: 15, fontStyle: "italic",
-                  cursor: "pointer",
-                }}
-              >keep</button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
