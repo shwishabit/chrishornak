@@ -521,6 +521,25 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
 
+  // Tap-outside-to-dismiss when drawer is open. Without this, the row content
+  // is translated by drawerWidth (≥400px on a 5-action active task), which
+  // exceeds typical phone viewports — the original tap-to-toggle handler on
+  // the row content slides off-screen and the only way to close becomes
+  // performing one of the drawer actions. Listener is keyed to this row's
+  // task.id via data-row-drawer so taps on the drawer's buttons fall through
+  // to their own onClick (which already calls setOpen(false) + executes).
+  useEffect(() => {
+    if (!open) return;
+    const taskId = task.id;
+    function handlePointerDown(e) {
+      const insideDrawer = e.target.closest && e.target.closest(`[data-row-drawer="${taskId}"]`);
+      if (insideDrawer) return;
+      setOpen(false);
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open, task.id]);
+
   let markGlyph = null;
   let markColor = "var(--ink-faint)";
   if (isCarriedOnce) { markGlyph = "›"; }
@@ -549,7 +568,7 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
       }}
     >
       {/* Action drawer (revealed when row is "open") */}
-      <div style={{
+      <div data-row-drawer={task.id} style={{
         position: "absolute",
         top: 0, right: 0, bottom: 0,
         display: "flex",

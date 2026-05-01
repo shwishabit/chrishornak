@@ -242,8 +242,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=15"),
-        loadBabelScript("screens-rituals.jsx?v=15"),
+        loadBabelScript("screens-flows.jsx?v=16"),
+        loadBabelScript("screens-rituals.jsx?v=16"),
       ]);
     }
     loadAll()
