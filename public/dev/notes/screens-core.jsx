@@ -82,20 +82,24 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <path d="M3.5 11 V15 a1 1 0 0 0 1 1 H15.5 a1 1 0 0 0 1 -1 V11" {...common}/>
         </svg>
       );
-    case "rethink":
-      // circular arrow — look at this again
+    case "fork":
+      // a single line splitting into two diverging paths — "this needs a direction"
       return (
         <svg viewBox="0 0 20 20" style={s}>
-          <path d="M16 11 a6 6 0 1 1 -1.6 -5.5" {...common}/>
-          <path d="M16 3 V6 H13" {...common}/>
+          <path d="M10 17 V11" {...common}/>
+          <path d="M10 11 L5 4" {...common}/>
+          <path d="M10 11 L15 4" {...common}/>
+          <circle cx="5" cy="3.5" r="0.9" fill="currentColor"/>
+          <circle cx="15" cy="3.5" r="0.9" fill="currentColor"/>
         </svg>
       );
-    case "decide":
-      // a question-mark-as-decision — slightly different from rethink
+    case "pencil":
+      // standard pencil glyph — angled body with a small eraser end
       return (
         <svg viewBox="0 0 20 20" style={s}>
-          <path d="M7 7 a3 3 0 1 1 3 3 V12" {...common}/>
-          <circle cx="10" cy="15.5" r="0.9" fill="currentColor"/>
+          <path d="M14 3 L17 6 L7 16 L3.5 16.5 L4 13 z" {...common}/>
+          <line x1="12.5" y1="4.5" x2="15.5" y2="7.5" {...common}/>
+          <line x1="4" y1="13" x2="7" y2="16" {...common}/>
         </svg>
       );
     case "break-down":
@@ -117,17 +121,6 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <circle cx="4" cy="10" r="2.2" fill="currentColor"/>
           <path d="M8 10 H16" {...common}/>
           <path d="M13 7 L16 10 L13 13" {...common}/>
-        </svg>
-      );
-    case "set-down":
-      // a sheet of paper with a luggage tag dangling — "parked, labeled"
-      return (
-        <svg viewBox="0 0 20 20" style={s}>
-          <path d="M4 3 H10 L13 6 V16 H4 z" {...common}/>
-          <path d="M10 3 V6 H13" {...common}/>
-          <line x1="11" y1="12" x2="14" y2="15.5" {...common}/>
-          <circle cx="14.8" cy="16.4" r="1.6" {...common}/>
-          <circle cx="14.8" cy="16.4" r="0.45" fill="currentColor"/>
         </svg>
       );
     case "highlight":

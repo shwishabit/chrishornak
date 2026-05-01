@@ -255,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=17"),
-        loadBabelScript("screens-rituals.jsx?v=17"),
+        loadBabelScript("screens-flows.jsx?v=18"),
+        loadBabelScript("screens-rituals.jsx?v=18"),
       ]);
     }
     loadAll()
@@ -325,7 +325,6 @@ function App() {
   const [shelf, setShelf] = useState(boot.shelf || []);
   const [completionsSinceShelf, setCompletionsSinceShelf] = useState(0);
   const [reOfferDismissed, setReOfferDismissed] = useState({}); // { [shelfId]: true }
-  const [setDownContext, setSetDownContext] = useState(null); // task being set down
   const [shelfSheet, setShelfSheet] = useState(null); // { kind, item }
   const [wins, setWins] = useState(boot.wins || []);
   const [recap, setRecap] = useState(null); // { wins, completed, prevDateStr }
@@ -515,21 +514,28 @@ function App() {
       setCompletionsSinceShelf(c => c + 1);
     }
   }
-  function setDownTask(task, { reasonTag, reasonNote, waitingOn }) {
-    const item = {
-      id: nextId(), text: task.text,
-      parentText: task.parentText || null,
-      reasonTag: reasonTag || null,
-      reasonNote: reasonNote || null,
-      waitingOn: waitingOn || null,
-      shelvedOn: today.short,
-      daysOnShelf: 0,
-    };
-    setShelf([item, ...shelf]);
-    setTasks(tasks.filter(x => x.id !== task.id));
-    setCompletionsSinceShelf(0); // reset clock — re-offer when momentum returns
-    showToast("set down — gently.", 2400);
+  function renameTask(id, text) {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
   }
+  const [highlightHintDismissed, setHighlightHintDismissed] = useState(() => {
+    try { return localStorage.getItem(STORAGE_NS + ":highlightHintShown") === "true"; }
+    catch { return true; }
+  });
+  function dismissHighlightHint() {
+    try { localStorage.setItem(STORAGE_NS + ":highlightHintShown", "true"); }
+    catch {}
+    setHighlightHintDismissed(true);
+  }
+  // Auto-dismiss the hint the moment the user actually highlights something.
+  useEffect(() => {
+    if (!highlightHintDismissed && tasks.some(t => t.priority)) {
+      dismissHighlightHint();
+    }
+  }, [tasks, highlightHintDismissed]);
+  const showHighlightHint = !highlightHintDismissed
+    && screen === "now"
+    && tasks.filter(t => !t.done).length >= 3
+    && !tasks.some(t => t.priority);
   function bringShelfBack(item) {
     const fresh = {
       id: nextId(), text: item.text,
@@ -919,12 +925,11 @@ function App() {
               onAddOpen={() => setSheet("add")}
               onWinOpen={() => setSheet("win")}
               onDivideOpen={(task) => setSheet({ kind: "decision", task })}
-              onDocumentOpen={(task) => setSheet({ kind: "document", task })}
               onDelete={deleteTask}
               onKeyOpen={() => setShowKey(true)}
               onTaskCompleted={onTaskCompleted}
-              onSetDownOpen={(task) => setSetDownContext(task)}
               onTogglePriority={togglePriority}
+              onRename={renameTask}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {
@@ -944,6 +949,9 @@ function App() {
               onReOfferLater={(item) => dismissReOffer(item.id)}
               onReOfferRest={(item) => dismissReOffer(item.id)}
             />
+            {showHighlightHint && (
+              <HighlightHint onDismiss={dismissHighlightHint}/>
+            )}
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
@@ -1016,32 +1024,11 @@ function App() {
           onStartOne={(stepText) => { addMomentumStep(sheet.task, stepText); setSheet(null); }}
           onKeepAsNote={() => { keepAsNote(sheet.task); setSheet(null); }}
           onPlaceInDrawer={() => { placeTaskInDrawer(sheet.task); setSheet(null); }}
-          onSetDown={() => { setSetDownContext(sheet.task); setSheet(null); }}
           onDelete={() => { deleteTask(sheet.task.id); setSheet(null); }}
           onShare={() => shareTask(sheet.task)}
         />
       )}
-      {sheet && sheet.kind === "document" && (
-        <DocumentSheet
-          task={sheet.task}
-          onClose={() => setSheet(null)}
-          onPlaceOnDesk={() => keepAsNote(sheet.task)}
-          onPlaceInDrawer={() => placeTaskInDrawer(sheet.task)}
-          onShare={() => shareTask(sheet.task)}
-        />
-      )}
       {showKey && deferredReady && <KeyReference onClose={() => setShowKey(false)}/>}
-
-      {setDownContext && deferredReady && (
-        <SetDownSheet
-          task={setDownContext}
-          onClose={() => setSetDownContext(null)}
-          onConfirm={(payload) => {
-            setDownTask(setDownContext, payload);
-            setSetDownContext(null);
-          }}
-        />
-      )}
 
       {shelfSheet && shelfSheet.kind === "reframe" && deferredReady && (
         <ReframeSheet

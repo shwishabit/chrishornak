@@ -60,7 +60,7 @@ function TurnThePage({ onTurn, daysAway }) {
   );
 }
 
-// ---------- Reason tags (used by SetDownSheet + DeskShelfPostit) ----------
+// ---------- Reason tags (used by DeskShelfPostit to display existing reasons) ----------
 const REASON_TAGS = [
   { key: "fear",     label: "it feels heavy",   sub: "fear or pressure" },
   { key: "waiting",  label: "I'm waiting",      sub: "on someone or something" },
@@ -79,11 +79,12 @@ function reasonLabelFor(key) {
 // Replaces the simple "divide" sheet for ?-marked tasks.
 // A hub of options: start with one, break it down, send somewhere,
 // place on desk, place in drawer, set down with reason, toss in trash can.
-function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote, onPlaceInDrawer, onSetDown, onDelete, onShare }) {
+function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote, onPlaceInDrawer, onDelete, onShare }) {
   // view: "hub" | "startOne" | "breakDown" | "share"
   const [view, setView] = useState("hub");
   const [oneStep, setOneStep] = useState("");
   const oneRef = useRef(null);
+  const isAtDecisionMark = task.mark === "?";
 
   useEffect(() => {
     if (view === "startOne") setTimeout(() => oneRef.current?.focus(), 80);
@@ -99,7 +100,7 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
     <>
       <div className="sheet-backdrop" onClick={onClose}/>
       <div className="sheet" style={{paddingBottom: 28, maxHeight: "82%", overflowY: "auto"}}>
-        <div className="kicker" style={{marginBottom: 8}}>decision point</div>
+        <div className="kicker" style={{marginBottom: 8}}>{isAtDecisionMark ? "decision point" : "decide"}</div>
         <div className="serif" style={{fontSize: 19, color: "var(--ink)", lineHeight: 1.4, marginBottom: 4}}>
           {task.text}
         </div>
@@ -107,7 +108,7 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
           fontSize: 13, color: "var(--ink-soft)", fontStyle: "italic", marginBottom: 18,
           lineHeight: 1.5,
         }}>
-          {view === "hub"      && "Three days have lived here. What does this need from you now?"}
+          {view === "hub"      && (isAtDecisionMark ? "Three days have lived here. What does this need from you now?" : "What needs to happen with this?")}
           {view === "startOne" && "What's one small thing you could do right now to get going?"}
           {view === "breakDown"&& "What small steps live inside this?"}
           {view === "share"    && "Send it somewhere it belongs."}
@@ -120,7 +121,6 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
             onShare={() => setView("share")}
             onKeepAsNote={onKeepAsNote}
             onPlaceInDrawer={onPlaceInDrawer}
-            onSetDown={onSetDown}
             onDelete={onDelete}
           />
         )}
@@ -156,14 +156,13 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
   );
 }
 
-function DecisionHub({ onStartOne, onBreakDown, onShare, onKeepAsNote, onPlaceInDrawer, onSetDown, onDelete }) {
+function DecisionHub({ onStartOne, onBreakDown, onShare, onKeepAsNote, onPlaceInDrawer, onDelete }) {
   const items = [
     { label: "Start with one",   hint: "name the smallest piece, do that", action: onStartOne, primary: true,  icon: "start-one" },
     { label: "Break it down",    hint: "two to five small steps",           action: onBreakDown, primary: true, icon: "break-down" },
     { label: "Send it on",       hint: "calendar, message, mail…",          action: onShare,                    icon: "share" },
     { label: "Place on desk",    hint: "worth considering, on top",         action: onKeepAsNote,               icon: "desk" },
     { label: "Place in drawer",  hint: "less vital, tucked away",           action: onPlaceInDrawer,            icon: "drawer" },
-    { label: "Set down · with reason", hint: "rest it gently, with a why",  action: onSetDown,                  icon: "set-down" },
     { label: "Toss in trash can", hint: "release it from the page",         action: onDelete, danger: true,     icon: "trash" },
   ];
   return (
@@ -866,88 +865,6 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
 }
 
 // ---------- Set Down Sheet (reflective prompt) ----------
-function SetDownSheet({ task, onClose, onConfirm }) {
-  const [tag, setTag] = useState(null);
-  const [note, setNote] = useState("");
-
-  return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet" style={{paddingBottom: 28, maxHeight: "82%", overflowY: "auto"}}>
-        <div className="kicker" style={{marginBottom: 8}}>set it down</div>
-        <div className="serif" style={{
-          fontSize: 21, color: "var(--ink)", lineHeight: 1.4, marginBottom: 6,
-        }}>
-          {task.text}
-        </div>
-        <div className="serif" style={{
-          fontSize: 14, color: "var(--ink-soft)", fontStyle: "italic",
-          marginBottom: 18, lineHeight: 1.55,
-        }}>
-          This has been with you a while. That's okay. Some things are hard. Let's set it on a quiet shelf — you'll come back when you have space.
-        </div>
-
-        <div className="kicker" style={{marginBottom: 10, fontSize: 10}}>
-          if you want — what's keeping it here?
-        </div>
-        <div style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14,
-        }}>
-          {REASON_TAGS.map(r => (
-            <button key={r.key} onClick={() => setTag(tag === r.key ? null : r.key)} style={{
-              textAlign: "left",
-              background: tag === r.key ? "var(--ink)" : "transparent",
-              color: tag === r.key ? "var(--paper)" : "var(--ink)",
-              border: `1px solid ${tag === r.key ? "var(--ink)" : "var(--rule-strong)"}`,
-              borderRadius: 10, padding: "10px 12px",
-              fontFamily: "var(--serif)", fontSize: 13, lineHeight: 1.3,
-              cursor: "pointer",
-            }}>
-              <div style={{fontStyle: "italic"}}>{r.label}</div>
-              <div style={{
-                fontSize: 10, opacity: tag === r.key ? 0.75 : 0.55, marginTop: 2,
-                fontStyle: "normal", letterSpacing: "0.03em",
-              }}>{r.sub}</div>
-            </button>
-          ))}
-        </div>
-
-        <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>
-          or in your own words — anything you want to remember
-        </div>
-        <input
-          className="paper-input serif"
-          style={{fontSize: 15, fontStyle: "italic", fontFamily: "var(--serif)"}}
-          placeholder="optional…"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-
-        <div className="serif" style={{
-          fontSize: 12, color: "var(--ink-faint)", fontStyle: "italic",
-          marginTop: 14, lineHeight: 1.5,
-        }}>
-          Both fields are optional. You can just set it down.
-        </div>
-
-        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 22}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>not yet</button>
-          <button
-            onClick={() => onConfirm({ reasonTag: tag, reasonNote: note.trim() || null })}
-            style={{
-              background: "var(--ink)", color: "var(--paper)",
-              border: "none", borderRadius: 999, padding: "12px 22px",
-              fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
-            }}
-          >
-            Set it down
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
 // ---------- Reframe Sheet ----------
 function ReframeSheet({ item, onClose, onConfirm }) {
   const [text, setText] = useState(item.text);
@@ -1796,7 +1713,7 @@ Object.assign(window, {
   DecisionPointSheet, DecisionHub, StartOnePanel, BreakDownPanel, SharePanel,
   DivideSheet,
   CarryForward,
-  SetDownSheet, ReframeSheet, WaitingOnSheet,
+  ReframeSheet, WaitingOnSheet,
   ReOfferCard,
   KeyReference,
   Recap,

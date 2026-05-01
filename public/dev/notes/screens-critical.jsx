@@ -1,5 +1,5 @@
 /* The Daily Now — critical screens (sync-loaded, first-paint path) */
-/* Anchor + Now page + capture sheets + DocumentSheet + Tutorial. */
+/* Anchor + Now page + capture sheets + Tutorial. */
 /* eslint-disable */
 
 const { useState, useEffect, useRef } = React;
@@ -200,7 +200,7 @@ function AnchorMenuItem({ label, hint, onClick, primary }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocumentOpen, onDelete, onKeyOpen, onTaskCompleted, onSetDownOpen, onTogglePriority, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
     setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
@@ -283,11 +283,10 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocume
             task={t}
             onToggle={() => toggle(t.id)}
             onDivide={() => onDivideOpen(t)}
-            onDocument={() => onDocumentOpen(t)}
             onDelete={() => onDelete(t.id)}
-            onSetDown={onSetDownOpen ? () => onSetDownOpen(t) : null}
             onAddNote={(noteText) => setNote(t.id, noteText)}
             onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
+            onRename={onRename}
             index={i}
           />
         ))}
@@ -317,7 +316,6 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDocume
             task={t}
             onToggle={() => toggle(t.id)}
             onDivide={() => {}}
-            onDocument={() => onDocumentOpen(t)}
             onDelete={() => onDelete(t.id)}
           />
         ))}
@@ -453,7 +451,7 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   );
 }
 
-function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, onAddNote, onTogglePriority, index }) {
+function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, index }) {
   const isDecision = task.mark === "?";
   const isCarriedTwice = task.mark === ">>";
   const isCarriedOnce = task.mark === ">";
@@ -461,14 +459,15 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
   const isPriority = task.priority === true;
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  // Swipe-right gesture progress (0–1). Drives the painted highlighter sweep.
+  // Tap vs swipe classification happens in onPointerUp based on Δx/Δy/elapsed.
+  const [swipeProgress, setSwipeProgress] = useState(0);
+  const swipeStateRef = useRef(null);
 
-  // Tap-outside-to-dismiss when drawer is open. Without this, the row content
-  // is translated by drawerWidth (≥400px on a 5-action active task), which
-  // exceeds typical phone viewports — the original tap-to-toggle handler on
-  // the row content slides off-screen and the only way to close becomes
-  // performing one of the drawer actions. Listener is keyed to this row's
-  // task.id via data-row-drawer so taps on the drawer's buttons fall through
-  // to their own onClick (which already calls setOpen(false) + executes).
+  // Tap-outside-to-dismiss when drawer is open. Listener is keyed to this
+  // row's task.id via data-row-drawer so taps on the drawer's buttons fall
+  // through to their own onClick.
   useEffect(() => {
     if (!open) return;
     const taskId = task.id;
@@ -487,16 +486,60 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
   else if (isCarriedTwice) { markGlyph = "››"; markColor = "var(--mark)"; }
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
 
-  // Drawer button count drives the slide distance.
-  // Always-on actions: highlight (when handler), note, document, delete.
-  // Conditional: set down + decide (only when ? AND not done).
-  const drawerWidth = (() => {
-    let n = 3; // note + document + delete
-    if (onTogglePriority && !task.done) n++; // highlight toggle
-    if (isDecision && !task.done && onSetDown) n++; // set down
-    if (!task.done) n++; // rethink/decide button always available
-    return n * 80;
-  })();
+  // Drawer = × close + Edit + Comment + Decide. Always 4 buttons regardless
+  // of marker state. (Highlight moved to swipe-right gesture; set-down / desk
+  // / trash folded under Decide → DecisionPointSheet.)
+  const drawerWidth = 4 * 80;
+
+  // Pointer-event handlers on the row content. Tap = open drawer.
+  // Swipe-right = toggle priority (with painted-sweep animation). Vertical
+  // movement aborts. Edge-guard at start-x ≥ 20px avoids iOS PWA back-swipe.
+  function onRowPointerDown(e) {
+    if (editOpen || noteOpen) return;
+    if (e.target.closest && e.target.closest(".check")) return;
+    if (e.clientX < 20) return;
+    swipeStateRef.current = {
+      startX: e.clientX, startY: e.clientY, startTime: Date.now(),
+    };
+  }
+  function onRowPointerMove(e) {
+    const s = swipeStateRef.current;
+    if (!s) return;
+    const dx = e.clientX - s.startX;
+    const dy = e.clientY - s.startY;
+    if (Math.abs(dy) > 30) {
+      swipeStateRef.current = null;
+      setSwipeProgress(0);
+      return;
+    }
+    if (dx > 0) {
+      setSwipeProgress(Math.min(dx / 200, 1));
+    }
+  }
+  function onRowPointerUp(e) {
+    const s = swipeStateRef.current;
+    if (!s) return;
+    swipeStateRef.current = null;
+    const dx = e.clientX - s.startX;
+    const dy = e.clientY - s.startY;
+    const elapsed = Date.now() - s.startTime;
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8 && elapsed < 300) {
+      setOpen(!open);
+      setSwipeProgress(0);
+      return;
+    }
+    if (dx > 60 && Math.abs(dy) < 30 && elapsed < 800 && onTogglePriority) {
+      onTogglePriority();
+      setSwipeProgress(1);
+      setTimeout(() => setSwipeProgress(0), 240);
+      return;
+    }
+    setSwipeProgress(0);
+  }
+  function onRowPointerCancel() {
+    swipeStateRef.current = null;
+    setSwipeProgress(0);
+  }
 
   return (
     <div
@@ -508,7 +551,7 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
         overflow: "hidden",
       }}
     >
-      {/* Action drawer (revealed when row is "open") */}
+      {/* Action drawer (revealed when row is "open") — × close · Edit · Comment · Decide */}
       <div data-row-drawer={task.id} style={{
         position: "absolute",
         top: 0, right: 0, bottom: 0,
@@ -516,30 +559,32 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
         alignItems: "stretch",
         zIndex: 1,
       }}>
-        {isDecision && !task.done && onSetDown && (
-          <button
-            onClick={() => { setOpen(false); onSetDown(); }}
-            aria-label="set down with reason"
-            title="set down"
-            style={{
-              background: "var(--paper-deep)",
-              border: "none",
-              padding: "0 14px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              borderLeft: "1px solid var(--rule)",
-              minWidth: 80,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          ><Icon name="set-down" size={20}/></button>
-        )}
+        <button
+          onClick={() => setOpen(false)}
+          aria-label="close"
+          title="close"
+          style={{
+            background: "var(--paper-deep)",
+            border: "none",
+            padding: "0 14px",
+            color: "var(--ink-soft)",
+            cursor: "pointer",
+            borderLeft: "1px solid var(--rule)",
+            minWidth: 80,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "var(--serif)",
+            fontSize: 22,
+            fontStyle: "italic",
+            lineHeight: 1,
+          }}
+        >×</button>
         {!task.done && (
           <button
-            onClick={() => { setOpen(false); onDivide(); }}
-            aria-label={isDecision ? "decide" : "rethink"}
-            title={isDecision ? "decide" : "rethink"}
+            onClick={() => { setOpen(false); setEditOpen(true); }}
+            aria-label="edit"
+            title="edit"
             style={{
               background: "var(--paper-deep)",
               border: "none",
@@ -552,32 +597,10 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
               alignItems: "center",
               justifyContent: "center",
             }}
-          ><Icon name={isDecision ? "decide" : "rethink"} size={20}/></button>
-        )}
-        {onTogglePriority && !task.done && (
-          <button
-            onClick={() => { setOpen(false); onTogglePriority(); }}
-            aria-label={isPriority ? "remove highlight" : "highlight as priority"}
-            title="highlight"
-            style={{
-              background: isPriority ? "var(--highlight)" : "var(--paper-deep)",
-              border: "none",
-              padding: "0 14px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              borderLeft: "1px solid var(--rule)",
-              minWidth: 80,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          ><Icon name="highlight" size={20}/></button>
+          ><Icon name="pencil" size={20}/></button>
         )}
         <button
-          onClick={() => {
-            setOpen(false);
-            setNoteOpen(true);
-          }}
+          onClick={() => { setOpen(false); setNoteOpen(true); }}
           aria-label="add comment"
           title="comment"
           style={{
@@ -593,42 +616,30 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
             justifyContent: "center",
           }}
         ><Icon name="comment" size={20}/></button>
-        <button
-          onClick={() => { setOpen(false); onDocument(); }}
-          aria-label="move to desk"
-          title="desk"
-          style={{
-            background: "var(--paper-deep)",
-            border: "none",
-            padding: "0 14px",
-            color: "var(--ink)",
-            cursor: "pointer",
-            borderLeft: "1px solid var(--rule)",
-            minWidth: 80,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        ><Icon name="desk" size={20}/></button>
-        <button
-          onClick={() => { setOpen(false); onDelete(); }}
-          aria-label="move to trash"
-          title="trash"
-          style={{
-            background: "var(--mark)",
-            border: "none",
-            padding: "0 14px",
-            color: "var(--paper)",
-            cursor: "pointer",
-            minWidth: 80,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        ><Icon name="trash" size={20}/></button>
+        {!task.done && (
+          <button
+            onClick={() => { setOpen(false); onDivide(); }}
+            aria-label="decide"
+            title="decide"
+            style={{
+              background: "var(--paper-deep)",
+              border: "none",
+              padding: "0 14px",
+              color: "var(--ink)",
+              cursor: "pointer",
+              borderLeft: "1px solid var(--rule)",
+              minWidth: 80,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          ><Icon name="fork" size={20}/></button>
+        )}
       </div>
 
-      {/* Row content — slides left to reveal actions */}
+      {/* Row content — slides left to reveal actions. Pointer events drive
+          tap-vs-swipe classification; tap toggles drawer, swipe-right toggles
+          highlight with painted-sweep animation. */}
       <div
         style={{
           display: "flex",
@@ -640,12 +651,12 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
           zIndex: 2,
           transform: open ? `translateX(-${drawerWidth}px)` : "translateX(0)",
           transition: "transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+          touchAction: "pan-y",
         }}
-        onClick={(e) => {
-          // Click on the row toggles the drawer; checkbox handles its own click
-          if (e.target.closest('.check')) return;
-          setOpen(!open);
-        }}
+        onPointerDown={onRowPointerDown}
+        onPointerMove={onRowPointerMove}
+        onPointerUp={onRowPointerUp}
+        onPointerCancel={onRowPointerCancel}
       >
         {/* Mark gutter */}
         <div style={{
@@ -678,9 +689,53 @@ function TaskRow({ task, onToggle, onDivide, onDocument, onDelete, onSetDown, on
             </div>
           )}
           <div style={{display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap"}}>
-            <span className={`task-text sans${isPriority ? " task-text--priority" : ""}`} style={{fontSize: 16, color: "var(--ink)", lineHeight: 1.4}}>
-              {task.text}
-            </span>
+            {editOpen ? (
+              <input
+                autoFocus
+                type="text"
+                defaultValue={task.text}
+                onBlur={(e) => {
+                  const v = e.target.value.trim();
+                  if (v && v !== task.text && onRename) onRename(task.id, v);
+                  setEditOpen(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.currentTarget.blur();
+                  if (e.key === "Escape") { e.currentTarget.value = task.text; e.currentTarget.blur(); }
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                className="sans"
+                style={{
+                  flex: 1, minWidth: 120,
+                  fontFamily: "var(--sans)", fontSize: 16,
+                  color: "var(--ink)", lineHeight: 1.4,
+                  border: "none",
+                  borderBottom: "1px solid var(--rule-strong)",
+                  outline: "none", background: "transparent",
+                  padding: "0 0 2px",
+                }}
+              />
+            ) : (
+              <span style={{position: "relative", display: "inline-block"}}>
+                <span className={`task-text sans${isPriority ? " task-text--priority" : ""}`} style={{
+                  fontSize: 16, color: "var(--ink)", lineHeight: 1.4,
+                }}>
+                  {task.text}
+                </span>
+                {swipeProgress > 0 && (
+                  <span style={{
+                    position: "absolute",
+                    left: 0, top: -1, bottom: -1,
+                    width: `${swipeProgress * 100}%`,
+                    background: isPriority ? "var(--paper)" : "var(--highlight)",
+                    pointerEvents: "none",
+                    borderRadius: 2,
+                    transition: swipeStateRef.current ? "none" : "width 220ms ease-out, opacity 220ms ease-out",
+                  }}/>
+                )}
+              </span>
+            )}
           </div>
 
           {task.parked && task.parkedSteps && task.parkedSteps.length > 0 && !task.done && (
@@ -1055,71 +1110,44 @@ function WinToast({ text, action }) {
 }
 
 // ---------- Document Sheet (per-task: place on desk / in drawer / share) ----------
-function DocumentSheet({ task, onClose, onPlaceOnDesk, onPlaceInDrawer, onShare }) {
+// ---------- First-run highlight-gesture hint ----------
+// Tiny floating note above the FAB on the Now page. Teaches the swipe-right
+// gesture once. Self-dismisses after 6s, on any tap, or when the user
+// actually highlights something (handled by parent — tasks.some(t.priority)).
+function HighlightHint({ onDismiss }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 6000);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
   return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet">
-        <div className="kicker" style={{marginBottom: 8}}>move off the page</div>
-        <div className="serif" style={{
-          fontSize: 18, color: "var(--ink)", lineHeight: 1.4, marginBottom: 4,
-        }}>{task.text}</div>
-        <div className="serif" style={{
-          fontSize: 13, color: "var(--ink-soft)", fontStyle: "italic", marginBottom: 22,
-        }}>
-          Where does this belong now?
-        </div>
-
-        <button onClick={() => { onPlaceOnDesk(); onClose(); }} style={{
-          width: "100%", textAlign: "left", padding: "16px 18px",
-          background: "var(--paper-deep)", border: "none", borderRadius: 12,
-          marginBottom: 10, cursor: "pointer", color: "var(--ink)",
-          display: "flex", alignItems: "center", gap: 14,
-        }}>
-          <span style={{flexShrink: 0, color: "var(--ink-soft)"}}><Icon name="desk" size={22}/></span>
-          <div>
-            <div className="serif" style={{fontSize: 16, marginBottom: 2}}>Place on desk</div>
-            <div className="serif" style={{
-              fontSize: 12, fontStyle: "italic", color: "var(--ink-soft)",
-            }}>Worth considering. On top, where you'll see it.</div>
-          </div>
-        </button>
-
-        <button onClick={() => { onPlaceInDrawer(); onClose(); }} style={{
-          width: "100%", textAlign: "left", padding: "16px 18px",
-          background: "var(--paper-deep)", border: "none", borderRadius: 12,
-          marginBottom: 10, cursor: "pointer", color: "var(--ink)",
-          display: "flex", alignItems: "center", gap: 14,
-        }}>
-          <span style={{flexShrink: 0, color: "var(--ink-soft)"}}><Icon name="drawer" size={22}/></span>
-          <div>
-            <div className="serif" style={{fontSize: 16, marginBottom: 2}}>Place in drawer</div>
-            <div className="serif" style={{
-              fontSize: 12, fontStyle: "italic", color: "var(--ink-soft)",
-            }}>Less vital. Tucked away, kept.</div>
-          </div>
-        </button>
-
-        <button onClick={() => { onShare(); onClose(); }} style={{
-          width: "100%", textAlign: "left", padding: "16px 18px",
-          background: "var(--paper-deep)", border: "none", borderRadius: 12,
-          marginBottom: 18, cursor: "pointer", color: "var(--ink)",
-          display: "flex", alignItems: "center", gap: 14,
-        }}>
-          <span style={{flexShrink: 0, color: "var(--ink-soft)"}}><Icon name="share" size={22}/></span>
-          <div>
-            <div className="serif" style={{fontSize: 16, marginBottom: 2}}>Share elsewhere</div>
-            <div className="serif" style={{
-              fontSize: 12, fontStyle: "italic", color: "var(--ink-soft)",
-            }}>Calendar, message, another app.</div>
-          </div>
-        </button>
-
-        <div style={{display: "flex", justifyContent: "flex-end"}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
-        </div>
+    <div
+      onClick={onDismiss}
+      className="fade-soft"
+      style={{
+        position: "absolute", bottom: 96, left: 24, right: 24,
+        padding: "12px 16px",
+        background: "var(--paper-deep)",
+        border: "1px solid var(--rule-strong)",
+        borderRadius: 12,
+        display: "flex", alignItems: "center", gap: 12,
+        cursor: "pointer",
+        zIndex: 5,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div style={{
+        width: 28, height: 6,
+        background: "var(--highlight)",
+        borderRadius: 3,
+        flexShrink: 0,
+      }}/>
+      <div className="serif" style={{
+        fontSize: 13, color: "var(--ink-soft)", fontStyle: "italic",
+        lineHeight: 1.4,
+      }}>
+        Swipe right across a task to highlight it.
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1214,5 +1242,5 @@ Object.assign(window, {
   MorningAnchor, SecondaryAnchor, AnchorMenuItem,
   NowPage, TaskNote, TaskRow,
   AddSheet, AddDeskSheet, WinSheet, WinToast,
-  DocumentSheet, Tutorial,
+  HighlightHint, Tutorial,
 });
