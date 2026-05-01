@@ -1,8 +1,20 @@
 // src/lib/guides.ts — Be The Signal guide metadata
+//
+// Migration in progress: each guide is moving from this hardcoded array into an
+// MDX file under `src/content/guides/<slug>.mdx`. When an MDX file exists for a
+// slug, its front-matter is the source of truth — it overrides any entry below.
+// Unmigrated guides still live as entries in the array.
+
+import { mdxGuides } from '@/content/guides/registry'
 
 export interface GuideFaq {
   question: string
   answer: string
+}
+
+export interface GuideTocItem {
+  id: string
+  label: string
 }
 
 export interface Guide {
@@ -18,9 +30,11 @@ export interface Guide {
   datePublished: string
   dateModified: string
   faq: GuideFaq[]
+  /** Optional — present on MDX-migrated guides. Falls back to legacy `guideTocMap` in the route file. */
+  toc?: GuideTocItem[]
 }
 
-export const guides: Guide[] = [
+const legacyGuides: Guide[] = [
   {
     number: '01',
     headline: 'Google Isn\'t the Only Place Your Customers Are Looking',
@@ -196,42 +210,31 @@ export const guides: Guide[] = [
       },
     ],
   },
-  {
-    number: '06',
-    headline: 'You\'re Doing All the Right Things in the Wrong Order.',
-    teaser: 'Ads before strategy. Content before positioning. A new website before knowing what it should say. This guide names the root cause — and gives you the sequence.',
-    slug: 'strategy-first',
-    role: 'Names the root cause',
-    metaTitle: 'You\'re Doing All the Right Things in the Wrong Order.',
-    metaDescription: 'Ads before strategy. Content before positioning. This guide names the root cause most businesses miss — and gives you the right sequence.',
-    keywords: ['marketing strategy', 'marketing order of operations', 'strategy before tactics', 'marketing prioritization'],
-    published: true,
-    datePublished: '2026-04-06',
-    dateModified: '2026-04-06',
-    faq: [
-      {
-        question: 'What is the right order for marketing?',
-        answer: 'The right sequence is: Positioning (who you\'re for and why), Messaging (the story your brand tells), Foundation (website, technical infrastructure, analytics), Content (proving expertise and earning attention), Distribution (ads, social, email, partnerships), and Optimization (measure, learn, tighten). Each step depends on the one before it.',
-      },
-      {
-        question: 'Why do most businesses do marketing in the wrong order?',
-        answer: 'Because tactics are visible and strategy is invisible. Running ads, posting on social media, and publishing blog posts feel like progress. Defining positioning and writing a messaging framework feels like stalling. But tactics without strategy underneath them burn budget without compounding — and most businesses default to what feels productive.',
-      },
-      {
-        question: 'How do I know if my marketing is out of order?',
-        answer: 'Common symptoms: your website was built before your positioning was clear, you\'re running ads but can\'t explain your conversion rate, you have a content calendar but no content strategy, you\'ve hired multiple agencies that don\'t coordinate, and everything feels busy but nothing compounds. If three or more of these sound familiar, you have a sequence problem.',
-      },
-      {
-        question: 'Do I need to start over if I\'ve been doing things in the wrong order?',
-        answer: 'No. You can retrofit the sequence without scrapping everything. Define your positioning now, rewrite your messaging to match, update your website to express it, restructure your content around it, then check whether your ads and distribution align. Most of what you\'ve already built is usable — it just needs to be realigned around a clear strategic center.',
-      },
-      {
-        question: 'What is the most important first step in marketing strategy?',
-        answer: 'Positioning. One sentence: "We are [what] for [who], and we\'re different because [why]." If you can\'t fill those blanks with something specific, that\'s your first problem. Everything else — messaging, website, content, ads — is built on this foundation. Vague positioning creates vague everything.',
-      },
-    ],
-  },
 ]
+
+/**
+ * Merged guide list: MDX front-matter overrides legacy array entries by slug,
+ * and any MDX-only guides are appended (sorted by `number`). Order is preserved
+ * from the legacy array for unmigrated guides so prev/next stays stable.
+ */
+export const guides: Guide[] = (() => {
+  const mdxBySlug: Record<string, Guide> = {}
+  for (const slug of Object.keys(mdxGuides)) {
+    mdxBySlug[slug] = mdxGuides[slug].frontmatter
+  }
+
+  const seen = new Set<string>()
+  const merged: Guide[] = legacyGuides.map((g) => {
+    seen.add(g.slug)
+    return mdxBySlug[g.slug] ?? g
+  })
+
+  const mdxOnly = Object.values(mdxBySlug)
+    .filter((g) => !seen.has(g.slug))
+    .sort((a, b) => a.number.localeCompare(b.number))
+
+  return [...merged, ...mdxOnly].sort((a, b) => a.number.localeCompare(b.number))
+})()
 
 export function getGuideBySlug(slug: string): Guide | undefined {
   return guides.find((g) => g.slug === slug)

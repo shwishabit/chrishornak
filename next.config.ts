@@ -1,6 +1,22 @@
 import type { NextConfig } from 'next'
+import createMDX from '@next/mdx'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkGfm from 'remark-gfm'
+
+const withMDX = createMDX({
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [
+      remarkFrontmatter,
+      remarkMdxFrontmatter,
+      remarkGfm,
+    ],
+  },
+})
 
 const nextConfig: NextConfig = {
+  pageExtensions: ['ts', 'tsx', 'mdx'],
   // PPR (Partial Prerendering) requires Next.js canary.
   // Uncomment the line below after switching to canary:
   //   npm install next@canary
@@ -125,4 +141,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withMDX(nextConfig)

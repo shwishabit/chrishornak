@@ -7,8 +7,10 @@ import { GuideLayout } from '@/components/sections/GuideLayout'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 import { guides, getGuideBySlug, getAdjacentGuides } from '@/lib/guides'
+import { getMdxGuide } from '@/content/guides/registry'
 
-// Guide content components — add new imports as guides are published
+// Guide content components — legacy. New guides live as MDX in `src/content/guides/`
+// and are loaded via the registry. Migrate one at a time, then delete the import here.
 import { FindabilityGuide } from '@/components/guides/FindabilityGuide'
 import { FindabilityDiagram } from '@/components/guides/FindabilityDiagram'
 import { SearchVisibilityGuide } from '@/components/guides/SearchVisibilityGuide'
@@ -19,16 +21,14 @@ import { WebsiteTrustGuide } from '@/components/guides/WebsiteTrustGuide'
 import { WebsiteTrustDiagram } from '@/components/guides/WebsiteTrustDiagram'
 import { ContentStructureGuide } from '@/components/guides/ContentStructureGuide'
 import { ContentStructureDiagram } from '@/components/guides/ContentStructureDiagram'
-import { StrategyFirstGuide } from '@/components/guides/StrategyFirstGuide'
 import { StrategyFirstDiagram } from '@/components/guides/StrategyFirstDiagram'
 
-const guideContentMap: Record<string, React.ComponentType> = {
+const legacyGuideContentMap: Record<string, React.ComponentType> = {
   findability: FindabilityGuide,
   'search-visibility': SearchVisibilityGuide,
   'ai-readiness': AiReadinessGuide,
   'website-trust': WebsiteTrustGuide,
   'content-structure': ContentStructureGuide,
-  'strategy-first': StrategyFirstGuide,
 }
 
 const guideHeroVisualMap: Record<string, React.ComponentType> = {
@@ -40,8 +40,9 @@ const guideHeroVisualMap: Record<string, React.ComponentType> = {
   'strategy-first': StrategyFirstDiagram,
 }
 
-// Table of contents per guide — ids match h2 anchors in guide content
-const guideTocMap: Record<string, { id: string; label: string }[]> = {
+// Table of contents per legacy (non-MDX) guide — ids match h2 anchors in guide content.
+// MDX-migrated guides carry their TOC in front-matter (`guide.toc`) and skip this map.
+const legacyGuideTocMap: Record<string, { id: string; label: string }[]> = {
   findability: [
     { id: 'the-assumption-thats-costing-you', label: 'The assumption that\'s costing you' },
     { id: 'the-six-signals', label: 'What your signal is actually made of' },
@@ -82,15 +83,6 @@ const guideTocMap: Record<string, { id: string; label: string }[]> = {
     { id: 'the-content-audit', label: 'The content audit nobody wants to do' },
     { id: 'quality-over-quantity', label: 'The counterintuitive truth about less content' },
     { id: 'where-to-start', label: 'Where to start' },
-  ],
-  'strategy-first': [
-    { id: 'the-sequence-problem', label: 'The sequence problem' },
-    { id: 'what-the-right-order-looks-like', label: 'What the right order actually looks like' },
-    { id: 'why-the-wrong-order-feels-right', label: 'Why the wrong order feels right' },
-    { id: 'diagnosing-your-order', label: 'How to tell if you\'re out of order' },
-    { id: 'you-dont-need-to-start-over', label: 'You don\'t need to start over' },
-    { id: 'where-to-start', label: 'Where to start' },
-    { id: 'the-signal-complete', label: 'The full picture' },
   ],
 }
 
@@ -147,10 +139,12 @@ export default async function GuidePage({
   if (!guide || !guide.published) notFound()
 
   const { prev, next } = getAdjacentGuides(slug)
-  const ContentComponent = guideContentMap[slug]
+
+  const mdx = getMdxGuide(slug)
+  const ContentComponent = mdx?.Component ?? legacyGuideContentMap[slug]
   if (!ContentComponent) notFound()
 
-  const toc = guideTocMap[slug] || []
+  const toc = guide.toc ?? legacyGuideTocMap[slug] ?? []
   const HeroVisual = guideHeroVisualMap[slug]
 
   return (
