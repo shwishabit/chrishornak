@@ -255,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=18"),
-        loadBabelScript("screens-rituals.jsx?v=18"),
+        loadBabelScript("screens-flows.jsx?v=19"),
+        loadBabelScript("screens-rituals.jsx?v=19"),
       ]);
     }
     loadAll()
@@ -516,6 +516,21 @@ function App() {
   }
   function renameTask(id, text) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
+  }
+  function reorderTasks(oldActiveIdx, newActiveIdx) {
+    if (oldActiveIdx === newActiveIdx) return;
+    setTasks(prev => {
+      // Active rows are the visible draggable list in NowPage; done rows are
+      // a separate block below. Reorder within active, preserve done order.
+      const active = prev.filter(t => !t.done);
+      const done = prev.filter(t => t.done);
+      if (oldActiveIdx < 0 || oldActiveIdx >= active.length) return prev;
+      if (newActiveIdx < 0 || newActiveIdx >= active.length) return prev;
+      const next = [...active];
+      const [moved] = next.splice(oldActiveIdx, 1);
+      next.splice(newActiveIdx, 0, moved);
+      return [...next, ...done];
+    });
   }
   const [highlightHintDismissed, setHighlightHintDismissed] = useState(() => {
     try { return localStorage.getItem(STORAGE_NS + ":highlightHintShown") === "true"; }
@@ -930,6 +945,7 @@ function App() {
               onTaskCompleted={onTaskCompleted}
               onTogglePriority={togglePriority}
               onRename={renameTask}
+              onReorderTasks={reorderTasks}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {

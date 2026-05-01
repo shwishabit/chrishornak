@@ -437,6 +437,22 @@ body {
   box-decoration-break: clone;
 }
 
+/* SortableJS drag-to-reorder (long-press on a Notebook row). Ghost = the
+   placeholder left in the original slot during drag. Chosen = the row the
+   user is actively pressing. Drag = the floating clone that follows the
+   finger. */
+.task-row--ghost {
+  opacity: 0.35;
+  background: var(--rule);
+}
+.task-row--chosen {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: var(--paper);
+}
+.task-row--drag {
+  cursor: grabbing;
+}
+
 /* Tab bar — minimal */
 .tabbar {
   display: flex;

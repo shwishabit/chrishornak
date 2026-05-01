@@ -200,7 +200,7 @@ function AnchorMenuItem({ label, hint, onClick, primary }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
     setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
@@ -217,6 +217,34 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
   const total = tasks.length;
   const nearLimit = total >= 8 && total < 10;
   const atLimit = total >= 10;
+
+  // Drag-to-reorder via SortableJS (loaded from CDN in The Daily Now.html).
+  // Long-press (500ms) on a row enters drag mode; faster movement falls
+  // through to TaskRow's tap (drawer) and swipe-right (highlight) handlers.
+  // Sortable mutates the DOM on drop; React reconciles via stable task.id
+  // keys when state updates, so DOM and state stay in sync without manual
+  // unwind in onEnd.
+  const reorderListRef = useRef(null);
+  const onReorderRef = useRef(onReorderTasks);
+  onReorderRef.current = onReorderTasks;
+  useEffect(() => {
+    if (!window.Sortable || !reorderListRef.current) return;
+    const sortable = new window.Sortable(reorderListRef.current, {
+      animation: 150,
+      delay: 500,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
+      ghostClass: "task-row--ghost",
+      chosenClass: "task-row--chosen",
+      dragClass: "task-row--drag",
+      onEnd(evt) {
+        const { oldIndex, newIndex } = evt;
+        if (oldIndex === newIndex || oldIndex == null || newIndex == null) return;
+        if (onReorderRef.current) onReorderRef.current(oldIndex, newIndex);
+      },
+    });
+    return () => sortable.destroy();
+  }, []);
 
   // ReOfferCard lives in screens-flows.jsx — guard so a tap before deferred
   // load completes doesn't error out. Almost never hits in practice.
@@ -277,19 +305,21 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
           </div>
         )}
 
-        {active.map((t, i) => (
-          <TaskRow
-            key={t.id}
-            task={t}
-            onToggle={() => toggle(t.id)}
-            onDivide={() => onDivideOpen(t)}
-            onDelete={() => onDelete(t.id)}
-            onAddNote={(noteText) => setNote(t.id, noteText)}
-            onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
-            onRename={onRename}
-            index={i}
-          />
-        ))}
+        <div ref={reorderListRef}>
+          {active.map((t, i) => (
+            <TaskRow
+              key={t.id}
+              task={t}
+              onToggle={() => toggle(t.id)}
+              onDivide={() => onDivideOpen(t)}
+              onDelete={() => onDelete(t.id)}
+              onAddNote={(noteText) => setNote(t.id, noteText)}
+              onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
+              onRename={onRename}
+              index={i}
+            />
+          ))}
+        </div>
 
         {(nearLimit || atLimit) && (
           <div className="serif fade-in" style={{
