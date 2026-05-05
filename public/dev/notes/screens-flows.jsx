@@ -79,7 +79,7 @@ function reasonLabelFor(key) {
 // Replaces the simple "divide" sheet for ?-marked tasks.
 // A hub of options: start with one, break it down, send somewhere,
 // place on desk, place in drawer, set down with reason, toss in trash can.
-function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote, onPlaceInDrawer, onDelete, onShare }) {
+function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote, onPlaceInDrawer, onDelete, onShare, onStopRecurring }) {
   // view: "hub" | "startOne" | "breakDown" | "share"
   const [view, setView] = useState("hub");
   const [oneStep, setOneStep] = useState("");
@@ -122,6 +122,7 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
             onKeepAsNote={onKeepAsNote}
             onPlaceInDrawer={onPlaceInDrawer}
             onDelete={onDelete}
+            onStopRecurring={onStopRecurring}
           />
         )}
 
@@ -156,13 +157,16 @@ function DecisionPointSheet({ task, onClose, onDivide, onStartOne, onKeepAsNote,
   );
 }
 
-function DecisionHub({ onStartOne, onBreakDown, onShare, onKeepAsNote, onPlaceInDrawer, onDelete }) {
+function DecisionHub({ onStartOne, onBreakDown, onShare, onKeepAsNote, onPlaceInDrawer, onDelete, onStopRecurring }) {
   const items = [
     { label: "Start with one",   hint: "name the smallest piece, do that", action: onStartOne, primary: true,  icon: "start-one" },
     { label: "Break it down",    hint: "two to five small steps",           action: onBreakDown, primary: true, icon: "break-down" },
     { label: "Send it on",       hint: "calendar, message, mail…",          action: onShare,                    icon: "share" },
     { label: "Place on desk",    hint: "worth considering, on top",         action: onKeepAsNote,               icon: "desk" },
     { label: "Place in drawer",  hint: "less vital, tucked away",           action: onPlaceInDrawer,            icon: "drawer" },
+    // v=26: only renders when task is an instance of a recurrence (parent
+    // wires onStopRecurring conditionally on task.recurrenceId).
+    ...(onStopRecurring ? [{ label: "Stop recurring", hint: "this won't come back automatically", action: onStopRecurring, icon: null }] : []),
     { label: "Toss in trash can", hint: "release it from the page",         action: onDelete, danger: true,     icon: "trash" },
   ];
   return (

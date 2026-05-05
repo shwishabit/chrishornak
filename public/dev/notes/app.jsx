@@ -128,6 +128,23 @@ function loadPersisted() {
 function savePersisted(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, __schema: SCHEMA_VERSION })); } catch (e) {}
 }
+// v=26: recurring-task specs persist independently of the main state blob so
+// the spec survives across day-flips regardless of any single instance's
+// fate (release / complete / trash). Each spec: {id, text, type: "daily" |
+// "weekly", days?: number[] (Sun=0..Sat=6, weekly only), createdAt}.
+const RECURRENCES_KEY = `${STORAGE_NS}:recurrences.v1`;
+function loadRecurrences() {
+  try {
+    const raw = localStorage.getItem(RECURRENCES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) { return []; }
+}
+function saveRecurrences(arr) {
+  try { localStorage.setItem(RECURRENCES_KEY, JSON.stringify(arr)); } catch (e) {}
+}
+
 function wipeAllDailyNow() {
   // Clears the main state blob AND any per-day journal entries within the
   // active namespace only. Other instances (e.g. /dev/notes vs /dev/notes-test
@@ -277,8 +294,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=25"),
-        loadBabelScript("screens-rituals.jsx?v=25"),
+        loadBabelScript("screens-flows.jsx?v=26"),
+        loadBabelScript("screens-rituals.jsx?v=26"),
       ]);
     }
     loadAll()
@@ -349,6 +366,10 @@ function App() {
   const [reOfferDismissed, setReOfferDismissed] = useState({}); // { [shelfId]: true }
   const [shelfSheet, setShelfSheet] = useState(null); // { kind, item }
   const [wins, setWins] = useState(boot.wins || []);
+  // v=26: recurring task specs (daily + weekly). Persists to its own
+  // localStorage key so spec survives release/complete/trash of any single
+  // instance.
+  const [recurrences, setRecurrences] = useState(() => loadRecurrences());
   const [recap, setRecap] = useState(null); // { wins, completed, prevDateStr }
   // Set true by the day-rollover effect when there were flagged-priority tasks
   // carrying into the new day. MorningAnchor reads this and surfaces the
@@ -430,6 +451,9 @@ function App() {
   useEffect(() => {
     savePersisted({ tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset });
   }, [tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset]);
+  // v=26: recurrences persist independently (separate key) so spec survives
+  // any single instance's release/complete/trash.
+  useEffect(() => { saveRecurrences(recurrences); }, [recurrences]);
 
   // Sweep trash on mount: remove anything older than 30 days.
   useEffect(() => {
@@ -487,6 +511,24 @@ function App() {
     return null;
   })();
 
+  // v=26: today's "regulars" — weekly recurrences matching today's day-of-week
+  // that haven't been added to the notebook today yet. Renders below nominees
+  // on Anchor as a tap-to-add list.
+  const todayDow = (() => {
+    if (!todayIso) return new Date().getDay();
+    const [yy, mm, dd] = todayIso.split("-").map(Number);
+    return new Date(yy, (mm || 1) - 1, dd || 1).getDay();
+  })();
+  const todaysRegulars = (() => {
+    const existing = new Set(tasks.filter(t => t.recurrenceId).map(t => t.recurrenceId));
+    return recurrences.filter(r =>
+      r.type === "weekly" &&
+      Array.isArray(r.days) &&
+      r.days.includes(todayDow) &&
+      !existing.has(r.id)
+    );
+  })();
+
   // Top-3 nominees — surfaces highest-priorityScore tasks on Anchor.
   // Threshold ≥3 hides the slot on quiet/empty days. Sort: score DESC,
   // createdAt DESC (newer wins ties — recent intent first).
@@ -520,7 +562,65 @@ function App() {
 
   useEffect(() => { setShowTutorial(!tutorialDone && t.showTutorial); }, [t.showTutorial, tutorialDone]);
 
-  function addTask(task) { setTasks([{ createdAt: Date.now(), ...task }, ...tasks]); }
+  function addTask(task, recurrenceSpec) {
+    // v=26: optional recurrenceSpec = { type: "daily" | "weekly", days?: number[] }.
+    // When provided, also creates a recurrence spec; the new task gets a
+    // recurrenceId pointer so day-flip logic can dedupe instances.
+    let recurrenceId = null;
+    if (recurrenceSpec && (recurrenceSpec.type === "daily" || recurrenceSpec.type === "weekly")) {
+      recurrenceId = nextId();
+      setRecurrences(prev => [{
+        id: recurrenceId,
+        text: task.text,
+        type: recurrenceSpec.type,
+        days: recurrenceSpec.type === "weekly" ? (recurrenceSpec.days || []) : null,
+        createdAt: Date.now(),
+      }, ...prev]);
+    }
+    const newTask = { createdAt: Date.now(), ...task };
+    if (recurrenceId) newTask.recurrenceId = recurrenceId;
+    setTasks([newTask, ...tasks]);
+  }
+  // v=26: ensure today's task list contains a fresh instance for every active
+  // daily recurrence. Called at the end of finishCarry / skipMorningFlow /
+  // adminForceNextDay so the spec drives the day even when a previous
+  // instance was released or completed.
+  function ensureDailyRecurringTasks(taskList) {
+    const existing = new Set(taskList.filter(t => t.recurrenceId).map(t => t.recurrenceId));
+    const additions = [];
+    for (const r of recurrences) {
+      if (r.type === "daily" && !existing.has(r.id)) {
+        additions.push({
+          id: nextId(),
+          text: r.text,
+          mark: null,
+          tenMin: null,
+          done: false,
+          createdAt: Date.now(),
+          recurrenceId: r.id,
+        });
+      }
+    }
+    return additions.length > 0 ? [...additions, ...taskList] : taskList;
+  }
+  // v=26: weekly recurrence "consider adding" — adds a fresh instance to today.
+  function addRegularToToday(recurrence) {
+    setTasks(prev => [{
+      id: nextId(),
+      text: recurrence.text,
+      mark: null,
+      tenMin: null,
+      done: false,
+      createdAt: Date.now(),
+      recurrenceId: recurrence.id,
+    }, ...prev]);
+  }
+  // v=26: stop a recurrence (kill the spec). The current instance stays;
+  // tomorrow's day-flip will no longer auto-create. Used from DecisionHub.
+  function stopRecurring(recurrenceId) {
+    setRecurrences(prev => prev.filter(r => r.id !== recurrenceId));
+    showToast("won't repeat after today.", 2400);
+  }
   function togglePriority(id) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: !t.priority } : t));
   }
@@ -806,7 +906,7 @@ function App() {
       }
       // "release" intentionally falls through (silent drop = trash).
     }
-    setTasks(carried);
+    setTasks(ensureDailyRecurringTasks(carried));
     const nextShelf = autoShelved.length > 0 ? [...autoShelved, ...shelf] : shelf;
     if (autoShelved.length > 0) {
       setShelf(nextShelf);
@@ -834,7 +934,7 @@ function App() {
       ...task, id: nextId(),
       mark: nextMarkAfterCarry(task.mark), done: false,
     }));
-    setTasks(carried);
+    setTasks(ensureDailyRecurringTasks(carried));
     setLeftovers(null);
     setRecap(null);
     setScreen("anchor");
@@ -870,7 +970,9 @@ function App() {
   function adminForceNextDaySilent() {
     const next = dayOffset + 1;
     setDayOffset(next);
-    setTasks(prev => prev.map(task => task.done ? task : { ...task, mark: advanceMarker(task.mark) }));
+    setTasks(prev => ensureDailyRecurringTasks(
+      prev.map(task => task.done ? task : { ...task, mark: advanceMarker(task.mark) })
+    ));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + 1 })));
     setWins([]);
     setCompletionsSinceShelf(0);
@@ -953,6 +1055,8 @@ function App() {
             weekday={weekday.toLowerCase()}
             momentum={momentum}
             nominees={topNominees}
+            regulars={todaysRegulars}
+            onAddRegular={addRegularToToday}
           />
         </div>
       )}
@@ -1183,6 +1287,7 @@ function App() {
           onPlaceInDrawer={() => { placeTaskInDrawer(sheet.task); setSheet(null); }}
           onDelete={() => { deleteTask(sheet.task.id); setSheet(null); }}
           onShare={() => shareTask(sheet.task)}
+          onStopRecurring={sheet.task.recurrenceId ? () => { stopRecurring(sheet.task.recurrenceId); setSheet(null); } : null}
         />
       )}
       {showKey && deferredReady && <KeyReference onClose={() => setShowKey(false)}/>}

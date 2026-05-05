@@ -5,7 +5,7 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees }) {
+function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees, regulars, onAddRegular }) {
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
   return (
@@ -117,6 +117,54 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
               >
                 {task.text}
               </div>
+            ))}
+          </div>
+        )}
+
+        {regulars && regulars.length > 0 && (
+          <div
+            className="serif ascend"
+            style={{
+              fontSize: 14,
+              color: "var(--ink-soft)",
+              marginTop: 22,
+              lineHeight: 1.55,
+              animationDelay: "520ms",
+              padding: "12px 14px",
+              background: "var(--paper-deep)",
+              borderLeft: "2px solid var(--rule-strong)",
+              maxWidth: 320,
+            }}
+          >
+            <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>today's regulars</div>
+            {regulars.map((r, i) => (
+              <button
+                key={r.id}
+                onClick={() => onAddRegular && onAddRegular(r)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  padding: i === 0 ? "0" : "0",
+                  marginTop: i === 0 ? 0 : 6,
+                  fontFamily: "var(--serif)",
+                  fontSize: 14,
+                  color: "var(--ink-soft)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <span>{r.text}</span>
+                <span style={{
+                  marginLeft: 8,
+                  color: "var(--ink-faint)",
+                  fontStyle: "italic",
+                  fontSize: 13,
+                }}>+ add</span>
+              </button>
             ))}
           </div>
         )}
@@ -893,22 +941,40 @@ function AddSheet({ onClose, onAdd }) {
   const [text, setText] = useState("");
   const [tenMin, setTenMin] = useState("");
   const [showTenMin, setShowTenMin] = useState(false);
+  // v=26: repeats picker — "none" | "daily" | "weekly". For "weekly", `days`
+  // is a Set of weekday indices (Sun=0..Sat=6).
+  const [repeats, setRepeats] = useState("none");
+  const [weeklyDays, setWeeklyDays] = useState(() => new Set());
   const inputRef = useRef(null);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
+  function toggleWeeklyDay(idx) {
+    setWeeklyDays(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  }
+
   function submit() {
     if (!text.trim()) return;
     const parsed = parseMarks(text.trim());
+    let recurrenceSpec = null;
+    if (repeats === "daily") {
+      recurrenceSpec = { type: "daily" };
+    } else if (repeats === "weekly" && weeklyDays.size > 0) {
+      recurrenceSpec = { type: "weekly", days: Array.from(weeklyDays).sort() };
+    }
     onAdd({
       id: Date.now(),
       text: parsed.clean,
       mark: parsed.mark,
       tenMin: tenMin.trim() || null,
       done: false,
-    });
+    }, recurrenceSpec);
     onClose();
   }
 
@@ -958,20 +1024,79 @@ function AddSheet({ onClose, onAdd }) {
           </div>
         )}
 
+        {/* v=26: repeats picker — None / Daily / Weekly + day chips */}
+        <div style={{paddingTop: 18}}>
+          <div className="kicker" style={{marginBottom: 8, fontSize: 10}}>repeats</div>
+          <div style={{display: "flex", gap: 6}}>
+            {[
+              { key: "none", label: "none" },
+              { key: "daily", label: "daily" },
+              { key: "weekly", label: "weekly" },
+            ].map(opt => {
+              const active = repeats === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setRepeats(opt.key)}
+                  style={{
+                    flex: 1,
+                    background: active ? "var(--ink)" : "transparent",
+                    color: active ? "var(--paper)" : "var(--ink-soft)",
+                    border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
+                    borderRadius: 999,
+                    padding: "8px 12px",
+                    fontFamily: "var(--serif)",
+                    fontStyle: active ? "normal" : "italic",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    transition: "all 160ms ease",
+                  }}
+                >{opt.label}</button>
+              );
+            })}
+          </div>
+          {repeats === "weekly" && (
+            <div className="fade-in" style={{display: "flex", gap: 4, marginTop: 10}}>
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => {
+                const active = weeklyDays.has(i);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => toggleWeeklyDay(i)}
+                    aria-label={`weekday ${i}`}
+                    style={{
+                      flex: 1,
+                      aspectRatio: "1",
+                      background: active ? "var(--ink)" : "transparent",
+                      color: active ? "var(--paper)" : "var(--ink-soft)",
+                      border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
+                      borderRadius: 6,
+                      fontFamily: "var(--serif)",
+                      fontSize: 13,
+                      cursor: "pointer",
+                      transition: "all 160ms ease",
+                    }}
+                  >{d}</button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
           <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
           <button
             onClick={submit}
-            disabled={!text.trim()}
+            disabled={!text.trim() || (repeats === "weekly" && weeklyDays.size === 0)}
             style={{
-              background: text.trim() ? "var(--ink)" : "var(--paper-deep)",
-              color: text.trim() ? "var(--paper)" : "var(--ink-faint)",
+              background: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--ink)" : "var(--paper-deep)",
+              color: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--paper)" : "var(--ink-faint)",
               border: "none",
               borderRadius: 999,
               padding: "12px 24px",
               fontFamily: "var(--serif)",
               fontSize: 15,
-              cursor: text.trim() ? "pointer" : "default",
+              cursor: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "pointer" : "default",
               transition: "all 200ms ease",
             }}
           >
