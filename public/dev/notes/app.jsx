@@ -255,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=19"),
-        loadBabelScript("screens-rituals.jsx?v=19"),
+        loadBabelScript("screens-flows.jsx?v=20"),
+        loadBabelScript("screens-rituals.jsx?v=20"),
       ]);
     }
     loadAll()
@@ -463,6 +463,22 @@ function App() {
       };
     }
     return null;
+  })();
+
+  // Top-3 nominees — surfaces highest-priorityScore tasks on Anchor.
+  // Threshold ≥3 hides the slot on quiet/empty days. Sort: score DESC,
+  // createdAt DESC (newer wins ties — recent intent first).
+  const topNominees = (() => {
+    const nowMs = Date.now();
+    return tasks
+      .map(task => ({ task, score: priorityScore(task, nowMs) }))
+      .filter(x => x.score >= 3)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return (b.task.createdAt || 0) - (a.task.createdAt || 0);
+      })
+      .slice(0, 3)
+      .map(x => x.task);
   })();
 
   const today = dateInfo(dayOffset);
@@ -835,6 +851,7 @@ function App() {
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
+            nominees={topNominees}
           />
         </div>
       )}

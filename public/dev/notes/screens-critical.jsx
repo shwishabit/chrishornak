@@ -5,7 +5,7 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum }) {
+function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees }) {
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
   return (
@@ -91,6 +91,33 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
               <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>{momentum.kicker}</div>
             )}
             <div style={{fontStyle: "italic"}}>{momentum.text}</div>
+          </div>
+        )}
+
+        {nominees && nominees.length > 0 && (
+          <div
+            className="serif ascend"
+            style={{
+              fontSize: 14,
+              color: "var(--ink-soft)",
+              marginTop: 22,
+              lineHeight: 1.55,
+              animationDelay: "480ms",
+              padding: "12px 14px",
+              background: "var(--paper-deep)",
+              borderLeft: "2px solid var(--rule-strong)",
+              maxWidth: 320,
+            }}
+          >
+            <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>today's nominees</div>
+            {nominees.map((task, i) => (
+              <div
+                key={task.id}
+                style={{marginTop: i === 0 ? 0 : 6}}
+              >
+                {task.text}
+              </div>
+            ))}
           </div>
         )}
       </div>
