@@ -154,7 +154,13 @@ function saveRecurrences(arr) {
 // to avoid double-bookkeeping. Mood label words (slider): 1=low / 2=quiet /
 // 3=steady / 4=bright / 5=clear. Reframe gate fires at score ≤ 2.
 const LOGS_KEY = `${STORAGE_NS}:logs.v1`;
-const MOOD_WORDS = ["low", "quiet", "steady", "bright", "clear"];
+// v=29: mood scale words. Original v=28 set was "low/quiet/steady/bright/clear"
+// — Chris flagged on phone test that the gradient wasn't obvious to some
+// (low ≈ quiet, bright ≈ clear). Replaced with a less ambiguous gradient:
+// "heavy" (1) anchors the negative end as a universally understood state-
+// of-being word; "great" (5) is unambiguously top. Middle three are direct
+// and accessible. Trades a fraction of Sage tone for clarity.
+const MOOD_WORDS = ["heavy", "low", "okay", "good", "great"];
 function loadLogs() {
   try {
     const raw = localStorage.getItem(LOGS_KEY);
@@ -316,8 +322,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=28"),
-        loadBabelScript("screens-rituals.jsx?v=28"),
+        loadBabelScript("screens-flows.jsx?v=29"),
+        loadBabelScript("screens-rituals.jsx?v=29"),
       ]);
     }
     loadAll()
@@ -701,7 +707,22 @@ function App() {
     })(),
   };
   function togglePriority(id) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: !t.priority } : t));
+    // v=29: when a task gets newly highlighted, move it to the top of the
+    // active list so priority is visually obvious without manual drag-reorder.
+    // Un-highlighting doesn't move it back — the user can drag if they want.
+    // Done rows stay in their done-block position regardless of priority.
+    setTasks(prev => {
+      const target = prev.find(t => t.id === id);
+      if (!target) return prev;
+      const newPriority = !target.priority;
+      const updated = prev.map(t => t.id === id ? { ...t, priority: newPriority } : t);
+      if (!newPriority || target.done) return updated;
+      const active = updated.filter(t => !t.done);
+      const done = updated.filter(t => t.done);
+      const moved = active.find(t => t.id === id);
+      const others = active.filter(t => t.id !== id);
+      return [moved, ...others, ...done];
+    });
   }
   function addMomentumStep(originalTask, stepText) {
     // "Start with one" — add a tiny step ABOVE the original task. Parent

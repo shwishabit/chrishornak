@@ -507,6 +507,13 @@ function MeditateActive({ minutes, sound, guided, onComplete, onCancel, mantra }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
+    // v=29: iOS Safari creates AudioContexts in 'suspended' state and
+    // requires explicit resume() — even when the constructor runs after a
+    // user gesture (the gesture was on MeditateSetup's "begin →", we're
+    // now in a useEffect that fires post-mount). resume() returns a promise
+    // and is safe to fire-and-forget; if iOS blocks it for any reason the
+    // soundscape stays silent rather than throwing.
+    if (ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} }
     const cleanup = [];
     const master = ctx.createGain();
     master.gain.value = 0;

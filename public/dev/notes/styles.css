@@ -426,6 +426,16 @@ body {
   text-decoration-color: var(--ink-faint);
 }
 
+/* v=29: long task text wraps onto a new line instead of widening the row /
+   forcing horizontal scroll. Reported on phone test: a single long word in
+   a task name pushed the whole screen sideways. overflow-wrap: anywhere
+   breaks at any character when needed; word-break: break-word is the older
+   fallback. */
+.task-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Priority — user-flagged via highlighter swipe action. Uses
    box-decoration-break: clone so multi-line wrapping highlights each
    line cleanly instead of one rectangle covering paragraph dead-space. */

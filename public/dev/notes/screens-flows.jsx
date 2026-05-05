@@ -1961,8 +1961,10 @@ function MoodCheckin({ draft, onUpdate, onComplete }) {
     if (phase === "reframe") setTimeout(() => filterRef.current?.focus(), 320);
   }, [phase]);
 
-  const MOOD_WORDS = ["low", "quiet", "steady", "bright", "clear"];
-  const moodWord = MOOD_WORDS[(score || 3) - 1] || "steady";
+  // v=29: clearer gradient. See app.jsx note. Must match app.jsx's MOOD_WORDS
+  // exactly — they appear together (slider label + journal seed).
+  const MOOD_WORDS = ["heavy", "low", "okay", "good", "great"];
+  const moodWord = MOOD_WORDS[(score || 3) - 1] || "okay";
 
   function nextFromSlider() { onUpdate({ phase: "noise" }); }
   function nextFromNoise() {

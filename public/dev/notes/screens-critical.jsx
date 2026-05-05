@@ -185,7 +185,7 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
           filled={c.mood}
           label="mood"
           hint={c.mood && todayLog && todayLog.moodScore
-            ? (["low", "quiet", "steady", "bright", "clear"][todayLog.moodScore - 1] || "checked in")
+            ? (["heavy", "low", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
             : "what's loudest right now?"}
           onClick={onMood}
         />
@@ -719,7 +719,12 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       setSwipeProgress(0);
       return;
     }
-    if (dx > 60 && Math.abs(dy) < 30 && elapsed < 800 && onTogglePriority) {
+    // v=29: lowered swipe distance 60 → 40px and raised elapsed cap 800 → 1200ms
+    // per phone-test feedback that quick swipes weren't registering. The 60px
+    // threshold combined with Sortable's 500ms long-press delay made a clean
+    // flick feel finicky — short swipes fell below 60px before pointerup. 40px
+    // still requires intent (>2x the 20px edge guard) but lands as a flick.
+    if (dx > 40 && Math.abs(dy) < 30 && elapsed < 1200 && onTogglePriority) {
       onTogglePriority();
       setSwipeProgress(1);
       setTimeout(() => setSwipeProgress(0), 240);
@@ -742,23 +747,39 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
         overflow: "hidden",
       }}
     >
-      {/* v=27: ghost-fill progress bar — paints behind row content as a
-          left-anchored partial fill. Hidden at 0% and 100%; rendered for
-          intermediate values. Sits below row content (zIndex 0) so the
-          existing translucent row bg lays it down without competing. */}
+      {/* v=29: progress indicator. Replaces v=27's faint ghost-fill (paper-
+          deep at 0.6 opacity behind row content — too subtle on a paper-cream
+          background) with a strong-but-quiet 2px bottom ribbon plus a soft
+          paper-edge tint behind the row content. Read-at-a-glance from the
+          Notebook screen. Hidden at 0% and 100%. */}
       {hasProgress && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: 0, left: 0, bottom: 0,
-            width: `${task.progress}%`,
-            background: "var(--paper-deep)",
-            opacity: 0.6,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
+        <>
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 0, left: 0, bottom: 0,
+              width: `${task.progress}%`,
+              background: "var(--paper-edge)",
+              opacity: 0.55,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: 0, bottom: 0,
+              height: 2,
+              width: `${task.progress}%`,
+              background: "var(--ink-soft)",
+              opacity: 0.7,
+              pointerEvents: "none",
+              zIndex: 3,
+            }}
+          />
+        </>
       )}
 
       {/* Action drawer (revealed when row is "open") — × close · Edit · Comment · Progress · Decide */}
@@ -1161,6 +1182,12 @@ function AddSheet({ onClose, onAdd }) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !showTenMin) submit(); }}
         />
+        <div className="serif" style={{
+          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+          marginTop: 6, letterSpacing: "0.02em",
+        }}>
+          keep it short — add a comment for detail.
+        </div>
 
         {!showTenMin ? (
           <button
