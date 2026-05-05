@@ -872,6 +872,11 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   })();
 
   const [savedAt, setSavedAt] = useState(null);
+  // Local buffer for view-edit mode (editing a past entry). Initialized from
+  // viewedText on entering edit; on save, written to localStorage at the
+  // entry's iso key. Kept separate from `text` so editing past content
+  // doesn't pollute today's autosaved buffer.
+  const [editingText, setEditingText] = useState("");
 
   // Autosave today's entry — debounce 600ms after last keystroke.
   useEffect(() => {
@@ -919,6 +924,91 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
     );
   }
 
+  // ---------- View-Edit mode (past entry, intentional edit) ----------
+  // Entered explicitly via "edit" button on view mode. Save writes to the
+  // entry's iso key in localStorage; cancel discards. Empty save deletes the
+  // entry (matches today's autosave-removes-empty pattern).
+  if (mode === "view-edit" && !isToday) {
+    const dt = dateFromIso(viewingIso);
+    const viewWeekday = dt.toLocaleDateString(undefined, { weekday: "long" }).toLowerCase();
+    const viewDateStr = dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+    const editRemaining = MAX - editingText.length;
+    const editOverSoft = editRemaining < 0;
+
+    function saveEdit() {
+      try {
+        if (editingText === "") {
+          localStorage.removeItem(storageKey);
+        } else {
+          localStorage.setItem(storageKey, editingText);
+        }
+        setEntries(listJournalEntries());
+      } catch (e) {}
+      setMode("view");
+    }
+
+    return (
+      <div className="screen fade-soft surface-journal" style={{padding: "44px 28px 32px", justifyContent: "flex-start"}}>
+        <div className="surface-mark" aria-hidden="true"/>
+        <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22}}>
+          <button onClick={() => setMode("view")} className="ghost-btn" style={{
+            color: "var(--ink-soft)", padding: 0, fontSize: 14,
+          }}>
+            cancel
+          </button>
+          <button onClick={saveEdit} className="ghost-btn" style={{
+            color: "var(--ink)", padding: 0, fontSize: 14, fontStyle: "italic",
+          }}>
+            save
+          </button>
+        </div>
+
+        <div className="ascend" style={{marginBottom: 18}}>
+          <div className="kicker" style={{marginBottom: 8}}>{viewWeekday} · {viewDateStr}</div>
+          <div className="serif" style={{
+            fontSize: 18, color: "var(--ink-soft)", lineHeight: 1.4, fontStyle: "italic",
+          }}>
+            {promptForViewing}
+          </div>
+        </div>
+
+        <div className="ascend" style={{
+          flex: 1, minHeight: 0, position: "relative",
+          animationDelay: "120ms",
+          background: "var(--paper-deep)",
+          border: "1px solid var(--rule)",
+          borderRadius: 4,
+          padding: "18px 18px 14px",
+          display: "flex", flexDirection: "column",
+        }}>
+          <textarea
+            value={editingText}
+            onChange={(e) => setEditingText(e.target.value)}
+            autoFocus
+            style={{
+              flex: 1, width: "100%", resize: "none",
+              background: "transparent", border: "none", outline: "none",
+              fontFamily: "var(--serif)", fontSize: 16,
+              lineHeight: 1.65, color: "var(--ink)",
+              fontStyle: editingText ? "normal" : "italic",
+            }}
+          />
+          <div style={{
+            display: "flex", justifyContent: "flex-end", alignItems: "center",
+            marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--rule)",
+          }}>
+            <div className="serif" style={{
+              fontSize: 11, fontStyle: "italic",
+              color: editOverSoft ? "var(--mark)" : "var(--ink-faint)",
+            }}>
+              {editOverSoft ? `${-editRemaining} over` : `${editRemaining} left`}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ---------- View mode (past entry, read-only) ----------
   if (mode === "view" && !isToday) {
     const dt = dateFromIso(viewingIso);
@@ -938,11 +1028,22 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
           }}>
             ← back
           </button>
-          <button onClick={() => setMode("calendar")} className="ghost-btn" style={{
-            color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
-          }}>
-            calendar
-          </button>
+          <div style={{display: "flex", alignItems: "center", gap: 18}}>
+            <button
+              onClick={() => { setEditingText(viewedText); setMode("view-edit"); }}
+              className="ghost-btn"
+              style={{
+                color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
+              }}
+            >
+              edit
+            </button>
+            <button onClick={() => setMode("calendar")} className="ghost-btn" style={{
+              color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
+            }}>
+              calendar
+            </button>
+          </div>
         </div>
 
         <div className="ascend" style={{marginBottom: 18}}>
