@@ -696,22 +696,22 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
   const isFirstCarry = !current.mark;
   const isCarriedOnce = current.mark === ">";
   const isCarriedTwice = current.mark === ">>";
-  const isAtDecision = current.mark === "?"; // 4th day carry — auto-shelve path
-  // What it would become if kept:
-  const nextMark = isFirstCarry ? ">" : isCarriedOnce ? ">>" : isCarriedTwice ? "?" : "shelf";
+  const isAtDecision = current.mark === "?"; // 4th+ day carry — Decide-led branch
+  // What it would become if kept (non-? carries):
+  const nextMark = isFirstCarry ? ">" : isCarriedOnce ? ">>" : isCarriedTwice ? "?" : null;
   const nextLabel = isFirstCarry
     ? "bring it to today"
     : isCarriedOnce
     ? "yes, carry it again"
     : isCarriedTwice
     ? "keep it — and decide"
-    : "set it gently down";
+    : null; // ? branch handled separately below
 
   return (
     <div className="screen fade-soft" style={{padding: "20px 0 30px", display: "flex", flexDirection: "column"}}>
       {/* Header */}
       <div style={{padding: "12px 28px 18px"}}>
-        <div className="kicker" style={{marginBottom: 6}}>now, gently</div>
+        <div className="kicker" style={{marginBottom: 6}}>carrying over</div>
         <div className="serif" style={{fontSize: 22, color: "var(--ink)", lineHeight: 1.35}}>
           A few things from <span style={{fontStyle: "italic", color: "var(--ink-soft)"}}>{prevDateStr}</span> are still here. Let's look at them together.
         </div>
@@ -798,67 +798,136 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
 
       {/* Actions */}
       <div style={{padding: "20px 28px 0", display: "flex", flexDirection: "column", gap: 10}}>
-        <button
-          onClick={() => decide("keep")}
-          style={{
-            background: "var(--ink)",
-            color: "var(--paper)",
-            border: "none",
-            borderRadius: 14,
-            padding: "14px 18px",
-            fontFamily: "var(--serif)",
-            fontSize: 15,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span>{nextLabel}</span>
-          <span style={{
-            fontFamily: "var(--serif)",
-            fontStyle: "italic",
-            fontSize: 16,
-            opacity: 0.7,
-          }}>
-            {isAtDecision ? "◦" : nextMark === "?" ? "?" : nextMark === ">>" ? "››" : "›"}
-          </span>
-        </button>
-        <div style={{display: "flex", gap: 10}}>
-          <button
-            onClick={() => decide("later")}
-            style={{
-              flex: 1,
-              background: "transparent",
-              color: "var(--ink)",
-              border: "1px solid var(--rule-strong)",
-              borderRadius: 14,
-              padding: "13px 14px",
-              fontFamily: "var(--serif)",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            rest for now
-          </button>
-          <button
-            onClick={() => decide("release")}
-            style={{
-              flex: 1,
-              background: "transparent",
-              color: "var(--ink-soft)",
-              border: "1px solid var(--rule-strong)",
-              borderRadius: 14,
-              padding: "13px 14px",
-              fontFamily: "var(--serif)",
-              fontStyle: "italic",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            release it
-          </button>
-        </div>
+        {isAtDecision ? (
+          <>
+            {/* Primary: Decide. Brings task back to today with ? preserved so
+                friction stays visible; user addresses via row drawer's Decide
+                action when ready. */}
+            <button
+              onClick={() => decide("decide")}
+              style={{
+                background: "var(--ink)",
+                color: "var(--paper)",
+                border: "none",
+                borderRadius: 14,
+                padding: "14px 18px",
+                fontFamily: "var(--serif)",
+                fontSize: 15,
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>Decide</span>
+              <span style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 16,
+                opacity: 0.7,
+              }}>?</span>
+            </button>
+            <div style={{display: "flex", gap: 10}}>
+              <button
+                onClick={() => decide("fresh")}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "var(--ink)",
+                  border: "1px solid var(--rule-strong)",
+                  borderRadius: 14,
+                  padding: "13px 14px",
+                  fontFamily: "var(--serif)",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                bring to today
+              </button>
+              <button
+                onClick={() => decide("release")}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "var(--ink-soft)",
+                  border: "1px solid var(--rule-strong)",
+                  borderRadius: 14,
+                  padding: "13px 14px",
+                  fontFamily: "var(--serif)",
+                  fontStyle: "italic",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                release it
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => decide("keep")}
+              style={{
+                background: "var(--ink)",
+                color: "var(--paper)",
+                border: "none",
+                borderRadius: 14,
+                padding: "14px 18px",
+                fontFamily: "var(--serif)",
+                fontSize: 15,
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>{nextLabel}</span>
+              <span style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 16,
+                opacity: 0.7,
+              }}>
+                {nextMark === "?" ? "?" : nextMark === ">>" ? "››" : "›"}
+              </span>
+            </button>
+            <div style={{display: "flex", gap: 10}}>
+              <button
+                onClick={() => decide("later")}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "var(--ink)",
+                  border: "1px solid var(--rule-strong)",
+                  borderRadius: 14,
+                  padding: "13px 14px",
+                  fontFamily: "var(--serif)",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                rest for now
+              </button>
+              <button
+                onClick={() => decide("release")}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  color: "var(--ink-soft)",
+                  border: "1px solid var(--rule-strong)",
+                  borderRadius: 14,
+                  padding: "13px 14px",
+                  fontFamily: "var(--serif)",
+                  fontStyle: "italic",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                release it
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1016,7 +1085,7 @@ function KeyReference({ onClose }) {
     { glyph: "›", label: "Carried once", note: "Left from yesterday." },
     { glyph: "››", label: "Carried twice", note: "Friction is gathering. There is a 10-min version waiting.", strong: true },
     { glyph: "?", label: "Decision point", note: "Three days. Time to divide it or move it off the page.", strong: true },
-    { glyph: "◦", label: "On the desk", note: "Set down gently. Resting until you have space again." },
+    { glyph: "◦", label: "On the desk", note: "Resting until you're ready to come back." },
     { glyph: "✓", label: "Done", note: "Quietly noted." },
   ];
   const actions = [

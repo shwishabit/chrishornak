@@ -255,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=22"),
-        loadBabelScript("screens-rituals.jsx?v=22"),
+        loadBabelScript("screens-flows.jsx?v=23"),
+        loadBabelScript("screens-rituals.jsx?v=23"),
       ]);
     }
     loadAll()
@@ -734,28 +734,49 @@ function App() {
     setScreen("carry");
   }
   function finishCarry(decisions) {
-    // Carry "keep" decisions advance friction marks. But if a task is ALREADY ? and gets
-    // kept again, that's its second decision-cycle — auto-shelve instead of forcing it forward.
+    // Action semantics:
+    //   "keep"    — non-? carries: advance marker via nextMarkAfterCarry.
+    //               (Defensive: if a ? somehow reaches this branch via a
+    //               non-CarryForward path, auto-shelve as safety net.)
+    //   "decide"  — ? carries (v=23+): bring back with ? preserved so the
+    //               decision-point friction stays visible. User addresses
+    //               via row drawer's Decide flow when ready.
+    //   "fresh"   — ? carries (v=23+): bring back with mark cleared.
+    //   "later"   — silent drop (legacy "rest for now" path; non-? only).
+    //   "release" — silent drop.
     const carried = [];
     const autoShelved = [];
-    decisions.filter(d => d.action === "keep").forEach(d => {
-      if (d.task.mark === "?") {
-        autoShelved.push({
-          id: nextId(),
-          text: d.task.text,
-          parentText: d.task.parentText || null,
-          reasonTag: null, reasonNote: null, waitingOn: null,
-          shelvedOn: today.short,
-          daysOnShelf: 0,
-          autoShelved: true,
-        });
-      } else {
+    for (const d of decisions) {
+      if (d.action === "keep") {
+        if (d.task.mark === "?") {
+          autoShelved.push({
+            id: nextId(),
+            text: d.task.text,
+            parentText: d.task.parentText || null,
+            reasonTag: null, reasonNote: null, waitingOn: null,
+            shelvedOn: today.short,
+            daysOnShelf: 0,
+            autoShelved: true,
+          });
+        } else {
+          carried.push({
+            ...d.task, id: nextId(),
+            mark: nextMarkAfterCarry(d.task.mark), done: false,
+          });
+        }
+      } else if (d.action === "decide") {
         carried.push({
           ...d.task, id: nextId(),
-          mark: nextMarkAfterCarry(d.task.mark), done: false,
+          mark: "?", done: false,
+        });
+      } else if (d.action === "fresh") {
+        carried.push({
+          ...d.task, id: nextId(),
+          mark: null, done: false,
         });
       }
-    });
+      // "later" and "release" intentionally fall through (silent drop).
+    }
     setTasks(carried);
     if (autoShelved.length > 0) {
       setShelf([...autoShelved, ...shelf]);
