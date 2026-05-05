@@ -437,6 +437,23 @@ body {
   box-decoration-break: clone;
 }
 
+/* Suppress iOS Safari/Chrome native text-selection + magnifier loupe during
+   long-press on draggable rows. Without this, SortableJS's 500ms long-press
+   collides with iOS's native long-press text-select + magnifier, making
+   drag-to-reorder feel awkward. Inputs/textareas inside the row (inline
+   rename, comment editor) keep native text-editing behavior. */
+.task-row {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.task-row input,
+.task-row textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
 /* SortableJS drag-to-reorder (long-press on a Notebook row). Ghost = the
    placeholder left in the original slot during drag. Chosen = the row the
    user is actively pressing. Drag = the floating clone that follows the

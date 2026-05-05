@@ -600,7 +600,7 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
 
   return (
     <div
-      className={`fade-in ${task.done ? "done-row" : ""} ${isCarried ? "carried" : ""}`}
+      className={`task-row fade-in ${task.done ? "done-row" : ""} ${isCarried ? "carried" : ""}`}
       style={{
         position: "relative",
         borderBottom: "1px solid var(--rule)",
