@@ -933,7 +933,154 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
   );
 }
 
-// ---------- Set Down Sheet (reflective prompt) ----------
+// ---------- Desk Review Prompt ----------
+// After CarryForward completes, give the user the option to walk through
+// items on the desk shelf too. Skip path goes straight to Anchor; yes path
+// enters DeskReview. Only renders when shelf is non-empty.
+function DeskReviewPrompt({ shelfCount, onYes, onSkip }) {
+  return (
+    <div className="screen fade-soft" style={{
+      justifyContent: "center", padding: "0 36px", textAlign: "center",
+      display: "flex", flexDirection: "column", gap: 24,
+    }}>
+      <div className="kicker ascend" style={{marginBottom: 6}}>and the desk?</div>
+      <div className="serif ascend" style={{
+        fontSize: 24, color: "var(--ink)", lineHeight: 1.4, animationDelay: "120ms",
+      }}>
+        {shelfCount} {shelfCount === 1 ? "thing is" : "things are"} resting on the desk.<br/>
+        <span style={{color: "var(--ink-soft)"}}>Want to review them too?</span>
+      </div>
+      <div className="ascend" style={{
+        display: "flex", flexDirection: "column", gap: 10,
+        animationDelay: "240ms", marginTop: 16, padding: "0 24px",
+      }}>
+        <button onClick={onYes} style={{
+          background: "var(--ink)", color: "var(--paper)", border: "none",
+          borderRadius: 14, padding: "14px 18px",
+          fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+        }}>review the desk</button>
+        <button onClick={onSkip} style={{
+          background: "transparent", color: "var(--ink-soft)",
+          border: "1px solid var(--rule-strong)", borderRadius: 14,
+          padding: "13px 14px",
+          fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14, cursor: "pointer",
+        }}>skip — onto today</button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Desk Review ----------
+// Iterator over shelf items, mirroring CarryForward UX. For each item:
+//   bring to today  — add as fresh task in Notebook, remove from shelf
+//   keep on desk    — leave it; no change
+//   release it      — remove from shelf (no carry)
+// onComplete receives decisions array; app.jsx applies via finishDeskReview.
+function DeskReview({ shelf, onComplete }) {
+  const [i, setI] = useState(0);
+  const [decisions, setDecisions] = useState([]);
+
+  const total = shelf.length;
+  const done = i >= total;
+  const current = shelf[i];
+
+  function decide(action) {
+    const next = [...decisions, { item: current, action }];
+    setDecisions(next);
+    if (i + 1 >= total) {
+      setTimeout(() => onComplete(next), 360);
+    }
+    setI(i + 1);
+  }
+
+  if (done) {
+    const brought = decisions.filter(d => d.action === "bring").length;
+    const kept = decisions.filter(d => d.action === "keep").length;
+    const released = decisions.filter(d => d.action === "release").length;
+    return (
+      <div className="screen fade-soft" style={{justifyContent: "center", padding: "0 36px", textAlign: "center"}}>
+        <div className="kicker ascend" style={{marginBottom: 16}}>the desk</div>
+        <div className="serif ascend" style={{fontSize: 24, color: "var(--ink)", lineHeight: 1.4, animationDelay: "120ms"}}>
+          {brought > 0 && <>You're bringing <em style={{fontStyle: "italic"}}>{brought}</em> back.<br/></>}
+          {kept > 0 && <span style={{color: "var(--ink-soft)"}}>{kept} {kept === 1 ? "stays" : "stay"} resting.<br/></span>}
+          {released > 0 && <span style={{color: "var(--ink-soft)"}}>And you let <em style={{fontStyle: "italic"}}>{released}</em> go.</span>}
+          {brought === 0 && kept === 0 && released === 0 && <span style={{color: "var(--ink-soft)"}}>The desk stays as it was.</span>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen fade-soft" style={{padding: "20px 0 30px", display: "flex", flexDirection: "column"}}>
+      <div style={{padding: "12px 28px 18px"}}>
+        <div className="kicker" style={{marginBottom: 6}}>on the desk</div>
+        <div className="serif" style={{fontSize: 22, color: "var(--ink)", lineHeight: 1.35}}>
+          What about this one?
+        </div>
+        <div className="serif" style={{fontSize: 13, color: "var(--ink-faint)", marginTop: 10, fontStyle: "italic"}}>
+          {i + 1} of {total}.
+        </div>
+      </div>
+
+      <div style={{display: "flex", gap: 6, padding: "0 28px 18px"}}>
+        {shelf.map((_, idx) => (
+          <div key={idx} style={{
+            flex: 1, height: 2,
+            background: idx < i ? "var(--ink)" : idx === i ? "var(--ink-soft)" : "var(--rule-strong)",
+            transition: "background 280ms ease",
+          }}/>
+        ))}
+      </div>
+
+      <div key={current.id} className="ascend" style={{
+        flex: 1, margin: "0 28px",
+        padding: "28px 24px",
+        borderTop: "1px solid var(--rule-strong)",
+        borderBottom: "1px solid var(--rule-strong)",
+        display: "flex", flexDirection: "column",
+        justifyContent: "center", gap: 18,
+      }}>
+        <div>
+          <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>
+            {current.shelvedOn ? `shelved ${current.shelvedOn}` : "on the desk"}
+            {typeof current.daysOnShelf === "number" && current.daysOnShelf > 0 && (
+              <> · {current.daysOnShelf} {current.daysOnShelf === 1 ? "day" : "days"} resting</>
+            )}
+          </div>
+          <div className="serif" style={{fontSize: 22, color: "var(--ink)", lineHeight: 1.35}}>
+            {current.text}
+          </div>
+          {current.reasonNote && (
+            <div style={{marginTop: 8, fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 13, color: "var(--ink-soft)"}}>
+              — {current.reasonNote}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{padding: "20px 28px 0", display: "flex", flexDirection: "column", gap: 10}}>
+        <button onClick={() => decide("bring")} style={{
+          background: "var(--ink)", color: "var(--paper)", border: "none",
+          borderRadius: 14, padding: "14px 18px",
+          fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+        }}>bring to today</button>
+        <div style={{display: "flex", gap: 10}}>
+          <button onClick={() => decide("keep")} style={{
+            flex: 1, background: "transparent", color: "var(--ink)",
+            border: "1px solid var(--rule-strong)", borderRadius: 14, padding: "13px 14px",
+            fontFamily: "var(--serif)", fontSize: 14, cursor: "pointer",
+          }}>keep on desk</button>
+          <button onClick={() => decide("release")} style={{
+            flex: 1, background: "transparent", color: "var(--ink-soft)",
+            border: "1px solid var(--rule-strong)", borderRadius: 14, padding: "13px 14px",
+            fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14, cursor: "pointer",
+          }}>release it</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Reframe Sheet ----------
 function ReframeSheet({ item, onClose, onConfirm }) {
   const [text, setText] = useState(item.text);
@@ -1782,6 +1929,7 @@ Object.assign(window, {
   DecisionPointSheet, DecisionHub, StartOnePanel, BreakDownPanel, SharePanel,
   DivideSheet,
   CarryForward,
+  DeskReviewPrompt, DeskReview,
   ReframeSheet, WaitingOnSheet,
   ReOfferCard,
   KeyReference,

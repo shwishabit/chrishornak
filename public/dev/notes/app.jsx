@@ -255,8 +255,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=23"),
-        loadBabelScript("screens-rituals.jsx?v=23"),
+        loadBabelScript("screens-flows.jsx?v=24"),
+        loadBabelScript("screens-rituals.jsx?v=24"),
       ]);
     }
     loadAll()
@@ -774,15 +774,54 @@ function App() {
           ...d.task, id: nextId(),
           mark: null, done: false,
         });
+      } else if (d.action === "later") {
+        // v=24 fix: was silent-drop trap. "rest for now" / "leave it" now
+        // carries the task forward with mark preserved (no advance, no penalty).
+        carried.push({
+          ...d.task, id: nextId(),
+          mark: d.task.mark || null, done: false,
+        });
       }
-      // "later" and "release" intentionally fall through (silent drop).
+      // "release" intentionally falls through (silent drop = trash).
     }
     setTasks(carried);
+    const nextShelf = autoShelved.length > 0 ? [...autoShelved, ...shelf] : shelf;
     if (autoShelved.length > 0) {
-      setShelf([...autoShelved, ...shelf]);
+      setShelf(nextShelf);
       setCompletionsSinceShelf(0);
     }
     setLeftovers(null);
+    // v=24: optional desk review after carry. Skip prompt if shelf is empty.
+    if (nextShelf.length > 0) {
+      setScreen("desk-review-prompt");
+    } else {
+      setScreen("anchor");
+    }
+  }
+
+  // v=24: process DeskReview decisions (bring to today / keep on desk / release).
+  function finishDeskReview(deskDecisions) {
+    const broughtToToday = [];
+    const keepOnDeskIds = new Set();
+    for (const d of deskDecisions) {
+      if (d.action === "bring") {
+        broughtToToday.push({
+          id: nextId(),
+          text: d.item.text,
+          mark: null,
+          tenMin: null,
+          done: false,
+          createdAt: Date.now(),
+        });
+      } else if (d.action === "keep") {
+        keepOnDeskIds.add(d.item.id);
+      }
+      // "release" = remove from shelf, no carry.
+    }
+    if (broughtToToday.length > 0) {
+      setTasks(prev => [...broughtToToday, ...prev]);
+    }
+    setShelf(prev => prev.filter(s => keepOnDeskIds.has(s.id)));
     setScreen("anchor");
   }
 
@@ -958,6 +997,26 @@ function App() {
           {deferredReady ? (
             <CarryForward leftovers={leftovers} prevDateStr={prevDateStr} onComplete={finishCarry}/>
           ) : <DeferredFallback label="carry forward"/>}
+        </div>
+      )}
+
+      {screen === "desk-review-prompt" && (
+        <div data-screen-label="04b Desk Review · prompt" style={{position: "absolute", inset: 0}}>
+          {deferredReady ? (
+            <DeskReviewPrompt
+              shelfCount={shelf.length}
+              onYes={() => setScreen("desk-review")}
+              onSkip={() => setScreen("anchor")}
+            />
+          ) : <DeferredFallback label="the desk"/>}
+        </div>
+      )}
+
+      {screen === "desk-review" && (
+        <div data-screen-label="04c Desk Review · iterate" style={{position: "absolute", inset: 0}}>
+          {deferredReady ? (
+            <DeskReview shelf={shelf} onComplete={finishDeskReview}/>
+          ) : <DeferredFallback label="the desk"/>}
         </div>
       )}
 
