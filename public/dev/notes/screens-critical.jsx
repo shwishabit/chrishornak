@@ -185,7 +185,7 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
           filled={c.mood}
           label="mood"
           hint={c.mood && todayLog && todayLog.moodScore
-            ? (["heavy", "low", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
+            ? (["awful", "bad", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
             : "what's loudest right now?"}
           onClick={onMood}
         />
@@ -656,10 +656,18 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   // container stops pointerdown propagation, so this only fires on outside
   // taps. setTimeout(0) defers registration past the click that opened the
   // slider so the same gesture can't dismiss what it just opened.
+  // v=30 fix: ref-stabilized localProgress so the effect doesn't tear down +
+  // rebuild its listener on every slider tick. The previous deps array
+  // included `localProgress`, which made the listener registration race with
+  // every drag pixel — under iOS PWA timing that left the slider feeling
+  // stuck (no listener attached when user tapped outside). Stable listener
+  // now reads the latest value via ref.
+  const localProgressRef = useRef(localProgress);
+  localProgressRef.current = localProgress;
   useEffect(() => {
     if (!progressOpen) return;
     function handlePointerDown() {
-      if (onSetProgress) onSetProgress(task.id, localProgress);
+      if (onSetProgress) onSetProgress(task.id, localProgressRef.current);
       setProgressOpen(false);
     }
     const id = setTimeout(() => document.addEventListener("pointerdown", handlePointerDown), 0);
@@ -667,7 +675,7 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       clearTimeout(id);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [progressOpen, localProgress, task.id, onSetProgress]);
+  }, [progressOpen, task.id, onSetProgress]);
 
   let markGlyph = null;
   let markColor = "var(--ink-faint)";
@@ -703,9 +711,10 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       setSwipeProgress(0);
       return;
     }
-    if (dx > 0) {
-      setSwipeProgress(Math.min(dx / 200, 1));
-    }
+    // v=30: signed swipe progress so the overlay can paint left (erase)
+    // or right (highlight) symmetrically. Range -1..+1.
+    const signed = Math.max(-1, Math.min(1, dx / 200));
+    setSwipeProgress(signed);
   }
   function onRowPointerUp(e) {
     const s = swipeStateRef.current;
@@ -719,14 +728,21 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       setSwipeProgress(0);
       return;
     }
-    // v=29: lowered swipe distance 60 → 40px and raised elapsed cap 800 → 1200ms
-    // per phone-test feedback that quick swipes weren't registering. The 60px
-    // threshold combined with Sortable's 500ms long-press delay made a clean
-    // flick feel finicky — short swipes fell below 60px before pointerup. 40px
-    // still requires intent (>2x the 20px edge guard) but lands as a flick.
+    // v=29: lowered swipe distance 60 → 40px and raised elapsed cap 800 → 1200ms.
+    // v=30: left-swipe (dx < -40) un-highlights; right-swipe (dx > 40) highlights.
+    // Each direction is a no-op when the task is already in the desired state,
+    // so the gesture is safe to repeat. The visual paint always reflects the
+    // direction (right = yellow highlighter, left = paper erase) regardless of
+    // current priority state.
     if (dx > 40 && Math.abs(dy) < 30 && elapsed < 1200 && onTogglePriority) {
-      onTogglePriority();
+      if (!isPriority) onTogglePriority();
       setSwipeProgress(1);
+      setTimeout(() => setSwipeProgress(0), 240);
+      return;
+    }
+    if (dx < -40 && Math.abs(dy) < 30 && elapsed < 1200 && onTogglePriority) {
+      if (isPriority) onTogglePriority();
+      setSwipeProgress(-1);
       setTimeout(() => setSwipeProgress(0), 240);
       return;
     }
@@ -976,6 +992,24 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
                     fontSize: 12, cursor: "pointer",
                   }}
                 >done</button>
+                {/* v=30: explicit cancel — closes the slider without writing.
+                    Field-test feedback: slider was felt sticky; small × gives
+                    a clear way out alongside the "done" commit + tap-outside. */}
+                <button
+                  onClick={() => setProgressOpen(false)}
+                  aria-label="cancel"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--ink-faint)",
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: 18,
+                    lineHeight: 1,
+                    padding: "0 6px",
+                    cursor: "pointer",
+                  }}
+                >×</button>
               </div>
             ) : editOpen ? (
               <input
@@ -1018,12 +1052,13 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
                     color: "var(--ink-faint)",
                   }}>{task.progress}%</span>
                 )}
-                {swipeProgress > 0 && (
+                {swipeProgress !== 0 && (
                   <span style={{
                     position: "absolute",
-                    left: 0, top: -1, bottom: -1,
-                    width: `${swipeProgress * 100}%`,
-                    background: isPriority ? "var(--paper)" : "var(--highlight)",
+                    [swipeProgress > 0 ? "left" : "right"]: 0,
+                    top: -1, bottom: -1,
+                    width: `${Math.abs(swipeProgress) * 100}%`,
+                    background: swipeProgress > 0 ? "var(--highlight)" : "var(--paper)",
                     pointerEvents: "none",
                     borderRadius: 2,
                     transition: swipeStateRef.current ? "none" : "width 220ms ease-out, opacity 220ms ease-out",

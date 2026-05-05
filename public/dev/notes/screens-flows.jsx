@@ -1961,9 +1961,10 @@ function MoodCheckin({ draft, onUpdate, onComplete }) {
     if (phase === "reframe") setTimeout(() => filterRef.current?.focus(), 320);
   }, [phase]);
 
-  // v=29: clearer gradient. See app.jsx note. Must match app.jsx's MOOD_WORDS
-  // exactly — they appear together (slider label + journal seed).
-  const MOOD_WORDS = ["heavy", "low", "okay", "good", "great"];
+  // v=30: Daylio / Moodflow / iCare convention. Must match app.jsx's
+  // MOOD_WORDS exactly — they appear together (slider label + journal seed
+  // + Anchor ladder hint).
+  const MOOD_WORDS = ["awful", "bad", "okay", "good", "great"];
   const moodWord = MOOD_WORDS[(score || 3) - 1] || "okay";
 
   function nextFromSlider() { onUpdate({ phase: "noise" }); }

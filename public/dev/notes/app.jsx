@@ -154,13 +154,15 @@ function saveRecurrences(arr) {
 // to avoid double-bookkeeping. Mood label words (slider): 1=low / 2=quiet /
 // 3=steady / 4=bright / 5=clear. Reframe gate fires at score ≤ 2.
 const LOGS_KEY = `${STORAGE_NS}:logs.v1`;
-// v=29: mood scale words. Original v=28 set was "low/quiet/steady/bright/clear"
-// — Chris flagged on phone test that the gradient wasn't obvious to some
-// (low ≈ quiet, bright ≈ clear). Replaced with a less ambiguous gradient:
-// "heavy" (1) anchors the negative end as a universally understood state-
-// of-being word; "great" (5) is unambiguously top. Middle three are direct
-// and accessible. Trades a fraction of Sage tone for clarity.
-const MOOD_WORDS = ["heavy", "low", "okay", "good", "great"];
+// v=30: mood scale words — second revision. v=28's poetic set
+// (low/quiet/steady/bright/clear) was ambiguous. v=29's heavy/low/okay/good/
+// great was clearer but Chris reported "heavy" still didn't read clearly.
+// Survey of consumer CBT / mood-tracking app conventions: Daylio (10M+
+// downloads), Moodflow, iCare, Bearable, MindDoc all converge on a "bad" →
+// "great" gradient with "okay" or "meh" as the neutral middle. This set
+// matches that consensus exactly. Trades all remaining Sage tone for
+// universal legibility — Chris's explicit clarity-over-vibe call.
+const MOOD_WORDS = ["awful", "bad", "okay", "good", "great"];
 function loadLogs() {
   try {
     const raw = localStorage.getItem(LOGS_KEY);
@@ -322,8 +324,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=29"),
-        loadBabelScript("screens-rituals.jsx?v=29"),
+        loadBabelScript("screens-flows.jsx?v=30"),
+        loadBabelScript("screens-rituals.jsx?v=30"),
       ]);
     }
     loadAll()

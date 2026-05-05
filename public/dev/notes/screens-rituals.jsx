@@ -261,7 +261,7 @@ function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
         {!isSquare && (
           <>
             <div className="kicker" style={{marginBottom: 10}}>sound</div>
-            <div style={{display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22}}>
+            <div style={{display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8}}>
               {sounds.map((s) => (
                 <button
                   key={s.val}
@@ -280,6 +280,19 @@ function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
                 >{s.label}</button>
               ))}
             </div>
+            {/* v=30: gentle reminder for non-silence picks. iOS silent-mode
+                kills web audio at the OS layer — no JS workaround. Fires only
+                when a non-silence sound is selected so silence-pickers aren't
+                nagged about something they don't need. */}
+            {sound !== "none" && (
+              <div className="serif fade-in" style={{
+                fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+                marginBottom: 22, letterSpacing: "0.02em",
+              }}>
+                if your phone is on silent, this won't play.
+              </div>
+            )}
+            {sound === "none" && <div style={{marginBottom: 14}}/>}
           </>
         )}
       </div>
