@@ -294,8 +294,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=26"),
-        loadBabelScript("screens-rituals.jsx?v=26"),
+        loadBabelScript("screens-flows.jsx?v=27"),
+        loadBabelScript("screens-rituals.jsx?v=27"),
       ]);
     }
     loadAll()
@@ -654,6 +654,13 @@ function App() {
   }
   function renameTask(id, text) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
+  }
+  // v=27: per-task progress (0-100). Stored as `progress` field; null/undefined
+  // = no fill rendered. 100 leaves the field set so the row reads as "fully
+  // progressed" until completed via the checkbox. Rounds + clamps defensively.
+  function setProgress(id, n) {
+    const clean = Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, progress: clean } : t));
   }
   function reorderTasks(oldActiveIdx, newActiveIdx) {
     if (oldActiveIdx === newActiveIdx) return;
@@ -1190,6 +1197,7 @@ function App() {
               onTaskCompleted={onTaskCompleted}
               onTogglePriority={togglePriority}
               onRename={renameTask}
+              onSetProgress={setProgress}
               onReorderTasks={reorderTasks}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}

@@ -82,6 +82,14 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <path d="M3.5 11 V15 a1 1 0 0 0 1 1 H15.5 a1 1 0 0 0 1 -1 V11" {...common}/>
         </svg>
       );
+    case "progress":
+      // a horizontal track with a partial fill — visual metaphor for a progress bar
+      return (
+        <svg viewBox="0 0 20 20" style={s}>
+          <rect x="3" y="9" width="14" height="2.5" rx="1.25" {...common} fill="none"/>
+          <rect x="3.4" y="9.4" width="7.5" height="1.7" rx="0.85" fill="currentColor" stroke="none"/>
+        </svg>
+      );
     case "fork":
       // a single line splitting into two diverging paths — "this needs a direction"
       return (

@@ -275,7 +275,7 @@ function AnchorMenuItem({ label, hint, onClick, primary }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onSetProgress, onReorderTasks, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
     setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
@@ -391,6 +391,7 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
               onAddNote={(noteText) => setNote(t.id, noteText)}
               onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
               onRename={onRename}
+              onSetProgress={onSetProgress}
               index={i}
             />
           ))}
@@ -556,15 +557,21 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   );
 }
 
-function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, index }) {
+function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, onSetProgress, index }) {
   const isDecision = task.mark === "?";
   const isCarriedTwice = task.mark === ">>";
   const isCarriedOnce = task.mark === ">";
   const isCarried = isCarriedOnce || isCarriedTwice;
   const isPriority = task.priority === true;
+  const hasProgress = typeof task.progress === "number" && task.progress > 0 && task.progress < 100;
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  // v=27: inline progress slider state. Local buffer mirrors row's progress;
+  // committed via setOnSlider's onChange (live update for visual feedback)
+  // and final commit on slider release / done tap.
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [localProgress, setLocalProgress] = useState(0);
   // Swipe-right gesture progress (0–1). Drives the painted highlighter sweep.
   // Tap vs swipe classification happens in onPointerUp based on Δx/Δy/elapsed.
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -584,6 +591,22 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open, task.id]);
+  // v=27: tap-outside-to-commit when progress slider is open. Slider's own
+  // container stops pointerdown propagation, so this only fires on outside
+  // taps. setTimeout(0) defers registration past the click that opened the
+  // slider so the same gesture can't dismiss what it just opened.
+  useEffect(() => {
+    if (!progressOpen) return;
+    function handlePointerDown() {
+      if (onSetProgress) onSetProgress(task.id, localProgress);
+      setProgressOpen(false);
+    }
+    const id = setTimeout(() => document.addEventListener("pointerdown", handlePointerDown), 0);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [progressOpen, localProgress, task.id, onSetProgress]);
 
   let markGlyph = null;
   let markColor = "var(--ink-faint)";
@@ -591,10 +614,12 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   else if (isCarriedTwice) { markGlyph = "››"; markColor = "var(--mark)"; }
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
 
-  // Drawer = × close + Edit + Comment + Decide. Always 4 buttons regardless
-  // of marker state. (Highlight moved to swipe-right gesture; set-down / desk
-  // / trash folded under Decide → DecisionPointSheet.)
-  const drawerWidth = 4 * 80;
+  // Drawer = × close + Edit + Comment + Progress + Decide. Five buttons at
+  // 64px each = 320px total — preserves the v=18 width that fits inside an
+  // iPhone viewport (was 4 × 80 = 320 before v=27). Progress added between
+  // Comment and Decide so the destructive Decide stays at the far right.
+  const drawerWidth = 5 * 64;
+  const drawerBtnWidth = 64;
 
   // Pointer-event handlers on the row content. Tap = open drawer.
   // Swipe-right = toggle priority (with painted-sweep animation). Vertical
@@ -656,7 +681,26 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
         overflow: "hidden",
       }}
     >
-      {/* Action drawer (revealed when row is "open") — × close · Edit · Comment · Decide */}
+      {/* v=27: ghost-fill progress bar — paints behind row content as a
+          left-anchored partial fill. Hidden at 0% and 100%; rendered for
+          intermediate values. Sits below row content (zIndex 0) so the
+          existing translucent row bg lays it down without competing. */}
+      {hasProgress && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0, left: 0, bottom: 0,
+            width: `${task.progress}%`,
+            background: "var(--paper-deep)",
+            opacity: 0.6,
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* Action drawer (revealed when row is "open") — × close · Edit · Comment · Progress · Decide */}
       <div data-row-drawer={task.id} style={{
         position: "absolute",
         top: 0, right: 0, bottom: 0,
@@ -675,7 +719,7 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             color: "var(--ink-soft)",
             cursor: "pointer",
             borderLeft: "1px solid var(--rule)",
-            minWidth: 80,
+            minWidth: drawerBtnWidth,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -693,11 +737,11 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             style={{
               background: "var(--paper-deep)",
               border: "none",
-              padding: "0 14px",
+              padding: "0 10px",
               color: "var(--ink)",
               cursor: "pointer",
               borderLeft: "1px solid var(--rule)",
-              minWidth: 80,
+              minWidth: drawerBtnWidth,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -711,16 +755,39 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
           style={{
             background: "var(--paper-deep)",
             border: "none",
-            padding: "0 14px",
+            padding: "0 10px",
             color: "var(--ink)",
             cursor: "pointer",
             borderLeft: "1px solid var(--rule)",
-            minWidth: 80,
+            minWidth: drawerBtnWidth,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         ><Icon name="comment" size={20}/></button>
+        {!task.done && onSetProgress && (
+          <button
+            onClick={() => {
+              setOpen(false);
+              setLocalProgress(typeof task.progress === "number" ? task.progress : 0);
+              setProgressOpen(true);
+            }}
+            aria-label="progress"
+            title="progress"
+            style={{
+              background: "var(--paper-deep)",
+              border: "none",
+              padding: "0 10px",
+              color: "var(--ink)",
+              cursor: "pointer",
+              borderLeft: "1px solid var(--rule)",
+              minWidth: drawerBtnWidth,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          ><Icon name="progress" size={20}/></button>
+        )}
         {!task.done && (
           <button
             onClick={() => { setOpen(false); onDivide(); }}
@@ -729,11 +796,11 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             style={{
               background: "var(--paper-deep)",
               border: "none",
-              padding: "0 14px",
+              padding: "0 10px",
               color: "var(--ink)",
               cursor: "pointer",
               borderLeft: "1px solid var(--rule)",
-              minWidth: 80,
+              minWidth: drawerBtnWidth,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -794,7 +861,41 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             </div>
           )}
           <div style={{display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap"}}>
-            {editOpen ? (
+            {progressOpen ? (
+              <div
+                style={{display: "flex", alignItems: "center", gap: 10, width: "100%"}}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="range"
+                  min="0" max="100" step="5"
+                  value={localProgress}
+                  onChange={(e) => setLocalProgress(Number(e.target.value))}
+                  style={{flex: 1, minWidth: 80}}
+                  aria-label="progress"
+                />
+                <div className="serif" style={{
+                  minWidth: 36,
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 13, color: "var(--ink-soft)",
+                  textAlign: "right",
+                }}>{localProgress}%</div>
+                <button
+                  onClick={() => {
+                    if (onSetProgress) onSetProgress(task.id, localProgress);
+                    setProgressOpen(false);
+                  }}
+                  style={{
+                    background: "var(--ink)", color: "var(--paper)",
+                    border: "none", borderRadius: 999,
+                    padding: "5px 12px",
+                    fontFamily: "var(--serif)", fontStyle: "italic",
+                    fontSize: 12, cursor: "pointer",
+                  }}
+                >done</button>
+              </div>
+            ) : editOpen ? (
               <input
                 autoFocus
                 type="text"
@@ -828,6 +929,13 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
                 }}>
                   {task.text}
                 </span>
+                {typeof task.progress === "number" && task.progress > 0 && task.progress < 100 && (
+                  <span className="serif" style={{
+                    marginLeft: 8,
+                    fontSize: 11, fontStyle: "italic",
+                    color: "var(--ink-faint)",
+                  }}>{task.progress}%</span>
+                )}
                 {swipeProgress > 0 && (
                   <span style={{
                     position: "absolute",
