@@ -204,6 +204,28 @@ function priorityScore(task, nowMs = Date.now()) {
   return Math.max(0, Math.min(11, priority * 6 + tier - agePenalty));
 }
 
+// v=25: small ghost-style escape hatch for morning flow screens (Recap,
+// CarryForward, DeskReview). Positions absolutely in top-right of the screen
+// wrapper so it overlays without disturbing each flow's internal layout.
+function SkipToToday({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="skip to today"
+      style={{
+        position: "absolute", top: 16, right: 16, zIndex: 10,
+        background: "transparent", border: "none",
+        fontFamily: "var(--serif)", fontStyle: "italic",
+        fontSize: 11, color: "var(--ink-faint)",
+        padding: "6px 10px", cursor: "pointer",
+        letterSpacing: "0.02em",
+      }}
+    >
+      skip — to today
+    </button>
+  );
+}
+
 // Tiny placeholder shown while a deferred-screen module is still loading.
 // Almost never visible in practice: deferred fetch + Babel transform completes
 // in ~100–300ms, faster than the user can navigate from Anchor to anywhere
@@ -255,8 +277,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=24"),
-        loadBabelScript("screens-rituals.jsx?v=24"),
+        loadBabelScript("screens-flows.jsx?v=25"),
+        loadBabelScript("screens-rituals.jsx?v=25"),
       ]);
     }
     loadAll()
@@ -799,6 +821,25 @@ function App() {
     }
   }
 
+  // v=25: escape hatch from morning flows (Recap, CarryForward) back to
+  // Anchor. Auto-keeps remaining leftovers (carry forward + marker advance)
+  // and clears recap/leftovers state. Bumps dayOffset for admin path
+  // (mirrors continueAfterRecap's source-aware bump).
+  function skipMorningFlow() {
+    if (recap?.recapSource === "admin") setDayOffset(dayOffset + 1);
+    const source = (recap?.leftovers && recap.leftovers.length > 0)
+      ? recap.leftovers
+      : (leftovers || []);
+    const carried = source.map(task => ({
+      ...task, id: nextId(),
+      mark: nextMarkAfterCarry(task.mark), done: false,
+    }));
+    setTasks(carried);
+    setLeftovers(null);
+    setRecap(null);
+    setScreen("anchor");
+  }
+
   // v=24: process DeskReview decisions (bring to today / keep on desk / release).
   function finishDeskReview(deskDecisions) {
     const broughtToToday = [];
@@ -994,6 +1035,7 @@ function App() {
 
       {screen === "carry" && leftovers && (
         <div data-screen-label="04 Carry Forward" style={{position: "absolute", inset: 0}}>
+          <SkipToToday onClick={skipMorningFlow}/>
           {deferredReady ? (
             <CarryForward leftovers={leftovers} prevDateStr={prevDateStr} onComplete={finishCarry}/>
           ) : <DeferredFallback label="carry forward"/>}
@@ -1014,6 +1056,7 @@ function App() {
 
       {screen === "desk-review" && (
         <div data-screen-label="04c Desk Review · iterate" style={{position: "absolute", inset: 0}}>
+          <SkipToToday onClick={() => setScreen("anchor")}/>
           {deferredReady ? (
             <DeskReview shelf={shelf} onComplete={finishDeskReview}/>
           ) : <DeferredFallback label="the desk"/>}
@@ -1022,6 +1065,7 @@ function App() {
 
       {screen === "recap" && recap && (
         <div data-screen-label="06 Recap" style={{position: "absolute", inset: 0}}>
+          <SkipToToday onClick={skipMorningFlow}/>
           {deferredReady ? (
             <Recap recap={recap} onContinue={continueAfterRecap}/>
           ) : <DeferredFallback label="recap"/>}
