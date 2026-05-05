@@ -484,7 +484,7 @@ function SquareBreath({ totalSec = 30, onComplete, onCancel }) {
   );
 }
 
-function MeditateActive({ minutes, sound, guided, onComplete, onCancel }) {
+function MeditateActive({ minutes, sound, guided, onComplete, onCancel, mantra }) {
   const totalSec = minutes * 60;
   const [remaining, setRemaining] = useState(totalSec);
   const [paused, setPaused] = useState(false);
@@ -659,11 +659,22 @@ function MeditateActive({ minutes, sound, guided, onComplete, onCancel }) {
       alignItems: "center",
       textAlign: "center",
     }}>
-      <div className="kicker" style={{
-        opacity: finished ? 0 : 0.85,
-        transition: "opacity 1s ease",
-      }}>
-        {finished ? "" : (breathPhase === "in" ? "in" : "out")}
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%"}}>
+        {/* v=28: low-contrast mantra header — today's filterText from the
+            morning Mood Check-in. Invisible when no filter exists (high-mood
+            day, mood skipped, or Reframe abandoned). For "if you open your
+            eyes" reference per the original spec. */}
+        {mantra && (
+          <div className="meditate-mantra serif">
+            {mantra}
+          </div>
+        )}
+        <div className="kicker" style={{
+          opacity: finished ? 0 : 0.85,
+          transition: "opacity 1s ease",
+        }}>
+          {finished ? "" : (breathPhase === "in" ? "in" : "out")}
+        </div>
       </div>
 
       <div style={{
@@ -839,7 +850,7 @@ function seedJournalIfEmpty() {
   } catch (e) {}
 }
 
-function Journal({ onClose, dateStr, weekday, todayIso }) {
+function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
   const MAX = 500;
 
   // Mode: 'write' (today, editable), 'view' (past entry, read-only), 'calendar' (picker)
@@ -861,8 +872,21 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
     return JOURNAL_PROMPTS[doy % JOURNAL_PROMPTS.length];
   })();
 
+  // v=28: seed text comes from app.jsx when today's mood-checkin has been
+  // filled but today's journal entry is currently empty. The seed shows in
+  // the textarea but is NOT autosaved — only user-initiated edits write to
+  // localStorage. This way, opening Journal "to peek" doesn't fake-complete
+  // the ritual or pollute the entry. dirty flips true on first user input.
   const [text, setText] = useState(() => {
-    try { return localStorage.getItem(journalKeyForIso(todayIso)) || ""; } catch (e) { return ""; }
+    try {
+      const stored = localStorage.getItem(journalKeyForIso(todayIso));
+      if (stored) return stored;
+      return seedText || "";
+    } catch (e) { return seedText || ""; }
+  });
+  const [dirty, setDirty] = useState(() => {
+    try { return !!localStorage.getItem(journalKeyForIso(todayIso)); }
+    catch (e) { return false; }
   });
 
   // When viewing a past entry, pull its text fresh from storage.
@@ -879,8 +903,12 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
   const [editingText, setEditingText] = useState("");
 
   // Autosave today's entry — debounce 600ms after last keystroke.
+  // v=28: gated on `dirty` so the seed-only state (mood-checkin pre-fill, no
+  // user input yet) never persists. Once the user types, dirty stays true
+  // for the rest of the session.
   useEffect(() => {
     if (mode !== "write") return;
+    if (!dirty) return;
     const todayKey = journalKeyForIso(todayIso);
     if (text === "") {
       try { localStorage.removeItem(todayKey); } catch (e) {}
@@ -895,7 +923,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
       } catch (e) {}
     }, 600);
     return () => clearTimeout(id);
-  }, [text, todayIso, mode]);
+  }, [text, todayIso, mode, dirty]);
 
   // Resync editor on day flip (admin advance / real midnight via App's
   // visibility tick) — pulls the new day's stored entry into local state.
@@ -1154,7 +1182,7 @@ function Journal({ onClose, dateStr, weekday, todayIso }) {
       }}>
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); if (!dirty) setDirty(true); }}
           placeholder="A few lines. No more than feels true."
           autoFocus
           style={{

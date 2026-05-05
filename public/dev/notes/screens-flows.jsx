@@ -1927,6 +1927,218 @@ function TrashBin({ trash, onRestore, onPurge, onClose }) {
   );
 }
 
+// ---------- Mood Check-in (v=28) ----------
+// Step 1 of the morning ritual ladder. Single screen with internal phase state:
+// 'slider' (1–5 mood) → 'noise' (what's loudest) → 'reframe' (only if mood ≤ 2).
+// Phase + draft values live in app.jsx (`moodDraft`) so a SkipToToday tap or
+// accidental navigation away preserves work-in-progress within the session.
+// On completion, app.jsx writes to dailyLogs[todayIso] and routes to the
+// mood-meditate-prompt (or back to anchor if meditate already done today).
+//
+// Design rationale (locked via grill):
+//   - Horizontal slider, snap-to-integer, four hairline rule marks at the
+//     steps. Mirrors v=27 progress slider — vertical has no precedent.
+//   - Single italic word below the slider. Mood-symmetric: low/quiet/steady/
+//     bright/clear. No emoji, no faces, no color gradient.
+//   - Borderless inputs. Just blinking cursor + center-aligned text. The
+//     "no text box borders" constraint is the meditative-input feel.
+//   - "next" button appears (fade-in) once typing starts — never visible
+//     when the field is empty.
+//   - Reframe phase is gated at score ≤ 2. Score 3–5 skips Reframe and
+//     completes after Noise.
+//   - Vanishing Text effect: as user types in Reframe, the Noise text above
+//     blurs + drifts up + fades to ~0.15 opacity. CSS transitions only, no
+//     JS animation library. Reinforces CBT distancing without using a single
+//     word of clinical jargon (per the original spec's "Key Strategy").
+function MoodCheckin({ draft, onUpdate, onComplete }) {
+  if (!draft) return null;
+  const { phase, score, noise, filter } = draft;
+  const noiseRef = useRef(null);
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    if (phase === "noise") setTimeout(() => noiseRef.current?.focus(), 320);
+    if (phase === "reframe") setTimeout(() => filterRef.current?.focus(), 320);
+  }, [phase]);
+
+  const MOOD_WORDS = ["low", "quiet", "steady", "bright", "clear"];
+  const moodWord = MOOD_WORDS[(score || 3) - 1] || "steady";
+
+  function nextFromSlider() { onUpdate({ phase: "noise" }); }
+  function nextFromNoise() {
+    const cleanNoise = (noise || "").trim();
+    if (!cleanNoise) return;
+    if ((score || 3) <= 2) onUpdate({ phase: "reframe" });
+    else onComplete(score, cleanNoise, null);
+  }
+  function nextFromReframe() {
+    const cleanNoise = (noise || "").trim();
+    const cleanFilter = (filter || "").trim();
+    if (!cleanFilter) return;
+    onComplete(score, cleanNoise, cleanFilter);
+  }
+
+  // Vanishing-text intensity. 0 chars → full opacity / no blur / no drift.
+  // 30+ chars → ~0.15 opacity / ~3px blur / 18px drift up.
+  const filterLen = (filter || "").length;
+  const fadeT = Math.min(filterLen / 30, 1);
+  const noiseOpacity = 1 - fadeT * 0.85;
+  const noiseBlur = fadeT * 3;
+  const noiseDrift = -fadeT * 18;
+
+  return (
+    <div className="screen fade-soft" style={{
+      padding: "0 36px",
+      display: "flex", flexDirection: "column",
+      justifyContent: "center", alignItems: "center",
+      gap: 32, textAlign: "center",
+    }}>
+      {phase === "slider" && (
+        <div className="ascend" style={{
+          width: "100%", maxWidth: 320,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 28,
+        }}>
+          <div className="kicker">how are you</div>
+          <input
+            type="range"
+            min="1" max="5" step="1"
+            value={score}
+            onChange={(e) => onUpdate({ score: Number(e.target.value) })}
+            className="mood-slider"
+            aria-label="mood"
+            style={{width: "100%"}}
+          />
+          <div className="serif" style={{
+            fontSize: 24, fontStyle: "italic",
+            color: "var(--ink)",
+            letterSpacing: "0.01em",
+            minHeight: 30,
+          }}>
+            {moodWord}
+          </div>
+          <button onClick={nextFromSlider} style={{
+            marginTop: 12,
+            background: "var(--ink)", color: "var(--paper)",
+            border: "none", borderRadius: 999, padding: "12px 32px",
+            fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+          }}>next</button>
+        </div>
+      )}
+
+      {phase === "noise" && (
+        <div className="ascend" key="noise-phase" style={{
+          width: "100%", maxWidth: 320,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 24,
+        }}>
+          <div className="serif" style={{
+            fontSize: 22, fontStyle: "italic",
+            color: "var(--ink-soft)", lineHeight: 1.4,
+          }}>
+            What's loudest right now?
+          </div>
+          <textarea
+            ref={noiseRef}
+            value={noise || ""}
+            onChange={(e) => onUpdate({ noise: e.target.value })}
+            className="mood-input"
+            rows={3}
+            aria-label="loudest"
+          />
+          {(noise || "").trim() && (
+            <button onClick={nextFromNoise} className="fade-in" style={{
+              background: "var(--ink)", color: "var(--paper)",
+              border: "none", borderRadius: 999, padding: "12px 32px",
+              fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+            }}>next</button>
+          )}
+        </div>
+      )}
+
+      {phase === "reframe" && (
+        <div className="ascend" key="reframe-phase" style={{
+          width: "100%", maxWidth: 320,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 22,
+        }}>
+          {/* Vanishing Text — the noise blurs + drifts up + fades as the
+              filter is typed. Inline transitions read 480ms; the change
+              triggers any time filterLen mutates the derived values. */}
+          <div style={{
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.5,
+            opacity: noiseOpacity,
+            filter: `blur(${noiseBlur}px)`,
+            transform: `translateY(${noiseDrift}px)`,
+            transition: "opacity 480ms ease, filter 480ms ease, transform 480ms ease",
+            pointerEvents: "none",
+            maxWidth: 320,
+          }}>
+            {noise}
+          </div>
+
+          <div className="serif" style={{
+            fontSize: 22, fontStyle: "italic",
+            color: "var(--ink-soft)", lineHeight: 1.4,
+          }}>
+            What's another way to see this?
+          </div>
+          <textarea
+            ref={filterRef}
+            value={filter || ""}
+            onChange={(e) => onUpdate({ filter: e.target.value })}
+            className="mood-input"
+            rows={3}
+            aria-label="clearer"
+          />
+          {(filter || "").trim() && (
+            <button onClick={nextFromReframe} className="fade-in" style={{
+              background: "var(--ink)", color: "var(--paper)",
+              border: "none", borderRadius: 999, padding: "12px 32px",
+              fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+            }}>next</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Ritual Prompt (v=28) ----------
+// Lightweight handoff sheet used between morning ritual steps. Modeled on
+// DeskReviewPrompt — terse kicker, primary continue, secondary skip-to-Tasks.
+// Each ritual step routes to one of these on completion if the next ritual
+// in the ladder isn't yet done; otherwise it returns straight to anchor.
+function RitualPrompt({ kicker, primaryLabel, onPrimary, onSkip }) {
+  return (
+    <div className="screen fade-soft" style={{
+      justifyContent: "center", padding: "0 36px", textAlign: "center",
+      display: "flex", flexDirection: "column", gap: 36,
+    }}>
+      <div className="ascend serif" style={{
+        fontSize: 32, color: "var(--ink)",
+        fontStyle: "italic", letterSpacing: "0.01em",
+      }}>
+        {kicker}
+      </div>
+      <div className="ascend" style={{
+        display: "flex", flexDirection: "column", gap: 10,
+        animationDelay: "200ms", padding: "0 24px",
+      }}>
+        <button onClick={onPrimary} style={{
+          background: "var(--ink)", color: "var(--paper)", border: "none",
+          borderRadius: 14, padding: "14px 18px",
+          fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
+        }}>{primaryLabel}</button>
+        <button onClick={onSkip} style={{
+          background: "transparent", color: "var(--ink-soft)",
+          border: "1px solid var(--rule-strong)", borderRadius: 14,
+          padding: "13px 14px",
+          fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14, cursor: "pointer",
+        }}>skip — onto today</button>
+      </div>
+    </div>
+  );
+}
+
 Object.assign(window, {
   TurnThePage,
   REASON_TAGS, reasonLabelFor,
@@ -1940,4 +2152,5 @@ Object.assign(window, {
   Recap,
   DeskShelfPostit, DeskNotePostit, DeskPage,
   TrashBin,
+  MoodCheckin, RitualPrompt,
 });

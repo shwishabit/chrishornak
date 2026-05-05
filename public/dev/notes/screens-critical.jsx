@@ -5,7 +5,15 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees, regulars, onAddRegular }) {
+// v=28: CTA cluster restructured as a 4-row ritual ladder (mood / sit a while
+// / reflect a moment / open today). The first three are rituals with circles
+// that fill on per-day completion (state in app.jsx → dailyLogs[todayIso] +
+// today's journal entry). The fourth row is the destination CTA (no circle,
+// no completion gate — Tasks is the day's work, not a ritual). Each ritual
+// step ends with a recommendation prompt routing to the next; skip from any
+// prompt goes direct to Tasks per v=25 home-escape pattern.
+function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees, regulars, onAddRegular, completion, todayLog }) {
+  const c = completion || { mood: false, meditate: false, journal: false };
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
   return (
@@ -171,23 +179,33 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
       </div>
 
       <div className="ascend" style={{animationDelay: "560ms", display: "flex", flexDirection: "column", gap: 0}}>
-        <div className="kicker" style={{marginBottom: 14, color: "var(--ink-faint)"}}>or pause first —</div>
+        <div className="kicker" style={{marginBottom: 14, color: "var(--ink-faint)"}}>today's path —</div>
 
-        <SecondaryAnchor
-          label="Sit a while"
-          hint="30 seconds, or longer"
+        <LadderRow
+          filled={c.mood}
+          label="mood"
+          hint={c.mood && todayLog && todayLog.moodScore
+            ? (["low", "quiet", "steady", "bright", "clear"][todayLog.moodScore - 1] || "checked in")
+            : "what's loudest right now?"}
+          onClick={onMood}
+        />
+        <LadderRow
+          filled={c.meditate}
+          label="sit a while"
+          hint={c.meditate ? "settled" : "30 seconds, or longer"}
           onClick={onMeditate}
         />
-        <SecondaryAnchor
-          label="Reflect a moment"
-          hint="a few lines on yesterday"
+        <LadderRow
+          filled={c.journal}
+          label="reflect a moment"
+          hint={c.journal ? "on paper" : "a few lines"}
           onClick={onReflect}
         />
 
         <button
           onClick={onEnter}
           style={{
-            marginTop: 28,
+            marginTop: 22,
             background: "var(--ink)",
             color: "var(--paper)",
             border: "none",
@@ -207,6 +225,49 @@ function MorningAnchor({ onMeditate, onBreaths, onReflect, onEnter, dateStr, wee
         </button>
       </div>
     </div>
+  );
+}
+
+// v=28: ritual ladder row. Replaces SecondaryAnchor at the bottom of Anchor.
+// The circle is informational (filled = today's ritual is done), not a gate —
+// every row remains tappable so re-entry, edit, or "I'd like to redo this"
+// is always available. Border-top hairline preserves the "list of options"
+// reading; the circle sits in a dedicated 22px gutter so the row text aligns
+// with the existing AnchorMenuItem / SecondaryAnchor patterns.
+function LadderRow({ filled, label, hint, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="ladder-row"
+      style={{
+        background: "transparent",
+        border: "none",
+        borderTop: "1px solid var(--rule)",
+        padding: "14px 0",
+        width: "100%",
+        textAlign: "left",
+        cursor: "pointer",
+        color: "var(--ink-soft)",
+        fontFamily: "var(--serif)",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <span
+        aria-hidden="true"
+        className={`ladder-circle ${filled ? "ladder-circle--filled" : ""}`}
+      />
+      <div style={{flex: 1, minWidth: 0}}>
+        <div style={{fontSize: 16, fontWeight: 400, color: "var(--ink)"}}>{label}</div>
+        <div style={{
+          fontSize: 11, color: "var(--ink-faint)",
+          fontStyle: "italic", marginTop: 2,
+          letterSpacing: "0.02em",
+        }}>{hint}</div>
+      </div>
+      <span style={{fontSize: 16, color: "var(--ink-faint)", marginLeft: 8}}>→</span>
+    </button>
   );
 }
 
@@ -1529,7 +1590,7 @@ function Tutorial({ onDone }) {
 }
 
 Object.assign(window, {
-  MorningAnchor, SecondaryAnchor, AnchorMenuItem,
+  MorningAnchor, SecondaryAnchor, AnchorMenuItem, LadderRow,
   NowPage, TaskNote, TaskRow,
   AddSheet, AddDeskSheet, WinSheet, WinToast,
   HighlightHint, Tutorial,

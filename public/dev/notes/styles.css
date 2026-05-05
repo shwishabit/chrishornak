@@ -662,6 +662,125 @@ body {
 }
 .admin-row.admin-danger:hover { background: rgba(160, 90, 44, 0.08); border-color: #A05A2C; }
 
+/* ===== v=28: Mood Check-in + ritual ladder ===== */
+
+/* Mood slider — horizontal range, snap-to-integer (1–5), hairline rule marks
+   at the steps. Mirrors v=27 progress slider geometry but tighter (range
+   1–5 vs 0–100). Track is a hand-drawn paper rule; the four interior tick
+   marks are rendered as a repeating-linear-gradient on the track. Thumb is
+   a small filled ink circle. No semantic color shift — single paper-cream
+   theme is intentional per Q4 design-system constraint. */
+.mood-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+/* Track + tick marks. Track is a 2px paper-deep line; ticks are 1px hairlines
+   at 1/4, 2/4, 3/4 along the track (i.e. between values 1–5). The 1 and 5
+   values sit at the track ends so no end-tick is needed. */
+.mood-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background:
+    linear-gradient(to right,
+      transparent calc(25% - 0.5px), var(--rule-strong) calc(25% - 0.5px), var(--rule-strong) calc(25% + 0.5px),
+      transparent calc(25% + 0.5px) calc(50% - 0.5px), var(--rule-strong) calc(50% - 0.5px), var(--rule-strong) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px) calc(75% - 0.5px), var(--rule-strong) calc(75% - 0.5px), var(--rule-strong) calc(75% + 0.5px),
+      transparent calc(75% + 0.5px)),
+    linear-gradient(var(--rule-strong), var(--rule-strong));
+  background-size: 100% 8px, 100% 2px;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  border-radius: 1px;
+}
+.mood-slider::-moz-range-track {
+  height: 2px;
+  background: var(--rule-strong);
+  border-radius: 1px;
+}
+/* Thumb */
+.mood-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  margin-top: -8px; /* center over the 2px track */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.mood-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+/* Borderless mood input — center-aligned serif italic textarea. No box,
+   no focus ring, just blinking caret. The "no text box borders" constraint
+   is the meditative-input feel; visible borders read as data-entry. */
+.mood-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.55;
+  padding: 4px 0;
+  text-align: center;
+  caret-color: var(--ink);
+}
+.mood-input::placeholder { color: var(--ink-faint); font-style: italic; }
+.mood-input:focus { outline: none; }
+
+/* Ritual ladder rows on Anchor — replaces the v<28 SecondaryAnchor cluster.
+   The circle gutter is 14px wide; rows otherwise inherit SecondaryAnchor
+   typography. Hover/active is intentionally minimal (Sage-modest); the
+   completion circle is the only visible state-change. */
+.ladder-circle {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-soft);
+  background: transparent;
+  display: inline-block;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.ladder-circle--filled {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Meditate mantra header — today's filterText carried from Mood Check-in.
+   Low-contrast on purpose: visible if eyes are open, invisible-ish if half-
+   closed. ~85% width to avoid crowding the breath circle below. */
+.meditate-mantra {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 280px;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+
 /* Testing-offset banner — visible when dayOffset != 0 so the user remembers
    they're on a simulated day. Subtle warm-earth tone to match the friction
    palette without alarming. */

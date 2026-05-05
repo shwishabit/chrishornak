@@ -145,6 +145,28 @@ function saveRecurrences(arr) {
   try { localStorage.setItem(RECURRENCES_KEY, JSON.stringify(arr)); } catch (e) {}
 }
 
+// v=28: dailyLogs — per-day record holding mood-checkin payload + meditate
+// completion timestamp. Keyed by effective ISO. Independent state slice so a
+// future Stats dashboard can read mood trends without unpacking the main
+// state blob. Each log: { moodScore: 1-5, noiseText: string, filterText:
+// string|null, meditateDoneAt: number|null }. Journal completion is NOT
+// tracked here — derived from the existing per-day journal localStorage key
+// to avoid double-bookkeeping. Mood label words (slider): 1=low / 2=quiet /
+// 3=steady / 4=bright / 5=clear. Reframe gate fires at score ≤ 2.
+const LOGS_KEY = `${STORAGE_NS}:logs.v1`;
+const MOOD_WORDS = ["low", "quiet", "steady", "bright", "clear"];
+function loadLogs() {
+  try {
+    const raw = localStorage.getItem(LOGS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === "object") ? parsed : {};
+  } catch (e) { return {}; }
+}
+function saveLogs(obj) {
+  try { localStorage.setItem(LOGS_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+
 function wipeAllDailyNow() {
   // Clears the main state blob AND any per-day journal entries within the
   // active namespace only. Other instances (e.g. /dev/notes vs /dev/notes-test
@@ -294,8 +316,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=27"),
-        loadBabelScript("screens-rituals.jsx?v=27"),
+        loadBabelScript("screens-flows.jsx?v=28"),
+        loadBabelScript("screens-rituals.jsx?v=28"),
       ]);
     }
     loadAll()
@@ -370,6 +392,12 @@ function App() {
   // localStorage key so spec survives release/complete/trash of any single
   // instance.
   const [recurrences, setRecurrences] = useState(() => loadRecurrences());
+  // v=28: per-day mood-checkin + meditate completion log.
+  const [dailyLogs, setDailyLogs] = useState(() => loadLogs());
+  // v=28: phase state for in-flight Mood Check-in. Set when user enters
+  // mood-checkin screen, read by MoodCheckin component, cleared on completion
+  // or skip. Lives in App so refresh-during-checkin doesn't lose progress.
+  const [moodDraft, setMoodDraft] = useState(null);
   const [recap, setRecap] = useState(null); // { wins, completed, prevDateStr }
   // Set true by the day-rollover effect when there were flagged-priority tasks
   // carrying into the new day. MorningAnchor reads this and surfaces the
@@ -454,6 +482,8 @@ function App() {
   // v=26: recurrences persist independently (separate key) so spec survives
   // any single instance's release/complete/trash.
   useEffect(() => { saveRecurrences(recurrences); }, [recurrences]);
+  // v=28: dailyLogs persist independently — same separation rationale.
+  useEffect(() => { saveLogs(dailyLogs); }, [dailyLogs]);
 
   // Sweep trash on mount: remove anything older than 30 days.
   useEffect(() => {
@@ -621,6 +651,55 @@ function App() {
     setRecurrences(prev => prev.filter(r => r.id !== recurrenceId));
     showToast("won't repeat after today.", 2400);
   }
+  // v=28: write today's mood-checkin payload to dailyLogs[todayIso]. Called by
+  // MoodCheckin on completion. filterText is null when score > 2 (Reframe was
+  // gated off). savedAt timestamps the write so a future Stats dashboard can
+  // sort by entry-time within a day.
+  function setMoodEntry(score, noise, filter) {
+    setDailyLogs(prev => ({
+      ...prev,
+      [todayIso]: {
+        ...(prev[todayIso] || {}),
+        moodScore: score,
+        noiseText: noise || "",
+        filterText: filter || null,
+        moodSavedAt: Date.now(),
+      },
+    }));
+  }
+  // v=28: stamp meditation completion. Called when MeditateActive (or
+  // SquareBreath) finishes its timer naturally. Cancel paths do NOT stamp.
+  function setMeditateComplete() {
+    setDailyLogs(prev => ({
+      ...prev,
+      [todayIso]: {
+        ...(prev[todayIso] || {}),
+        meditateDoneAt: Date.now(),
+      },
+    }));
+  }
+  // v=28: morning ritual completion derivation for the Anchor ladder. Three
+  // ritual circles (mood / meditate / journal) reset every effective day
+  // because dailyLogs is keyed by ISO and journal storage is key-per-day.
+  // Tasks isn't a ritual — it's the destination, no circle.
+  // Mood completion: noiseText present AND (score > 2 OR filterText present).
+  // I.e., the user finished the input phase. A high-mood day skips the
+  // Reframe phase, so filterText is legitimately empty.
+  // Meditate completion: meditateDoneAt timestamp present.
+  // Journal completion: today's journal localStorage entry has non-empty text.
+  // Read at render time — fast, and Anchor re-renders on screen flip back
+  // from Journal.
+  const todayLog = dailyLogs[todayIso] || {};
+  const morningCompletion = {
+    mood: !!todayLog.noiseText && (todayLog.moodScore > 2 || !!todayLog.filterText),
+    meditate: !!todayLog.meditateDoneAt,
+    journal: (() => {
+      try {
+        const txt = localStorage.getItem(`${STORAGE_NS}:journal.${todayIso}`);
+        return !!(txt && txt.trim());
+      } catch (e) { return false; }
+    })(),
+  };
   function togglePriority(id) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: !t.priority } : t));
   }
@@ -1056,6 +1135,7 @@ function App() {
         <div data-screen-label="01 Morning Anchor" style={{position: "absolute", inset: 0}}>
           <MorningAnchor
             onEnter={() => setScreen("now")}
+            onMood={() => { setMoodDraft({ phase: "slider", score: 3, noise: "", filter: "" }); setScreen("mood-checkin"); }}
             onMeditate={() => setScreen("meditate-setup")}
             onReflect={() => setScreen("journal")}
             dateStr={dateStr}
@@ -1064,7 +1144,55 @@ function App() {
             nominees={topNominees}
             regulars={todaysRegulars}
             onAddRegular={addRegularToToday}
+            completion={morningCompletion}
+            todayLog={todayLog}
           />
+        </div>
+      )}
+
+      {screen === "mood-checkin" && (
+        <div data-screen-label="01a Mood Check-in" style={{position: "absolute", inset: 0}}>
+          <SkipToToday onClick={() => { setMoodDraft(null); setScreen("anchor"); }}/>
+          {deferredReady ? (
+            <MoodCheckin
+              draft={moodDraft}
+              onUpdate={(patch) => setMoodDraft(prev => ({...prev, ...patch}))}
+              onComplete={(score, noise, filter) => {
+                setMoodEntry(score, noise, filter);
+                setMoodDraft(null);
+                // Skip the prompt if meditate is already done today (re-tap on a
+                // filled mood row → just save updates and bounce back to Anchor).
+                if (!todayLog.meditateDoneAt) setScreen("mood-meditate-prompt");
+                else setScreen("anchor");
+              }}
+            />
+          ) : <DeferredFallback label="check-in"/>}
+        </div>
+      )}
+
+      {screen === "mood-meditate-prompt" && (
+        <div data-screen-label="01a· prompt → meditate" style={{position: "absolute", inset: 0}}>
+          {deferredReady ? (
+            <RitualPrompt
+              kicker="set down."
+              primaryLabel="sit a while"
+              onPrimary={() => setScreen("meditate-setup")}
+              onSkip={() => setScreen("now")}
+            />
+          ) : <DeferredFallback label="onward"/>}
+        </div>
+      )}
+
+      {screen === "meditate-journal-prompt" && (
+        <div data-screen-label="01c· prompt → journal" style={{position: "absolute", inset: 0}}>
+          {deferredReady ? (
+            <RitualPrompt
+              kicker="settled."
+              primaryLabel="write a while"
+              onPrimary={() => setScreen("journal")}
+              onSkip={() => setScreen("now")}
+            />
+          ) : <DeferredFallback label="onward"/>}
         </div>
       )}
 
@@ -1110,8 +1238,13 @@ function App() {
               onCancel={() => { setMeditateSession(null); setScreen("anchor"); }}
               onComplete={() => {
                 setMeditateSession(null);
-                showToast("welcome back. begin where you are.", 2400);
-                setScreen("now");
+                setMeditateComplete();
+                if (!morningCompletion.journal) {
+                  setScreen("meditate-journal-prompt");
+                } else {
+                  showToast("welcome back. begin where you are.", 2400);
+                  setScreen("now");
+                }
               }}
             />
           ) : <DeferredFallback label="breathing"/>}
@@ -1125,11 +1258,17 @@ function App() {
               minutes={meditateSession.lengthSec / 60}
               sound={meditateSession.sound}
               guided={meditateSession.guided}
+              mantra={todayLog.filterText || null}
               onCancel={() => { setMeditateSession(null); setScreen("anchor"); }}
               onComplete={() => {
                 setMeditateSession(null);
-                showToast("welcome back. begin where you are.", 2400);
-                setScreen("now");
+                setMeditateComplete();
+                if (!morningCompletion.journal) {
+                  setScreen("meditate-journal-prompt");
+                } else {
+                  showToast("welcome back. begin where you are.", 2400);
+                  setScreen("now");
+                }
               }}
             />
           ) : <DeferredFallback label="meditation"/>}
@@ -1259,6 +1398,19 @@ function App() {
                 dateStr={dateStr}
                 weekday={weekday.toLowerCase()}
                 todayIso={todayIso}
+                seedText={(() => {
+                  // v=28: pre-fill the journal entry with today's mood-checkin
+                  // payload as a starting seed — only when today's entry is
+                  // currently empty AND today has a mood log. Once the user
+                  // types anything and autosaves, the seed never re-appears
+                  // for that day. Past-date views never seed (Journal handles
+                  // this internally — seedText only applies to today).
+                  if (!todayLog.noiseText) return "";
+                  const word = MOOD_WORDS[(todayLog.moodScore || 3) - 1] || "steady";
+                  let s = `mood: ${todayLog.moodScore} — ${word}\nloudest: ${todayLog.noiseText}`;
+                  if (todayLog.filterText) s += `\nclearer: ${todayLog.filterText}`;
+                  return s + "\n\n";
+                })()}
               />
             ) : <DeferredFallback label="journal"/>}
           </div>
