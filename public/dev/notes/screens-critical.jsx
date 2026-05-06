@@ -919,7 +919,22 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             onClick={(e) => { e.stopPropagation(); onToggle(); }}
           />
         </div>
-        <div style={{flex: 1, minWidth: 0}}>
+        <div
+          style={{flex: 1, minWidth: 0}}
+          onClick={(e) => {
+            // v=33: explicit close-on-tap. The row's pointerup handler also
+            // toggles `open` on a tap, so this is belt-and-suspenders — but
+            // taps on the visible task-name fragment (after the row slides
+            // left to reveal the drawer) didn't always feel responsive on
+            // phone. Click events fire reliably across iOS PWA / Safari
+            // edge cases the pointer handler can miss. Idempotent: when
+            // already false, setOpen(false) is a no-op.
+            if (open && !editOpen && !progressOpen) {
+              e.stopPropagation();
+              setOpen(false);
+            }
+          }}
+        >
           {task.parentText && !task.done && (
             <div style={{
               fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
