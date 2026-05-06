@@ -12,7 +12,7 @@ const { useState, useEffect, useRef } = React;
 // no completion gate — Tasks is the day's work, not a ritual). Each ritual
 // step ends with a recommendation prompt routing to the next; skip from any
 // prompt goes direct to Tasks per v=25 home-escape pattern.
-function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, nominees, regulars, onAddRegular, completion, todayLog }) {
+function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, regulars, onAddRegular, completion, todayLog }) {
   const c = completion || { mood: false, meditate: false, journal: false };
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
@@ -102,32 +102,11 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
           </div>
         )}
 
-        {nominees && nominees.length > 0 && (
-          <div
-            className="serif ascend"
-            style={{
-              fontSize: 14,
-              color: "var(--ink-soft)",
-              marginTop: 22,
-              lineHeight: 1.55,
-              animationDelay: "480ms",
-              padding: "12px 14px",
-              background: "var(--paper-deep)",
-              borderLeft: "2px solid var(--rule-strong)",
-              maxWidth: 320,
-            }}
-          >
-            <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>today's nominees</div>
-            {nominees.map((task, i) => (
-              <div
-                key={task.id}
-                style={{marginTop: i === 0 ? 0 : 6}}
-              >
-                {task.text}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* v=32: today's nominees removed. Surfacing tasks on Anchor short-
+            circuited the morning-arousal arc — the page is meant to walk you
+            from quote → mood → meditate → journal before any task thinking
+            begins. Nominees still drive priorityScore-based ordering inside
+            Tasks; they just don't preempt the ritual on the way in. */}
 
         {regulars && regulars.length > 0 && (
           <div
@@ -350,9 +329,13 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
 
   const active = tasks.filter(t => !t.done);
   const done = tasks.filter(t => t.done);
-  const total = tasks.length;
-  const nearLimit = total >= 8 && total < 10;
-  const atLimit = total >= 10;
+  // v=32: cap is on ACTIVE tasks only — completed work shouldn't block adding
+  // the next thing. Field-test friction: 7 done + 3 active hit the old
+  // tasks.length cap and felt arbitrary. Same threshold of 10 still keeps the
+  // page from sprawling, but it now scales with throughput.
+  const activeCount = active.length;
+  const nearLimit = activeCount >= 8 && activeCount < 10;
+  const atLimit = activeCount >= 10;
 
   // Drag-to-reorder via SortableJS (loaded from CDN in The Daily Now.html).
   // Long-press (500ms) on a row enters drag mode; faster movement falls
@@ -467,8 +450,8 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
             lineHeight: 1.5,
           }}>
             {atLimit
-              ? "The page is full. Ten is the limit — make space before adding."
-              : "Approaching ten. Consider what could wait."}
+              ? "Ten active is the limit — finish, decide, or release one before adding."
+              : "Approaching ten active. Consider what could wait."}
           </div>
         )}
 
@@ -683,12 +666,19 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   else if (isCarriedTwice) { markGlyph = "››"; markColor = "var(--mark)"; }
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
 
-  // Drawer = × close + Edit + Comment + Progress + Decide. Five buttons at
-  // 64px each = 320px total — preserves the v=18 width that fits inside an
-  // iPhone viewport (was 4 × 80 = 320 before v=27). Progress added between
-  // Comment and Decide so the destructive Decide stays at the far right.
-  const drawerWidth = 5 * 64;
+  // v=32: drawer = Edit + Comment + Progress + Decide. Four buttons at 64px =
+  // 256px max. The leftmost × close button was redundant — tap-outside-
+  // to-close has shipped since v=16 (document-level pointerdown listener),
+  // and tapping the visible row body also re-toggles the drawer. Field-test
+  // friction: the v=27 5-button drawer (320px) overflowed on smaller iPhones
+  // and required a horizontal pan to reach Decide.
+  //
+  // Drawer width is dynamic — done tasks render only the Comment button, so
+  // the row only slides 64px instead of 256px (was a pre-existing mismatch
+  // before v=32; the row used to over-slide and reveal empty drawer space).
   const drawerBtnWidth = 64;
+  const visibleDrawerBtns = task.done ? 1 : (onSetProgress ? 4 : 3);
+  const drawerWidth = visibleDrawerBtns * drawerBtnWidth;
 
   // Pointer-event handlers on the row content. Tap = open drawer.
   // Swipe-right = toggle priority (with painted-sweep animation). Vertical
@@ -798,7 +788,9 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
         </>
       )}
 
-      {/* Action drawer (revealed when row is "open") — × close · Edit · Comment · Progress · Decide */}
+      {/* Action drawer (revealed when row is "open") — Edit · Comment · Progress · Decide.
+          Close = tap outside (document-level pointerdown listener, v=16) or
+          tap the visible row body (re-toggles drawer). */}
       <div data-row-drawer={task.id} style={{
         position: "absolute",
         top: 0, right: 0, bottom: 0,
@@ -806,27 +798,6 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
         alignItems: "stretch",
         zIndex: 1,
       }}>
-        <button
-          onClick={() => setOpen(false)}
-          aria-label="close"
-          title="close"
-          style={{
-            background: "var(--paper-deep)",
-            border: "none",
-            padding: "0 14px",
-            color: "var(--ink-soft)",
-            cursor: "pointer",
-            borderLeft: "1px solid var(--rule)",
-            minWidth: drawerBtnWidth,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "var(--serif)",
-            fontSize: 22,
-            fontStyle: "italic",
-            lineHeight: 1,
-          }}
-        >×</button>
         {!task.done && (
           <button
             onClick={() => { setOpen(false); setEditOpen(true); }}

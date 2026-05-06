@@ -188,12 +188,12 @@ function ThreeBreaths({ onComplete, pacing = "normal" }) {
 // ---------- Meditate ----------
 // Setup screen: pick length and sound. Then active timer.
 function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
-  // length is in seconds: 30 = square breathing, others = quiet meditation in minutes
+  // length is in seconds: 60 = square breathing, others = quiet meditation in minutes
   const [lengthSec, setLengthSec] = useState(defaultMinutes * 60);
   const [sound, setSound] = useState("none");
 
   const lengths = [
-    { val: 30, label: "30 sec", hint: "square breathing", kind: "square" },
+    { val: 60, label: "1 min", hint: "square breathing", kind: "square" },
     { val: 120, label: "2 min", hint: "a pause", kind: "sit" },
     { val: 300, label: "5 min", hint: "settle in", kind: "sit" },
     { val: 600, label: "10 min", hint: "go deeper", kind: "sit" },
@@ -206,7 +206,7 @@ function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
     { val: "binaural", label: "binaural" },
   ];
 
-  const isSquare = lengthSec === 30;
+  const isSquare = lengthSec === 60;
 
   return (
     <div className="screen fade-soft" style={{
@@ -280,19 +280,11 @@ function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
                 >{s.label}</button>
               ))}
             </div>
-            {/* v=30: gentle reminder for non-silence picks. iOS silent-mode
-                kills web audio at the OS layer — no JS workaround. Fires only
-                when a non-silence sound is selected so silence-pickers aren't
-                nagged about something they don't need. */}
-            {sound !== "none" && (
-              <div className="serif fade-in" style={{
-                fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
-                marginBottom: 22, letterSpacing: "0.02em",
-              }}>
-                if your phone is on silent, this won't play.
-              </div>
-            )}
-            {sound === "none" && <div style={{marginBottom: 14}}/>}
+            {/* v=32: silent-mode reminder removed. The soundscape effect now
+                sets navigator.audioSession.type = 'playback' (iOS 16.4+),
+                which routes audio through the playback category and bypasses
+                the silent switch — same behavior as background-music apps. */}
+            <div style={{marginBottom: 14}}/>
           </>
         )}
       </div>
@@ -321,10 +313,12 @@ function MeditateSetup({ defaultMinutes = 5, onStart, onCancel }) {
 }
 
 // ---------- Square Breath (4·4·4·4) ----------
-// 30-second pause: ~2 cycles of 4-in / 4-hold / 4-out / 4-hold (16s each).
+// v=32: 60-second pause = ~3.75 cycles of 4-in / 4-hold / 4-out / 4-hold (16s
+// each). One minute is the consensus pause length across box-breathing apps
+// (Calm, Headspace) — long enough to settle, short enough to actually sit.
 // Visual: a circle that grows on inhale, holds with a tracing arc, shrinks on
 // exhale, holds with another tracing arc. Every phase has its own motion.
-function SquareBreath({ totalSec = 30, onComplete, onCancel }) {
+function SquareBreath({ totalSec = 60, onComplete, onCancel }) {
   const [elapsed, setElapsed] = useState(0);
   const [done, setDone] = useState(false);
   // Sub-second progress within the current phase (0..1)
@@ -517,6 +511,18 @@ function MeditateActive({ minutes, sound, guided, onComplete, onCancel, mantra }
   // Soundscape (Web Audio)
   useEffect(() => {
     if (sound === "none") return;
+    // v=32: route audio through the 'playback' session category so iOS
+    // ignores the hardware silent switch — same behavior music/podcast apps
+    // get. navigator.audioSession is iOS 16.4+ / WebKit-only; a try/catch
+    // keeps older devices and non-WebKit browsers from throwing. Without
+    // this, iOS defaults to 'ambient' which mutes on silent.
+    let prevAudioSessionType = null;
+    try {
+      if (navigator.audioSession) {
+        prevAudioSessionType = navigator.audioSession.type;
+        navigator.audioSession.type = "playback";
+      }
+    } catch (e) {}
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
@@ -604,6 +610,14 @@ function MeditateActive({ minutes, sound, guided, onComplete, onCancel, mantra }
       } catch(e) {}
       cleanup.forEach(fn => fn());
       setTimeout(() => { try { ctx.close(); } catch(e) {} }, 600);
+      // v=32: restore the prior audio session category so the page doesn't
+      // permanently override iOS's silent-switch default for any future
+      // ambient audio (none in this app today, but future-safe).
+      try {
+        if (navigator.audioSession && prevAudioSessionType) {
+          navigator.audioSession.type = prevAudioSessionType;
+        }
+      } catch (e) {}
     };
   }, [sound]);
 

@@ -321,8 +321,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=31"),
-        loadBabelScript("screens-rituals.jsx?v=31"),
+        loadBabelScript("screens-flows.jsx?v=32"),
+        loadBabelScript("screens-rituals.jsx?v=32"),
       ]);
     }
     loadAll()
@@ -448,9 +448,13 @@ function App() {
   // advance, visibility resume across midnight). Captures last-day state for
   // the Recap+Carry ritual, then walks the marker ladder by the day gap,
   // bumps shelf days-on, and clears today-scoped state. Idempotent —
-  // same-day re-runs compute gap=0 and no-op. Always fires the Recap (empty
-  // case lands on phase-2 "fresh page" copy — never punishes a quiet or
-  // multi-day-gap return).
+  // same-day re-runs compute gap=0 and no-op.
+  //
+  // v=32: no longer auto-routes to the Recap screen. The recap data is
+  // captured and held; the user lands on Anchor and can do mood / sit /
+  // reflect first. Recap fires when they tap "Open today" (see
+  // openTodayWithRecap below) — preserves the morning-arousal arc instead of
+  // jumping straight into yesterday's leftovers.
   useEffect(() => {
     if (!lastOpenedDay) {
       setLastOpenedDay(todayIso);
@@ -477,7 +481,6 @@ function App() {
       prevDateStr: recapPrevDateStr,
       recapSource: "natural",
     });
-    setScreen("recap");
   }, [todayIso]);
 
   // === Persist on every change ===
@@ -564,21 +567,10 @@ function App() {
     );
   })();
 
-  // Top-3 nominees — surfaces highest-priorityScore tasks on Anchor.
-  // Threshold ≥3 hides the slot on quiet/empty days. Sort: score DESC,
-  // createdAt DESC (newer wins ties — recent intent first).
-  const topNominees = (() => {
-    const nowMs = Date.now();
-    return tasks
-      .map(task => ({ task, score: priorityScore(task, nowMs) }))
-      .filter(x => x.score >= 3)
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return (b.task.createdAt || 0) - (a.task.createdAt || 0);
-      })
-      .slice(0, 3)
-      .map(x => x.task);
-  })();
+  // v=32: topNominees calc removed — Anchor no longer surfaces tasks before
+  // the ritual ladder runs. priorityScore stays available on tasks via the
+  // helper above; if a future surface (Notebook ordering, Stats) wants it,
+  // it computes inline — no shared state needed.
 
   const today = dateInfo(dayOffset);
   const { weekday, dateStr } = today;
@@ -1061,6 +1053,18 @@ function App() {
     setScreen("anchor");
   }
 
+  // v=32: Anchor's "Open today" button. If a natural day-flip captured a
+  // pending recap, route to that ritual first; otherwise straight to Tasks.
+  // Lets the morning-arousal arc (quote → mood → meditate → journal) finish
+  // before yesterday's leftovers preempt focus.
+  function openTodayWithRecap() {
+    if (recap) {
+      setScreen("recap");
+    } else {
+      setScreen("now");
+    }
+  }
+
   // v=24: process DeskReview decisions (bring to today / keep on desk / release).
   function finishDeskReview(deskDecisions) {
     const broughtToToday = [];
@@ -1169,14 +1173,13 @@ function App() {
       {screen === "anchor" && (
         <div data-screen-label="01 Morning Anchor" style={{position: "absolute", inset: 0}}>
           <MorningAnchor
-            onEnter={() => setScreen("now")}
+            onEnter={openTodayWithRecap}
             onMood={() => { setMoodDraft({ phase: "slider", score: 3, noise: "", filter: "" }); setScreen("mood-checkin"); }}
             onMeditate={() => setScreen("meditate-setup")}
             onReflect={() => setScreen("journal")}
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
-            nominees={topNominees}
             regulars={todaysRegulars}
             onAddRegular={addRegularToToday}
             completion={morningCompletion}
