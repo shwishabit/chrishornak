@@ -154,15 +154,12 @@ function saveRecurrences(arr) {
 // to avoid double-bookkeeping. Mood label words (slider): 1=low / 2=quiet /
 // 3=steady / 4=bright / 5=clear. Reframe gate fires at score ≤ 2.
 const LOGS_KEY = `${STORAGE_NS}:logs.v1`;
-// v=30: mood scale words — second revision. v=28's poetic set
-// (low/quiet/steady/bright/clear) was ambiguous. v=29's heavy/low/okay/good/
-// great was clearer but Chris reported "heavy" still didn't read clearly.
-// Survey of consumer CBT / mood-tracking app conventions: Daylio (10M+
-// downloads), Moodflow, iCare, Bearable, MindDoc all converge on a "bad" →
-// "great" gradient with "okay" or "meh" as the neutral middle. This set
-// matches that consensus exactly. Trades all remaining Sage tone for
-// universal legibility — Chris's explicit clarity-over-vibe call.
-const MOOD_WORDS = ["awful", "bad", "okay", "good", "great"];
+// v=31: mood scale words — final form per Chris. v=30 used Daylio's exact
+// awful/bad/okay/good/great. Chris swapped "awful" → "bad" and "bad" →
+// "poor" — softer negative end, still cleanly distinct gradient. Updated
+// in three lockstep places: this constant (journal seed), MoodCheckin
+// slider label, LadderRow completed-row hint.
+const MOOD_WORDS = ["bad", "poor", "okay", "good", "great"];
 function loadLogs() {
   try {
     const raw = localStorage.getItem(LOGS_KEY);
@@ -324,8 +321,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=30"),
-        loadBabelScript("screens-rituals.jsx?v=30"),
+        loadBabelScript("screens-flows.jsx?v=31"),
+        loadBabelScript("screens-rituals.jsx?v=31"),
       ]);
     }
     loadAll()
@@ -617,7 +614,15 @@ function App() {
     }
     const newTask = { createdAt: Date.now(), ...task };
     if (recurrenceId) newTask.recurrenceId = recurrenceId;
-    setTasks([newTask, ...tasks]);
+    // v=31: append new task to the bottom of the active block (above the
+    // done block) instead of prepending. Was prepending, which placed new
+    // tasks above highlighted/priority items — ran counter to v=29's
+    // "highlighted tasks float to top" rule, which Chris flagged on phone test.
+    setTasks(prev => {
+      const active = prev.filter(t => !t.done);
+      const done = prev.filter(t => t.done);
+      return [...active, newTask, ...done];
+    });
   }
   // v=26: ensure today's task list contains a fresh instance for every active
   // daily recurrence. Called at the end of finishCarry / skipMorningFlow /
@@ -642,8 +647,10 @@ function App() {
     return additions.length > 0 ? [...additions, ...taskList] : taskList;
   }
   // v=26: weekly recurrence "consider adding" — adds a fresh instance to today.
+  // v=31: append-not-prepend so it lands at the bottom of active per the new
+  // task-add rule (highlighted tasks stay on top).
   function addRegularToToday(recurrence) {
-    setTasks(prev => [{
+    const fresh = {
       id: nextId(),
       text: recurrence.text,
       mark: null,
@@ -651,7 +658,12 @@ function App() {
       done: false,
       createdAt: Date.now(),
       recurrenceId: recurrence.id,
-    }, ...prev]);
+    };
+    setTasks(prev => {
+      const active = prev.filter(t => !t.done);
+      const done = prev.filter(t => t.done);
+      return [...active, fresh, ...done];
+    });
   }
   // v=26: stop a recurrence (kill the spec). The current instance stays;
   // tomorrow's day-flip will no longer auto-create. Used from DecisionHub.
@@ -1610,11 +1622,26 @@ function App() {
 }
 
 function TabBar({ screen, setScreen, onNewDay }) {
-  // Spectrum trio (Notebook → Desk → Trash) + Journal as a separate surface
-  // for reflection. Visual gap before Journal keeps the spectrum reading as
-  // a group.
+  // Layout: [begin | notebook · desk · trash | journal]
+  //   begin = Anchor (the morning-landing / day-start screen)
+  //   spectrum trio = Notebook → Desk → Trash
+  //   journal = reflective writing surface
+  // Two thin dividers split the three groups so the spectrum reads as a
+  // single mental model and Anchor / Journal sit cleanly outside it.
+  // v=31: added Anchor tab so users can get back to the Home screen from
+  // any of the inner surfaces. Previously there was no path back without
+  // an admin force-next-day or page reload.
   return (
     <div className="tabbar tabbar-icons">
+      <button
+        className={`tab-btn ${screen === "anchor" ? "active" : ""}`}
+        onClick={() => setScreen("anchor")}
+        aria-label="begin"
+      >
+        <Icon name="anchor" size={22}/>
+        <span className="tab-label">begin</span>
+      </button>
+      <span className="tab-divider" aria-hidden="true"/>
       <button
         className={`tab-btn ${screen === "now" ? "active" : ""}`}
         onClick={() => setScreen("now")}

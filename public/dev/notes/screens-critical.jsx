@@ -185,7 +185,7 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
           filled={c.mood}
           label="mood"
           hint={c.mood && todayLog && todayLog.moodScore
-            ? (["awful", "bad", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
+            ? (["bad", "poor", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
             : "what's loudest right now?"}
           onClick={onMood}
         />

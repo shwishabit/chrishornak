@@ -131,6 +131,19 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <path d="M13 7 L16 10 L13 13" {...common}/>
         </svg>
       );
+    case "anchor":
+      // sunrise: horizon line + rising half-disc + tiny rays. The Anchor
+      // screen is the morning-landing / day-start page, so the metaphor
+      // reads as "begin." Rays at 0.5 opacity to keep the glyph quiet.
+      return (
+        <svg viewBox="0 0 20 20" style={s}>
+          <line x1="3" y1="14" x2="17" y2="14" {...common}/>
+          <path d="M 5.5 14 a 4.5 4.5 0 0 1 9 0" {...common}/>
+          <line x1="10" y1="4.5" x2="10" y2="6.5" {...common} strokeOpacity="0.5"/>
+          <line x1="6" y1="6.5" x2="7" y2="7.5" {...common} strokeOpacity="0.5"/>
+          <line x1="14" y1="6.5" x2="13" y2="7.5" {...common} strokeOpacity="0.5"/>
+        </svg>
+      );
     case "highlight":
       // angled marker pen with a stroke beneath — "mark this important"
       return (
