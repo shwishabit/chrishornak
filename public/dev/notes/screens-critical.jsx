@@ -2016,60 +2016,40 @@ function AddGoalSheet({ onClose, onAdd }) {
   );
 }
 
-// ---------- Space trigger ----------
-// Discreet top-right glyph. Same chrome zone as .admin-trigger but visible
-// by default — this IS the discovery affordance for the wins+goals room.
+// ---------- Space triggers (TWO buttons) ----------
+// v=36: replaces v=35's single-icon SpaceTrigger. Two pill buttons side-by-
+// side in the top-right corner — one for wins, one for goals. Each names
+// what it opens; tapping reveals only that surface. No combined-room
+// merger, no icon-implied bias. Honest about two distinct functions.
+//
 // Suppressed on modal/ritual flows by App.return's render gate, not here.
-function SpaceTrigger({ onClick, hasContent }) {
+function SpaceTriggers({ onOpenWins, onOpenGoals, hasWins, hasGoals }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="space-trigger"
-      aria-label="wins and goals"
-      title="wins and goals"
-    >
-      <Icon name="wins" size={22} opacity={hasContent ? 0.95 : 0.55}/>
-    </button>
+    <div className="space-triggers">
+      <button
+        type="button"
+        onClick={onOpenWins}
+        className={`space-trigger ${hasWins ? "space-trigger--has-content" : ""}`}
+        aria-label="wins"
+      >wins</button>
+      <button
+        type="button"
+        onClick={onOpenGoals}
+        className={`space-trigger ${hasGoals ? "space-trigger--has-content" : ""}`}
+        aria-label="goals"
+      >goals</button>
+    </div>
   );
 }
 
-// ---------- Space sheet ----------
-// Single bottom-sheet workspace holding wins + goals as distinct sections.
-// Wins on top (lighter, reflective, glance-friendly); goals below (workspace,
-// action, lifecycle-aware: active → desk-top → desk-back → trash). Tall sheet
-// (~85% viewport) with internal scroll so neither section crowds the other.
-//
-// Reuses GoalRow for goal interactions (rename / context / move / release /
-// restore / purge inline drawer) and the .win-row CSS for win timeline rows.
-// AddGoalSheet opens via onAddGoalOpen. Quick win-capture is inline at the
-// top of the wins section (small input) — distinct from the existing "+ a
-// win" pill on the Now page (that's the in-the-moment capture; this is the
-// see-and-manage capture).
-function SpaceSheet({
-  wins, goals, tasks,
-  onClose,
-  onLogWin, onRetireWin,
-  onAddGoalOpen, onRenameGoal, onSetGoalContext, onMoveGoal,
-  onReleaseGoal, onRestoreGoal, onPurgeGoal,
-}) {
-  const [openGoalId, setOpenGoalId] = useState(null);
+// ---------- Wins sheet (timeline + capture + retire) ----------
+// Distinct from the existing v=20-era WinSheet (the in-the-moment quick-
+// capture from the "+ a win" pill on the Now page). This is the see-and-
+// manage surface — opens from the top-right "wins" trigger, holds the
+// permanent timeline. Inline capture at the top so logging from here is
+// possible too; reverse-chronological day-grouped list with × retire.
+function SpaceSheetWins({ wins, goals, onClose, onLogWin, onRetireWin }) {
   const [winText, setWinText] = useState("");
-
-  const active = goals.filter(g => g.tier === "active");
-  const onDesk = goals.filter(g => g.tier === "desk-top");
-  const inDrawer = goals.filter(g => g.tier === "desk-back");
-  const released = goals.filter(g => g.tier === "trash");
-
-  // Active-task ref count per active goal — read-only descriptive line.
-  // Read once at sheet-open time; recomputes on each render which is fine.
-  const refCounts = (() => {
-    const counts = {};
-    for (const t of tasks || []) {
-      if (!t.done && t.goalRef) counts[t.goalRef] = (counts[t.goalRef] || 0) + 1;
-    }
-    return counts;
-  })();
 
   function submitWin() {
     const trimmed = winText.trim();
@@ -2085,7 +2065,7 @@ function SpaceSheet({
     return dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
   }
 
-  // Group wins by day for visual rhythm.
+  // Group wins by day for visual rhythm. Same shape as v=35.
   const winGroups = (() => {
     const out = [];
     let lastDay = null;
@@ -2105,6 +2085,132 @@ function SpaceSheet({
       out.push({ kind: "win", win: w });
     }
     return out;
+  })();
+
+  return (
+    <>
+      <div className="sheet-backdrop" onClick={onClose}/>
+      <div className="sheet space-sheet">
+        <div className="space-sheet__scroll">
+          <div className="space-sheet__section-kicker">
+            <span>wins</span>
+            <span style={{
+              fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+              textTransform: "none", letterSpacing: "0.01em",
+              color: "var(--ink-faint)",
+            }}>
+              what you noticed
+            </span>
+          </div>
+
+          <div style={{display: "flex", gap: 8, alignItems: "center", marginBottom: 14}}>
+            <input
+              className="paper-input serif"
+              style={{
+                flex: 1,
+                fontSize: 15, fontFamily: "var(--serif)", fontStyle: "italic",
+                padding: "10px 0",
+              }}
+              placeholder="something quiet happened…"
+              value={winText}
+              onChange={(e) => setWinText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && winText.trim()) submitWin(); }}
+            />
+            <button
+              type="button"
+              onClick={submitWin}
+              disabled={!winText.trim()}
+              style={{
+                background: winText.trim() ? "var(--ink)" : "var(--paper-deep)",
+                color: winText.trim() ? "var(--paper)" : "var(--ink-faint)",
+                border: "none", borderRadius: 999,
+                padding: "8px 14px",
+                fontFamily: "var(--serif)", fontSize: 13,
+                cursor: winText.trim() ? "pointer" : "default",
+                flexShrink: 0,
+              }}
+            >log it</button>
+          </div>
+
+          {wins.length === 0 ? (
+            <div className="quiet-empty">
+              something quiet will happen.<br/>
+              you'll notice when it does.
+            </div>
+          ) : winGroups.map((entry, idx) => {
+            if (entry.kind === "day") {
+              return (
+                <div
+                  key={`day-${entry.day}-${idx}`}
+                  className="kicker"
+                  style={{
+                    padding: "12px 0 4px",
+                    color: "var(--ink-faint)",
+                  }}
+                >{formatDay(entry.day)}</div>
+              );
+            }
+            const w = entry.win;
+            const fromGoal = w.goalRef ? goals.find(g => g.id === w.goalRef) : null;
+            return (
+              <div key={w.id} className="win-row" style={{display: "flex", alignItems: "flex-start", gap: 8}}>
+                <div style={{flex: 1, minWidth: 0}}>
+                  <div className="win-row__text">
+                    {w.text}
+                    {fromGoal && (
+                      <span className="win-row__from-goal">— toward "{fromGoal.text}"</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onRetireWin(w.id)}
+                  aria-label="retire this win"
+                  style={{
+                    background: "transparent", border: "none",
+                    color: "var(--ink-faint)", cursor: "pointer",
+                    fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 12,
+                    padding: "2px 6px", flexShrink: 0,
+                  }}
+                >×</button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 14, paddingTop: 8, borderTop: "1px solid var(--rule)"}}>
+          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------- Goals sheet (active + desk + drawer + released + add) ----------
+// Workspace surface for forward intent with a flexible lifecycle. Distinct
+// from the wins sheet's reflective timeline shape — same visual chrome
+// (sheet pattern, kicker, scroll), different inner mechanics. Goal CRUD
+// inline via GoalRow drawer (rename / context / move / release / restore /
+// purge); add via dashed `+ a goal` button into AddGoalSheet.
+function SpaceSheetGoals({
+  goals, tasks, onClose,
+  onAddGoalOpen, onRenameGoal, onSetGoalContext, onMoveGoal,
+  onReleaseGoal, onRestoreGoal, onPurgeGoal,
+}) {
+  const [openGoalId, setOpenGoalId] = useState(null);
+
+  const active = goals.filter(g => g.tier === "active");
+  const onDesk = goals.filter(g => g.tier === "desk-top");
+  const inDrawer = goals.filter(g => g.tier === "desk-back");
+  const released = goals.filter(g => g.tier === "trash");
+
+  // Active-task ref count per active goal — read-only descriptive line.
+  const refCounts = (() => {
+    const counts = {};
+    for (const t of tasks || []) {
+      if (!t.done && t.goalRef) counts[t.goalRef] = (counts[t.goalRef] || 0) + 1;
+    }
+    return counts;
   })();
 
   function renderGoalRow(g) {
@@ -2130,187 +2236,94 @@ function SpaceSheet({
       <div className="sheet-backdrop" onClick={onClose}/>
       <div className="sheet space-sheet">
         <div className="space-sheet__scroll">
+          <div className="space-sheet__section-kicker">
+            <span>goals</span>
+            <span style={{
+              fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+              textTransform: "none", letterSpacing: "0.01em",
+              color: "var(--ink-faint)",
+            }}>
+              what you're working toward
+            </span>
+          </div>
 
-          {/* ===== Wins section ===== */}
-          <div className="space-sheet__section">
-            <div className="space-sheet__section-kicker">
-              <span>wins</span>
-              <span style={{
-                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-                textTransform: "none", letterSpacing: "0.01em",
-                color: "var(--ink-faint)",
-              }}>
-                what you noticed
-              </span>
+          <button
+            type="button"
+            onClick={onAddGoalOpen}
+            style={{
+              background: "transparent",
+              border: "1px dashed var(--rule-strong)",
+              borderRadius: 14,
+              padding: "10px 14px",
+              fontFamily: "var(--serif)", fontStyle: "italic",
+              fontSize: 13, color: "var(--ink-soft)",
+              cursor: "pointer", width: "100%",
+              textAlign: "left",
+              marginBottom: 14,
+              letterSpacing: "0.01em",
+            }}
+          >+ a goal</button>
+
+          <div className="space-sheet__zone-label">active</div>
+          {active.length === 0 ? (
+            <div className="serif" style={{
+              padding: "6px 4px 14px",
+              fontSize: 13, fontStyle: "italic",
+              color: "var(--ink-faint)",
+              letterSpacing: "0.005em",
+            }}>
+              nothing active. add one when something matters.
             </div>
-
-            <div style={{display: "flex", gap: 8, alignItems: "center", marginBottom: 14}}>
-              <input
-                className="paper-input serif"
-                style={{
-                  flex: 1,
-                  fontSize: 15, fontFamily: "var(--serif)", fontStyle: "italic",
-                  padding: "10px 0",
-                }}
-                placeholder="something quiet happened…"
-                value={winText}
-                onChange={(e) => setWinText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && winText.trim()) submitWin(); }}
-              />
-              <button
-                type="button"
-                onClick={submitWin}
-                disabled={!winText.trim()}
-                style={{
-                  background: winText.trim() ? "var(--ink)" : "var(--paper-deep)",
-                  color: winText.trim() ? "var(--paper)" : "var(--ink-faint)",
-                  border: "none", borderRadius: 999,
-                  padding: "8px 14px",
-                  fontFamily: "var(--serif)", fontSize: 13,
-                  cursor: winText.trim() ? "pointer" : "default",
-                  flexShrink: 0,
-                }}
-              >log it</button>
-            </div>
-
-            {wins.length === 0 ? (
-              <div className="quiet-empty">
-                something quiet will happen.<br/>
-                you'll notice when it does.
-              </div>
-            ) : winGroups.map((entry, idx) => {
-              if (entry.kind === "day") {
-                return (
-                  <div
-                    key={`day-${entry.day}-${idx}`}
-                    className="kicker"
-                    style={{
-                      padding: "12px 0 4px",
+          ) : (
+            <>
+              {active.map(g => (
+                <div key={g.id}>
+                  {renderGoalRow(g)}
+                  {refCounts[g.id] > 0 && (
+                    <div className="serif" style={{
+                      padding: "4px 4px 10px",
+                      fontSize: 11, fontStyle: "italic",
                       color: "var(--ink-faint)",
-                    }}
-                  >{formatDay(entry.day)}</div>
-                );
-              }
-              const w = entry.win;
-              const fromGoal = w.goalRef ? goals.find(g => g.id === w.goalRef) : null;
-              return (
-                <div key={w.id} className="win-row" style={{display: "flex", alignItems: "flex-start", gap: 8}}>
-                  <div style={{flex: 1, minWidth: 0}}>
-                    <div className="win-row__text">
-                      {w.text}
-                      {fromGoal && (
-                        <span className="win-row__from-goal">— toward "{fromGoal.text}"</span>
-                      )}
+                      letterSpacing: "0.005em",
+                    }}>
+                      in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onRetireWin(w.id)}
-                    aria-label="retire this win"
-                    style={{
-                      background: "transparent", border: "none",
-                      color: "var(--ink-faint)", cursor: "pointer",
-                      fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 12,
-                      padding: "2px 6px", flexShrink: 0,
-                    }}
-                  >×</button>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+              {active.length > 3 && (
+                <div className="serif" style={{
+                  padding: "8px 4px 0",
+                  fontSize: 11, fontStyle: "italic",
+                  color: "#A05A2C",
+                  letterSpacing: "0.01em",
+                }}>
+                  {active.length} active. three is a soft cap — consider parking one on the desk.
+                </div>
+              )}
+            </>
+          )}
 
-          {/* ===== Goals section ===== */}
-          <div className="space-sheet__section">
-            <div className="space-sheet__section-kicker">
-              <span>goals</span>
-              <span style={{
-                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-                textTransform: "none", letterSpacing: "0.01em",
-                color: "var(--ink-faint)",
-              }}>
-                what you're working toward
-              </span>
-            </div>
+          {onDesk.length > 0 && (
+            <>
+              <div className="space-sheet__zone-label">on the desk</div>
+              {onDesk.map(renderGoalRow)}
+            </>
+          )}
 
-            <button
-              type="button"
-              onClick={onAddGoalOpen}
-              style={{
-                background: "transparent",
-                border: "1px dashed var(--rule-strong)",
-                borderRadius: 14,
-                padding: "10px 14px",
-                fontFamily: "var(--serif)", fontStyle: "italic",
-                fontSize: 13, color: "var(--ink-soft)",
-                cursor: "pointer", width: "100%",
-                textAlign: "left",
-                marginBottom: 14,
-                letterSpacing: "0.01em",
-              }}
-            >+ a goal</button>
+          {inDrawer.length > 0 && (
+            <>
+              <div className="space-sheet__zone-label">drawer</div>
+              {inDrawer.map(renderGoalRow)}
+            </>
+          )}
 
-            <div className="space-sheet__zone-label">active</div>
-            {active.length === 0 ? (
-              <div className="serif" style={{
-                padding: "6px 4px 14px",
-                fontSize: 13, fontStyle: "italic",
-                color: "var(--ink-faint)",
-                letterSpacing: "0.005em",
-              }}>
-                nothing active. add one when something matters.
-              </div>
-            ) : (
-              <>
-                {active.map(g => (
-                  <div key={g.id}>
-                    {renderGoalRow(g)}
-                    {refCounts[g.id] > 0 && (
-                      <div className="serif" style={{
-                        padding: "4px 4px 10px",
-                        fontSize: 11, fontStyle: "italic",
-                        color: "var(--ink-faint)",
-                        letterSpacing: "0.005em",
-                      }}>
-                        in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {active.length > 3 && (
-                  <div className="serif" style={{
-                    padding: "8px 4px 0",
-                    fontSize: 11, fontStyle: "italic",
-                    color: "#A05A2C",
-                    letterSpacing: "0.01em",
-                  }}>
-                    {active.length} active. three is a soft cap — consider parking one on the desk.
-                  </div>
-                )}
-              </>
-            )}
-
-            {onDesk.length > 0 && (
-              <>
-                <div className="space-sheet__zone-label">on the desk</div>
-                {onDesk.map(renderGoalRow)}
-              </>
-            )}
-
-            {inDrawer.length > 0 && (
-              <>
-                <div className="space-sheet__zone-label">drawer</div>
-                {inDrawer.map(renderGoalRow)}
-              </>
-            )}
-
-            {released.length > 0 && (
-              <>
-                <div className="space-sheet__zone-label">released</div>
-                {released.map(renderGoalRow)}
-              </>
-            )}
-          </div>
-
+          {released.length > 0 && (
+            <>
+              <div className="space-sheet__zone-label">released</div>
+              {released.map(renderGoalRow)}
+            </>
+          )}
         </div>
 
         <div style={{display: "flex", justifyContent: "flex-end", marginTop: 14, paddingTop: 8, borderTop: "1px solid var(--rule)"}}>
@@ -2326,7 +2339,7 @@ Object.assign(window, {
   NowPage, TaskNote, TaskRow,
   AddSheet, AddDeskSheet, WinSheet, WinToast,
   HighlightHint, Tutorial,
-  // v=35: top-right shared space (wins + goals)
+  // v=36: top-right two-button affordance — wins + goals as siblings
   GoalRow, AddGoalSheet,
-  SpaceTrigger, SpaceSheet,
+  SpaceTriggers, SpaceSheetWins, SpaceSheetGoals,
 });

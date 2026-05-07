@@ -357,8 +357,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=35"),
-        loadBabelScript("screens-rituals.jsx?v=35"),
+        loadBabelScript("screens-flows.jsx?v=36"),
+        loadBabelScript("screens-rituals.jsx?v=36"),
       ]);
     }
     loadAll()
@@ -442,9 +442,12 @@ function App() {
   // tracked locally as `spaceOpen` below.
   const [goals, setGoals] = useState(() => loadGoals());
   const [winsTimeline, setWinsTimeline] = useState(() => loadWinsTimeline());
-  // v=35: bottom-sheet open flag for SpaceSheet. Local UI state only — never
-  // persisted (you should never reopen into a sheet after a reload).
-  const [spaceOpen, setSpaceOpen] = useState(false);
+  // v=36: bottom-sheet kind ("wins" | "goals" | null). Two distinct top-right
+  // buttons → two distinct sheets → two distinct experiences with consistent
+  // visual chrome. v=35's combined SpaceSheet was Chris-flagged: wins and
+  // goals are functionally distinct, two buttons two experiences. Local UI
+  // state only — never persisted (no reopen-into-sheet after reload).
+  const [spaceSheet, setSpaceSheet] = useState(null);
   // v=28: phase state for in-flight Mood Check-in. Set when user enters
   // mood-checkin screen, read by MoodCheckin component, cleared on completion
   // or skip. Lives in App so refresh-during-checkin doesn't lose progress.
@@ -1604,26 +1607,37 @@ function App() {
         </div>
       )}
 
-      {/* v=35: top-right shared-space affordance. Single button, sync-loaded
-          for instant feel, suppressed on modal/ritual flows by SPACE_HIDDEN_SCREENS.
-          Has a subtle visibility bump when there's existing content (active
-          goals or wins) so the icon hints at "something to see" without
-          being a number badge. */}
+      {/* v=36: top-right TWO-button affordance. Wins and goals are functionally
+          distinct (recognition vs forward intent) — two buttons, two sheets,
+          consistent visual language. Each pill names what it opens; tapping
+          reveals only that surface. Suppressed on modal/ritual flows. The
+          --has-content modifier subtly emphasizes a button when its surface
+          has something to see (active goals / any wins) — soft hint without
+          a number badge. */}
       {showSpaceTrigger && (
-        <SpaceTrigger
-          onClick={() => setSpaceOpen(true)}
-          hasContent={goals.some(g => g.tier === "active") || winsTimeline.length > 0}
+        <SpaceTriggers
+          onOpenWins={() => setSpaceSheet("wins")}
+          onOpenGoals={() => setSpaceSheet("goals")}
+          hasWins={winsTimeline.length > 0}
+          hasGoals={goals.some(g => g.tier === "active")}
         />
       )}
 
-      {spaceOpen && (
-        <SpaceSheet
+      {spaceSheet === "wins" && (
+        <SpaceSheetWins
           wins={winsTimeline}
           goals={goals}
-          tasks={tasks}
-          onClose={() => setSpaceOpen(false)}
+          onClose={() => setSpaceSheet(null)}
           onLogWin={(text) => logWin(text)}
           onRetireWin={retireWin}
+        />
+      )}
+
+      {spaceSheet === "goals" && (
+        <SpaceSheetGoals
+          goals={goals}
+          tasks={tasks}
+          onClose={() => setSpaceSheet(null)}
           onAddGoalOpen={() => setSheet("addGoal")}
           onRenameGoal={renameGoal}
           onSetGoalContext={setGoalContext}

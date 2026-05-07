@@ -830,32 +830,47 @@ body {
      desk-back  — back of desk (the drawer), "less vital but not killed"
      trash      — released. Resurface band v2 deferred. */
 
-/* Top-right glyph — small, subtle, in the chrome layer above page content.
-   Same zone as .admin-trigger but visible by default (admin is opacity 0.32
-   when off-screen; this sits at 0.45 because it's the discovery affordance).
-   Suppressed on modal/ritual flows by App.return's render gate. */
-.space-trigger {
+/* Top-right affordances — TWO small pill buttons side-by-side in the chrome
+   layer above page content. Same zone as .admin-trigger.
+   v=36: previous v=35 single-icon trigger (.space-trigger) was a UX
+   failure — Chris flagged it lied about what it opened (icon read as
+   wins-only, hid goals behind it). Wins and goals are functionally
+   distinct: two buttons, two sheets, consistent visual language. Each
+   pill names what it opens; tapping reveals only that surface. */
+.space-triggers {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
-  right: calc(env(safe-area-inset-right, 0px) + 14px);
-  width: 30px;
-  height: 30px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
   z-index: 6;
-  cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-soft);
-  opacity: 0.55;
-  transition: opacity 180ms ease, transform 180ms ease;
+  gap: 6px;
   -webkit-tap-highlight-color: transparent;
 }
-.space-trigger:hover, .space-trigger:focus { opacity: 0.95; outline: none; }
-.space-trigger:active { opacity: 1; transform: scale(0.92); }
+.space-trigger {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.space-trigger:hover, .space-trigger:focus {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  outline: none;
+}
+.space-trigger:active { transform: scale(0.96); background: var(--paper-deep); }
+.space-trigger--has-content {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
 
 /* Tall sheet variant for SpaceSheet — wins + goals together need vertical
    real estate. The default .sheet auto-sizes to content; here we lock to
