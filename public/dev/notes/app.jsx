@@ -172,42 +172,6 @@ function saveLogs(obj) {
   try { localStorage.setItem(LOGS_KEY, JSON.stringify(obj)); } catch (e) {}
 }
 
-// v=34: horizon — Goals slice persists independently from the main state
-// blob. Spec survives any single Daily Now session and is timeless from the
-// 3am day-flip perspective. Each goal: { id, text, context (str|null), tier
-// ("active"|"desk-top"|"desk-back"|"trash"), createdAt }. Soft-cap at 3
-// active enforced in the UI (color-shift, no hard block).
-const GOALS_KEY = `${STORAGE_NS}:goals.v1`;
-function loadGoals() {
-  try {
-    const raw = localStorage.getItem(GOALS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) { return []; }
-}
-function saveGoals(arr) {
-  try { localStorage.setItem(GOALS_KEY, JSON.stringify(arr)); } catch (e) {}
-}
-
-// v=34: horizon — Wins timeline slice. Persists across day flips, unlike
-// the existing daily `wins` slot (which is ephemeral and feeds Recap+Carry).
-// On UnseenWin add, we append to BOTH so Recap behavior is unchanged AND
-// the horizon Wins screen has a permanent timeline. Each entry: { id, text,
-// loggedAt (ms), day (ISO), goalRef (id|null) }. Reverse-chronological.
-const WINS_TIMELINE_KEY = `${STORAGE_NS}:wins-timeline.v1`;
-function loadWinsTimeline() {
-  try {
-    const raw = localStorage.getItem(WINS_TIMELINE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) { return []; }
-}
-function saveWinsTimeline(arr) {
-  try { localStorage.setItem(WINS_TIMELINE_KEY, JSON.stringify(arr)); } catch (e) {}
-}
-
 function wipeAllDailyNow() {
   // Clears the main state blob AND any per-day journal entries within the
   // active namespace only. Other instances (e.g. /dev/notes vs /dev/notes-test
@@ -357,8 +321,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=34"),
-        loadBabelScript("screens-rituals.jsx?v=34"),
+        loadBabelScript("screens-flows.jsx?v=33"),
+        loadBabelScript("screens-rituals.jsx?v=33"),
       ]);
     }
     loadAll()
@@ -435,17 +399,6 @@ function App() {
   const [recurrences, setRecurrences] = useState(() => loadRecurrences());
   // v=28: per-day mood-checkin + meditate completion log.
   const [dailyLogs, setDailyLogs] = useState(() => loadLogs());
-  // v=34: horizon — goals + persistent wins timeline + horizon-mode flag.
-  // Goals + winsTimeline persist independently of main state blob (timeless
-  // from the day-flip perspective). horizonMode lives in main state so the
-  // user lands where they left off across reloads.
-  const [goals, setGoals] = useState(() => loadGoals());
-  const [winsTimeline, setWinsTimeline] = useState(() => loadWinsTimeline());
-  const [horizonMode, setHorizonMode] = useState(boot.horizonMode === true);
-  // v=34: pending "log as today's win?" prompt. Set when a task with goalRef
-  // is checked off. Quiet, time-limited toast with an action — declining is
-  // silent. Cleared when toast times out or user taps either button.
-  const [winPrompt, setWinPrompt] = useState(null);
   // v=28: phase state for in-flight Mood Check-in. Set when user enters
   // mood-checkin screen, read by MoodCheckin component, cleared on completion
   // or skip. Lives in App so refresh-during-checkin doesn't lose progress.
@@ -532,17 +485,13 @@ function App() {
 
   // === Persist on every change ===
   useEffect(() => {
-    savePersisted({ tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset, horizonMode });
-  }, [tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset, horizonMode]);
+    savePersisted({ tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset });
+  }, [tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset]);
   // v=26: recurrences persist independently (separate key) so spec survives
   // any single instance's release/complete/trash.
   useEffect(() => { saveRecurrences(recurrences); }, [recurrences]);
   // v=28: dailyLogs persist independently — same separation rationale.
   useEffect(() => { saveLogs(dailyLogs); }, [dailyLogs]);
-  // v=34: goals + wins timeline persist independently — timeless from the
-  // 3am day-flip perspective.
-  useEffect(() => { saveGoals(goals); }, [goals]);
-  useEffect(() => { saveWinsTimeline(winsTimeline); }, [winsTimeline]);
 
   // Sweep trash on mount: remove anything older than 30 days.
   useEffect(() => {
@@ -808,20 +757,6 @@ function App() {
     if (shelf.length > 0) {
       setCompletionsSinceShelf(c => c + 1);
     }
-    // v=34: if this task pointed at a horizon goal, pulse a quiet "log as
-    // today's win?" prompt via the existing toast/action affordance. Decline
-    // is silent (toast times out). Accept routes through logWin with goalRef
-    // preserved so the timeline records the linkage. Per V2 design: brings
-    // completion BACK to the now without forcing it.
-    if (task.goalRef) {
-      const goal = goals.find(g => g.id === task.goalRef);
-      const goalText = goal ? `toward "${goal.text}"` : "today's win";
-      showToast(
-        `done — ${goalText}`,
-        4500,
-        { label: "log as win", onClick: () => logWin(task.text, task.goalRef) },
-      );
-    }
   }
   function renameTask(id, text) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
@@ -898,62 +833,9 @@ function App() {
     setReOfferDismissed(prev => ({ ...prev, [itemId]: true }));
     setCompletionsSinceShelf(0); // reset; re-offer again after more wins
   }
-  function logWin(text, goalRef = null) {
+  function logWin(text) {
     setWins([text, ...wins]);
-    // v=34: also append to the persistent horizon timeline. Daily slot stays
-    // ephemeral (resets on rollover, feeds Recap+Carry); timeline persists.
-    const entry = {
-      id: nextId(),
-      text,
-      loggedAt: Date.now(),
-      day: todayIso,
-      goalRef: goalRef || null,
-    };
-    setWinsTimeline(prev => [entry, ...prev]);
     showToast(text, 3200);
-  }
-  // v=34: retire a win from the timeline. Manual only — wins don't auto-fade.
-  function retireWin(id) {
-    setWinsTimeline(prev => prev.filter(w => w.id !== id));
-  }
-
-  // v=34: goal CRUD. Tier transitions are unrestricted by design (the
-  // spectrum is permissive — drag back from trash, push to drawer, promote
-  // anything anywhere). Soft-cap on active is enforced by UI color shift,
-  // not state.
-  function addGoal(text, context) {
-    const goal = {
-      id: nextId(),
-      text,
-      context: context || null,
-      tier: "active",
-      createdAt: Date.now(),
-    };
-    setGoals(prev => [goal, ...prev]);
-    showToast("placed on the horizon.", 2200);
-  }
-  function renameGoal(id, text) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g));
-  }
-  function setGoalContext(id, context) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, context: context || null } : g));
-  }
-  function moveGoal(id, tier) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier } : g));
-    const label = tier === "active" ? "active." : tier === "desk-top" ? "on the desk." : tier === "desk-back" ? "in the drawer." : "released.";
-    showToast(label, 1800);
-  }
-  function releaseGoal(id) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier: "trash" } : g));
-    showToast("released.", 2000);
-  }
-  function restoreGoal(id) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier: "active" } : g));
-    showToast("welcomed back.", 2200);
-  }
-  function purgeGoal(id) {
-    if (!window.confirm("Delete this goal forever? This can't be undone.")) return;
-    setGoals(prev => prev.filter(g => g.id !== id));
   }
   function divideTask(originalTask, parts, options = {}) {
     const { mode = "all", firstIdx = 0 } = options;
@@ -1282,27 +1164,13 @@ function App() {
     );
   }
 
-  // v=34: horizon strip suppression list. Modal / ritual flows hide the strip
-  // so they can't be interrupted mid-arc; spectrum + Anchor + Journal show it.
-  const HORIZON_MODAL_SCREENS = new Set([
-    "mood-checkin", "mood-meditate-prompt", "meditate-journal-prompt",
-    "breaths", "meditate-setup", "square-breath", "meditate-active",
-    "return", "carry", "desk-review-prompt", "desk-review", "recap",
-  ]);
-  const showHorizonStrip = !HORIZON_MODAL_SCREENS.has(screen);
-
   return (
-    <div
-      className="phone-frame"
-      data-screen-label="Phone"
-      data-mode={horizonMode ? "horizon" : ""}
-      style={{ fontSize: `${t.fontScale}rem` }}
-    >
+    <div className="phone-frame" data-screen-label="Phone" style={{ fontSize: `${t.fontScale}rem` }}>
       {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
 
       <StatusBar/>
 
-      {screen === "anchor" && !horizonMode && (
+      {screen === "anchor" && (
         <div data-screen-label="01 Morning Anchor" style={{position: "absolute", inset: 0}}>
           <MorningAnchor
             onEnter={openTodayWithRecap}
@@ -1316,29 +1184,6 @@ function App() {
             onAddRegular={addRegularToToday}
             completion={morningCompletion}
             todayLog={todayLog}
-          />
-          <HorizonStrip
-            horizonMode={horizonMode}
-            onToggle={() => setHorizonMode(true)}
-            pinned={true}
-          />
-        </div>
-      )}
-
-      {screen === "anchor" && horizonMode && (
-        <div data-screen-label="H1 Horizon Overview" style={{position: "absolute", inset: 0}}>
-          <HorizonOverview
-            goals={goals}
-            wins={winsTimeline}
-            dateStr={dateStr}
-            weekday={weekday.toLowerCase()}
-            onOpenGoals={() => setScreen("now")}
-            onOpenWins={() => setScreen("journal")}
-          />
-          <HorizonStrip
-            horizonMode={horizonMode}
-            onToggle={() => setHorizonMode(false)}
-            pinned={true}
           />
         </div>
       )}
@@ -1515,7 +1360,7 @@ function App() {
         </div>
       )}
 
-      {screen === "now" && !horizonMode && (
+      {screen === "now" && (
         <div data-screen-label="03 The Now Page" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             <NowPage
@@ -1554,32 +1399,11 @@ function App() {
               <HighlightHint onDismiss={dismissHighlightHint}/>
             )}
           </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(true)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
+          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
       )}
 
-      {screen === "now" && horizonMode && (
-        <div data-screen-label="H2 Goals Notebook" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
-          <div style={{flex: 1, minHeight: 0, position: "relative"}}>
-            <GoalsNotebook
-              goals={goals}
-              tasks={tasks}
-              onAddOpen={() => setSheet("addGoal")}
-              onRename={renameGoal}
-              onSetContext={setGoalContext}
-              onMove={moveGoal}
-              onRelease={releaseGoal}
-              dateStr={dateStr}
-              weekday={weekday.toLowerCase()}
-            />
-          </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(false)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
-        </div>
-      )}
-
-      {(screen === "desk" || screen === "shelf" || screen === "drawer") && !horizonMode && (
+      {(screen === "desk" || screen === "shelf" || screen === "drawer") && (
         <div data-screen-label="07 Desk" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             {deferredReady ? (
@@ -1599,30 +1423,11 @@ function App() {
               />
             ) : <DeferredFallback label="desk"/>}
           </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(true)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
+          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
       )}
 
-      {(screen === "desk" || screen === "shelf" || screen === "drawer") && horizonMode && (
-        <div data-screen-label="H3 Goals Desk" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
-          <div style={{flex: 1, minHeight: 0, position: "relative"}}>
-            <GoalsDesk
-              goals={goals}
-              onRename={renameGoal}
-              onSetContext={setGoalContext}
-              onMove={moveGoal}
-              onRelease={releaseGoal}
-              dateStr={dateStr}
-              weekday={weekday.toLowerCase()}
-            />
-          </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(false)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
-        </div>
-      )}
-
-      {screen === "journal" && !horizonMode && (
+      {screen === "journal" && (
         <div data-screen-label="01f Journal" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             {deferredReady ? (
@@ -1647,28 +1452,11 @@ function App() {
               />
             ) : <DeferredFallback label="journal"/>}
           </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(true)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
+          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
       )}
 
-      {screen === "journal" && horizonMode && (
-        <div data-screen-label="H5 Wins Timeline" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
-          <div style={{flex: 1, minHeight: 0, position: "relative"}}>
-            <WinsTimeline
-              wins={winsTimeline}
-              goals={goals}
-              onRetire={retireWin}
-              dateStr={dateStr}
-              weekday={weekday.toLowerCase()}
-            />
-          </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(false)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
-        </div>
-      )}
-
-      {screen === "trash" && !horizonMode && (
+      {screen === "trash" && (
         <div data-screen-label="08 Trash" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             {deferredReady ? (
@@ -1680,33 +1468,12 @@ function App() {
               />
             ) : <DeferredFallback label="trash"/>}
           </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(true)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
+          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
       )}
 
-      {screen === "trash" && horizonMode && (
-        <div data-screen-label="H4 Goals Trash" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
-          <div style={{flex: 1, minHeight: 0, position: "relative"}}>
-            <GoalsTrash
-              goals={goals}
-              onRestore={restoreGoal}
-              onPurge={purgeGoal}
-              onMove={moveGoal}
-              onRename={renameGoal}
-              onSetContext={setGoalContext}
-              dateStr={dateStr}
-              weekday={weekday.toLowerCase()}
-            />
-          </div>
-          {showHorizonStrip && <HorizonStrip horizonMode={horizonMode} onToggle={() => setHorizonMode(false)}/>}
-          <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay} horizonMode={horizonMode}/>
-        </div>
-      )}
-
-      {sheet === "add" && <AddSheet onClose={() => setSheet(null)} onAdd={addTask} goals={goals}/>}
+      {sheet === "add" && <AddSheet onClose={() => setSheet(null)} onAdd={addTask}/>}
       {sheet === "addDesk" && <AddDeskSheet onClose={() => setSheet(null)} onAdd={addToDesk}/>}
-      {sheet === "addGoal" && <AddGoalSheet onClose={() => setSheet(null)} onAdd={addGoal}/>}
       {sheet === "win" && <WinSheet onClose={() => setSheet(null)} onLog={logWin}/>}
       {sheet && sheet.kind === "decision" && deferredReady && (
         <DecisionPointSheet
@@ -1857,18 +1624,16 @@ function App() {
   );
 }
 
-function TabBar({ screen, setScreen, onNewDay, horizonMode }) {
-  // Layout: [begin | notebook · desk · trash | journal/wins]
-  //   begin     = Anchor (Daily Now) / Horizon Overview (horizon)
-  //   spectrum  = Notebook · Desk · Trash. Same screen IDs in both modes;
-  //               the rendered component depends on horizonMode.
-  //   journal/wins = Daily Now reflection / horizon timeline. The journal
-  //                  slot is replaced by Wins in horizon mode per V2 design.
+function TabBar({ screen, setScreen, onNewDay }) {
+  // Layout: [begin | notebook · desk · trash | journal]
+  //   begin = Anchor (the morning-landing / day-start screen)
+  //   spectrum trio = Notebook → Desk → Trash
+  //   journal = reflective writing surface
   // Two thin dividers split the three groups so the spectrum reads as a
-  // single mental model and Anchor / Journal-or-Wins sit cleanly outside it.
-  // v=31: added Anchor tab so users can get back to the Home screen.
-  // v=34: horizon-mode label + icon swap on the journal slot. Same screen
-  //       IDs reused; routing branches in App.return decide what renders.
+  // single mental model and Anchor / Journal sit cleanly outside it.
+  // v=31: added Anchor tab so users can get back to the Home screen from
+  // any of the inner surfaces. Previously there was no path back without
+  // an admin force-next-day or page reload.
   return (
     <div className="tabbar tabbar-icons">
       <button
@@ -1883,10 +1648,10 @@ function TabBar({ screen, setScreen, onNewDay, horizonMode }) {
       <button
         className={`tab-btn ${screen === "now" ? "active" : ""}`}
         onClick={() => setScreen("now")}
-        aria-label={horizonMode ? "active goals" : "notebook"}
+        aria-label="notebook"
       >
         <Icon name="notebook" size={22}/>
-        <span className="tab-label">{horizonMode ? "active" : "notebook"}</span>
+        <span className="tab-label">notebook</span>
       </button>
       <button
         className={`tab-btn ${["desk","shelf","drawer"].includes(screen) ? "active" : ""}`}
@@ -1908,10 +1673,10 @@ function TabBar({ screen, setScreen, onNewDay, horizonMode }) {
       <button
         className={`tab-btn ${screen === "journal" ? "active" : ""}`}
         onClick={() => setScreen("journal")}
-        aria-label={horizonMode ? "wins" : "journal"}
+        aria-label="journal"
       >
-        <Icon name={horizonMode ? "wins" : "journal"} size={22}/>
-        <span className="tab-label">{horizonMode ? "wins" : "journal"}</span>
+        <Icon name="journal" size={22}/>
+        <span className="tab-label">journal</span>
       </button>
     </div>
   );
