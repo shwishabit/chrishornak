@@ -153,6 +153,19 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <line x1="2.5" y1="17.5" x2="13" y2="17.5" {...common} strokeOpacity="0.4"/>
         </svg>
       );
+    case "wins":
+      // recognition mark: a small four-point spark + tiny rays. Replaces the
+      // journal slot in horizon mode. Reads as "spontaneous noticing,"
+      // matching the win-as-recognition framing (not a star, not a trophy).
+      return (
+        <svg viewBox="0 0 20 20" style={s}>
+          <path d="M10 5 L11.4 8.6 L15 10 L11.4 11.4 L10 15 L8.6 11.4 L5 10 L8.6 8.6 z" {...common} fill="currentColor" fillOpacity="0.18"/>
+          <line x1="10" y1="2.5" x2="10" y2="3.7" {...common} strokeOpacity="0.5"/>
+          <line x1="17.5" y1="10" x2="16.3" y2="10" {...common} strokeOpacity="0.5"/>
+          <line x1="2.5" y1="10" x2="3.7" y2="10" {...common} strokeOpacity="0.5"/>
+          <line x1="10" y1="17.5" x2="10" y2="16.3" {...common} strokeOpacity="0.5"/>
+        </svg>
+      );
     default:
       return null;
   }

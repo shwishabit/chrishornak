@@ -812,3 +812,174 @@ body {
   pointer-events: none;
   user-select: none;
 }
+
+/* ===== v=35: wins + goals shared space (top-right, on-demand) =====
+
+   Reframe of v=34's horizon-mode merger. Wins (present-tense recognition)
+   and goals (forward intent with time-flex lifecycle) are functionally
+   distinct but share an architectural concern — both are non-daily and
+   need a permanent home that doesn't crowd the day's work. Solution: a
+   small top-right glyph (.space-trigger) opens a single bottom-sheet
+   (.space-sheet) with two sections — wins on top (lighter / reflective),
+   goals below (workspace / action). No mode-flip, no paper-dusk,
+   no merged TabBar. There when you reach for it, invisible otherwise.
+
+   Tier semantics for goals (per 2026-04-27 spectrum decision):
+     active     — in the active list
+     desk-top   — on the desk, "worth considering"
+     desk-back  — back of desk (the drawer), "less vital but not killed"
+     trash      — released. Resurface band v2 deferred. */
+
+/* Top-right glyph — small, subtle, in the chrome layer above page content.
+   Same zone as .admin-trigger but visible by default (admin is opacity 0.32
+   when off-screen; this sits at 0.45 because it's the discovery affordance).
+   Suppressed on modal/ritual flows by App.return's render gate. */
+.space-trigger {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  opacity: 0.55;
+  transition: opacity 180ms ease, transform 180ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.space-trigger:hover, .space-trigger:focus { opacity: 0.95; outline: none; }
+.space-trigger:active { opacity: 1; transform: scale(0.92); }
+
+/* Tall sheet variant for SpaceSheet — wins + goals together need vertical
+   real estate. The default .sheet auto-sizes to content; here we lock to
+   ~85% viewport height with internal scroll. */
+.space-sheet {
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+.space-sheet__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -24px;
+  padding: 0 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.space-sheet__section + .space-sheet__section {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+.space-sheet__section-kicker {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.space-sheet__zone-label {
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 14px 0 6px;
+}
+
+/* Goal row — leaner cousin of TaskRow. No marker gutter, no progress fill,
+   no priority highlighter, no Sortable D&D. Just text + tap-to-open drawer.
+   Inside SpaceSheet the row uses tighter horizontal padding to fit the
+   sheet's content-padding rather than full-bleed page padding. */
+.goal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background 160ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.goal-row:active { background: var(--paper-deep); }
+.goal-row__text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.goal-row__context {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+.goal-row__zone {
+  flex-shrink: 0;
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+/* Win row — timeline entry. No gutter, just text + dim date stamp. */
+.win-row {
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+.win-row__text {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.win-row__when {
+  margin-top: 4px;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.win-row__from-goal {
+  display: inline;
+  margin-left: 8px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+
+/* Quiet empty-state — patient, not absent. */
+.quiet-empty {
+  text-align: center;
+  padding: 36px 16px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+  letter-spacing: 0.005em;
+}

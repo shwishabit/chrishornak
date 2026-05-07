@@ -1148,7 +1148,7 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
 }
 
 // ---------- Add Task Sheet ----------
-function AddSheet({ onClose, onAdd }) {
+function AddSheet({ onClose, onAdd, goals }) {
   const [text, setText] = useState("");
   const [tenMin, setTenMin] = useState("");
   const [showTenMin, setShowTenMin] = useState(false);
@@ -1156,6 +1156,13 @@ function AddSheet({ onClose, onAdd }) {
   // is a Set of weekday indices (Sun=0..Sat=6).
   const [repeats, setRepeats] = useState("none");
   const [weeklyDays, setWeeklyDays] = useState(() => new Set());
+  // v=34: optional goalRef picker. Default skip. Lives behind a ghost-italic
+  // "(toward…)" affordance so it never crowds the primary capture flow —
+  // only surfaces when the user reaches for it. Active goals only; a goal
+  // that's been parked on the desk isn't a daily-task anchor.
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
+  const [goalRef, setGoalRef] = useState(null);
+  const activeGoals = (goals || []).filter(g => g.tier === "active");
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -1185,6 +1192,7 @@ function AddSheet({ onClose, onAdd }) {
       mark: parsed.mark,
       tenMin: tenMin.trim() || null,
       done: false,
+      goalRef: goalRef || null,
     }, recurrenceSpec);
     onClose();
   }
@@ -1299,6 +1307,75 @@ function AddSheet({ onClose, onAdd }) {
             </div>
           )}
         </div>
+
+        {/* v=34: optional "(toward…)" affordance. Hidden until tapped, default
+            skip — never crowds the primary capture. Goes away if no active
+            goals exist (linking with nothing is meaningless). */}
+        {activeGoals.length > 0 && (
+          <div style={{paddingTop: 14}}>
+            {!showGoalPicker && !goalRef ? (
+              <button
+                onClick={() => setShowGoalPicker(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  color: "var(--ink-faint)",
+                  fontFamily: "var(--serif)",
+                  fontStyle: "italic",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  letterSpacing: "0.01em",
+                }}
+              >(toward…)</button>
+            ) : (
+              <div className="fade-in">
+                <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>toward a goal</div>
+                <div style={{display: "flex", flexWrap: "wrap", gap: 6}}>
+                  <button
+                    onClick={() => { setGoalRef(null); setShowGoalPicker(false); }}
+                    style={{
+                      background: !goalRef ? "var(--ink)" : "transparent",
+                      color: !goalRef ? "var(--paper)" : "var(--ink-soft)",
+                      border: `1px solid ${!goalRef ? "var(--ink)" : "var(--rule-strong)"}`,
+                      borderRadius: 999,
+                      padding: "6px 12px",
+                      fontFamily: "var(--serif)",
+                      fontStyle: "italic",
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >none</button>
+                  {activeGoals.map(g => {
+                    const sel = goalRef === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        onClick={() => setGoalRef(g.id)}
+                        style={{
+                          background: sel ? "var(--ink)" : "transparent",
+                          color: sel ? "var(--paper)" : "var(--ink-soft)",
+                          border: `1px solid ${sel ? "var(--ink)" : "var(--rule-strong)"}`,
+                          borderRadius: 999,
+                          padding: "6px 12px",
+                          fontFamily: "var(--serif)",
+                          fontStyle: sel ? "normal" : "italic",
+                          fontSize: 12,
+                          cursor: "pointer",
+                          maxWidth: 180,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >{g.text}</button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
           <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
@@ -1637,9 +1714,619 @@ function Tutorial({ onDone }) {
   );
 }
 
+// ===== v=35: wins + goals shared space (top-right, on-demand) =====
+//
+// Reframe of v=34's horizon-mode merger. Wins (present-tense recognition)
+// and goals (forward intent) are functionally distinct but share an
+// architectural concern — both are non-daily, both need a permanent home
+// that doesn't crowd the day's work. v=35 solution: a small top-right
+// .space-trigger glyph opens a single bottom-sheet (.space-sheet) with
+// two clearly-labeled sections — wins on top (lighter, reflective, glance-
+// friendly), goals below (workspace, action, lifecycle-aware). No mode-
+// flip, no paper-dusk, no merged TabBar. Discreet, on-demand.
+//
+// Tier semantics for goals (per 2026-04-27 spectrum decision):
+//   active     — in the active list
+//   desk-top   — on the desk, "worth considering"
+//   desk-back  — back of desk (the drawer), "less vital but not killed"
+//   trash      — released. Resurface band v2 deferred.
+//
+// Critical-path placement: the trigger should feel instant — sync-loaded
+// alongside the rest of screens-critical.jsx.
+
+// ---------- Goal row + drawer ----------
+// Tap-to-toggle drawer. Drawer offers: rename / context / move (4 buttons:
+// active / desk / drawer / release). Lighter than TaskRow's full Decide
+// flow because goals don't have markers, progress, recurrences, or D&D —
+// the Decide hub's complexity isn't earned here.
+function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove, onRelease, onRestore, onPurge }) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(goal.text);
+  const [editingContext, setEditingContext] = useState(false);
+  const [contextDraft, setContextDraft] = useState(goal.context || "");
+
+  useEffect(() => {
+    setNameDraft(goal.text);
+    setContextDraft(goal.context || "");
+  }, [goal.id, goal.text, goal.context]);
+
+  function commitName() {
+    const trimmed = nameDraft.trim();
+    if (trimmed && trimmed !== goal.text) onRename(goal.id, trimmed);
+    setEditingName(false);
+  }
+  function commitContext() {
+    onSetContext(goal.id, contextDraft.trim());
+    setEditingContext(false);
+  }
+
+  const zoneLabel = (() => {
+    if (goal.tier === "active") return "active";
+    if (goal.tier === "desk-top") return "on desk";
+    if (goal.tier === "desk-back") return "drawer";
+    if (goal.tier === "trash") return "released";
+    return "";
+  })();
+
+  return (
+    <div data-goal-row={goal.id}>
+      <div
+        className="goal-row"
+        onClick={() => isOpen ? onClose() : onOpen(goal.id)}
+        role="button"
+        tabIndex={0}
+      >
+        <div style={{flex: 1, minWidth: 0}}>
+          {editingName ? (
+            <input
+              autoFocus
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onBlur={commitName}
+              onKeyDown={(e) => { if (e.key === "Enter") commitName(); if (e.key === "Escape") { setNameDraft(goal.text); setEditingName(false); } }}
+              onClick={(e) => e.stopPropagation()}
+              className="paper-input serif"
+              style={{
+                fontSize: 17, fontFamily: "var(--serif)",
+                width: "100%", padding: 0, margin: 0,
+                background: "transparent", border: "none", outline: "none",
+                color: "var(--ink)",
+              }}
+            />
+          ) : (
+            <div className="goal-row__text">{goal.text}</div>
+          )}
+          {(goal.context || editingContext) && (
+            editingContext ? (
+              <textarea
+                autoFocus
+                value={contextDraft}
+                onChange={(e) => setContextDraft(e.target.value)}
+                onBlur={commitContext}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commitContext(); }
+                  if (e.key === "Escape") { setContextDraft(goal.context || ""); setEditingContext(false); }
+                }}
+                rows={3}
+                placeholder="why this matters, in your own words…"
+                style={{
+                  width: "100%", marginTop: 6,
+                  background: "transparent", border: "none", outline: "none", resize: "none",
+                  fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 13,
+                  color: "var(--ink-soft)", lineHeight: 1.5, padding: 0,
+                }}
+              />
+            ) : (
+              <div className="goal-row__context">{goal.context}</div>
+            )
+          )}
+        </div>
+        <div className="goal-row__zone">{zoneLabel}</div>
+      </div>
+
+      {isOpen && (
+        <div
+          className="fade-in"
+          data-row-drawer={goal.id}
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            padding: "8px 24px 14px",
+            gap: 8,
+            background: "var(--paper-deep)",
+            borderBottom: "1px solid var(--rule)",
+          }}
+        >
+          {goal.tier !== "trash" ? (
+            <>
+              <GoalDrawerBtn
+                label="rename"
+                onClick={() => setEditingName(true)}
+              />
+              <GoalDrawerBtn
+                label={goal.context ? "context" : "+ context"}
+                onClick={() => setEditingContext(true)}
+              />
+              <GoalMoveBtn currentTier={goal.tier} onMove={(tier) => { onMove(goal.id, tier); onClose(); }}/>
+              <GoalDrawerBtn
+                label="release"
+                onClick={() => { onRelease(goal.id); onClose(); }}
+                tone="release"
+              />
+            </>
+          ) : (
+            <>
+              <GoalDrawerBtn label="restore" onClick={() => { onRestore(goal.id); onClose(); }}/>
+              <GoalDrawerBtn label="delete" onClick={() => { onPurge(goal.id); onClose(); }} tone="release"/>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GoalDrawerBtn({ label, onClick, tone }) {
+  const color = tone === "release" ? "#A05A2C" : "var(--ink)";
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{
+        flex: 1,
+        background: "transparent",
+        border: "1px solid var(--rule-strong)",
+        borderRadius: 999,
+        padding: "8px 0",
+        fontFamily: "var(--serif)",
+        fontStyle: "italic",
+        fontSize: 12,
+        color,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+      }}
+    >{label}</button>
+  );
+}
+
+// Inline mini-picker for the move action: a small expandable cluster
+// showing the three destinations. Tap one → execute. Tap "move" → toggle
+// the cluster open. Avoids a separate sheet for what should be a 1-tap.
+function GoalMoveBtn({ currentTier, onMove }) {
+  const [open, setOpen] = useState(false);
+  const targets = [
+    { tier: "active", label: "active" },
+    { tier: "desk-top", label: "desk" },
+    { tier: "desk-back", label: "drawer" },
+  ].filter(t => t.tier !== currentTier);
+  if (open) {
+    return (
+      <div style={{display: "flex", flex: 2, gap: 6}}>
+        {targets.map(t => (
+          <button
+            key={t.tier}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onMove(t.tier); }}
+            style={{
+              flex: 1,
+              background: "var(--ink)",
+              color: "var(--paper)",
+              border: "none",
+              borderRadius: 999,
+              padding: "8px 0",
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >{t.label}</button>
+        ))}
+      </div>
+    );
+  }
+  return <GoalDrawerBtn label="move" onClick={() => setOpen(true)}/>;
+}
+
+// ---------- Add goal sheet ----------
+function AddGoalSheet({ onClose, onAdd }) {
+  const [text, setText] = useState("");
+  const [context, setContext] = useState("");
+  const [showContext, setShowContext] = useState(false);
+  const inputRef = useRef(null);
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
+
+  function submit() {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onAdd(trimmed, context.trim() || null);
+    onClose();
+  }
+
+  return (
+    <>
+      <div className="sheet-backdrop" onClick={onClose}/>
+      <div className="sheet">
+        <div className="kicker" style={{marginBottom: 14}}>name a goal</div>
+        <input
+          ref={inputRef}
+          className="paper-input serif"
+          style={{fontSize: 20, fontFamily: "var(--serif)"}}
+          placeholder="what would matter, eventually…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !showContext) submit(); }}
+        />
+        <div className="serif" style={{
+          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+          marginTop: 6, letterSpacing: "0.02em",
+        }}>
+          one line. context goes below if you want it.
+        </div>
+
+        {!showContext ? (
+          <button
+            onClick={() => setShowContext(true)}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "14px 0 0",
+              color: "var(--ink-soft)",
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
+              fontSize: 14,
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >+ context</button>
+        ) : (
+          <div style={{paddingTop: 14}} className="fade-in">
+            <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>context</div>
+            <textarea
+              className="paper-input"
+              style={{fontSize: 14, fontFamily: "var(--serif)", fontStyle: "italic", resize: "none"}}
+              rows={3}
+              placeholder="why this matters, in your own words…"
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
+          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
+          <button
+            onClick={submit}
+            disabled={!text.trim()}
+            style={{
+              background: text.trim() ? "var(--ink)" : "var(--paper-deep)",
+              color: text.trim() ? "var(--paper)" : "var(--ink-faint)",
+              border: "none",
+              borderRadius: 999,
+              padding: "12px 24px",
+              fontFamily: "var(--serif)",
+              fontSize: 15,
+              cursor: text.trim() ? "pointer" : "default",
+              transition: "all 200ms ease",
+            }}
+          >Place a goal</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------- Space trigger ----------
+// Discreet top-right glyph. Same chrome zone as .admin-trigger but visible
+// by default — this IS the discovery affordance for the wins+goals room.
+// Suppressed on modal/ritual flows by App.return's render gate, not here.
+function SpaceTrigger({ onClick, hasContent }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="space-trigger"
+      aria-label="wins and goals"
+      title="wins and goals"
+    >
+      <Icon name="wins" size={22} opacity={hasContent ? 0.95 : 0.55}/>
+    </button>
+  );
+}
+
+// ---------- Space sheet ----------
+// Single bottom-sheet workspace holding wins + goals as distinct sections.
+// Wins on top (lighter, reflective, glance-friendly); goals below (workspace,
+// action, lifecycle-aware: active → desk-top → desk-back → trash). Tall sheet
+// (~85% viewport) with internal scroll so neither section crowds the other.
+//
+// Reuses GoalRow for goal interactions (rename / context / move / release /
+// restore / purge inline drawer) and the .win-row CSS for win timeline rows.
+// AddGoalSheet opens via onAddGoalOpen. Quick win-capture is inline at the
+// top of the wins section (small input) — distinct from the existing "+ a
+// win" pill on the Now page (that's the in-the-moment capture; this is the
+// see-and-manage capture).
+function SpaceSheet({
+  wins, goals, tasks,
+  onClose,
+  onLogWin, onRetireWin,
+  onAddGoalOpen, onRenameGoal, onSetGoalContext, onMoveGoal,
+  onReleaseGoal, onRestoreGoal, onPurgeGoal,
+}) {
+  const [openGoalId, setOpenGoalId] = useState(null);
+  const [winText, setWinText] = useState("");
+
+  const active = goals.filter(g => g.tier === "active");
+  const onDesk = goals.filter(g => g.tier === "desk-top");
+  const inDrawer = goals.filter(g => g.tier === "desk-back");
+  const released = goals.filter(g => g.tier === "trash");
+
+  // Active-task ref count per active goal — read-only descriptive line.
+  // Read once at sheet-open time; recomputes on each render which is fine.
+  const refCounts = (() => {
+    const counts = {};
+    for (const t of tasks || []) {
+      if (!t.done && t.goalRef) counts[t.goalRef] = (counts[t.goalRef] || 0) + 1;
+    }
+    return counts;
+  })();
+
+  function submitWin() {
+    const trimmed = winText.trim();
+    if (!trimmed) return;
+    onLogWin(trimmed);
+    setWinText("");
+  }
+
+  function formatDay(iso) {
+    if (!iso || iso === "—") return "—";
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    return dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  }
+
+  // Group wins by day for visual rhythm.
+  const winGroups = (() => {
+    const out = [];
+    let lastDay = null;
+    for (const w of wins) {
+      const day = w.day || (() => {
+        if (!w.loggedAt) return "—";
+        const d = new Date(w.loggedAt);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${dd}`;
+      })();
+      if (day !== lastDay) {
+        out.push({ kind: "day", day });
+        lastDay = day;
+      }
+      out.push({ kind: "win", win: w });
+    }
+    return out;
+  })();
+
+  function renderGoalRow(g) {
+    return (
+      <GoalRow
+        key={g.id}
+        goal={g}
+        isOpen={openGoalId === g.id}
+        onOpen={(id) => setOpenGoalId(id)}
+        onClose={() => setOpenGoalId(null)}
+        onRename={onRenameGoal}
+        onSetContext={onSetGoalContext}
+        onMove={onMoveGoal}
+        onRelease={onReleaseGoal}
+        onRestore={onRestoreGoal}
+        onPurge={onPurgeGoal}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="sheet-backdrop" onClick={onClose}/>
+      <div className="sheet space-sheet">
+        <div className="space-sheet__scroll">
+
+          {/* ===== Wins section ===== */}
+          <div className="space-sheet__section">
+            <div className="space-sheet__section-kicker">
+              <span>wins</span>
+              <span style={{
+                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+                textTransform: "none", letterSpacing: "0.01em",
+                color: "var(--ink-faint)",
+              }}>
+                what you noticed
+              </span>
+            </div>
+
+            <div style={{display: "flex", gap: 8, alignItems: "center", marginBottom: 14}}>
+              <input
+                className="paper-input serif"
+                style={{
+                  flex: 1,
+                  fontSize: 15, fontFamily: "var(--serif)", fontStyle: "italic",
+                  padding: "10px 0",
+                }}
+                placeholder="something quiet happened…"
+                value={winText}
+                onChange={(e) => setWinText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && winText.trim()) submitWin(); }}
+              />
+              <button
+                type="button"
+                onClick={submitWin}
+                disabled={!winText.trim()}
+                style={{
+                  background: winText.trim() ? "var(--ink)" : "var(--paper-deep)",
+                  color: winText.trim() ? "var(--paper)" : "var(--ink-faint)",
+                  border: "none", borderRadius: 999,
+                  padding: "8px 14px",
+                  fontFamily: "var(--serif)", fontSize: 13,
+                  cursor: winText.trim() ? "pointer" : "default",
+                  flexShrink: 0,
+                }}
+              >log it</button>
+            </div>
+
+            {wins.length === 0 ? (
+              <div className="quiet-empty">
+                something quiet will happen.<br/>
+                you'll notice when it does.
+              </div>
+            ) : winGroups.map((entry, idx) => {
+              if (entry.kind === "day") {
+                return (
+                  <div
+                    key={`day-${entry.day}-${idx}`}
+                    className="kicker"
+                    style={{
+                      padding: "12px 0 4px",
+                      color: "var(--ink-faint)",
+                    }}
+                  >{formatDay(entry.day)}</div>
+                );
+              }
+              const w = entry.win;
+              const fromGoal = w.goalRef ? goals.find(g => g.id === w.goalRef) : null;
+              return (
+                <div key={w.id} className="win-row" style={{display: "flex", alignItems: "flex-start", gap: 8}}>
+                  <div style={{flex: 1, minWidth: 0}}>
+                    <div className="win-row__text">
+                      {w.text}
+                      {fromGoal && (
+                        <span className="win-row__from-goal">— toward "{fromGoal.text}"</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRetireWin(w.id)}
+                    aria-label="retire this win"
+                    style={{
+                      background: "transparent", border: "none",
+                      color: "var(--ink-faint)", cursor: "pointer",
+                      fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 12,
+                      padding: "2px 6px", flexShrink: 0,
+                    }}
+                  >×</button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ===== Goals section ===== */}
+          <div className="space-sheet__section">
+            <div className="space-sheet__section-kicker">
+              <span>goals</span>
+              <span style={{
+                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+                textTransform: "none", letterSpacing: "0.01em",
+                color: "var(--ink-faint)",
+              }}>
+                what you're working toward
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onAddGoalOpen}
+              style={{
+                background: "transparent",
+                border: "1px dashed var(--rule-strong)",
+                borderRadius: 14,
+                padding: "10px 14px",
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 13, color: "var(--ink-soft)",
+                cursor: "pointer", width: "100%",
+                textAlign: "left",
+                marginBottom: 14,
+                letterSpacing: "0.01em",
+              }}
+            >+ a goal</button>
+
+            <div className="space-sheet__zone-label">active</div>
+            {active.length === 0 ? (
+              <div className="serif" style={{
+                padding: "6px 4px 14px",
+                fontSize: 13, fontStyle: "italic",
+                color: "var(--ink-faint)",
+                letterSpacing: "0.005em",
+              }}>
+                nothing active. add one when something matters.
+              </div>
+            ) : (
+              <>
+                {active.map(g => (
+                  <div key={g.id}>
+                    {renderGoalRow(g)}
+                    {refCounts[g.id] > 0 && (
+                      <div className="serif" style={{
+                        padding: "4px 4px 10px",
+                        fontSize: 11, fontStyle: "italic",
+                        color: "var(--ink-faint)",
+                        letterSpacing: "0.005em",
+                      }}>
+                        in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {active.length > 3 && (
+                  <div className="serif" style={{
+                    padding: "8px 4px 0",
+                    fontSize: 11, fontStyle: "italic",
+                    color: "#A05A2C",
+                    letterSpacing: "0.01em",
+                  }}>
+                    {active.length} active. three is a soft cap — consider parking one on the desk.
+                  </div>
+                )}
+              </>
+            )}
+
+            {onDesk.length > 0 && (
+              <>
+                <div className="space-sheet__zone-label">on the desk</div>
+                {onDesk.map(renderGoalRow)}
+              </>
+            )}
+
+            {inDrawer.length > 0 && (
+              <>
+                <div className="space-sheet__zone-label">drawer</div>
+                {inDrawer.map(renderGoalRow)}
+              </>
+            )}
+
+            {released.length > 0 && (
+              <>
+                <div className="space-sheet__zone-label">released</div>
+                {released.map(renderGoalRow)}
+              </>
+            )}
+          </div>
+
+        </div>
+
+        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 14, paddingTop: 8, borderTop: "1px solid var(--rule)"}}>
+          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 Object.assign(window, {
   MorningAnchor, SecondaryAnchor, AnchorMenuItem, LadderRow,
   NowPage, TaskNote, TaskRow,
   AddSheet, AddDeskSheet, WinSheet, WinToast,
   HighlightHint, Tutorial,
+  // v=35: top-right shared space (wins + goals)
+  GoalRow, AddGoalSheet,
+  SpaceTrigger, SpaceSheet,
 });
