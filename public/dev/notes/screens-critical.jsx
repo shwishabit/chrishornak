@@ -384,15 +384,16 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
           </div>
         </div>
         <div style={{display: "flex", gap: 8, alignItems: "center"}}>
+          {/* v=37: + a win pill removed from page header — was duplicating the
+              new chrome-layer `wins` pill (which has inline capture). Chris
+              flagged the visual jumble of 4 top-right buttons stacking
+              between layers. Capture path now lives inside SpaceSheetWins. */}
           <button onClick={onKeyOpen} title="Key" aria-label="Key" style={{
             background: "transparent", border: "1px solid var(--rule-strong)",
             borderRadius: "50%", width: 30, height: 30,
             fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14,
             color: "var(--ink-soft)", cursor: "pointer", lineHeight: 1,
           }}>?</button>
-          <button onClick={onWinOpen} className="win-pill" style={{fontSize: 13, padding: "8px 12px"}}>
-            + a win
-          </button>
         </div>
       </div>
 
@@ -1739,7 +1740,7 @@ function Tutorial({ onDone }) {
 // active / desk / drawer / release). Lighter than TaskRow's full Decide
 // flow because goals don't have markers, progress, recurrences, or D&D —
 // the Decide hub's complexity isn't earned here.
-function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove, onRelease, onRestore, onPurge }) {
+function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove, onSetTimeframe, onRelease, onRestore, onPurge }) {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(goal.text);
   const [editingContext, setEditingContext] = useState(false);
@@ -1761,7 +1762,11 @@ function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove
   }
 
   const zoneLabel = (() => {
-    if (goal.tier === "active") return "active";
+    if (goal.tier === "active") {
+      // v=37: zone label reflects active-tier timeframe sub-axis.
+      const tf = goal.timeframe || "week";
+      return tf === "week" ? "this week" : tf === "month" ? "this month" : "this year";
+    }
     if (goal.tier === "desk-top") return "on desk";
     if (goal.tier === "desk-back") return "drawer";
     if (goal.tier === "trash") return "released";
@@ -1848,6 +1853,12 @@ function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove
                 label={goal.context ? "context" : "+ context"}
                 onClick={() => setEditingContext(true)}
               />
+              {goal.tier === "active" && onSetTimeframe ? (
+                <GoalTimeframeBtn
+                  currentTimeframe={goal.timeframe || "week"}
+                  onSetTimeframe={(tf) => { onSetTimeframe(goal.id, tf); onClose(); }}
+                />
+              ) : null}
               <GoalMoveBtn currentTier={goal.tier} onMove={(tier) => { onMove(goal.id, tier); onClose(); }}/>
               <GoalDrawerBtn
                 label="release"
@@ -1890,6 +1901,48 @@ function GoalDrawerBtn({ label, onClick, tone }) {
   );
 }
 
+// v=37: inline mini-picker for changing a goal's timeframe (week / month /
+// year). Same expand-on-tap pattern as GoalMoveBtn, scoped to the active
+// tier (timeframe doesn't apply to desk / drawer / trash goals). "Push
+// back" (week → month → year) and "pull in" (year → month → week) both
+// happen via this picker; the labels are absolute (this week / this month
+// / this year) rather than relative (push back / pull in) since the
+// destination is the meaningful state.
+function GoalTimeframeBtn({ currentTimeframe, onSetTimeframe }) {
+  const [open, setOpen] = useState(false);
+  const targets = [
+    { tf: "week", label: "week" },
+    { tf: "month", label: "month" },
+    { tf: "year", label: "year" },
+  ].filter(t => t.tf !== currentTimeframe);
+  if (open) {
+    return (
+      <div style={{display: "flex", flex: 2, gap: 6}}>
+        {targets.map(t => (
+          <button
+            key={t.tf}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSetTimeframe(t.tf); }}
+            style={{
+              flex: 1,
+              background: "var(--ink)",
+              color: "var(--paper)",
+              border: "none",
+              borderRadius: 999,
+              padding: "8px 0",
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >{t.label}</button>
+        ))}
+      </div>
+    );
+  }
+  return <GoalDrawerBtn label="when" onClick={() => setOpen(true)}/>;
+}
+
 // Inline mini-picker for the move action: a small expandable cluster
 // showing the three destinations. Tap one → execute. Tap "move" → toggle
 // the cluster open. Avoids a separate sheet for what should be a 1-tap.
@@ -1929,17 +1982,21 @@ function GoalMoveBtn({ currentTier, onMove }) {
 }
 
 // ---------- Add goal sheet ----------
-function AddGoalSheet({ onClose, onAdd }) {
+function AddGoalSheet({ onClose, onAdd, defaultTimeframe }) {
   const [text, setText] = useState("");
   const [context, setContext] = useState("");
   const [showContext, setShowContext] = useState(false);
+  // v=37: timeframe picker — week / month / year. Default to whatever panel
+  // the user opened from (so adding from the "month" sub-panel pre-selects
+  // "month"); falls back to "week" when invoked without context.
+  const [timeframe, setTimeframe] = useState(defaultTimeframe || "week");
   const inputRef = useRef(null);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
 
   function submit() {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onAdd(trimmed, context.trim() || null);
+    onAdd(trimmed, context.trim() || null, timeframe);
     onClose();
   }
 
@@ -1992,6 +2049,40 @@ function AddGoalSheet({ onClose, onAdd }) {
             />
           </div>
         )}
+
+        {/* v=37: timeframe picker — week / month / year segmented control.
+            Determines which active sub-panel the goal lands in. */}
+        <div style={{paddingTop: 18}}>
+          <div className="kicker" style={{marginBottom: 8, fontSize: 10}}>timeframe</div>
+          <div style={{display: "flex", gap: 6}}>
+            {[
+              { key: "week", label: "this week" },
+              { key: "month", label: "this month" },
+              { key: "year", label: "this year" },
+            ].map(opt => {
+              const active = timeframe === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setTimeframe(opt.key)}
+                  style={{
+                    flex: 1,
+                    background: active ? "var(--ink)" : "transparent",
+                    color: active ? "var(--paper)" : "var(--ink-soft)",
+                    border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
+                    borderRadius: 999,
+                    padding: "8px 12px",
+                    fontFamily: "var(--serif)",
+                    fontStyle: active ? "normal" : "italic",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    transition: "all 160ms ease",
+                  }}
+                >{opt.label}</button>
+              );
+            })}
+          </div>
+        </div>
 
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
           <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
@@ -2195,14 +2286,24 @@ function SpaceSheetWins({ wins, goals, onClose, onLogWin, onRetireWin }) {
 function SpaceSheetGoals({
   goals, tasks, onClose,
   onAddGoalOpen, onRenameGoal, onSetGoalContext, onMoveGoal,
-  onReleaseGoal, onRestoreGoal, onPurgeGoal,
+  onSetGoalTimeframe, onReleaseGoal, onRestoreGoal, onPurgeGoal,
 }) {
   const [openGoalId, setOpenGoalId] = useState(null);
 
-  const active = goals.filter(g => g.tier === "active");
+  // v=37: active goals split by timeframe (week / month / year). Goals
+  // without a timeframe field (pre-v=37 data) default to "week" so existing
+  // entries land in the most immediate panel — Chris can re-park them via
+  // the row drawer. Tier still drives the four zone groups; timeframe is
+  // a sub-axis inside the active zone only (desk / drawer / released don't
+  // care about horizon — they're parked or gone).
+  const tf = (g) => g.timeframe || "week";
+  const activeWeek  = goals.filter(g => g.tier === "active" && tf(g) === "week");
+  const activeMonth = goals.filter(g => g.tier === "active" && tf(g) === "month");
+  const activeYear  = goals.filter(g => g.tier === "active" && tf(g) === "year");
   const onDesk = goals.filter(g => g.tier === "desk-top");
   const inDrawer = goals.filter(g => g.tier === "desk-back");
   const released = goals.filter(g => g.tier === "trash");
+  const totalActive = activeWeek.length + activeMonth.length + activeYear.length;
 
   // Active-task ref count per active goal — read-only descriptive line.
   const refCounts = (() => {
@@ -2224,10 +2325,43 @@ function SpaceSheetGoals({
         onRename={onRenameGoal}
         onSetContext={onSetGoalContext}
         onMove={onMoveGoal}
+        onSetTimeframe={onSetGoalTimeframe}
         onRelease={onReleaseGoal}
         onRestore={onRestoreGoal}
         onPurge={onPurgeGoal}
       />
+    );
+  }
+
+  function renderActivePanel(label, list, emptyCopy) {
+    return (
+      <>
+        <div className="space-sheet__zone-label">{label}</div>
+        {list.length === 0 ? (
+          <div className="serif" style={{
+            padding: "4px 4px 12px",
+            fontSize: 12, fontStyle: "italic",
+            color: "var(--ink-faint)",
+            letterSpacing: "0.005em",
+          }}>
+            {emptyCopy}
+          </div>
+        ) : list.map(g => (
+          <div key={g.id}>
+            {renderGoalRow(g)}
+            {refCounts[g.id] > 0 && (
+              <div className="serif" style={{
+                padding: "4px 4px 10px",
+                fontSize: 11, fontStyle: "italic",
+                color: "var(--ink-faint)",
+                letterSpacing: "0.005em",
+              }}>
+                in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
+              </div>
+            )}
+          </div>
+        ))}
+      </>
     );
   }
 
@@ -2264,44 +2398,22 @@ function SpaceSheetGoals({
             }}
           >+ a goal</button>
 
-          <div className="space-sheet__zone-label">active</div>
-          {active.length === 0 ? (
+          {/* v=37: active goals split by timeframe — week / month / year.
+              Always render all 3 panels so the structure is visible from
+              the first open (empty panels read as invitation, not absence). */}
+          {renderActivePanel("this week", activeWeek, "nothing this week.")}
+          {renderActivePanel("this month", activeMonth, "nothing this month.")}
+          {renderActivePanel("this year", activeYear, "nothing this year.")}
+
+          {totalActive > 3 && (
             <div className="serif" style={{
-              padding: "6px 4px 14px",
-              fontSize: 13, fontStyle: "italic",
-              color: "var(--ink-faint)",
-              letterSpacing: "0.005em",
+              padding: "8px 4px 0",
+              fontSize: 11, fontStyle: "italic",
+              color: "#A05A2C",
+              letterSpacing: "0.01em",
             }}>
-              nothing active. add one when something matters.
+              {totalActive} active. three is a soft cap — consider parking one on the desk or pushing it back a horizon.
             </div>
-          ) : (
-            <>
-              {active.map(g => (
-                <div key={g.id}>
-                  {renderGoalRow(g)}
-                  {refCounts[g.id] > 0 && (
-                    <div className="serif" style={{
-                      padding: "4px 4px 10px",
-                      fontSize: 11, fontStyle: "italic",
-                      color: "var(--ink-faint)",
-                      letterSpacing: "0.005em",
-                    }}>
-                      in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
-                    </div>
-                  )}
-                </div>
-              ))}
-              {active.length > 3 && (
-                <div className="serif" style={{
-                  padding: "8px 4px 0",
-                  fontSize: 11, fontStyle: "italic",
-                  color: "#A05A2C",
-                  letterSpacing: "0.01em",
-                }}>
-                  {active.length} active. three is a soft cap — consider parking one on the desk.
-                </div>
-              )}
-            </>
           )}
 
           {onDesk.length > 0 && (

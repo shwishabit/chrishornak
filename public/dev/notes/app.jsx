@@ -357,8 +357,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=36"),
-        loadBabelScript("screens-rituals.jsx?v=36"),
+        loadBabelScript("screens-flows.jsx?v=37"),
+        loadBabelScript("screens-rituals.jsx?v=37"),
       ]);
     }
     loadAll()
@@ -923,16 +923,30 @@ function App() {
   // spectrum is permissive — drag back from trash, push to drawer, promote
   // anything anywhere). Soft-cap on active is enforced by UI color shift,
   // not state.
-  function addGoal(text, context) {
+  function addGoal(text, context, timeframe) {
+    // v=37: timeframe field — "week" | "month" | "year". Reflects the
+    // expected horizon for accomplishment. Lifecycle-aware: a "week" goal
+    // can later be pushed to "month" (re-evaluation) or pulled into a
+    // tighter horizon. Default to "week" so the user lands in the most
+    // immediate panel — they can re-park to "month" or "year" if needed.
     const goal = {
       id: nextId(),
       text,
       context: context || null,
       tier: "active",
+      timeframe: timeframe || "week",
       createdAt: Date.now(),
     };
     setGoals(prev => [goal, ...prev]);
-    showToast("placed on the horizon.", 2200);
+    showToast("placed.", 1800);
+  }
+  // v=37: change a goal's timeframe (push back / pull in). Tier unchanged.
+  function setGoalTimeframe(id, timeframe) {
+    setGoals(prev => prev.map(g => g.id === id ? { ...g, timeframe } : g));
+    const label = timeframe === "week" ? "this week."
+      : timeframe === "month" ? "this month."
+      : "this year.";
+    showToast(label, 1600);
   }
   function renameGoal(id, text) {
     setGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g));
@@ -1642,6 +1656,7 @@ function App() {
           onRenameGoal={renameGoal}
           onSetGoalContext={setGoalContext}
           onMoveGoal={moveGoal}
+          onSetGoalTimeframe={setGoalTimeframe}
           onReleaseGoal={releaseGoal}
           onRestoreGoal={restoreGoal}
           onPurgeGoal={purgeGoal}
