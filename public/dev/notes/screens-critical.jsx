@@ -383,18 +383,13 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
             {dateStr}
           </div>
         </div>
-        <div style={{display: "flex", gap: 8, alignItems: "center"}}>
-          {/* v=37: + a win pill removed from page header — was duplicating the
-              new chrome-layer `wins` pill (which has inline capture). Chris
-              flagged the visual jumble of 4 top-right buttons stacking
-              between layers. Capture path now lives inside SpaceSheetWins. */}
-          <button onClick={onKeyOpen} title="Key" aria-label="Key" style={{
-            background: "transparent", border: "1px solid var(--rule-strong)",
-            borderRadius: "50%", width: 30, height: 30,
-            fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14,
-            color: "var(--ink-soft)", cursor: "pointer", lineHeight: 1,
-          }}>?</button>
-        </div>
+        {/* v=38: page header right side is now empty by design.
+            v=37 removed `+ a win` (duplicate of new wins-pill capture),
+            v=38 removes `?` key-reference too. The top-right corner
+            (chrome layer) is reserved for wins + goals affordances ONLY —
+            nothing else belongs in that visual zone. Marker glyph
+            education happens via the Tutorial first-run + (future) inline
+            tap-on-marker tooltip if field-test surfaces the loss. */}
       </div>
 
       <div style={{height: 1, background: "var(--rule-strong)", margin: "0 28px"}}/>
