@@ -998,3 +998,125 @@ body {
   color: var(--ink-faint);
   letter-spacing: 0.005em;
 }
+
+/* ===== v=40: Sketchbook in Journal — two-page notebook spread =====
+
+   Each day owns two facing pages: page 0 = the existing entry textarea
+   (today) or rendered past entry (past day); page 1 = a sketch canvas
+   (today, editable) or SVG render of saved strokes (past day, with
+   inline edit toggle). Horizontal pointer swipe between pages with an
+   ~80px commit threshold and vertical lockout. Indicator dots + edge
+   chevron peeks are tap-targets so the gesture is never the only path —
+   ADHD-discoverability via visible-by-default cues (hidden affordances
+   are lost things). */
+
+/* Page indicator — two dots at bottom-center; tappable. Sits above the
+   TabBar (TabBar lives outside Journal at the wrapper level). */
+.page-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 4;
+  pointer-events: none; /* container doesn't catch swipes */
+}
+.page-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  border: none;
+  padding: 0;
+  margin: 6px; /* expanded hit target while keeping visual at 6px */
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 200ms ease, transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.page-dot:hover, .page-dot:focus { outline: none; }
+.page-dot:active { transform: scale(0.9); }
+.page-dot--active { background: var(--ink); }
+
+/* Edge chevron peek — small directional cue at the side of the page that
+   isn't currently visible. Tappable for keyboard / non-swipers. */
+.page-peek {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 28px 8px;
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink-faint);
+  opacity: 0.5;
+  cursor: pointer;
+  z-index: 4;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 200ms ease, transform 140ms ease;
+}
+.page-peek:hover, .page-peek:focus { opacity: 0.85; outline: none; }
+.page-peek:active { transform: translateY(-50%) scale(0.9); }
+.page-peek--right { right: 4px; }
+.page-peek--left { left: 4px; }
+
+/* Sketch blank-state overlay — "the page is blank" / "nothing drawn this
+   day". Centered, faint serif italic, fades away naturally as soon as the
+   first stroke renders (the JSX un-renders the overlay when strokes > 0). */
+.sketch-blank {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  opacity: 0.7;
+  letter-spacing: 0.005em;
+}
+
+/* Sketch toolbar — pencil + eraser pills below the canvas. Two tools is
+   the entire surface (single ink, single width on finger; pressure-aware
+   on stylus). Sage minimalism, zero decision fatigue. */
+.sketch-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.sketch-toolbar--view { margin-top: 12px; }
+.sketch-tool {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease,
+              background 180ms ease, transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.sketch-tool:hover, .sketch-tool:focus {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  outline: none;
+}
+.sketch-tool:active { transform: scale(0.96); background: var(--paper-deep); }
+.sketch-tool--active {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}

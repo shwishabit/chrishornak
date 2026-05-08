@@ -884,6 +884,93 @@ function seedJournalIfEmpty() {
   } catch (e) {}
 }
 
+// Pages pager — horizontal swipe between two child elements with a ~80px
+// commit threshold and vertical lockout (matches TaskRow swipe pattern).
+// Pointerdowns starting on canvas, textarea, input, button, or any element
+// flagged data-no-swipe pass through to those elements unchanged. Page-turn
+// only fires from non-interactive surfaces (kickers, prompt blocks, surface
+// padding). Indicator dots + chevron peeks are tap targets for users who
+// don't reach for the gesture.
+function PagesPager({ page, setPage, children }) {
+  const dragRef = useRef({ sx: 0, sy: 0, dx: 0 });
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const lockedRef = useRef(null);
+  const activeRef = useRef(false);
+
+  function isInteractive(el) {
+    return !!(el && el.closest && el.closest("canvas, textarea, input, button, [data-no-swipe]"));
+  }
+  function onPointerDown(e) {
+    if (isInteractive(e.target)) return;
+    activeRef.current = true;
+    lockedRef.current = null;
+    dragRef.current = { sx: e.clientX, sy: e.clientY, dx: 0 };
+  }
+  function onPointerMove(e) {
+    if (!activeRef.current) return;
+    const dx = e.clientX - dragRef.current.sx;
+    const dy = e.clientY - dragRef.current.sy;
+    if (lockedRef.current === null) {
+      const aX = Math.abs(dx), aY = Math.abs(dy);
+      if (aX > 8 || aY > 8) {
+        lockedRef.current = aX > aY ? "h" : "v";
+        if (lockedRef.current === "h") setDragging(true);
+      }
+    }
+    if (lockedRef.current === "h") {
+      // Rubber-band when dragging past the boundary so the gesture has feedback
+      let clamped = dx;
+      if (page === 0 && dx > 0) clamped = dx * 0.3;
+      else if (page === 1 && dx < 0) clamped = dx * 0.3;
+      dragRef.current.dx = clamped;
+      setDragX(clamped);
+    }
+  }
+  function onPointerUp() {
+    if (!activeRef.current) return;
+    const dx = dragRef.current.dx;
+    if (lockedRef.current === "h" && Math.abs(dx) > 80) {
+      if (dx < 0 && page < 1) setPage(1);
+      else if (dx > 0 && page > 0) setPage(0);
+    }
+    activeRef.current = false;
+    lockedRef.current = null;
+    setDragging(false);
+    setDragX(0);
+  }
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      style={{
+        flex: 1, minHeight: 0, position: "relative", overflow: "hidden",
+        touchAction: "pan-y",
+      }}
+    >
+      <div style={{
+        display: "flex",
+        width: "200%",
+        height: "100%",
+        transform: `translateX(calc(${page === 0 ? "0%" : "-50%"} + ${dragX}px))`,
+        transition: dragging ? "none" : "transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+      }}>
+        {React.Children.map(children, (child, i) => (
+          <div key={i} className="journal-page" style={{
+            width: "50%", flexShrink: 0, height: "100%",
+            padding: "0 28px 38px",
+            display: "flex", flexDirection: "column", overflow: "hidden",
+          }}>
+            {child}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
   const MAX = 500;
 
@@ -894,6 +981,10 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
     seedJournalIfEmpty();
     return listJournalEntries();
   });
+
+  // v=40: 2-page notebook spread inside Journal. Page 0 = entry, Page 1 = sketch.
+  // Default to entry on every navigation (day flip, mode change, past-day pick).
+  const [page, setPage] = useState(0);
 
   const isToday = viewingIso === todayIso;
   const storageKey = journalKeyForIso(viewingIso);
@@ -969,6 +1060,11 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
     setViewingIso(todayIso);
     try { setText(localStorage.getItem(journalKeyForIso(todayIso)) || ""); } catch (e) {}
   }, [todayIso, mode]);
+
+  // v=40: reset to page 0 (entry) when day or mode changes — opening Journal
+  // or jumping to a past entry should always land on the entry side first,
+  // never silently surface the sketch page from a previous session.
+  useEffect(() => { setPage(0); }, [viewingIso, mode]);
 
   const remaining = MAX - text.length;
   const overSoft = remaining < 0;
@@ -1071,130 +1167,83 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
     );
   }
 
-  // ---------- View mode (past entry, read-only) ----------
-  if (mode === "view" && !isToday) {
-    const dt = dateFromIso(viewingIso);
-    const viewWeekday = dt.toLocaleDateString(undefined, { weekday: "long" }).toLowerCase();
-    const viewDateStr = dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
-    // Find prev/next entries for paging (entries are newest-first)
-    const idx = entries.findIndex(e => e.iso === viewingIso);
-    const olderIso = idx >= 0 && idx < entries.length - 1 ? entries[idx + 1].iso : null;
-    const newerIso = idx > 0 ? entries[idx - 1].iso : null;
-
-    return (
-      <div className="screen fade-soft surface-journal" style={{padding: "44px 28px 32px", justifyContent: "flex-start"}}>
-        <div className="surface-mark" aria-hidden="true"/>
-        <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22}}>
-          <button onClick={() => { setMode("write"); setViewingIso(todayIso); }} className="ghost-btn" style={{
-            color: "var(--ink-soft)", padding: 0, fontSize: 14,
-          }}>
-            ← back
-          </button>
-          <div style={{display: "flex", alignItems: "center", gap: 18}}>
-            <button
-              onClick={() => { setEditingText(viewedText); setMode("view-edit"); }}
-              className="ghost-btn"
-              style={{
-                color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
-              }}
-            >
-              edit
-            </button>
-            <button onClick={() => setMode("calendar")} className="ghost-btn" style={{
-              color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
-            }}>
-              calendar
-            </button>
-          </div>
-        </div>
-
-        <div className="ascend" style={{marginBottom: 18}}>
-          <div className="kicker" style={{marginBottom: 8}}>{viewWeekday} · {viewDateStr}</div>
-          <div className="serif" style={{
-            fontSize: 18, color: "var(--ink-soft)", lineHeight: 1.4, fontStyle: "italic",
-          }}>
-            {promptForViewing}
-          </div>
-        </div>
-
-        <div className="ascend" style={{
-          flex: 1, minHeight: 0, animationDelay: "120ms",
-          background: "var(--paper-deep)",
-          border: "1px solid var(--rule)",
-          borderRadius: 4,
-          padding: "18px 18px 14px",
-          overflowY: "auto",
-        }}>
-          <div className="serif" style={{
-            fontSize: 16, lineHeight: 1.65, color: "var(--ink)",
-            whiteSpace: "pre-wrap",
-          }}>
-            {viewedText}
-          </div>
-        </div>
-
-        {/* pager */}
-        <div style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginTop: 18,
-        }}>
-          <button
-            onClick={() => olderIso && setViewingIso(olderIso)}
-            disabled={!olderIso}
-            className="ghost-btn"
-            style={{
-              fontSize: 12, fontStyle: "italic", padding: "6px 4px",
-              color: olderIso ? "var(--ink-soft)" : "var(--ink-faint)",
-              opacity: olderIso ? 1 : 0.4, cursor: olderIso ? "pointer" : "default",
-            }}
-          >← older</button>
-          <div className="serif" style={{
-            fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
-          }}>
-            {idx + 1} of {entries.length}
-          </div>
-          <button
-            onClick={() => newerIso && setViewingIso(newerIso)}
-            disabled={!newerIso}
-            className="ghost-btn"
-            style={{
-              fontSize: 12, fontStyle: "italic", padding: "6px 4px",
-              color: newerIso ? "var(--ink-soft)" : "var(--ink-faint)",
-              opacity: newerIso ? 1 : 0.4, cursor: newerIso ? "pointer" : "default",
-            }}
-          >newer →</button>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- Write mode (today) ----------
+  // ---------- Two-page spread: write (today) OR view (past day) ----------
+  // calendar + view-edit are full-screen and have already returned above.
+  // Everything below renders the notebook spread: page 0 = entry, page 1 = sketch.
+  const isViewing = mode === "view" && !isToday;
   const hasHistory = entries.some(e => e.iso !== todayIso);
 
-  return (
-    <div className="screen fade-soft surface-journal" style={{padding: "44px 28px 32px", justifyContent: "flex-start"}}>
-      <div className="surface-mark" aria-hidden="true"/>
-      {/* header */}
-      <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22}}>
-        <button onClick={onClose} className="ghost-btn" style={{
-          color: "var(--ink-soft)", padding: 0, fontSize: 14,
-        }}>
-          ← back
-        </button>
-        <div style={{display: "flex", alignItems: "center", gap: 14}}>
-          <div className="kicker" style={{fontSize: 10}}>{weekday} · {dateStr}</div>
-          {hasHistory && (
-            <button onClick={() => setMode("calendar")} className="ghost-btn" style={{
-              color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
-            }}>
-              past
-            </button>
-          )}
+  // pager indices for view mode (entries are newest-first)
+  const viewIdx = isViewing ? entries.findIndex(e => e.iso === viewingIso) : -1;
+  const olderIso = isViewing && viewIdx >= 0 && viewIdx < entries.length - 1 ? entries[viewIdx + 1].iso : null;
+  const newerIso = isViewing && viewIdx > 0 ? entries[viewIdx - 1].iso : null;
+
+  const pageWeekday = isViewing
+    ? dateFromIso(viewingIso).toLocaleDateString(undefined, { weekday: "long" }).toLowerCase()
+    : weekday;
+  const pageDateStr = isViewing
+    ? dateFromIso(viewingIso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })
+    : dateStr;
+
+  function handleBack() {
+    if (isViewing) { setMode("write"); setViewingIso(todayIso); }
+    else { onClose(); }
+  }
+
+  // Page 0: entry. Different content for today (write) vs past (view).
+  const entryPage = isViewing ? (
+    <>
+      <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 12, marginTop: 4}}>
+        <button
+          onClick={() => { setEditingText(viewedText); setMode("view-edit"); }}
+          className="ghost-btn"
+          style={{color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0}}
+        >edit</button>
+      </div>
+      <div className="ascend" style={{marginBottom: 14}}>
+        <div className="kicker" style={{marginBottom: 8}}>reflect a moment</div>
+        <div className="serif" style={{fontSize: 18, color: "var(--ink-soft)", lineHeight: 1.4, fontStyle: "italic"}}>
+          {promptForViewing}
         </div>
       </div>
-
-      {/* prompt */}
-      <div className="ascend" style={{marginBottom: 18}}>
+      <div className="ascend" style={{
+        flex: 1, minHeight: 0, animationDelay: "120ms",
+        background: "var(--paper-deep)", border: "1px solid var(--rule)",
+        borderRadius: 4, padding: "18px 18px 14px", overflowY: "auto",
+      }}>
+        <div className="serif" style={{fontSize: 16, lineHeight: 1.65, color: "var(--ink)", whiteSpace: "pre-wrap"}}>
+          {viewedText}
+        </div>
+      </div>
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14}}>
+        <button
+          onClick={() => olderIso && setViewingIso(olderIso)}
+          disabled={!olderIso}
+          className="ghost-btn"
+          style={{
+            fontSize: 12, fontStyle: "italic", padding: "6px 4px",
+            color: olderIso ? "var(--ink-soft)" : "var(--ink-faint)",
+            opacity: olderIso ? 1 : 0.4, cursor: olderIso ? "pointer" : "default",
+          }}
+        >← older</button>
+        <div className="serif" style={{fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic"}}>
+          {viewIdx + 1} of {entries.length}
+        </div>
+        <button
+          onClick={() => newerIso && setViewingIso(newerIso)}
+          disabled={!newerIso}
+          className="ghost-btn"
+          style={{
+            fontSize: 12, fontStyle: "italic", padding: "6px 4px",
+            color: newerIso ? "var(--ink-soft)" : "var(--ink-faint)",
+            opacity: newerIso ? 1 : 0.4, cursor: newerIso ? "pointer" : "default",
+          }}
+        >newer →</button>
+      </div>
+    </>
+  ) : (
+    <>
+      <div className="ascend" style={{marginBottom: 14, marginTop: 4}}>
         <div className="kicker" style={{marginBottom: 8}}>reflect a moment</div>
         <div className="serif" style={{
           fontSize: 22, color: "var(--ink)", lineHeight: 1.4, fontStyle: "italic",
@@ -1203,15 +1252,10 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
           {prompt}
         </div>
       </div>
-
-      {/* writing surface */}
       <div className="ascend" style={{
-        flex: 1, minHeight: 0, position: "relative",
-        animationDelay: "120ms",
-        background: "var(--paper-deep)",
-        border: "1px solid var(--rule)",
-        borderRadius: 4,
-        padding: "18px 18px 14px",
+        flex: 1, minHeight: 0, position: "relative", animationDelay: "120ms",
+        background: "var(--paper-deep)", border: "1px solid var(--rule)",
+        borderRadius: 4, padding: "18px 18px 14px",
         display: "flex", flexDirection: "column",
       }}>
         <textarea
@@ -1231,14 +1275,8 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
           display: "flex", justifyContent: "space-between", alignItems: "center",
           marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--rule)",
         }}>
-          <div className="serif" style={{
-            fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
-          }}>
-            {savedAt
-              ? "kept for today"
-              : text
-                ? "writing…"
-                : "autosaved as you write"}
+          <div className="serif" style={{fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic"}}>
+            {savedAt ? "kept for today" : text ? "writing…" : "autosaved as you write"}
           </div>
           <div className="serif" style={{
             fontSize: 11, fontStyle: "italic",
@@ -1248,8 +1286,7 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
           </div>
         </div>
       </div>
-
-      <div style={{display: "flex", flexDirection: "column", alignItems: "center", marginTop: 22, gap: 12}}>
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center", marginTop: 14}}>
         <button onClick={onClose} className="ascend" style={{
           background: "var(--ink)", color: "var(--paper)", border: "none",
           borderRadius: 999, padding: "12px 28px",
@@ -1258,15 +1295,74 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
         }}>
           {text ? "kept. carry on" : "carry on"}
         </button>
-        {hasHistory && (
-          <button onClick={() => setMode("calendar")} className="ascend ghost-btn" style={{
-            color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic",
-            padding: "4px 8px", animationDelay: "260ms",
-          }}>
-            past entries →
-          </button>
-        )}
       </div>
+    </>
+  );
+
+  return (
+    <div className="surface-journal fade-soft" style={{
+      position: "absolute", inset: 0,
+      display: "flex", flexDirection: "column",
+      overflow: "hidden",
+    }}>
+      <div className="surface-mark" aria-hidden="true"/>
+
+      {/* chrome row — never slides; carries back + date + nav-link */}
+      <div style={{
+        padding: "44px 28px 0",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        marginBottom: 14,
+        position: "relative", zIndex: 3,
+      }}>
+        <button onClick={handleBack} className="ghost-btn" style={{
+          color: "var(--ink-soft)", padding: 0, fontSize: 14,
+        }}>← back</button>
+        <div style={{display: "flex", alignItems: "center", gap: 14}}>
+          <div className="kicker" style={{fontSize: 10}}>{pageWeekday} · {pageDateStr}</div>
+          {(hasHistory || isViewing) && (
+            <button onClick={() => setMode("calendar")} className="ghost-btn" style={{
+              color: "var(--ink-soft)", fontSize: 12, fontStyle: "italic", padding: 0,
+            }}>
+              {isViewing ? "calendar" : "past"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <PagesPager page={page} setPage={setPage}>
+        {entryPage}
+        <SketchPage iso={viewingIso} isToday={isToday}/>
+      </PagesPager>
+
+      {/* page indicator — chrome layer, always visible */}
+      <div className="page-indicator" data-no-swipe="true">
+        <button
+          aria-label="entry"
+          className={`page-dot ${page === 0 ? "page-dot--active" : ""}`}
+          onClick={() => setPage(0)}
+        />
+        <button
+          aria-label="sketch"
+          className={`page-dot ${page === 1 ? "page-dot--active" : ""}`}
+          onClick={() => setPage(1)}
+        />
+      </div>
+
+      {/* edge chevron peek — visible-by-default cue (no hidden affordance) */}
+      {page === 0 && (
+        <button
+          aria-label="see sketch"
+          onClick={() => setPage(1)}
+          className="page-peek page-peek--right"
+        >→</button>
+      )}
+      {page === 1 && (
+        <button
+          aria-label="see entry"
+          onClick={() => setPage(0)}
+          className="page-peek page-peek--left"
+        >←</button>
+      )}
     </div>
   );
 }

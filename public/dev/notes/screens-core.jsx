@@ -110,6 +110,16 @@ const Icon = ({ name, size = 18, opacity = 1 }) => {
           <line x1="4" y1="13" x2="7" y2="16" {...common}/>
         </svg>
       );
+    case "eraser":
+      // block eraser glyph — rounded rectangle with a single horizontal
+      // seam line marking the rubber / ferrule divide. Sits flat on the
+      // baseline so it pairs visually with the pencil glyph.
+      return (
+        <svg viewBox="0 0 20 20" style={s}>
+          <rect x="3.5" y="6" width="13" height="8" rx="1" {...common}/>
+          <line x1="3.5" y1="10" x2="16.5" y2="10" {...common} strokeOpacity="0.5"/>
+        </svg>
+      );
     case "break-down":
       // checklist: one becomes many small steps
       return (
