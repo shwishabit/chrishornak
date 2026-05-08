@@ -357,8 +357,8 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=38"),
-        loadBabelScript("screens-rituals.jsx?v=38"),
+        loadBabelScript("screens-flows.jsx?v=39"),
+        loadBabelScript("screens-rituals.jsx?v=39"),
       ]);
     }
     loadAll()
@@ -512,7 +512,10 @@ function App() {
     const gap = daysBetweenIso(lastOpenedDay, todayIso);
     if (gap <= 0) return;
     const recapWins = wins;
-    const recapCompleted = tasks.filter(t => t.done);
+    // v=39: filter isWin tasks out — they're already represented in recapWins
+    // (logWin writes both). Without this they'd render twice in Recap (once on
+    // the wins phase, once on the done phase).
+    const recapCompleted = tasks.filter(t => t.done && !t.isWin);
     const recapLeftovers = tasks
       .filter(t => !t.done)
       .map(task => ({ ...task, mark: walkMarker(task.mark, gap) }));
@@ -904,19 +907,45 @@ function App() {
     setWins([text, ...wins]);
     // v=34: also append to the persistent horizon timeline. Daily slot stays
     // ephemeral (resets on rollover, feeds Recap+Carry); timeline persists.
+    // v=39: ALSO write a completed task into today's notebook with isWin:true
+    // and winId pointing at the timeline entry. The done block now records
+    // accomplishments-not-on-the-list alongside checked-off tasks, with a
+    // "· win" identifier on the row. Retire pulls both. Recap filters isWin
+    // tasks out of the "completed" phase so wins aren't double-counted
+    // against the wins phase.
+    const winId = nextId();
     const entry = {
-      id: nextId(),
+      id: winId,
       text,
       loggedAt: Date.now(),
       day: todayIso,
       goalRef: goalRef || null,
     };
     setWinsTimeline(prev => [entry, ...prev]);
+    const winTask = {
+      id: nextId(),
+      text,
+      mark: null,
+      tenMin: null,
+      done: true,
+      isWin: true,
+      winId,
+      goalRef: goalRef || null,
+      createdAt: Date.now(),
+    };
+    setTasks(prev => {
+      const active = prev.filter(t => !t.done);
+      const done = prev.filter(t => t.done);
+      return [...active, winTask, ...done];
+    });
     showToast(text, 3200);
   }
   // v=34: retire a win from the timeline. Manual only — wins don't auto-fade.
+  // v=39: also pulls the linked done-task entry from today's notebook so the
+  // timeline and the done block stay in sync.
   function retireWin(id) {
     setWinsTimeline(prev => prev.filter(w => w.id !== id));
+    setTasks(prev => prev.filter(t => t.winId !== id));
   }
 
   // v=34: goal CRUD. Tier transitions are unrestricted by design (the
@@ -1078,7 +1107,9 @@ function App() {
 
   function startNewDay() {
     const unfinished = tasks.filter(t => !t.done);
-    const completed = tasks.filter(t => t.done);
+    // v=39: same isWin filter as the natural-rollover recap path — wins are
+    // shown on the wins phase, not the done phase, so they don't render twice.
+    const completed = tasks.filter(t => t.done && !t.isWin);
     const prev = dateInfo(dayOffset).dateStr;
     setRecap({ wins, completed, leftovers: unfinished, prevDateStr: prev, recapSource: "admin" });
     setScreen("recap");
@@ -1104,15 +1135,17 @@ function App() {
   }
   function finishCarry(decisions) {
     // Action semantics:
-    //   "keep"    — non-? carries: advance marker via nextMarkAfterCarry.
-    //               (Defensive: if a ? somehow reaches this branch via a
-    //               non-CarryForward path, auto-shelve as safety net.)
-    //   "decide"  — ? carries (v=23+): bring back with ? preserved so the
-    //               decision-point friction stays visible. User addresses
-    //               via row drawer's Decide flow when ready.
-    //   "fresh"   — ? carries (v=23+): bring back with mark cleared.
-    //   "later"   — silent drop (legacy "rest for now" path; non-? only).
-    //   "release" — silent drop.
+    //   "keep"     — non-? carries: advance marker via nextMarkAfterCarry.
+    //                (Defensive: if a ? somehow reaches this branch via a
+    //                non-CarryForward path, auto-shelve as safety net.)
+    //   "decide"   — ? carries (v=23+): bring back with ? preserved so the
+    //                decision-point friction stays visible. User addresses
+    //                via row drawer's Decide flow when ready.
+    //   "fresh"    — ? carries (v=23+): bring back with mark cleared.
+    //   "later"    — silent drop (legacy "rest for now" path; non-? only).
+    //   "release"  — silent drop.
+    //   "complete" — v=39: user finished the task already; record it as a
+    //                completed task in today's done block, mark cleared.
     const carried = [];
     const autoShelved = [];
     for (const d of decisions) {
@@ -1149,6 +1182,15 @@ function App() {
         carried.push({
           ...d.task, id: nextId(),
           mark: d.task.mark || null, done: false,
+        });
+      } else if (d.action === "complete") {
+        // v=39: user marked the carried task as already done during the
+        // carry-over phase. Lands in today's done block as a completed task,
+        // mark cleared, completedAt stamped.
+        carried.push({
+          ...d.task, id: nextId(),
+          mark: null, done: true,
+          completedAt: Date.now(),
         });
       }
       // "release" intentionally falls through (silent drop = trash).

@@ -1034,6 +1034,17 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
                     color: "var(--ink-faint)",
                   }}>{task.progress}%</span>
                 )}
+                {/* v=39: win identifier on done-block tasks logged through
+                    logWin (not checked off from active). Marks them clearly as
+                    accomplishments-not-on-the-list while still living in the
+                    same done block as completed tasks. */}
+                {task.isWin && (
+                  <span className="serif" style={{
+                    marginLeft: 8,
+                    fontSize: 11, fontStyle: "italic",
+                    color: "var(--ink-faint)",
+                  }}>· win</span>
+                )}
                 {swipeProgress !== 0 && (
                   <span style={{
                     position: "absolute",

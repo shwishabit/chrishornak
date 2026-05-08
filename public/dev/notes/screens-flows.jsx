@@ -680,14 +680,19 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
     const kept = decisions.filter(d => d.action === "keep").length;
     const released = decisions.filter(d => d.action === "release").length;
     const later = decisions.filter(d => d.action === "later").length;
+    // v=39: "complete" branch — user marked something done during carry. Add
+    // a celebratory line above the kept/later/released summary so it reads
+    // earned, not buried.
+    const completed = decisions.filter(d => d.action === "complete").length;
     return (
       <div className="screen fade-soft" style={{justifyContent: "center", padding: "0 36px", textAlign: "center"}}>
         <div className="kicker ascend" style={{marginBottom: 16}}>thank you</div>
         <div className="serif ascend" style={{fontSize: 26, color: "var(--ink)", lineHeight: 1.4, animationDelay: "120ms"}}>
+          {completed > 0 && <>You finished <em style={{fontStyle: "italic"}}>{completed}</em>.<br/></>}
           {kept > 0 && <>You're bringing <em style={{fontStyle: "italic"}}>{kept}</em> with you.<br/></>}
           {later > 0 && <span style={{color: "var(--ink-soft)"}}>{later} {later === 1 ? "is" : "are"} resting for now.<br/></span>}
           {released > 0 && <span style={{color: "var(--ink-soft)"}}>And you let <em style={{fontStyle: "italic"}}>{released}</em> go — that's good.</span>}
-          {kept === 0 && released === 0 && later === 0 && <span style={{color: "var(--ink-soft)"}}>The page is clear.</span>}
+          {kept === 0 && released === 0 && later === 0 && completed === 0 && <span style={{color: "var(--ink-soft)"}}>The page is clear.</span>}
         </div>
         <div className="serif ascend" style={{fontSize: 15, color: "var(--ink-faint)", marginTop: 24, fontStyle: "italic", animationDelay: "280ms"}}>
           Begin where you are.
@@ -932,6 +937,27 @@ function CarryForward({ leftovers, prevDateStr, onComplete }) {
             </div>
           </>
         )}
+
+        {/* v=39: retro-complete. Ghost-italic link below the cluster on every
+            carry stage. Different mental model from carry / release — "I
+            actually did this already" is a special claim, not a standard
+            forward-looking decision. Lower visual weight matches the rarity. */}
+        <button
+          onClick={() => decide("complete")}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--ink-faint)",
+            fontFamily: "var(--serif)",
+            fontStyle: "italic",
+            fontSize: 13,
+            padding: "8px 0 4px",
+            cursor: "pointer",
+            alignSelf: "center",
+          }}
+        >
+          I already finished this →
+        </button>
       </div>
     </div>
   );
