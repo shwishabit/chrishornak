@@ -1348,20 +1348,24 @@ function Journal({ onClose, dateStr, weekday, todayIso, seedText }) {
         />
       </div>
 
-      {/* edge chevron peek — visible-by-default cue (no hidden affordance) */}
+      {/* edge tab — labeled, always visible, tappable. Replaces v=40's chevron-
+          only peek. The textarea owns most of page 0, so the swipe handler
+          can't reach the natural thumb zone — the tab makes the second page
+          unmissable on first open and works as a tap target without fighting
+          iOS for the gesture. */}
       {page === 0 && (
         <button
           aria-label="see sketch"
           onClick={() => setPage(1)}
-          className="page-peek page-peek--right"
-        >→</button>
+          className="page-tab page-tab--right"
+        >sketch →</button>
       )}
       {page === 1 && (
         <button
           aria-label="see entry"
           onClick={() => setPage(0)}
-          className="page-peek page-peek--left"
-        >←</button>
+          className="page-tab page-tab--left"
+        >← entry</button>
       )}
     </div>
   );

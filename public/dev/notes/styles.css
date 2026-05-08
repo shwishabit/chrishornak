@@ -1040,30 +1040,54 @@ body {
 .page-dot:active { transform: scale(0.9); }
 .page-dot--active { background: var(--ink); }
 
-/* Edge chevron peek — small directional cue at the side of the page that
-   isn't currently visible. Tappable for keyboard / non-swipers. */
-.page-peek {
+/* Edge page tab — labeled affordance at the side of the page that isn't
+   currently visible. Replaces v=40's chevron-only peek (too easy to miss on
+   first open, especially when the textarea covers the swipe zone). The tab
+   reads as a notebook page-edge tab: paper-deep background, rule-strong
+   border, ink-soft serif italic text, anchored to the screen edge with a
+   half-rounded corner pointing inward. Always visible, always tappable. */
+.page-tab {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 28px 8px;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-strong);
+  padding: 11px 10px;
   font-family: var(--serif);
-  font-size: 16px;
-  color: var(--ink-faint);
-  opacity: 0.5;
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
   cursor: pointer;
-  z-index: 4;
+  z-index: 5;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 180ms ease, border-color 180ms ease,
+              background 180ms ease, transform 140ms ease;
+  white-space: nowrap;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity 200ms ease, transform 140ms ease;
 }
-.page-peek:hover, .page-peek:focus { opacity: 0.85; outline: none; }
-.page-peek:active { transform: translateY(-50%) scale(0.9); }
-.page-peek--right { right: 4px; }
-.page-peek--left { left: 4px; }
+.page-tab:hover, .page-tab:focus {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  outline: none;
+}
+.page-tab:active {
+  transform: translateY(-50%) scale(0.96);
+  background: var(--paper);
+}
+.page-tab--right {
+  right: 0;
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  padding-right: 14px; /* extra room since border-right is gone */
+}
+.page-tab--left {
+  left: 0;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding-left: 14px;
+}
 
 /* Sketch blank-state overlay — "the page is blank" / "nothing drawn this
    day". Centered, faint serif italic, fades away naturally as soon as the

@@ -95,7 +95,14 @@ function SketchCanvasSurface({ iso }) {
   const dirtyRef = useRef(false);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const inkColorRef = useRef("#1F1A14");
-  const [, setRenderTick] = useState(0);
+  // v=41: live drawing renders mid-stroke. The previous setRenderTick state
+  // dance triggered a re-render but `redraw` (useCallback'd on [strokes])
+  // kept its identity, so the redraw effect never re-fired and the in-progress
+  // stroke didn't paint until pointerup committed. Now pointer handlers call
+  // `redraw()` imperatively — direct, no React-state hop. Refs handle the
+  // mutable surface (drawing buffer, size, ink color) so the closure stays
+  // current without dependency churn.
+  const [emptyTick, setEmptyTick] = useState(0); // forces blank-state hide on first stroke
 
   // Reload on iso change (day flip mid-session, or admin force-next-day).
   useEffect(() => {
@@ -177,7 +184,12 @@ function SketchCanvasSurface({ iso }) {
         width = 2 * (0.65 + 0.85 * e.pressure);
       }
       drawingRef.current = { points: [pt], width, tool: "ink" };
-      setRenderTick(t => t + 1);
+      // Force one re-render so the blank-state overlay un-mounts (its visibility
+      // hinges on drawingRef.current, which is a ref — won't trigger render alone).
+      setEmptyTick(t => t + 1);
+      // Paint the starting dot immediately so the user sees feedback on first
+      // contact, not after the first drag-move event.
+      redraw();
     } else {
       eraseAt(pt);
     }
@@ -201,7 +213,9 @@ function SketchCanvasSurface({ iso }) {
     const pt = pointFromEvent(e);
     if (tool === "pencil" && drawingRef.current) {
       drawingRef.current.points.push(pt);
-      setRenderTick(t => t + 1);
+      // Imperative redraw — paints the live stroke as the finger moves.
+      // Cheaper than churning React state every move event.
+      redraw();
     } else if (tool === "eraser") {
       eraseAt(pt);
     }
@@ -216,7 +230,10 @@ function SketchCanvasSurface({ iso }) {
       if (stroke.points.length > 0) {
         setStrokes(prev => { dirtyRef.current = true; return [...prev, stroke]; });
       } else {
-        setRenderTick(t => t + 1);
+        // Stroke had no points (rare — tap landed but no movement registered).
+        // Re-render so the blank-state overlay can re-mount if it should.
+        setEmptyTick(t => t + 1);
+        redraw();
       }
     }
   }
