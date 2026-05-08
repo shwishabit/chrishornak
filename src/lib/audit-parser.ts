@@ -35,6 +35,20 @@ export interface FetchedPage {
   statusCode: number
   isHttps: boolean
   responseTimeMs: number
+  /** Concatenated CSS from linked external stylesheets — capped by route.ts.
+   * Optional for backwards compat; checks that need it should fall back to inline `<style>` only. */
+  externalCss?: string
+  /** Direct-fetch result for the page's og:image, performed by route.ts using
+   * a Facebook-like UA and manual redirect handling. Lets us distinguish
+   * "og:image is in the markup" (current Share image check) from "og:image
+   * actually serves as an image to social scrapers" (Share image reachability).
+   * Optional — undefined when no og:image was in markup, or when the fetch failed. */
+  ogImage?: {
+    url: string
+    status?: number
+    redirected?: boolean
+    contentType?: string
+  }
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -333,9 +347,12 @@ function parseSearch(page: FetchedPage): AuditItem[] {
   const blanketDisallow = robotsBlocks.some((b) => b.agent === '*' && b.hasDisallow)
   const blocksCssJs = robotsTxt ? /Disallow:.*\.(css|js)/im.test(robotsTxt) : false
 
-  // Check for search-engine-specific blocks
-  const searchBots = ['googlebot', 'bingbot', 'applebot', 'yandexbot', 'slurp', 'baiduspider']
-  const blockedSearchBots = searchBots.filter((bot) =>
+  // Check for search-engine-specific blocks. Distinguish essential search engines
+  // (Google/Bing/Apple — losing these kills findability for an English-speaking
+  // audience) from "foreign" / aggressive bots (Yandex, Baidu, AI scrapers) that
+  // many US sites legitimately block as part of normal posture.
+  const essentialSearchBots = ['googlebot', 'bingbot', 'applebot']
+  const blockedEssential = essentialSearchBots.filter((bot) =>
     robotsBlocks.some((b) => b.agent === bot && b.hasDisallow),
   )
 
@@ -348,15 +365,15 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       recommendation:
         'Your robots.txt is telling search engines not to crawl your site. If your site should be findable, change "Disallow: /" to "Allow: /".',
     })
-  } else if (blockedSearchBots.length > 0) {
+  } else if (blockedEssential.length > 0) {
     items.push({
       label: 'Crawl permissions',
       status: 'fail',
-      value: `robots.txt blocks ${blockedSearchBots.join(', ')}`,
+      value: `robots.txt blocks ${blockedEssential.join(', ')}`,
       extracted: truncate(robotsTxt, 300),
       weight: 1.5,
       recommendation:
-        `Your robots.txt is specifically blocking ${blockedSearchBots.join(' and ')} from crawling your site. If this isn't intentional, remove the Disallow rules for ${blockedSearchBots.length > 1 ? 'these crawlers' : 'this crawler'}.`,
+        `Your robots.txt is specifically blocking ${blockedEssential.join(' and ')} from crawling your site. If this isn't intentional, remove the Disallow rules for ${blockedEssential.length > 1 ? 'these crawlers' : 'this crawler'}.`,
     })
   } else if (blocksCssJs) {
     items.push({
@@ -434,18 +451,20 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     const unexpectedPathChange = !pathNormalize
 
     if (unexpectedHostChange || unexpectedPathChange) {
-      // Real redirect issue — different domain or path changed
+      // Cross-domain redirects often reflect intentional brand consolidation
+      // (rebrand, parent company, mergers) rather than misconfiguration.
+      // Surface as info-weighted, with copy that doesn't presume a problem.
       const issues: string[] = []
       if (unexpectedHostChange) issues.push(`${reqUrl.hostname} → ${finUrl.hostname}`)
       if (unexpectedPathChange) issues.push('path changed')
       items.push({
         label: 'URL redirects',
         status: 'warn',
-        value: `Unexpected redirect (${issues.join(', ')})`,
+        value: `Redirects to a different URL (${issues.join(', ')})`,
         extracted: `${page.requestedUrl} → ${page.url}`,
         recommendation:
-          'Your URL redirects to a different destination than expected. This can dilute SEO signals. Make sure links point directly to the final URL.',
-        weight: 0.5,
+          'Your URL redirects to a different destination — this is often intentional (rebrand, parent company). If so, no action needed. If unexpected, make sure your links point directly to the final URL so SEO signals don\'t dilute through a hop.',
+        weight: 0.3,
       })
     } else if (httpUpgrade || wwwNormalize) {
       // Normal domain normalization — this is good practice
@@ -476,31 +495,34 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 8. Response time (lower weight — influenced by network/server factors outside the page)
+  // 8. Response time — single-shot measurement, so noisy by definition.
+  // Cold-start hosting can spike a single fetch by 5-10 seconds even on
+  // healthy sites. Thresholds widened + copy now flags the methodology.
+  // Weight 0.5 — influenced by network and server factors outside the page.
   const ms = page.responseTimeMs
-  if (ms < 1000) {
+  if (ms < 1500) {
     items.push({
       label: 'Response time',
       status: 'pass',
-      value: `${ms}ms`,
+      value: `${ms}ms (single request)`,
       weight: 0.5,
     })
-  } else if (ms < 3000) {
+  } else if (ms < 5000) {
     items.push({
       label: 'Response time',
       status: 'warn',
-      value: `${ms}ms — slower than ideal`,
+      value: `${ms}ms — slower than ideal (single request)`,
       recommendation:
-        'Your page took over a second to respond. Slow pages get crawled less frequently by search engines and frustrate visitors. Check your hosting, reduce server-side processing, or add caching.',
+        'Your page took over 1.5 seconds to respond on a single test request. Could be a cold start, a slow database query, or a hosting issue. Re-run the audit a few times — if the number is consistent, it\'s worth investigating with your hosting provider.',
       weight: 0.5,
     })
   } else {
     items.push({
       label: 'Response time',
       status: 'fail',
-      value: `${ms}ms — too slow`,
+      value: `${ms}ms — too slow (single request — could be cold start)`,
       recommendation:
-        'Your page took over 3 seconds to respond. Google allocates a limited crawl budget per site, and slow pages eat into it. This also hurts user experience. Talk to your hosting provider or developer about server performance.',
+        'Your page took over 5 seconds to respond. This is severe enough to hurt SEO and user experience even if it\'s a cold-start outlier. Re-run a couple times to confirm — if it\'s consistent, talk to your hosting provider about server performance, caching, or a faster plan.',
       weight: 0.5,
     })
   }
@@ -658,6 +680,10 @@ function parseAI(page: FetchedPage): AuditItem[] {
     html,
   )
   const hasFaqHtml = /class=["'][^"']*faq/i.test(html)
+  // Native disclosure pattern — <details><summary>Question?</summary>... — is
+  // the most accessible no-JS FAQ. Question word inside <summary> isn't required;
+  // the trailing "?" is the signal, matching the threshold for hasQAPatterns.
+  const hasDetailsFaq = /<details\b[\s\S]*?<summary\b[^>]*>[\s\S]*?\?[\s\S]*?<\/summary>/i.test(html)
 
   if (hasFaqSchema) {
     items.push({
@@ -665,19 +691,22 @@ function parseAI(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: 'FAQ schema found',
     })
-  } else if (hasQAPatterns || hasFaqHtml) {
+  } else if (hasQAPatterns || hasFaqHtml || hasDetailsFaq) {
     items.push({
       label: 'Answerable content',
       status: 'pass',
       value: 'Q&A-style content found',
     })
   } else {
+    // Most small business homepages aren't supposed to be FAQ-style. Lower the
+    // weight and soften the copy so this reads as an opportunity, not a defect.
     items.push({
       label: 'Answerable content',
       status: 'warn',
       value: 'No Q&A content found',
+      weight: 0.5,
       recommendation:
-        'AI tools like ChatGPT pull answers directly from web pages. Adding a FAQ section or question-based headings makes it easier for AI to cite your page.',
+        'If your business answers common questions ("how does X work?", "what does Y cost?"), adding a FAQ section makes it easier for AI tools like ChatGPT to cite your page. For visual-led or service businesses where this isn\'t a fit, you can ignore this.',
     })
   }
 
@@ -756,16 +785,18 @@ function parseAI(page: FetchedPage): AuditItem[] {
       label: 'Citability',
       status: 'warn',
       value: 'Some citable content, but could be stronger',
+      weight: 0.5,
       recommendation:
-        'AI tools cite pages with original data, unique insights, and quotable statements. Adding proprietary stats, case study results, or expert quotes makes your content more reference-worthy.',
+        'AI tools cite pages with original data, unique insights, and quotable statements. Adding proprietary stats, case study results, or expert quotes makes your content more reference-worthy. Lower-priority for service businesses where the value is the work, not the writing.',
     })
   } else {
     items.push({
       label: 'Citability',
       status: 'warn',
       value: 'No unique data or quotable insights found',
+      weight: 0.5,
       recommendation:
-        'AI tools are more likely to cite pages that contain original data, specific stats, or quotable statements. Adding results you\'ve achieved, case study numbers, or expert quotes makes your content more reference-worthy.',
+        'AI tools are more likely to cite pages with original data, specific stats, or quotable statements. Lower-priority if your business is service-led — but if you have results, numbers, or expert opinions worth sharing, surfacing them on the homepage helps AI cite you.',
     })
   }
 
@@ -930,6 +961,52 @@ function parseStructure(page: FetchedPage): AuditItem[] {
   const { html } = page
   const items: AuditItem[] = []
 
+  // 0. Page rendering — detect cases where the initial HTML doesn't reflect what
+  // visitors actually see. Two distinct classes:
+  //   (a) SPA shell — React/Next/Vue/Angular mount point + thin body. Real content
+  //       arrives via JavaScript, so most structural checks below will look broken.
+  //   (b) JS redirect — tiny HTML containing window.location.href = "...". The audit
+  //       ran on the redirect stub, not the destination. Search engines also struggle.
+  // Both warn at weight 0 (informational, no score impact) so users understand why
+  // results may look incorrect.
+  const visibleWords = wordCount(html)
+  const spaSignals = [
+    /<div\s+id=["'](root|app|__next|__nuxt|svelte)["']/i,
+    /__NEXT_DATA__/,
+    /window\.__NUXT__/,
+    /window\.__INITIAL_STATE__/,
+    /data-reactroot/i,
+    /ng-version=/i,
+    /data-v-app/i,
+    /<div\s+data-server-rendered/i,
+  ]
+  const matchedSpaSignals = spaSignals.filter((re) => re.test(html)).length
+  const jsRedirect =
+    /window\.location\.(href|replace|assign)\s*=/i.test(html) ||
+    /<meta\s+http-equiv=["']refresh["']/i.test(html)
+  const looksLikeShell = matchedSpaSignals >= 1 && visibleWords < 50
+  const looksLikeJsRedirect = jsRedirect && html.length < 600 && visibleWords < 30
+
+  if (looksLikeJsRedirect) {
+    items.push({
+      label: 'Page rendering',
+      status: 'warn',
+      weight: 0,
+      value: 'JavaScript redirect detected — audit ran on the redirect stub',
+      recommendation:
+        'Your home page uses a JavaScript redirect (or meta refresh) instead of a server-side 301. The audit only saw the stub, not your real content. Search engines and AI tools handle these poorly — some skip your site entirely. Use a proper server-side 301 redirect from your hosting/DNS instead.',
+    })
+  } else if (looksLikeShell) {
+    items.push({
+      label: 'Page rendering',
+      status: 'warn',
+      weight: 0,
+      value: 'JavaScript-rendered page detected — audit may miss content',
+      recommendation:
+        'Your page renders most content with JavaScript. The audit only sees the initial HTML, so some results below (headlines, content depth, internal links, landmarks) may show as missing even when they\'re visible to real visitors. For findability, consider adding server-side rendering or pre-rendering — search engines and AI tools also struggle with JS-only content.',
+    })
+  }
+
   // 1. H1
   const h1s = getAllTags(html, 'h1')
   if (h1s.length === 0) {
@@ -954,7 +1031,9 @@ function parseStructure(page: FetchedPage): AuditItem[] {
       score: h1s.length === 2 ? 0.7 : undefined,
       extracted: h1Texts.join(' | '),
       recommendation:
-        'Multiple H1 tags can confuse search engines about the main topic of your page. Use one H1 for the page title and H2s for sections.',
+        h1s.length === 2
+          ? 'Two H1 tags is a common pattern when a logo is wrapped in an H1 and the page heading is also an H1 — Google handles this fine, but if you can, demote the logo H1 to a div or H2 so search engines have one clear topic for the page.'
+          : 'Multiple H1 tags can confuse search engines about the main topic of your page. Use one H1 for the page title and H2s for sections.',
     })
   } else {
     const h1Text = h1s[0].replace(/<[^>]+>/g, '').trim()
@@ -1022,17 +1101,34 @@ function parseStructure(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 3. Image descriptions (alt text) — percentage-based scoring
+  // 3. Image descriptions (alt text) — percentage-based scoring.
+  // Decorative images using alt="" + role="presentation" or aria-hidden="true"
+  // are WCAG-compliant and counted as handled, not missing.
   const allImgs = getAllSelfClosing(html, 'img')
   const imgs = allImgs.filter(isRealImage)
-  const imgsWithAlt = imgs.filter((img) => {
+
+  const described: string[] = []
+  const decorative: string[] = []
+  const missingAlt: string[] = []
+  for (const img of imgs) {
     const alt = attr(img, 'alt')
-    return alt !== null && alt.trim() !== ''
-  })
-  const missingAlt = imgs.filter((img) => {
-    const alt = attr(img, 'alt')
-    return alt === null || alt.trim() === ''
-  })
+    if (alt !== null && alt.trim() !== '') {
+      described.push(img)
+      continue
+    }
+    const role = attr(img, 'role')
+    const ariaHidden = attr(img, 'aria-hidden')
+    if (alt === '' && (role === 'presentation' || ariaHidden === 'true')) {
+      decorative.push(img)
+      continue
+    }
+    missingAlt.push(img)
+  }
+  const handled = described.length + decorative.length
+  const breakdown =
+    decorative.length > 0
+      ? ` (${described.length} described, ${decorative.length} decorative)`
+      : ''
 
   if (imgs.length === 0) {
     items.push({
@@ -1040,20 +1136,43 @@ function parseStructure(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: 'No images found on page',
     })
+  } else if (imgs.length <= 2 && handled < imgs.length) {
+    // Tiny-N edge case: 0/1 or 1/2 looks like 0% or 50% which is harsh given
+    // single-image samples are noisy. Always show as warn with explicit count
+    // rather than fail with a misleading percentage.
+    items.push({
+      label: 'Image descriptions',
+      status: 'warn',
+      value: `${imgs.length - missingAlt.length} of ${imgs.length} image${imgs.length > 1 ? 's' : ''} ${imgs.length > 1 ? 'have' : 'has'} a description`,
+      score: handled / imgs.length,
+      extracted: missingAlt
+        .slice(0, 3)
+        .map((img) => attr(img, 'src') ?? 'unknown')
+        .map((s) => s.split('/').pop() ?? s)
+        .join(', '),
+      recommendation:
+        'Your page has very few images, but the one(s) without alt text are still worth describing — screen readers and search engines can\'t see images without text descriptions. If the image is purely decorative, use alt="" with role="presentation".',
+    })
   } else {
-    const pct = imgsWithAlt.length / imgs.length
+    const pct = handled / imgs.length
     const pctDisplay = Math.round(pct * 100)
     if (pct === 1) {
       items.push({
         label: 'Image descriptions',
         status: 'pass',
-        value: `All ${imgs.length} images have descriptions`,
+        value:
+          decorative.length > 0
+            ? `All ${imgs.length} images handled${breakdown}`
+            : `All ${imgs.length} images have descriptions`,
       })
     } else if (pctDisplay >= 50) {
       items.push({
         label: 'Image descriptions',
         status: 'warn',
-        value: `${imgsWithAlt.length} of ${imgs.length} images have descriptions (${pctDisplay}%)`,
+        value:
+          decorative.length > 0
+            ? `${handled} of ${imgs.length} images handled${breakdown} (${pctDisplay}%)`
+            : `${described.length} of ${imgs.length} images have descriptions (${pctDisplay}%)`,
         score: pct,
         extracted: missingAlt
           .slice(0, 5)
@@ -1067,7 +1186,10 @@ function parseStructure(page: FetchedPage): AuditItem[] {
       items.push({
         label: 'Image descriptions',
         status: 'fail',
-        value: `Only ${imgsWithAlt.length} of ${imgs.length} images have descriptions (${pctDisplay}%)`,
+        value:
+          decorative.length > 0
+            ? `Only ${handled} of ${imgs.length} images handled${breakdown} (${pctDisplay}%)`
+            : `Only ${described.length} of ${imgs.length} images have descriptions (${pctDisplay}%)`,
         score: pct,
         extracted: missingAlt
           .slice(0, 5)
@@ -1263,7 +1385,7 @@ function parseSocial(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 3. Share image (og:image)
+  // 3. Share image (og:image) — markup presence check
   const ogImage = meta(html, 'og:image')
   if (ogImage) {
     items.push({
@@ -1280,6 +1402,68 @@ function parseSocial(page: FetchedPage): AuditItem[] {
       recommendation:
         'When someone shares your link, there\'s no image to show. Links with images get significantly more clicks. Add a 1200×630px image as your og:image.',
     })
+  }
+
+  // 3b. Share image reachability — verifies the og:image actually fetches cleanly
+  // for social scrapers. PA Pardon hit this 2026-05-08: og:image URL was the
+  // non-www domain, server 307'd to www, and Facebook's scraper doesn't follow
+  // redirects on og:image. The image was technically valid but invisible to FB.
+  // Only fires when og:image is in markup AND route.ts attempted the fetch.
+  if (ogImage && page.ogImage) {
+    const { status, redirected, contentType } = page.ogImage
+    const isImage = !!contentType && /^image\//i.test(contentType)
+
+    if (status && status >= 200 && status < 300 && isImage && !redirected) {
+      items.push({
+        label: 'Share image reachability',
+        status: 'pass',
+        value: `Fetches as ${contentType?.split(';')[0] ?? 'image'} (no redirect)`,
+        weight: 0.5,
+      })
+    } else if (redirected) {
+      items.push({
+        label: 'Share image reachability',
+        status: 'warn',
+        value: `Redirects (${status}) — some social scrapers won't follow`,
+        weight: 0.5,
+        extracted: page.ogImage.url,
+        recommendation:
+          'Your og:image URL redirects (e.g., non-www → www, or http → https). Facebook\'s scraper specifically does not follow redirects on og:image and may show no preview, or fall back to an unrelated image on your page. Update your og:image meta tag to point at the final URL directly.',
+      })
+    } else if (status && status >= 400) {
+      items.push({
+        label: 'Share image reachability',
+        status: 'fail',
+        value: `Returns ${status} — broken link`,
+        weight: 0.5,
+        extracted: page.ogImage.url,
+        recommendation:
+          'Your og:image URL doesn\'t load — social platforms will show no preview when your link is shared. Verify the URL works in your browser, then update the meta tag.',
+      })
+    } else if (contentType && !isImage) {
+      items.push({
+        label: 'Share image reachability',
+        status: 'fail',
+        value: `Serves ${contentType.split(';')[0]} instead of an image`,
+        weight: 0.5,
+        extracted: page.ogImage.url,
+        recommendation:
+          'Your og:image URL responds, but with the wrong content type — social scrapers expect image/jpeg, image/png, etc. Check that the URL points to the actual image file, not an HTML page.',
+      })
+    } else {
+      // status is undefined — fetch failed entirely (timeout, DNS, connection
+      // refused, host blocking automated requests). Soft-warn rather than silent
+      // pass: if our auditor can't reach it, social scrapers may also fail.
+      items.push({
+        label: 'Share image reachability',
+        status: 'warn',
+        value: 'Could not verify — og:image fetch failed',
+        weight: 0.5,
+        extracted: page.ogImage.url,
+        recommendation:
+          'We couldn\'t fetch your og:image URL — it may be timing out, blocked by the host, or pointing at a non-existent file. Verify the URL works in your browser. If it does, your hosting may be blocking automated requests (including social scrapers).',
+      })
+    }
   }
 
   // 4. Twitter card
@@ -1329,30 +1513,34 @@ function parseSocial(page: FetchedPage): AuditItem[] {
     { name: 'YouTube', re: /youtube\.com\/(c\/|channel\/|@)/i },
   ]
   const foundProfiles = socialPatterns.filter((p) => p.re.test(html))
-  if (foundProfiles.length >= 3) {
+  // SMB calibration: most small businesses have 1-3 social presences, not all 5.
+  // Pass at 2+ (covers the typical Facebook + Instagram footprint), warn at 1
+  // (worth adding a second), warn at 0 (worth surfacing for SEO knowledge graph).
+  if (foundProfiles.length >= 2) {
     items.push({
       label: 'Social profiles',
       status: 'pass',
-      value: `${foundProfiles.length} platforms linked`,
+      value: `${foundProfiles.length} platform${foundProfiles.length > 1 ? 's' : ''} linked`,
       extracted: `Found: ${foundProfiles.map((p) => p.name).join(', ')}`,
     })
-  } else if (foundProfiles.length > 0) {
-    const missing = socialPatterns.filter((p) => !foundProfiles.includes(p))
+  } else if (foundProfiles.length === 1) {
     items.push({
       label: 'Social profiles',
       status: 'warn',
-      value: `${foundProfiles.length} of ${socialPatterns.length} major platforms linked`,
-      extracted: `Found: ${foundProfiles.map((p) => p.name).join(', ')}\nMissing: ${missing.map((p) => p.name).join(', ')}`,
+      value: `1 platform linked (${foundProfiles[0].name})`,
+      weight: 0.5,
+      extracted: `Found: ${foundProfiles[0].name}`,
       recommendation:
-        'Linking to your social profiles helps search engines connect your brand across the web and builds trust with visitors.',
+        'Linking to two or more social profiles helps search engines connect your brand across the web. Most small businesses use Facebook + Instagram or Facebook + LinkedIn — add the second platform you actually post to.',
     })
   } else {
     items.push({
       label: 'Social profiles',
       status: 'warn',
       value: 'No social profile links found',
+      weight: 0.5,
       recommendation:
-        'Adding links to your social media profiles helps search engines connect your website to your brand and strengthens your presence in search results.',
+        'Adding links to your social media profiles helps search engines connect your website to your brand. If you have any social presence, link to it from the footer — even one or two profiles is enough for the signal.',
     })
   }
 
@@ -1511,18 +1699,31 @@ function parseMobile(page: FetchedPage): AuditItem[] {
     })
   } else {
     const modernRatio = (imgSrcs.length - legacyFormats.length) / imgSrcs.length
-    items.push({
-      label: 'Image file formats',
-      status: 'warn',
-      value: `${legacyFormats.length} image${legacyFormats.length > 1 ? 's' : ''} using older formats`,
-      score: Math.max(modernRatio, 0.25),
-      extracted: legacyFormats
-        .slice(0, 5)
-        .map((s) => s.split('/').pop() ?? s)
-        .join(', '),
-      recommendation:
-        'Some images use older file formats (PNG/JPG) that load slower on mobile. Converting to WebP or AVIF typically cuts file size 25–35% with no visible quality loss.',
-    })
+    const legacyRatio = legacyFormats.length / imgSrcs.length
+    // Most small business sites use JPG/PNG. Treating that as a warn for everyone
+    // creates alarm fatigue. Only warn when legacy formats are heavy (>50%) or
+    // numerous (>10) — otherwise pass with a quiet note.
+    if (legacyRatio < 0.5 && legacyFormats.length < 10) {
+      items.push({
+        label: 'Image file formats',
+        status: 'pass',
+        value: `${legacyFormats.length} image${legacyFormats.length > 1 ? 's' : ''} could use modern formats — minor`,
+      })
+    } else {
+      items.push({
+        label: 'Image file formats',
+        status: 'warn',
+        value: `${legacyFormats.length} of ${imgSrcs.length} images using older formats`,
+        score: Math.max(modernRatio, 0.25),
+        weight: 0.5,
+        extracted: legacyFormats
+          .slice(0, 5)
+          .map((s) => s.split('/').pop() ?? s)
+          .join(', '),
+        recommendation:
+          'Most of your images use older file formats (PNG/JPG) that load slower on mobile. Converting to WebP or AVIF typically cuts file size 25–35% with no visible quality loss.',
+      })
+    }
   }
 
   return items
@@ -1601,13 +1802,26 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
       value: `${trueExternal.length} external links — all secure`,
     })
   } else {
-    items.push({
-      label: 'Safe external links',
-      status: 'warn',
-      value: `${unsafeExternal.length} of ${trueExternal.length} external links missing a security tag`,
-      recommendation:
-        'Some outgoing links are missing a small security tag that prevents the linked page from interacting with yours. This is a minor technical fix — your developer or site builder can add it quickly.',
-    })
+    // Most CMS-built sites don't add rel="noopener" by default. Treating any
+    // missing tag as a warn fires for the majority of small business sites.
+    // Only warn when this is widespread; otherwise it's a tiny note.
+    const unsafeRatio = unsafeExternal.length / trueExternal.length
+    if (unsafeRatio < 0.5 && unsafeExternal.length < 5) {
+      items.push({
+        label: 'Safe external links',
+        status: 'pass',
+        value: `${trueExternal.length - unsafeExternal.length} of ${trueExternal.length} external links secure — minor`,
+      })
+    } else {
+      items.push({
+        label: 'Safe external links',
+        status: 'warn',
+        value: `${unsafeExternal.length} of ${trueExternal.length} external links missing a security tag`,
+        weight: 0.5,
+        recommendation:
+          'Most of your outgoing links are missing rel="noopener" — a small security tag that prevents the linked page from interacting with yours. Minor technical fix — most site builders or your developer can add it in one pass.',
+      })
+    }
   }
 
   // 4. Form action security
@@ -1756,12 +1970,16 @@ function parseAccessibility(page: FetchedPage): AuditItem[] {
       value: 'Skip link found',
     })
   } else {
+    // 78% of audited small business sites lack a skip link. Real WCAG concern,
+    // but always-fires-as-warn produces alarm fatigue. Lower the weight so
+    // missing it is a small ding, not a category-dragging hit.
     items.push({
       label: 'Skip navigation',
       status: 'warn',
       value: 'No skip navigation link',
+      weight: 0.5,
       recommendation:
-        'Keyboard users have to tab through every menu link to reach your content. A "Skip to content" link at the top of the page lets them jump straight to what matters.',
+        'Keyboard users have to tab through every menu link to reach your content. A "Skip to content" link at the top of the page lets them jump straight to what matters. Most templates don\'t include this by default — adding it once helps every visitor who relies on a keyboard.',
     })
   }
 
@@ -1912,15 +2130,22 @@ function parseAccessibility(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 6. Focus visibility — detecting outline:none or outline:0 that kills focus indicators
+  // 6. Focus visibility — detect outline:none / outline:0 that kills focus indicators.
+  // Inspect both inline <style> blocks AND any external CSS the route fetched
+  // (route.ts pulls up to N linked stylesheets, capped). Sites that bundle their
+  // CSS (Next/React/Vue/most modern sites) put `:focus { outline: none }` in
+  // external files; without inspecting those, this check produced silent false
+  // negatives.
   const styleBlocks = getAllTags(html, 'style')
-  const allStyles = styleBlocks.join(' ')
+  const inlineCss = styleBlocks.join(' ')
+  const externalCss = page.externalCss ?? ''
+  const allStyles = inlineCss + ' ' + externalCss
   const killsFocus =
     /outline\s*:\s*(none|0)\b/i.test(allStyles) &&
     !/outline\s*:\s*(none|0)[^}]*focus-visible/i.test(allStyles)
-  // Check for :focus { outline: none } pattern without a replacement
   const focusOutlineKill = /:focus\s*\{[^}]*outline\s*:\s*(none|0)/i.test(allStyles)
   const hasFocusVisible = /focus-visible/i.test(allStyles)
+  const hasAnyCss = inlineCss.length > 200 || externalCss.length > 200
 
   if (focusOutlineKill && !hasFocusVisible) {
     items.push({
@@ -1937,6 +2162,15 @@ function parseAccessibility(page: FetchedPage): AuditItem[] {
       value: 'Some outlines removed — verify focus is still visible',
       recommendation:
         'Your CSS removes outlines in some places. Make sure keyboard users can still see which element is focused. Consider using :focus-visible to show outlines only for keyboard navigation.',
+    })
+  } else if (!hasAnyCss) {
+    // No CSS to inspect at all — neither inline nor external fetched. Don't claim a pass.
+    items.push({
+      label: 'Focus indicators',
+      status: 'warn',
+      value: 'CSS not inspected — verify focus visibility manually',
+      recommendation:
+        'We couldn\'t reach your stylesheets to verify focus indicators. Check that keyboard focus is visible on links and form fields by tabbing through the page in your browser.',
     })
   } else {
     items.push({

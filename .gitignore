@@ -42,3 +42,7 @@ next-env.d.ts
 
 # lighthouse reports
 lighthouse-*.json
+
+# audit-tool test harness output (regenerable via `npx tsx scripts/test-real-sites.ts`)
+scripts/test-output/
+scripts/test-output-*/
