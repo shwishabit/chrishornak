@@ -269,6 +269,65 @@ function walkMarker(mark, n) {
   return m;
 }
 
+// === Chains (v=42) ===
+// Tasks can chain into each other: a completed task A becomes the predecessor
+// of a new task B (B.prevTaskId = A.id). A stays in storage but is HIDDEN
+// from standalone active/done lists — A reads only as B's chain history
+// (drawer "previous steps") and inside Recap chain context. groupName is a
+// chain-wide label that propagates forward; first-chain naming back-fills
+// every ancestor so the whole chain reads under one label.
+function walkChainBack(taskId, allTasks) {
+  // Returns ancestors oldest-first. Stops at the first task with no
+  // prevTaskId or at depth 50 (defensive).
+  const ancestors = [];
+  let cur = allTasks.find(t => t.id === taskId);
+  if (!cur) return ancestors;
+  while (cur.prevTaskId) {
+    const prev = allTasks.find(t => t.id === cur.prevTaskId);
+    if (!prev || ancestors.length > 50) break;
+    ancestors.unshift(prev);
+    cur = prev;
+  }
+  return ancestors;
+}
+function getChainAncestorIds(allTasks) {
+  // Set of task ids that are pointed to by another task's prevTaskId. These
+  // are HIDDEN from standalone active/done renders — visible only inside
+  // their successor's chain history.
+  const set = new Set();
+  for (const t of allTasks) if (t.prevTaskId) set.add(t.prevTaskId);
+  return set;
+}
+function chainHasProgressInWindow(task, allTasks, windowMsAgo) {
+  // True if any ancestor's completedAt is more recent than `windowMsAgo` ago.
+  // Used by carry-forward to freeze marker advance when chain progress was
+  // made within the just-elapsed day(s).
+  const cutoff = Date.now() - windowMsAgo;
+  const ancestors = walkChainBack(task.id, allTasks);
+  return ancestors.some(a =>
+    typeof a.completedAt === "number" && a.completedAt >= cutoff
+  );
+}
+function collectChainAncestorRecords(taskList, allTasks) {
+  // Walks every task in taskList back through prevTaskId and returns the
+  // ancestor task records (deduped). Used by finishCarry / skipMorningFlow
+  // to preserve chain history across the day-flip carry — without this,
+  // setTasks([...carried]) drops the predecessor records and the head's
+  // drawer "previous steps" goes empty after the first day.
+  const result = new Map();
+  function walk(id) {
+    if (result.has(id)) return;
+    const t = allTasks.find(x => x.id === id);
+    if (!t) return;
+    result.set(id, t);
+    if (t.prevTaskId) walk(t.prevTaskId);
+  }
+  for (const t of taskList) {
+    if (t && t.prevTaskId) walk(t.prevTaskId);
+  }
+  return Array.from(result.values());
+}
+
 // === Importance score (v1) ===
 // score = priority*6 + tierWeight - agePenalty, clamped [0, 11].
 // Used to nominate top-3 in Morning Anchor. Algorithm doesn't auto-set
@@ -357,9 +416,9 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=41"),
-        loadBabelScript("screens-rituals.jsx?v=41"),
-        loadBabelScript("screens-sketch.jsx?v=41"),
+        loadBabelScript("screens-flows.jsx?v=42"),
+        loadBabelScript("screens-rituals.jsx?v=42"),
+        loadBabelScript("screens-sketch.jsx?v=42"),
       ]);
     }
     loadAll()
@@ -517,11 +576,22 @@ function App() {
     // (logWin writes both). Without this they'd render twice in Recap (once on
     // the wins phase, once on the done phase).
     const recapCompleted = tasks.filter(t => t.done && !t.isWin);
+    // v=42: chain progress in the rollover window freezes the marker on the
+    // current head. Walking back via prevTaskId; if any ancestor was
+    // completed within the just-elapsed day(s), the head doesn't advance.
+    const freezeWindowMs = Math.max(1, gap) * 86400000 + 6 * 3600000;
     const recapLeftovers = tasks
       .filter(t => !t.done)
-      .map(task => ({ ...task, mark: walkMarker(task.mark, gap) }));
+      .map(task => {
+        const frozen = chainHasProgressInWindow(task, tasks, freezeWindowMs);
+        return frozen ? task : { ...task, mark: walkMarker(task.mark, gap) };
+      });
     const recapPrevDateStr = dateStrFromIso(lastOpenedDay).dateStr;
-    setTasks(prev => prev.map(task => task.done ? task : { ...task, mark: walkMarker(task.mark, gap) }));
+    setTasks(prev => prev.map(task => {
+      if (task.done) return task;
+      const frozen = chainHasProgressInWindow(task, prev, freezeWindowMs);
+      return frozen ? task : { ...task, mark: walkMarker(task.mark, gap) };
+    }));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + gap })));
     setWins([]);
     setCompletionsSinceShelf(0);
@@ -831,6 +901,81 @@ function App() {
   }
   function renameTask(id, text) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
+  }
+  // v=42: chain a completed task into a new (or existing) next-step task.
+  // The parent is marked done with completedAt stamped so day-flip can detect
+  // chain progress; the new task carries prevTaskId pointing at parent and
+  // inherits parent's groupName. If a name is provided for the first time on
+  // this chain, back-fill every ancestor so the whole chain reads under one
+  // label. If linking to an existing task, refuse the link when the target
+  // is already part of another chain — keeps v1 chain semantics non-lossy.
+  function chainTo(parentId, opts) {
+    const { nextText, nextTaskId, groupName: providedName } = opts || {};
+    setTasks(prev => {
+      const parent = prev.find(t => t.id === parentId);
+      if (!parent) return prev;
+      const completedAt = Date.now();
+      const resolvedName = (providedName && providedName.trim())
+        || parent.groupName
+        || null;
+      let updated = prev.map(t =>
+        t.id === parentId
+          ? { ...t, done: true, completedAt, groupName: resolvedName }
+          : t
+      );
+      if (providedName && providedName.trim()) {
+        const ancestors = walkChainBack(parentId, updated);
+        const ids = new Set(ancestors.map(a => a.id));
+        updated = updated.map(t =>
+          ids.has(t.id) ? { ...t, groupName: resolvedName } : t
+        );
+      }
+      if (nextTaskId) {
+        const target = updated.find(t => t.id === nextTaskId);
+        if (!target) return updated;
+        if (target.prevTaskId) {
+          // Don't overwrite an existing chain link — v1 keeps it simple.
+          showToast("can't link — already part of another chain.", 2400);
+          return updated;
+        }
+        return updated.map(t =>
+          t.id === nextTaskId
+            ? { ...t, prevTaskId: parentId, groupName: resolvedName }
+            : t
+        );
+      }
+      // New next-step task. Insert directly after the parent so the chain
+      // reads in place visually (the row appears to "transform" into the next
+      // step rather than jumping elsewhere).
+      const fresh = {
+        id: nextId(),
+        text: (nextText || "").trim(),
+        mark: null,
+        tenMin: null,
+        done: false,
+        createdAt: Date.now(),
+        prevTaskId: parentId,
+        groupName: resolvedName,
+      };
+      const idx = updated.findIndex(t => t.id === parentId);
+      if (idx === -1) return [fresh, ...updated];
+      return [
+        ...updated.slice(0, idx + 1),
+        fresh,
+        ...updated.slice(idx + 1),
+      ];
+    });
+  }
+  // v=42: rename / set / clear the chain's group label across every member.
+  // Walks the chain from the head and writes the new name on each ancestor
+  // and the head itself, so all rows show the same label. Empty string clears.
+  function setChainGroupName(headId, name) {
+    const cleaned = (name || "").trim() || null;
+    setTasks(prev => {
+      const ancestors = walkChainBack(headId, prev);
+      const ids = new Set([headId, ...ancestors.map(a => a.id)]);
+      return prev.map(t => ids.has(t.id) ? { ...t, groupName: cleaned } : t);
+    });
   }
   // v=27: per-task progress (0-100). Stored as `progress` field; null/undefined
   // = no fill rendered. 100 leaves the field set so the row reads as "fully
@@ -1162,9 +1307,15 @@ function App() {
             autoShelved: true,
           });
         } else {
+          // v=42: freeze marker advance if chain progress was made within
+          // the last ~36h. The day-flip useEffect already froze in the
+          // walkMarker pass; this catches the second-pass advance via
+          // nextMarkAfterCarry on the user's "keep" decision.
+          const frozen = chainHasProgressInWindow(d.task, tasks, 36 * 3600000);
           carried.push({
             ...d.task, id: nextId(),
-            mark: nextMarkAfterCarry(d.task.mark), done: false,
+            mark: frozen ? d.task.mark : nextMarkAfterCarry(d.task.mark),
+            done: false,
           });
         }
       } else if (d.action === "decide") {
@@ -1196,7 +1347,12 @@ function App() {
       }
       // "release" intentionally falls through (silent drop = trash).
     }
-    setTasks(ensureDailyRecurringTasks(carried));
+    // v=42: preserve chain ancestor records of every carried task. Without
+    // this the predecessor task records get dropped, breaking each chain
+    // head's drawer "previous steps" history. Ancestors stay hidden from
+    // standalone active/done lists via the `getChainAncestorIds` filter.
+    const preservedAncestors = collectChainAncestorRecords(carried, tasks);
+    setTasks(ensureDailyRecurringTasks([...preservedAncestors, ...carried]));
     const nextShelf = autoShelved.length > 0 ? [...autoShelved, ...shelf] : shelf;
     if (autoShelved.length > 0) {
       setShelf(nextShelf);
@@ -1220,11 +1376,18 @@ function App() {
     const source = (recap?.leftovers && recap.leftovers.length > 0)
       ? recap.leftovers
       : (leftovers || []);
-    const carried = source.map(task => ({
-      ...task, id: nextId(),
-      mark: nextMarkAfterCarry(task.mark), done: false,
-    }));
-    setTasks(ensureDailyRecurringTasks(carried));
+    const carried = source.map(task => {
+      // v=42: freeze marker advance if chain progress was made recently.
+      const frozen = chainHasProgressInWindow(task, tasks, 36 * 3600000);
+      return {
+        ...task, id: nextId(),
+        mark: frozen ? task.mark : nextMarkAfterCarry(task.mark),
+        done: false,
+      };
+    });
+    // v=42: preserve chain ancestor records (see finishCarry comment).
+    const preservedAncestors = collectChainAncestorRecords(carried, tasks);
+    setTasks(ensureDailyRecurringTasks([...preservedAncestors, ...carried]));
     setLeftovers(null);
     setRecap(null);
     setScreen("anchor");
@@ -1273,7 +1436,12 @@ function App() {
     const next = dayOffset + 1;
     setDayOffset(next);
     setTasks(prev => ensureDailyRecurringTasks(
-      prev.map(task => task.done ? task : { ...task, mark: advanceMarker(task.mark) })
+      // v=42: chain progress in the last ~36h freezes marker advance.
+      prev.map(task => {
+        if (task.done) return task;
+        const frozen = chainHasProgressInWindow(task, prev, 36 * 3600000);
+        return frozen ? task : { ...task, mark: advanceMarker(task.mark) };
+      })
     ));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + 1 })));
     setWins([]);
@@ -1568,6 +1736,8 @@ function App() {
               onRename={renameTask}
               onSetProgress={setProgress}
               onReorderTasks={reorderTasks}
+              onChain={chainTo}
+              onSetGroupName={setChainGroupName}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {

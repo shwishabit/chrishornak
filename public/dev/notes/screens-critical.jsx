@@ -315,10 +315,21 @@ function AnchorMenuItem({ label, hint, onClick, primary }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onSetProgress, onReorderTasks, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onSetProgress, onReorderTasks, onChain, onSetGroupName, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
-    setTasks(tasks.map(t => t.id === id ? {...t, done: !t.done} : t));
+    // v=42: stamp completedAt when transitioning to done; clear when un-done.
+    // Carry-forward chain freeze and chain history rendering both rely on
+    // completedAt being present on every completed task.
+    setTasks(tasks.map(t => {
+      if (t.id !== id) return t;
+      const goingDone = !t.done;
+      return {
+        ...t,
+        done: goingDone,
+        completedAt: goingDone ? Date.now() : null,
+      };
+    }));
     if (target && !target.done && onTaskCompleted) {
       onTaskCompleted(target);
     }
@@ -327,8 +338,16 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
     setTasks(tasks.map(t => t.id === id ? {...t, note: noteText.trim() || null} : t));
   }
 
-  const active = tasks.filter(t => !t.done);
-  const done = tasks.filter(t => t.done);
+  // v=42: chain ancestors are HIDDEN from standalone active + done lists.
+  // They live only inside their successor's drawer "previous steps" history.
+  // A task is consumed when another task points at it via prevTaskId.
+  const consumedIds = (() => {
+    const s = new Set();
+    for (const t of tasks) if (t.prevTaskId) s.add(t.prevTaskId);
+    return s;
+  })();
+  const active = tasks.filter(t => !t.done && !consumedIds.has(t.id));
+  const done = tasks.filter(t => t.done && !consumedIds.has(t.id));
   // v=32: cap is on ACTIVE tasks only — completed work shouldn't block adding
   // the next thing. Field-test friction: 7 done + 3 active hit the old
   // tasks.length cap and felt arbitrary. Same threshold of 10 still keeps the
@@ -425,6 +444,7 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
             <TaskRow
               key={t.id}
               task={t}
+              allTasks={tasks}
               onToggle={() => toggle(t.id)}
               onDivide={() => onDivideOpen(t)}
               onDelete={() => onDelete(t.id)}
@@ -432,6 +452,8 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
               onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
               onRename={onRename}
               onSetProgress={onSetProgress}
+              onChain={onChain}
+              onSetGroupName={onSetGroupName}
               index={i}
             />
           ))}
@@ -460,6 +482,7 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
           <TaskRow
             key={t.id}
             task={t}
+            allTasks={tasks}
             onToggle={() => toggle(t.id)}
             onDivide={() => {}}
             onDelete={() => onDelete(t.id)}
@@ -597,7 +620,7 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   );
 }
 
-function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, onSetProgress, index }) {
+function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, onSetProgress, onChain, onSetGroupName, index }) {
   const isDecision = task.mark === "?";
   const isCarriedTwice = task.mark === ">>";
   const isCarriedOnce = task.mark === ">";
@@ -607,6 +630,107 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  // v=42: chain pre-completion overlay state. When the user taps the
+  // checkbox on an active task, we hold for 2.5s instead of committing
+  // immediately — long enough to ask "next step?" without making the user
+  // wait if they just want to check it off. Tap the pill → chain input;
+  // ignore → timer commits the toggle normally.
+  const [chainPending, setChainPending] = useState(false);
+  const [chainInputOpen, setChainInputOpen] = useState(false);
+  const [chainText, setChainText] = useState("");
+  const [chainGroupName, setChainGroupName] = useState("");
+  const [chainGroupOpen, setChainGroupOpen] = useState(false);
+  const [chainLinkOpen, setChainLinkOpen] = useState(false);
+  const [groupRenameOpen, setGroupRenameOpen] = useState(false);
+  const [groupRenameText, setGroupRenameText] = useState("");
+  const chainTimerRef = useRef(null);
+
+  // v=42: walk chain history. Only a task with prevTaskId has ancestors.
+  // walkChainBack is defined at module-top in app.jsx and resolved at
+  // runtime via the babel global scope (app.jsx loads after this file in
+  // the HTML, but the call happens during render after both have evaluated).
+  const chainAncestors = (task.prevTaskId && allTasks && typeof walkChainBack === "function")
+    ? walkChainBack(task.id, allTasks)
+    : [];
+  // First chain on this task = no existing chain history AND no group name.
+  const isFirstChainCreation = !task.prevTaskId && !task.groupName;
+
+  function clearChainPending() {
+    if (chainTimerRef.current) {
+      clearTimeout(chainTimerRef.current);
+      chainTimerRef.current = null;
+    }
+    setChainPending(false);
+  }
+  function commitDoneNoChain() {
+    clearChainPending();
+    if (onToggle) onToggle();
+  }
+  function onCheckboxClick(e) {
+    e.stopPropagation();
+    // Already-done tasks un-check immediately (no chain prompt on un-done).
+    if (task.done) { if (onToggle) onToggle(); return; }
+    // Chain input already open — ignore re-taps so we don't race two
+    // commit paths against the open panel.
+    if (chainInputOpen) return;
+    // No chain support (done-block render, deferred load) → fall back to
+    // immediate toggle so the checkbox always works.
+    if (!onChain) { if (onToggle) onToggle(); return; }
+    // Already in chain-pending → second tap = commit done now (skip wait).
+    if (chainPending) { commitDoneNoChain(); return; }
+    setChainPending(true);
+    chainTimerRef.current = setTimeout(() => {
+      chainTimerRef.current = null;
+      setChainPending(false);
+      if (onToggle) onToggle();
+    }, 2500);
+  }
+  function openChainInput() {
+    if (chainTimerRef.current) {
+      clearTimeout(chainTimerRef.current);
+      chainTimerRef.current = null;
+    }
+    setChainPending(true); // keep visual checked while editing
+    setChainInputOpen(true);
+    setChainText("");
+    setChainGroupName("");
+    setChainGroupOpen(false);
+    setChainLinkOpen(false);
+  }
+  function cancelChainInput() {
+    // User backed out — commit done normally (no chain).
+    setChainInputOpen(false);
+    setChainGroupOpen(false);
+    setChainLinkOpen(false);
+    setChainText("");
+    setChainGroupName("");
+    commitDoneNoChain();
+  }
+  function saveChainNew() {
+    const text = chainText.trim();
+    if (!text) return;
+    const name = chainGroupName.trim() || null;
+    setChainInputOpen(false);
+    setChainPending(false);
+    setChainText("");
+    setChainGroupName("");
+    setChainGroupOpen(false);
+    if (onChain) onChain(task.id, { nextText: text, groupName: name });
+  }
+  function saveChainLink(targetId) {
+    const name = chainGroupName.trim() || null;
+    setChainInputOpen(false);
+    setChainPending(false);
+    setChainLinkOpen(false);
+    setChainGroupOpen(false);
+    setChainText("");
+    setChainGroupName("");
+    if (onChain) onChain(task.id, { nextTaskId: targetId, groupName: name });
+  }
+  // Cleanup pending timer if the row unmounts mid-wait.
+  useEffect(() => () => {
+    if (chainTimerRef.current) clearTimeout(chainTimerRef.current);
+  }, []);
   // v=27: inline progress slider state. Local buffer mirrors row's progress;
   // committed via setOnSlider's onChange (live update for visual feedback)
   // and final commit on slider release / done tap.
@@ -784,6 +908,21 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
         </>
       )}
 
+      {/* v=42: pre-completion next-step pill. Renders for 2.5s after the
+          user taps the checkbox on an active task. Sits over the (hidden)
+          drawer area at the row's right edge; tap = open chain input,
+          ignore = wait timer expires and the toggle commits. zIndex above
+          row content so it isn't masked when drawer is closed. */}
+      {chainPending && !chainInputOpen && !task.done && (
+        <button
+          onClick={(e) => { e.stopPropagation(); openChainInput(); }}
+          className="chain-pill fade-in"
+          aria-label="add next step"
+        >
+          ↳ next step?
+        </button>
+      )}
+
       {/* Action drawer (revealed when row is "open") — Edit · Comment · Progress · Decide.
           Close = tap outside (document-level pointerdown listener, v=16) or
           tap the visible row body (re-toggles drawer). */}
@@ -911,8 +1050,8 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
 
         <div style={{paddingTop: 2}}>
           <div
-            className={`check ${task.done ? "done" : ""}`}
-            onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            className={`check ${task.done || chainPending ? "done" : ""} ${chainPending ? "check--pending" : ""}`}
+            onClick={onCheckboxClick}
           />
         </div>
         <div
@@ -939,6 +1078,84 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             }}>
               from “{task.parentText}”
             </div>
+          )}
+          {/* v=42: group-name kicker / rename input. The input renders when
+              groupRenameOpen, regardless of whether the chain currently has
+              a name (covers both first-naming a chain via the inline "+ name
+              this group" affordance below AND renaming via tapping the
+              existing kicker). Save = setChainGroupName across every member
+              of the chain. */}
+          {groupRenameOpen && !task.done && (
+            <input
+              autoFocus
+              type="text"
+              value={groupRenameText}
+              onChange={(e) => setGroupRenameText(e.target.value)}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              placeholder="name this group"
+              onBlur={() => {
+                if (onSetGroupName) onSetGroupName(task.id, groupRenameText);
+                setGroupRenameOpen(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") {
+                  setGroupRenameText(task.groupName || "");
+                  setGroupRenameOpen(false);
+                }
+              }}
+              style={{
+                display: "block",
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 11, color: "var(--ink-soft)",
+                letterSpacing: "0.04em",
+                border: "none", borderBottom: "1px solid var(--rule-strong)",
+                outline: "none", background: "transparent",
+                padding: "0 0 1px",
+                marginBottom: 4,
+                width: "60%", minWidth: 80,
+              }}
+            />
+          )}
+          {!groupRenameOpen && task.groupName && !task.done && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setGroupRenameText(task.groupName || "");
+                setGroupRenameOpen(true);
+              }}
+              className="group-kicker"
+              style={{
+                background: "transparent", border: "none", padding: 0,
+                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+                color: "var(--ink-soft)", letterSpacing: "0.04em",
+                marginBottom: 4, cursor: "pointer",
+                textAlign: "left", display: "block",
+              }}
+            >
+              ↳ {task.groupName}
+            </button>
+          )}
+          {/* v=42: name-this-group affordance for already-chained tasks that
+              have no group name yet. Inline ghost-italic, easy to ignore. */}
+          {!groupRenameOpen && task.prevTaskId && !task.groupName && !task.done && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setGroupRenameText("");
+                setGroupRenameOpen(true);
+              }}
+              style={{
+                background: "transparent", border: "none", padding: 0,
+                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
+                color: "var(--ink-faint)", letterSpacing: "0.04em",
+                marginBottom: 4, cursor: "pointer",
+                textAlign: "left", display: "block",
+              }}
+            >
+              + name this group
+            </button>
           )}
           <div style={{display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap"}}>
             {progressOpen ? (
@@ -1061,6 +1278,158 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             )}
           </div>
 
+          {/* v=42: chain history. Walks back via prevTaskId and lists the
+              completed predecessors that led to this task. Read-only. */}
+          {chainAncestors.length > 0 && !task.done && (
+            <div style={{
+              marginTop: 8,
+              padding: "8px 0 0",
+              borderTop: "1px dashed var(--rule)",
+            }}>
+              <div className="kicker" style={{
+                fontSize: 9, marginBottom: 6, color: "var(--ink-faint)",
+              }}>previous steps</div>
+              {chainAncestors.map((a, i) => (
+                <div key={a.id} className="serif" style={{
+                  fontSize: 13, color: "var(--ink-faint)",
+                  fontStyle: "italic", lineHeight: 1.5,
+                  paddingLeft: 14, position: "relative",
+                  display: "flex", alignItems: "baseline", gap: 6,
+                }}>
+                  <span style={{
+                    position: "absolute", left: 0, top: "0.5em",
+                    color: "var(--ink-faint)", fontSize: 11,
+                  }}>✓</span>
+                  <span style={{flex: 1}}>{a.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* v=42: chain input panel. Replaces the row's "what's next" pill
+              once the user taps it; provides a textarea + optional name + an
+              optional "link to existing" picker. Save = chainTo (parent
+              completes, new task takes its place); cancel = parent slides
+              to done normally without chaining. */}
+          {chainInputOpen && (
+            <div
+              className="chain-panel fade-in"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="kicker" style={{
+                marginBottom: 6, fontSize: 9, color: "var(--ink-faint)",
+              }}>and then…</div>
+              {!chainLinkOpen ? (
+                <textarea
+                  autoFocus
+                  rows={2}
+                  value={chainText}
+                  onChange={(e) => setChainText(e.target.value)}
+                  placeholder="the next step"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      saveChainNew();
+                    }
+                    if (e.key === "Escape") { e.preventDefault(); cancelChainInput(); }
+                  }}
+                  style={{
+                    width: "100%", resize: "none",
+                    background: "var(--paper-deep)",
+                    border: "1px solid var(--rule)", borderRadius: 4,
+                    padding: "8px 10px",
+                    fontFamily: "var(--serif)", fontSize: 14,
+                    fontStyle: chainText ? "normal" : "italic",
+                    color: "var(--ink)", lineHeight: 1.45,
+                    outline: "none",
+                  }}
+                />
+              ) : (
+                <ChainLinkPicker
+                  allTasks={allTasks}
+                  parentId={task.id}
+                  onPick={saveChainLink}
+                  onCancel={() => setChainLinkOpen(false)}
+                />
+              )}
+              {/* group-name input — first chain only (no existing groupName).
+                  Renames-after-creation happen via the kicker tap above. */}
+              {chainGroupOpen && isFirstChainCreation && (
+                <input
+                  type="text"
+                  value={chainGroupName}
+                  onChange={(e) => setChainGroupName(e.target.value)}
+                  placeholder="name this group (e.g., launch)"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                  style={{
+                    width: "100%",
+                    marginTop: 8,
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: "1px solid var(--rule-strong)",
+                    padding: "4px 0",
+                    fontFamily: "var(--serif)", fontStyle: "italic",
+                    fontSize: 12, color: "var(--ink-soft)",
+                    letterSpacing: "0.04em",
+                    outline: "none",
+                  }}
+                />
+              )}
+              {/* affordances row */}
+              <div style={{
+                display: "flex", gap: 10, alignItems: "center",
+                marginTop: 8, flexWrap: "wrap",
+              }}>
+                {!chainLinkOpen && (
+                  <button
+                    onClick={saveChainNew}
+                    disabled={!chainText.trim()}
+                    style={{
+                      background: chainText.trim() ? "var(--ink)" : "transparent",
+                      color: chainText.trim() ? "var(--paper)" : "var(--ink-faint)",
+                      border: chainText.trim() ? "none" : "1px solid var(--rule-strong)",
+                      borderRadius: 999, padding: "5px 14px",
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                      fontSize: 12, cursor: chainText.trim() ? "pointer" : "default",
+                    }}
+                  >chain →</button>
+                )}
+                {!chainLinkOpen && allTasks && allTasks.some(t => !t.done && t.id !== task.id && !t.prevTaskId) && (
+                  <button
+                    onClick={() => setChainLinkOpen(true)}
+                    className="ghost-btn"
+                    style={{
+                      fontSize: 12, fontStyle: "italic", padding: "2px 0",
+                      color: "var(--ink-faint)",
+                    }}
+                  >link to existing</button>
+                )}
+                {!chainLinkOpen && isFirstChainCreation && !chainGroupOpen && (
+                  <button
+                    onClick={() => setChainGroupOpen(true)}
+                    className="ghost-btn"
+                    style={{
+                      fontSize: 12, fontStyle: "italic", padding: "2px 0",
+                      color: "var(--ink-faint)",
+                    }}
+                  >name this group</button>
+                )}
+                <button
+                  onClick={cancelChainInput}
+                  className="ghost-btn"
+                  style={{
+                    fontSize: 12, fontStyle: "italic", padding: "2px 0",
+                    color: "var(--ink-faint)", marginLeft: "auto",
+                  }}
+                >cancel</button>
+              </div>
+            </div>
+          )}
+
           {task.parked && task.parkedSteps && task.parkedSteps.length > 0 && !task.done && (
             <div style={{
               marginTop: 8,
@@ -1149,6 +1518,76 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Chain Link Picker (v=42) ----------
+// Inline picker invoked from inside the chain panel when the user taps
+// "link to existing." Lists active tasks in the notebook that haven't yet
+// been linked into another chain (no prevTaskId) and aren't the parent
+// being completed. Tap = chain to that target. Empty list = friendly hint
+// instead of dead silence.
+function ChainLinkPicker({ allTasks, parentId, onPick, onCancel }) {
+  const candidates = (allTasks || []).filter(t =>
+    !t.done && t.id !== parentId && !t.prevTaskId
+  );
+  if (candidates.length === 0) {
+    return (
+      <div style={{
+        padding: "10px 0",
+        fontFamily: "var(--serif)", fontStyle: "italic",
+        fontSize: 13, color: "var(--ink-faint)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 10,
+      }}>
+        <span>nothing else linkable yet.</span>
+        <button
+          onClick={onCancel}
+          className="ghost-btn"
+          style={{
+            fontSize: 12, fontStyle: "italic", padding: "2px 0",
+            color: "var(--ink-faint)",
+          }}
+        >back</button>
+      </div>
+    );
+  }
+  return (
+    <div style={{
+      maxHeight: 220, overflowY: "auto",
+      background: "var(--paper-deep)",
+      border: "1px solid var(--rule)", borderRadius: 4,
+      padding: "4px 0",
+    }}>
+      {candidates.map(c => (
+        <button
+          key={c.id}
+          onClick={() => onPick(c.id)}
+          style={{
+            display: "block", width: "100%", textAlign: "left",
+            background: "transparent", border: "none",
+            padding: "8px 12px",
+            fontFamily: "var(--sans)", fontSize: 14,
+            color: "var(--ink)", lineHeight: 1.4,
+            cursor: "pointer",
+            borderBottom: "1px solid var(--rule)",
+          }}
+        >{c.text}</button>
+      ))}
+      <div style={{
+        display: "flex", justifyContent: "flex-end",
+        padding: "6px 8px",
+      }}>
+        <button
+          onClick={onCancel}
+          className="ghost-btn"
+          style={{
+            fontSize: 12, fontStyle: "italic", padding: "2px 6px",
+            color: "var(--ink-faint)",
+          }}
+        >back</button>
       </div>
     </div>
   );

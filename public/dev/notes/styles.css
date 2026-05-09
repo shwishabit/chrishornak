@@ -1144,3 +1144,52 @@ body {
   background: var(--ink);
   border-color: var(--ink);
 }
+
+/* === v=42 Chain (next-step) UI === */
+/* Pre-completion next-step pill. Anchored to the row, sits at the right
+   edge of the row content while the 2.5s wait window is open. Tap = open
+   chain input; ignore = the wait timer expires and the toggle commits. */
+.chain-pill {
+  position: absolute;
+  right: 16px; top: 12px;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 5;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.chain-pill:hover, .chain-pill:focus {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  outline: none;
+}
+/* Pending checkbox state — visually checked but slightly faded so the
+   user can see the wait window is in progress. Pairs with `.done` (which
+   the JSX adds when chainPending). */
+.check.check--pending { opacity: 0.55; }
+
+/* Chain input panel — sits inside the row content, expands the row
+   vertically. Same paper-deep + rule treatment as TaskNote editor for
+   visual continuity. */
+.chain-panel {
+  margin-top: 10px;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 10px 12px 8px;
+}
+/* Tappable group-name kicker. Hover/focus deepens the ink so it reads as
+   actionable on desktop. */
+.group-kicker:hover, .group-kicker:focus {
+  color: var(--ink);
+  outline: none;
+}
