@@ -171,3 +171,60 @@ For smaller projects, I work hands-on. For larger ones, I bring in the right peo
 - **Testimonials reattributed** — Swift-branded quotes rewritten to reference Chris directly
 - **Custom cursor** is a deliberate design choice — keep it
 - **Stats order** — largest to smallest: 500+ businesses, 20+ years, 12 web apps, 3 companies established
+
+---
+
+## 📍 Session State (updated 2026-05-11 · audit-parser content/publishing-vertical calibration shipped)
+
+**Last worked on:**
+Surgical calibration of `audit-parser.ts` heuristic 6 (Business description) to recognize the content/publishing/writing/editorial vertical. Triggered by Blog Hands R20 Findability sprint — bloghands.com hit 100 on 6 of 7 categories but AI hung at 91% with "Business description — Partially clear." Source-read of `audit-parser.ts:849-860` revealed the keyword lists biased toward services-with-tangible-deliverables; entire vertical was missing. Calibrated the three regexes, re-ran the 22-site harness, added Blog Hands as a content/publishing baseline. Committed + pushed: `940bf2e` on origin/main. Bloghands now scores 100 across all 7 categories.
+
+**Files touched:**
+- `src/lib/audit-parser.ts` — heuristic 6 (lines 849-860):
+  - `hasServiceLanguage` (h1 + first 5 paragraphs): added `we write | we ship | we publish | we draft | we author | we edit | we produce | i write`
+  - `hasDescriptionMeta` (industry word list): added `blog | content | writing | writer | copywriter | editorial | publishing | publisher | ghostwrit | newsletter | magazine | publication`
+  - `hasValueProp` (h1 only): added `write | writing | content | publish` (intentionally NOT `ship` — would over-pass e-commerce "free shipping" h1s)
+- `scripts/test-real-sites.ts` — added Blog Hands as content/publishing baseline alongside PA Pardon's law baseline.
+- (memory) `project_findability_tool_fixes.md` — closed old "weaker #1" deferred item (Business description regex bias). Frontmatter description updated. Index entry in `MEMORY.md` refreshed.
+
+**Where we are:**
+🟢 chrishornak.com prod is on `940bf2e`. The Findability tool's Business description heuristic now recognizes content/publishing vocabulary alongside the existing services/products/professional verticals. Verified Blog Hands warn→pass with 4/4 signals; verified zero regressions across the 19 existing sites with prior Business description data; verified zero over-passes among the 6 fail/warn sites.
+
+**Next action (entry point for next session):**
+1. **PA Pardon audit-shaped workaround revert** — still queued from 2026-05-08 sprint. `Projects/papardon/src/components/ui/Logo.tsx` (restore `alt="" role="presentation"`) + `Projects/papardon/src/components/sections/FAQ.tsx` (`<h3>` back to `<span>` inside `<summary>`). Re-audit after revert to confirm both still pass.
+2. **Heading-skip footer scope reset** (last remaining "weaker, later" deferred item from the original 2026-05-08 sprint). Confirmed across 12+ sites in the 22-site harness. Strict-WCAG keeping defensible; don't change unless multiple users complain. Location: `audit-parser.ts:975-1023`.
+3. **Image-format check** still firing 13/17 even after Wave 2 calibration. Consider neutral-info reframe in a third calibration pass.
+
+**Unsaved decisions:**
+- **CSP nonces.** `audit-parser.ts` doesn't yet detect CSP `'unsafe-inline'` as a Security warning. Worth adding to Security category in a future pass — most sites that DO have CSP are running with `'unsafe-inline'` (incl. bloghands now), so a calibration discussion is warranted before flagging.
+- **Memory writes still pending from 2026-05-08 retrospection** (no action taken since): `feedback_distinguish_block_classes.md` (DNS vs WAF vs UA-filter), `feedback_mine_test_data_before_patching.md` (re-rank when test data expands).
+
+**Gotchas / Errors encountered:**
+- **None tonight.** Clean type-check, harness ran end-to-end in ~3 min across 23 sites, diff via Node CLI gave a categorical answer (0 regressions, 0 over-passes), commit + push first-try.
+
+**Process retrospection:**
+- **Tool-end vs site-end diagnosis worked.** Faced with "Business description partially clear," the instinct could have been to warp bloghands hero copy until the regex matched. Instead read the parser source, named the gap (content/publishing vertical absent from all 3 keyword lists), and shipped the fix to its proper home. The tool fix benefits every future content/publishing client and the bloghands hero stays brand-voice. Same pattern worth applying when other "partially clear" warnings hit future projects.
+- **22-site harness paid off again.** Same diff-vs-baseline pattern used in 2026-05-08 sprint caught yesterday's regressions; tonight it gave a clean go-signal in a single Node command. Worth investing in similar harnesses for any other parser-heavy tool.
+- **Test harness baseline expansion is cheap insurance.** Added Blog Hands as a content/publishing baseline alongside PA Pardon's law baseline — when (not if) a future calibration touches this region, the harness will surface a regression on either vertical before push.
+
+**SWOT (session retrospective):**
+
+- **Strengths:**
+  - Diagnosis-before-action: read the parser source first, then named the gap, then fixed it. No code thrown at the symptom.
+  - Targeted edit: 3 regex additions across 12 lines total. Small surface, easy to review, easy to revert.
+  - Verification chain: typecheck → harness against 22 sites + new Blog Hands baseline → per-site Business description status diff → confirmed 0 regress / 0 over-pass / bloghands warn→pass.
+  - Closed an old deferred item (`project_findability_tool_fixes.md` "weaker #1") rather than letting it linger another session.
+
+- **Weaknesses:**
+  - The keyword list as a structure is still brittle — every new vertical needs another calibration sprint. A more general "schema description + h1 keyword density" model might generalize better. Not tonight's fix but worth noting.
+  - Didn't add CSP-strictness check to Security category while in the parser — small adjacent win that would have benefited bloghands' own audit.
+
+- **Opportunities:**
+  - **CSP-strictness Security check** — flag `'unsafe-inline'` and `'unsafe-eval'` in CSP as warn-not-fail (most sites have them). Compound leverage if more Chris-built sites add CSP headers.
+  - **Vertical-coverage audit** — review remaining verticals not yet represented in `hasDescriptionMeta` (e.g., manufacturing, B2B SaaS, nonprofit, education). Could pre-empt the next "partially clear" surprise.
+  - **`feedback_audit_tool_calibration_over_warp.md`** memory write — capture tonight's diagnosis pattern (read parser source, name gap, fix at proper home, don't warp site copy). Reusable principle.
+
+- **Threats:**
+  - **Keyword-list brittleness** — see Weaknesses. Every new vertical Chris audits could surface another "partially clear" gap until the heuristic generalizes.
+  - **PA Pardon workaround revert still pending** from 2026-05-08 sprint. Workaround code in papardon/Logo.tsx + FAQ.tsx will get re-introduced by future devs (or me) assuming it's still needed if not cleaned up.
+  - **Vercel auto-deploys from `main` with no staging.** Every audit-touching commit goes live immediately. Mitigation: verification chain held tonight; keep doing it.
