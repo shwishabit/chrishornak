@@ -847,15 +847,15 @@ function parseAI(page: FetchedPage): AuditItem[] {
   const descMeta = meta(html, 'description') ?? ''
 
   const hasServiceLanguage =
-    /(we help|we provide|we offer|we build|we create|we specialize|i help|i provide|i build|our (service|solution|product|mission)|what we do|what i do|specializing in|dedicated to|serving|your\b.*\b(partner|team|expert|solution)|providing)/i.test(
+    /(we help|we provide|we offer|we build|we create|we specialize|we write|we ship|we publish|we draft|we author|we edit|we produce|i help|i provide|i build|i write|our (service|solution|product|mission)|what we do|what i do|specializing in|dedicated to|serving|your\b.*\b(partner|team|expert|solution)|providing)/i.test(
       earlyContent,
     )
   const hasDescriptionMeta = descMeta.length > 30 &&
-    /(service|product|solution|help|offer|provide|special|expert|consult|coach|therapy|agency|studio|shop|store|moving|clean|repair|design|marketing|law|dental|medical|real estate|insurance|financial|restaurant|salon|spa|construction|plumb|electric|landscap|photograph|catering|fitness|wellness|handcraft|custom|premium|professional)/i.test(descMeta)
+    /(service|product|solution|help|offer|provide|special|expert|consult|coach|therapy|agency|studio|shop|store|moving|clean|repair|design|marketing|law|dental|medical|real estate|insurance|financial|restaurant|salon|spa|construction|plumb|electric|landscap|photograph|catering|fitness|wellness|handcraft|custom|premium|professional|blog|content|writing|writer|copywriter|editorial|publishing|publisher|ghostwrit|newsletter|magazine|publication)/i.test(descMeta)
   const hasSchemaDescription =
     jsonLdBlocks?.some((b) => /"description"/i.test(b)) ?? false
   const hasValueProp =
-    /(help|grow|save|improve|transform|increase|reduce|solve|deliver|strategy|solution|service|product|business|studio|therapy|coaching|consulting|agency|moving|soap|craft|design|marketing|expert|professional|premier|trusted|leading|quality|custom)/i.test(
+    /(help|grow|save|improve|transform|increase|reduce|solve|deliver|strategy|solution|service|product|business|studio|therapy|coaching|consulting|agency|moving|soap|craft|design|marketing|expert|professional|premier|trusted|leading|quality|custom|write|writing|content|publish)/i.test(
       h1Text,
     )
 

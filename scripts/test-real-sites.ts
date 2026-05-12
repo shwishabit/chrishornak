@@ -46,6 +46,8 @@ const SITES: { name: string; url: string; vertical: string; chamberTier?: string
   { name: 'Capstone Construction', url: 'https://www.capstonequalityservices.com/', vertical: 'Construction', chamberTier: 'skip/0' },
   // Baseline (already known to PASS post-workarounds)
   { name: 'PA Pardon (baseline)', url: 'https://www.papardon.com', vertical: 'Law (Chris-built)' },
+  // Content / publishing vertical — drove the keyword-list calibration sweep
+  { name: 'Blog Hands (baseline)', url: 'https://bloghands.com', vertical: 'Content/Publishing (Chris-built)' },
 ]
 
 /* ── Fetch helpers (mirror src/app/api/audit/route.ts) ──────────────────── */
