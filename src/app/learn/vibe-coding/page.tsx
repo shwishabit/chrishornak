@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
@@ -78,19 +79,19 @@ export default function VibeCodingPage() {
 
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 md:px-10 md:pt-12 md:pb-32 lg:px-12">
         <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12 xl:gap-16">
-          {/* Sidebar */}
+          {/* Sidebar (desktop) — sticky, scrolls within itself when taller than viewport */}
           <aside className="hidden lg:block">
-            <div className="sticky top-20">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-3">
               <Sidebar />
             </div>
           </aside>
 
-          {/* Mobile: collapsed TOC */}
-          <details className="mb-8 rounded-lg border border-border/20 bg-muted/10 p-4 lg:hidden">
+          {/* Mobile: collapsed TOC, sticky to top so it follows the user */}
+          <details className="sticky top-12 z-30 mb-8 rounded-lg border border-border/20 bg-background/95 p-4 backdrop-blur-md lg:hidden">
             <summary className="cursor-pointer text-sm font-semibold text-foreground">
               On this page
             </summary>
-            <div className="mt-4">
+            <div className="mt-4 max-h-[60vh] overflow-y-auto">
               <Sidebar />
             </div>
           </details>
@@ -355,6 +356,19 @@ rm -rf .git && git init`}
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 Your first conversation
               </h2>
+              <figure className="mt-6 overflow-hidden rounded-lg border border-border/20 bg-muted/10">
+                <Image
+                  src="/learn/vibe-coding/session-flow.png"
+                  alt="A six-step session flow: open a chat → /grill-me → write code together → verify it works → small commit → /log the lesson, with a loop back to start a fresh chat."
+                  width={2752}
+                  height={1536}
+                  className="h-auto w-full"
+                  priority={false}
+                />
+                <figcaption className="border-t border-border/20 px-4 py-2.5 text-xs text-muted-foreground">
+                  One productive session, end to end. The loop repeats — or start a fresh chat when you shift acts.
+                </figcaption>
+              </figure>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 Open Cline (or Claude Code) and type:
               </p>
@@ -473,6 +487,19 @@ help me set up my workspace
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 The stack you&rsquo;ll grow into
               </h2>
+              <figure className="mt-6 overflow-hidden rounded-lg border border-border/20 bg-muted/10">
+                <Image
+                  src="/learn/vibe-coding/ecosystem.png"
+                  alt="Ecosystem map: You + VSCode on the left → AI Agent (Cline or Claude Code) with Skills, Memory, and Slash Commands in the middle → GitHub (code), Vercel (hosting), Supabase (database + login), and Resend (email) on the right."
+                  width={2752}
+                  height={1536}
+                  className="h-auto w-full"
+                  priority={false}
+                />
+                <figcaption className="border-t border-border/20 px-4 py-2.5 text-xs text-muted-foreground">
+                  How the pieces fit together. You prompt; the AI writes; the four services host, store, deploy, and deliver.
+                </figcaption>
+              </figure>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 Don&rsquo;t set all of this up on day one. Add each piece when you actually need
                 it.

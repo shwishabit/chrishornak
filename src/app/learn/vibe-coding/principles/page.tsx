@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
@@ -257,19 +258,19 @@ export default function PrinciplesPage() {
 
       <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 md:px-10 md:pt-12 md:pb-32 lg:px-12">
         <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12 xl:gap-16">
-          {/* Sidebar (desktop) */}
+          {/* Sidebar (desktop) — sticky, scrolls within itself */}
           <aside className="hidden lg:block">
-            <div className="sticky top-20 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-3">
               <Sidebar />
             </div>
           </aside>
 
-          {/* Mobile TOC */}
-          <details className="mb-8 rounded-lg border border-border/20 bg-muted/10 p-4 lg:hidden">
+          {/* Mobile: collapsed TOC, sticky to top so it follows the user */}
+          <details className="sticky top-12 z-30 mb-8 rounded-lg border border-border/20 bg-background/95 p-4 backdrop-blur-md lg:hidden">
             <summary className="cursor-pointer text-sm font-semibold text-foreground">
               On this page
             </summary>
-            <div className="mt-4">
+            <div className="mt-4 max-h-[60vh] overflow-y-auto">
               <Sidebar />
             </div>
           </details>
@@ -342,6 +343,21 @@ export default function PrinciplesPage() {
                 <em> you and the AI</em> work together. Each one is also baked into the starter
                 — as a skill the AI loads automatically, or a slash command you can invoke.
               </p>
+
+              <figure className="mt-8 overflow-hidden rounded-lg border border-border/20 bg-muted/10">
+                <Image
+                  src="/learn/vibe-coding/rules.png"
+                  alt="The five workspace rules at a glance: no filler openers, verification is a gate, grill before you code, skills first, approval gates for destructive actions."
+                  width={2528}
+                  height={1696}
+                  className="h-auto w-full"
+                  priority={false}
+                />
+                <figcaption className="border-t border-border/20 px-4 py-2.5 text-xs text-muted-foreground">
+                  The five rules your AI loads on every conversation. Codified in{' '}
+                  <code>CLAUDE.md</code> in the starter repo.
+                </figcaption>
+              </figure>
 
               {/* Karpathy filter */}
               <div className="mt-12 border-l-2 border-primary/40 pl-5">
