@@ -5,6 +5,7 @@ import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
 import { VibeCodingTopBar } from '@/components/sections/VibeCodingTopBar'
+import { CopyablePrompt } from '@/components/sections/CopyablePrompt'
 
 export const metadata: Metadata = {
   title: 'Vibe Coding 101 — Principles',
@@ -41,6 +42,7 @@ const principles: Principle[] = [
           you one question at a time, surface the ambiguities, name the edge cases, and only then
           restate the plan for your approval.
         </p>
+        <CopyablePrompt text="/grill-me" />
         <p className="text-muted-foreground">
           Always. No exceptions on day one. The instinct to skip ahead is the exact instinct this
           principle exists to override.
@@ -146,6 +148,7 @@ const principles: Principle[] = [
           last clean checkpoint, and offer three options: revert via git, keep what you have and
           re-grill the plan, or accept the current state and continue.
         </p>
+        <CopyablePrompt text="/reset" />
         <p>
           Pushing through almost never works. Resetting feels like losing 20 minutes. It usually
           saves you two hours.
@@ -165,6 +168,7 @@ const principles: Principle[] = [
           <code>/log &lt;the lesson&gt;</code>. It gets appended verbatim to{' '}
           <code>memory/LESSONS.md</code>.
         </p>
+        <CopyablePrompt text="/log [paste your lesson here — one sentence, durable, behavior-changing]" />
         <p>
           Memory is what turns a beginner setup into your setup. The AI reads it on every
           conversation. Stuff you teach it once, you don&rsquo;t have to teach it again.
@@ -380,6 +384,7 @@ export default function PrinciplesPage() {
                   it&rsquo;s drifting toward a 200-line rewrite when you asked for a 3-line fix,
                   this is the brake.
                 </p>
+                <CopyablePrompt text="/karpathy" />
               </div>
 
               {/* Caveman mode */}
@@ -400,6 +405,7 @@ export default function PrinciplesPage() {
                   <code>stop caveman</code>. The AI drops articles, fillers, and pleasantries —
                   keeps file paths, errors, and code exact. Reads tight, ships fast.
                 </p>
+                <CopyablePrompt text="/caveman" />
               </div>
 
               {/* Fresh chats */}
@@ -421,6 +427,7 @@ export default function PrinciplesPage() {
                   handoff summary (goal, where we are, next step, files in flight). Paste it into
                   the new conversation. Continue.
                 </p>
+                <CopyablePrompt text="/fresh" />
               </div>
 
               {/* Approval gates */}

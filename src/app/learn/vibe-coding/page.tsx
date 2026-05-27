@@ -6,13 +6,13 @@ import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
 import { VibeCodingTopBar } from '@/components/sections/VibeCodingTopBar'
 import { VideoCallout } from '@/components/sections/VideoCallout'
+import { CopyablePrompt } from '@/components/sections/CopyablePrompt'
 
 const sidebarSections = [
   { id: 'tracks', label: 'Pick a track' },
   { id: 'free-setup', label: 'Free Starter setup' },
   { id: 'recommended-setup', label: 'Recommended setup' },
   { id: 'clone', label: 'Clone the starter' },
-  { id: 'first-conversation', label: 'First conversation' },
   { id: 'pick-a-project', label: 'Pick your first project' },
   { id: 'ship-it', label: 'Ship it' },
   { id: 'domain', label: 'Buy a domain' },
@@ -129,6 +129,8 @@ export default function VibeCodingPage() {
 
               <VideoCallout
                 href="https://www.youtube.com/watch?v=96jN2OCOfLs"
+                kind="video"
+                duration="~32 min"
                 source="YouTube · Sequoia AI Ascent"
                 title="Andrej Karpathy — From Vibe Coding to Agentic Engineering"
                 note="The man who coined the term, on where it&rsquo;s going. Worth watching after you&rsquo;ve shipped something."
@@ -195,15 +197,19 @@ export default function VibeCodingPage() {
               <h2 className="font-heading text-xl font-bold md:text-2xl">Free Starter setup</h2>
               <VideoCallout
                 href="https://www.youtube.com/watch?v=f33Fw6NiPpw"
+                kind="video"
+                duration="~12 min"
                 source="YouTube"
                 title="Getting Started with Cline — The Best VS Code AI Plugin"
                 note="Full walkthrough of installing and configuring Cline. Use as a visual companion to the steps below."
               />
               <VideoCallout
                 href="https://ai.google.dev/gemini-api/docs/api-key"
+                kind="doc"
+                duration="2 min read"
                 source="Google AI for Developers"
                 title="Using Gemini API keys — official docs"
-                note="The canonical guide for step 3 below. 2-minute read."
+                note="The canonical written guide for step 3 below."
               />
 
               <ol className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
@@ -260,12 +266,16 @@ export default function VibeCodingPage() {
               <h2 className="font-heading text-xl font-bold md:text-2xl">Recommended setup</h2>
               <VideoCallout
                 href="https://www.anthropic.com/webinars/claude-code-in-an-hour-a-developers-intro"
+                kind="video"
+                duration="~60 min"
                 source="Anthropic · Official webinar"
                 title="Claude Code in an Hour — A Developer's Intro"
                 note="Direct from Anthropic. The full intro — installation, prompting patterns, real workflows."
               />
               <VideoCallout
                 href="https://www.youtube.com/watch?v=uFO9EAPINWo"
+                kind="video"
+                duration="~30 min"
                 source="YouTube"
                 title="Mastering Claude Code — The Complete Visual Breakdown"
                 note="Shorter visual rebuild of Anthropic&rsquo;s 30-minute tutorial. Good if the webinar is too long."
@@ -296,9 +306,11 @@ export default function VibeCodingPage() {
                   >
                     docs.claude.com/claude-code
                   </a>
-                  . On a Mac:{' '}
-                  <code className="rounded bg-muted/30 px-1.5 py-0.5">npm install -g @anthropic-ai/claude-code</code>
-                  .
+                  . On Mac or Linux, run this in your terminal:
+                  <CopyablePrompt
+                    kind="terminal"
+                    text="npm install -g @anthropic-ai/claude-code"
+                  />
                 </li>
                 <li>
                   <span className="text-foreground font-semibold">3. Subscribe to Claude Pro.</span>{' '}
@@ -314,9 +326,12 @@ export default function VibeCodingPage() {
                   . Pro plan unlocks Claude Code at the included rate.
                 </li>
                 <li>
-                  <span className="text-foreground font-semibold">4. Authenticate.</span> Run{' '}
-                  <code className="rounded bg-muted/30 px-1.5 py-0.5">claude login</code> in your
-                  terminal. Pick browser auth.
+                  <span className="text-foreground font-semibold">4. Authenticate.</span> Run this
+                  in your terminal, then pick browser auth:
+                  <CopyablePrompt
+                    kind="terminal"
+                    text="claude login"
+                  />
                 </li>
                 <li>
                   <span className="text-foreground font-semibold">5. Done.</span> On to the
@@ -330,9 +345,11 @@ export default function VibeCodingPage() {
               <h2 className="font-heading text-xl font-bold md:text-2xl">Clone the starter</h2>
               <VideoCallout
                 href="https://www.youtube.com/watch?v=r8jQ9hVA2qs"
+                kind="video"
+                duration="~2 min"
                 source="GitHub · Official"
                 title="A brief introduction to Git for beginners"
-                note="If git is new — watch this first. Two minutes. From GitHub&rsquo;s own channel."
+                note="If git is new — watch this first. From GitHub&rsquo;s own channel."
               />
 
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
@@ -340,47 +357,29 @@ export default function VibeCodingPage() {
                 (that&rsquo;s the &ldquo;git&rdquo; part). When you clone it, you get a copy you
                 can modify without affecting the original.
               </p>
-              <pre className="mt-6 overflow-x-auto rounded-lg border border-border/20 bg-muted/20 p-4 text-sm">
-{`git clone https://github.com/shwishabit/vibe-coding-starter.git my-project
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                You don&rsquo;t need to type git commands — your AI can do it. Open Cline (or
+                Claude Code) and paste this:
+              </p>
+
+              <CopyablePrompt
+                label="Paste into Cline or Claude Code"
+                text={`Clone the vibe-coding-starter repo from https://github.com/shwishabit/vibe-coding-starter into a new folder called my-project. After cloning, wipe the existing .git history and reinitialize git so the project starts fresh. Then confirm the folder is ready and tell me what's inside.`}
+              />
+
+              <p className="mt-6 text-sm text-muted-foreground">
+                The AI will run the commands, confirm each step, and report back. Open the{' '}
+                <code>my-project</code> folder in your editor — that&rsquo;s your project from
+                here on.
+              </p>
+
+              <CopyablePrompt
+                label="Or run it yourself in the terminal"
+                kind="terminal"
+                text={`git clone https://github.com/shwishabit/vibe-coding-starter.git my-project
 cd my-project
 rm -rf .git && git init`}
-              </pre>
-              <p className="mt-4 text-sm text-muted-foreground">
-                The last line wipes the starter&rsquo;s history so your new project starts fresh.
-                Open the <code>my-project</code> folder in your editor.
-              </p>
-            </section>
-
-            {/* FIRST CONVERSATION */}
-            <section id="first-conversation" className="mt-16 scroll-mt-20">
-              <h2 className="font-heading text-xl font-bold md:text-2xl">
-                Your first conversation
-              </h2>
-              <figure className="mt-6 overflow-hidden rounded-lg border border-border/20 bg-muted/10">
-                <Image
-                  src="/learn/vibe-coding/session-flow.png"
-                  alt="A six-step session flow: open a chat → /grill-me → write code together → verify it works → small commit → /log the lesson, with a loop back to start a fresh chat."
-                  width={2752}
-                  height={1536}
-                  className="h-auto w-full"
-                  priority={false}
-                />
-                <figcaption className="border-t border-border/20 px-4 py-2.5 text-xs text-muted-foreground">
-                  One productive session, end to end. The loop repeats — or start a fresh chat when you shift acts.
-                </figcaption>
-              </figure>
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                Open Cline (or Claude Code) and type:
-              </p>
-              <pre className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-help me set up my workspace
-              </pre>
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                The <code>setup-workspace</code> skill will run a short Q&amp;A — name, what
-                you&rsquo;re building, whether you want design skills, whether to install a docs
-                lookup tool. Your answers get written to <code>memory/user_role.md</code> so the
-                AI remembers them across sessions.
-              </p>
+              />
             </section>
 
             {/* PICK A PROJECT */}
@@ -410,12 +409,52 @@ help me set up my workspace
                   </li>
                 ))}
               </ol>
-              <p className="mt-10 text-base leading-relaxed text-muted-foreground md:text-lg">
-                Once you&rsquo;ve picked: tell the AI &ldquo;I want to build [X],&rdquo; then
-                type <code>/grill-me</code>. It&rsquo;ll interview you for 5–10 minutes before
-                any code gets written. That&rsquo;s the discipline that makes the rest of the
+
+              {/* Personalize the AI — once they've picked */}
+              <div className="mt-12 rounded-lg border border-border/30 bg-muted/10 p-5 md:p-6">
+                <h3 className="font-heading text-base font-bold md:text-lg">
+                  Now personalize the AI
+                </h3>
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Paste this into Cline (or Claude Code). The <code>setup-workspace</code> skill
+                  will run a short Q&amp;A — your name, what you&rsquo;re building (the project
+                  you just picked), whether you want design skills, whether to install a docs
+                  lookup tool. Your answers get written to <code>memory/user_role.md</code> so
+                  the AI remembers them across sessions.
+                </p>
+                <CopyablePrompt
+                  label="Paste into Cline or Claude Code"
+                  text="help me set up my workspace"
+                />
+              </div>
+
+              <figure className="mt-12 overflow-hidden rounded-lg border border-border/20 bg-muted/10">
+                <Image
+                  src="/learn/vibe-coding/session-flow.png"
+                  alt="A six-step session flow: open a chat → /grill-me → write code together → verify it works → small commit → /log the lesson, with a loop back to start a fresh chat."
+                  width={2752}
+                  height={1536}
+                  className="h-auto w-full"
+                  priority={false}
+                />
+                <figcaption className="border-t border-border/20 px-4 py-2.5 text-xs text-muted-foreground">
+                  Every productive session looks like this. The loop repeats — or start a fresh chat when you shift acts.
+                </figcaption>
+              </figure>
+
+              <p className="mt-8 text-base leading-relaxed text-muted-foreground md:text-lg">
+                Then tell the AI &ldquo;I want to build [X],&rdquo; followed by{' '}
+                <code>/grill-me</code>. It&rsquo;ll interview you for 5–10 minutes before any
+                code gets written. That&rsquo;s the discipline that makes the rest of the
                 project possible.
               </p>
+
+              <CopyablePrompt
+                label="Paste into Cline or Claude Code (replace [X])"
+                text={`I want to build [X — describe in one sentence what your project does and who it's for].
+
+/grill-me`}
+              />
             </section>
 
             {/* SHIP IT */}
@@ -432,11 +471,18 @@ help me set up my workspace
                   Vercel
                 </a>
                 . Free tier handles small projects. You get a URL like{' '}
-                <code>your-project.vercel.app</code>. Ask the AI to walk you through deployment
-                — it&rsquo;s usually 3 clicks plus connecting your GitHub.
+                <code>your-project.vercel.app</code>. Don&rsquo;t struggle with the dashboard
+                — paste this prompt and the AI will walk you through it:
               </p>
-              <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                Send the URL to someone. Watch them use it. That&rsquo;s the loop.
+
+              <CopyablePrompt
+                label="Paste into Cline or Claude Code"
+                text={`Walk me through deploying this project to Vercel for free. Assume I've never deployed anything before. Tell me each step in order — what to click, what to type — and pause for my confirmation before moving on.`}
+              />
+
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
+                Once it&rsquo;s live, send the URL to someone. Watch them use it.
+                That&rsquo;s the loop.
               </p>
             </section>
 
@@ -506,22 +552,51 @@ help me set up my workspace
               </p>
               <ul className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
                 <li>
-                  <span className="text-foreground font-semibold">GitHub</span> — where your
-                  code lives. Free. Sign up once, never think about it again.
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-foreground underline decoration-primary/40 decoration-2 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+                  >
+                    GitHub
+                  </a>{' '}
+                  — where your code lives. Free. Sign up once, never think about it again.
                 </li>
                 <li>
-                  <span className="text-foreground font-semibold">Vercel</span> — where your
-                  site gets hosted. Free tier covers everything below paid-product traffic.
+                  <a
+                    href="https://vercel.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-foreground underline decoration-primary/40 decoration-2 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+                  >
+                    Vercel
+                  </a>{' '}
+                  — where your site gets hosted. Free tier covers everything below paid-product
+                  traffic.
                 </li>
                 <li>
-                  <span className="text-foreground font-semibold">Supabase</span> — database +
-                  login. You&rsquo;ll need this the first time you build something with user
-                  accounts.
+                  <a
+                    href="https://supabase.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-foreground underline decoration-primary/40 decoration-2 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+                  >
+                    Supabase
+                  </a>{' '}
+                  — database + login. You&rsquo;ll need this the first time you build something
+                  with user accounts.
                 </li>
                 <li>
-                  <span className="text-foreground font-semibold">Resend</span> — sending email
-                  from your app (welcome emails, password resets, notifications). Free for 3,000
-                  emails a month.
+                  <a
+                    href="https://resend.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-foreground underline decoration-primary/40 decoration-2 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+                  >
+                    Resend
+                  </a>{' '}
+                  — sending email from your app (welcome emails, password resets, notifications).
+                  Free for 3,000 emails a month.
                 </li>
               </ul>
               <p className="mt-4 text-sm text-muted-foreground">
