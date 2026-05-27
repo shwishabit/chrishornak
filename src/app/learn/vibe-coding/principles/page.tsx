@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
+import { VibeCodingTopBar } from '@/components/sections/VibeCodingTopBar'
 
 export const metadata: Metadata = {
   title: 'Vibe Coding 101 — Principles',
@@ -231,10 +231,13 @@ const principles: Principle[] = [
   },
 ]
 
-const principleSections = principles.map((p) => ({
-  id: p.id,
-  label: `${p.number}. ${p.title}`,
-}))
+const principleSections = [
+  ...principles.map((p) => ({
+    id: p.id,
+    label: `${p.number}. ${p.title}`,
+  })),
+  { id: 'working-with-your-ai', label: 'Working with your AI' },
+]
 
 const principleExternalLinks = [
   { href: 'https://github.com/shwishabit/vibe-coding-starter', label: 'Starter repo' },
@@ -250,13 +253,13 @@ export default function PrinciplesPage() {
   return (
     <main id="main-content" className="relative min-h-screen overflow-x-hidden">
       <BackgroundMesh />
-      <Navigation />
+      <VibeCodingTopBar />
 
-      <div className="mx-auto max-w-7xl px-6 pt-28 pb-24 md:px-10 md:pt-32 md:pb-32 lg:px-12">
+      <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 md:px-10 md:pt-12 md:pb-32 lg:px-12">
         <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12 xl:gap-16">
           {/* Sidebar (desktop) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+            <div className="sticky top-20 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
               <Sidebar />
             </div>
           </aside>
@@ -296,9 +299,12 @@ export default function PrinciplesPage() {
               </p>
             </header>
 
-            <ol className="mt-16 space-y-16 md:space-y-20">
+            <h2 className="mt-16 font-heading text-xs font-bold uppercase tracking-widest text-primary">
+              The ten principles
+            </h2>
+            <ol className="mt-6 space-y-16 md:space-y-20">
               {principles.map((p) => (
-                <li key={p.id} id={p.id} className="scroll-mt-28">
+                <li key={p.id} id={p.id} className="scroll-mt-20">
                   <div className="flex items-baseline gap-4">
                     <span className="font-heading text-sm font-bold tracking-widest text-primary">
                       {p.number}
@@ -322,6 +328,105 @@ export default function PrinciplesPage() {
                 </li>
               ))}
             </ol>
+
+            {/* WORKING WITH YOUR AI */}
+            <section id="working-with-your-ai" className="mt-20 scroll-mt-20 md:mt-24">
+              <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-primary">
+                Working with your AI
+              </h2>
+              <p className="mt-3 font-heading text-2xl font-bold leading-snug md:text-3xl">
+                Four disciplines, one filter, two modes.
+              </p>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                The principles above are rules for <em>you</em>. The four below are rules for how
+                <em> you and the AI</em> work together. Each one is also baked into the starter
+                — as a skill the AI loads automatically, or a slash command you can invoke.
+              </p>
+
+              {/* Karpathy filter */}
+              <div className="mt-12 border-l-2 border-primary/40 pl-5">
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-primary">
+                  Filter
+                </p>
+                <h3 className="mt-2 font-heading text-xl font-bold md:text-2xl">
+                  The Karpathy filter
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Before any non-trivial change, the AI runs four checks: <strong>Think
+                  first</strong> (state assumptions, surface ambiguity), <strong>Simplicity
+                  first</strong> (minimum code that solves it — no speculative flexibility),{' '}
+                  <strong>Surgical changes</strong> (touch only what the request requires,
+                  don&rsquo;t refactor adjacent code), <strong>Goal-driven</strong> (know the
+                  success criterion before starting).
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Type <code>/karpathy</code> any time to make the AI run this audit out loud. If
+                  it&rsquo;s drifting toward a 200-line rewrite when you asked for a 3-line fix,
+                  this is the brake.
+                </p>
+              </div>
+
+              {/* Caveman mode */}
+              <div className="mt-12 border-l-2 border-primary/40 pl-5">
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-primary">
+                  Mode
+                </p>
+                <h3 className="mt-2 font-heading text-xl font-bold md:text-2xl">
+                  Caveman mode
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  An ultra-compressed response style. Cuts token usage by roughly 75% — all
+                  technical substance stays, only the filler dies. Especially useful on the free
+                  Gemini track (rate limits hit you faster) and during long sessions.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Type <code>/caveman</code> to turn it on. Stays on until you type{' '}
+                  <code>stop caveman</code>. The AI drops articles, fillers, and pleasantries —
+                  keeps file paths, errors, and code exact. Reads tight, ships fast.
+                </p>
+              </div>
+
+              {/* Fresh chats */}
+              <div className="mt-12 border-l-2 border-primary/40 pl-5">
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-primary">
+                  Mode
+                </p>
+                <h3 className="mt-2 font-heading text-xl font-bold md:text-2xl">
+                  Fresh chats
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Every message you send includes the entire conversation history. The longer the
+                  history, the slower the response, the more tokens you burn, and the more
+                  likely the AI loses the thread on something important from earlier.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  When you shift acts — designing → building, building → debugging — start a
+                  fresh chat. Type <code>/fresh</code> first and the AI produces a paste-ready
+                  handoff summary (goal, where we are, next step, files in flight). Paste it into
+                  the new conversation. Continue.
+                </p>
+              </div>
+
+              {/* Approval gates */}
+              <div className="mt-12 border-l-2 border-primary/40 pl-5">
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-primary">
+                  Safety
+                </p>
+                <h3 className="mt-2 font-heading text-xl font-bold md:text-2xl">
+                  Approval gates
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  The AI never does these without asking first: pushing to a remote repo,
+                  deploying to production, deleting files you authored, installing paid packages
+                  or services, sending email or messages from your account.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  The cost of asking once is low. The cost of a wrong destructive action is high.
+                  If your AI ever does any of those without confirmation, that&rsquo;s a bug —
+                  add it to <code>memory/feedback_*.md</code> so it doesn&rsquo;t happen again.
+                </p>
+              </div>
+            </section>
           </article>
         </div>
       </div>

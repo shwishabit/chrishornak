@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
+import { VibeCodingTopBar } from '@/components/sections/VibeCodingTopBar'
 
 const sidebarSections = [
   { id: 'tracks', label: 'Pick a track' },
@@ -73,13 +73,13 @@ export default function VibeCodingPage() {
   return (
     <main id="main-content" className="relative min-h-screen overflow-x-hidden">
       <BackgroundMesh />
-      <Navigation />
+      <VibeCodingTopBar />
 
-      <div className="mx-auto max-w-7xl px-6 pt-28 pb-24 md:px-10 md:pt-32 md:pb-32 lg:px-12">
+      <div className="mx-auto max-w-7xl px-6 pt-10 pb-24 md:px-10 md:pt-12 md:pb-32 lg:px-12">
         <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12 xl:gap-16">
           {/* Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-28">
+            <div className="sticky top-20">
               <Sidebar />
             </div>
           </aside>
@@ -127,7 +127,7 @@ export default function VibeCodingPage() {
             </header>
 
             {/* TWO TRACKS */}
-            <section id="tracks" className="mt-16 scroll-mt-28">
+            <section id="tracks" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Pick a track</h2>
               <div className="mt-6 grid gap-6 md:grid-cols-2">
                 {/* Free */}
@@ -182,7 +182,7 @@ export default function VibeCodingPage() {
             </section>
 
             {/* FREE SETUP */}
-            <section id="free-setup" className="mt-16 scroll-mt-28">
+            <section id="free-setup" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Free Starter setup</h2>
               <ol className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
                 <li>
@@ -234,7 +234,7 @@ export default function VibeCodingPage() {
             </section>
 
             {/* RECOMMENDED SETUP */}
-            <section id="recommended-setup" className="mt-16 scroll-mt-28">
+            <section id="recommended-setup" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Recommended setup</h2>
               <ol className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
                 <li>
@@ -291,7 +291,7 @@ export default function VibeCodingPage() {
             </section>
 
             {/* CLONE */}
-            <section id="clone" className="mt-16 scroll-mt-28">
+            <section id="clone" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Clone the starter</h2>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 A <em>repo</em> is a folder of code with a memory of every change ever made
@@ -310,7 +310,7 @@ rm -rf .git && git init`}
             </section>
 
             {/* FIRST CONVERSATION */}
-            <section id="first-conversation" className="mt-16 scroll-mt-28">
+            <section id="first-conversation" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 Your first conversation
               </h2>
@@ -329,7 +329,7 @@ help me set up my workspace
             </section>
 
             {/* PICK A PROJECT */}
-            <section id="pick-a-project" className="mt-16 scroll-mt-28">
+            <section id="pick-a-project" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 Pick your first project
               </h2>
@@ -364,7 +364,7 @@ help me set up my workspace
             </section>
 
             {/* SHIP IT */}
-            <section id="ship-it" className="mt-16 scroll-mt-28">
+            <section id="ship-it" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Ship it</h2>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 For most first projects, the easiest host is{' '}
@@ -386,7 +386,7 @@ help me set up my workspace
             </section>
 
             {/* DOMAIN */}
-            <section id="domain" className="mt-16 scroll-mt-28">
+            <section id="domain" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 When you&rsquo;re ready: buy a domain
               </h2>
@@ -428,7 +428,7 @@ help me set up my workspace
             </section>
 
             {/* STACK */}
-            <section id="stack" className="mt-16 scroll-mt-28">
+            <section id="stack" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">
                 The stack you&rsquo;ll grow into
               </h2>
