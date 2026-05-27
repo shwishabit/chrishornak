@@ -174,57 +174,63 @@ For smaller projects, I work hands-on. For larger ones, I bring in the right peo
 
 ---
 
-## 📍 Session State (updated 2026-05-11 · audit-parser content/publishing-vertical calibration shipped)
+## 📍 Session State (updated 2026-05-26 · /learn/vibe-coding + /principles SHIPPED with sidebar, diagrams, video callouts, copy-paste prompts)
 
 **Last worked on:**
-Surgical calibration of `audit-parser.ts` heuristic 6 (Business description) to recognize the content/publishing/writing/editorial vertical. Triggered by Blog Hands R20 Findability sprint — bloghands.com hit 100 on 6 of 7 categories but AI hung at 91% with "Business description — Partially clear." Source-read of `audit-parser.ts:849-860` revealed the keyword lists biased toward services-with-tangible-deliverables; entire vertical was missing. Calibrated the three regexes, re-ran the 22-site harness, added Blog Hands as a content/publishing baseline. Committed + pushed: `940bf2e` on origin/main. Bloghands now scores 100 across all 7 categories.
+Built two new noindex routes on chrishornak.com (`/learn/vibe-coding` + `/learn/vibe-coding/principles`) as the companion guide for the new `vibe-coding-starter` repo. Replaced the standard chrishornak `<Navigation />` on these pages with a slim `VibeCodingTopBar` ("← chrishornak.com · Vibe Coding") so the in-guide TOC takes nav priority. Built a sticky docs-style left sidebar (`VibeCodingSidebar` — client component, IntersectionObserver-based active-section highlighting) + mobile sticky `<details>` collapsible TOC. Wired 3 Gemini-generated diagrams (`ecosystem.png`, `session-flow.png`, `rules.png`) + 6 video/doc callouts with visual distinction (video = teal play triangle; doc = muted document icon) + durations. Built `CopyablePrompt` client component (clipboard API + wrap-on-overflow) and seeded copy-paste prompts throughout the guide — clone, Claude Code install/login, setup-workspace, build-with-grill, deploy. Restructured the tutorial flow: removed the "Your first conversation" section and moved its prompt to the end of "Pick your first project" (the setup-workspace Q&A captures their project choice, so it should fire AFTER they pick). Updated `robots.ts` to add `/learn/vibe-coding` to disallow + new explicit AI-crawler rules (CCBot, GPTBot, ChatGPT-User, ClaudeBot, Claude-Web, anthropic-ai, Google-Extended, PerplexityBot, Bytespider, cohere-ai, Amazonbot, Applebot-Extended).
 
 **Files touched:**
-- `src/lib/audit-parser.ts` — heuristic 6 (lines 849-860):
-  - `hasServiceLanguage` (h1 + first 5 paragraphs): added `we write | we ship | we publish | we draft | we author | we edit | we produce | i write`
-  - `hasDescriptionMeta` (industry word list): added `blog | content | writing | writer | copywriter | editorial | publishing | publisher | ghostwrit | newsletter | magazine | publication`
-  - `hasValueProp` (h1 only): added `write | writing | content | publish` (intentionally NOT `ship` — would over-pass e-commerce "free shipping" h1s)
-- `scripts/test-real-sites.ts` — added Blog Hands as content/publishing baseline alongside PA Pardon's law baseline.
-- (memory) `project_findability_tool_fixes.md` — closed old "weaker #1" deferred item (Business description regex bias). Frontmatter description updated. Index entry in `MEMORY.md` refreshed.
+- `src/app/learn/vibe-coding/layout.tsx` — new, noindex metadata.
+- `src/app/learn/vibe-coding/page.tsx` — new main guide page (Hero → Tracks → Free Setup → Recommended Setup → Clone → Pick Your Project → Ship It → Domain → Stack).
+- `src/app/learn/vibe-coding/principles/page.tsx` — new, 10 principles + "Working with your AI" section (Karpathy filter, Caveman, Fresh chats, Approval gates).
+- `src/components/sections/VibeCodingTopBar.tsx` — new, replaces `<Navigation />` on the /learn pages.
+- `src/components/sections/VibeCodingSidebar.tsx` — new, client component, IntersectionObserver active-section highlighting.
+- `src/components/sections/VideoCallout.tsx` — new, with `kind="video"|"doc"` prop + duration rendering.
+- `src/components/sections/CopyablePrompt.tsx` — new, client component, clipboard API + wrap-on-overflow.
+- `src/app/robots.ts` — added `/learn/vibe-coding` to default disallow + 12 explicit AI-crawler rules.
+- `public/learn/vibe-coding/{ecosystem.png, session-flow.png, rules.png}` — 3 Gemini-generated diagrams (~5MB each, Next.js Image optimizes on serve).
 
 **Where we are:**
-🟢 chrishornak.com prod is on `940bf2e`. The Findability tool's Business description heuristic now recognizes content/publishing vocabulary alongside the existing services/products/professional verticals. Verified Blog Hands warn→pass with 4/4 signals; verified zero regressions across the 19 existing sites with prior Business description data; verified zero over-passes among the 6 fail/warn sites.
+🟢 chrishornak.com is on `aed3f41`. Two new noindex routes live at `/learn/vibe-coding` + `/learn/vibe-coding/principles`. Build verified clean (23 static pages generated, both new routes prerendered). All copy-paste prompts wrap correctly (no horizontal scroll). Sticky sidebar works desktop + mobile.
 
 **Next action (entry point for next session):**
-1. **PA Pardon audit-shaped workaround revert** — still queued from 2026-05-08 sprint. `Projects/papardon/src/components/ui/Logo.tsx` (restore `alt="" role="presentation"`) + `Projects/papardon/src/components/sections/FAQ.tsx` (`<h3>` back to `<span>` inside `<summary>`). Re-audit after revert to confirm both still pass.
-2. **Heading-skip footer scope reset** (last remaining "weaker, later" deferred item from the original 2026-05-08 sprint). Confirmed across 12+ sites in the 22-site harness. Strict-WCAG keeping defensible; don't change unless multiple users complain. Location: `audit-parser.ts:975-1023`.
+1. **PA Pardon audit-shaped workaround revert** — still queued from 2026-05-08. `Projects/papardon/src/components/ui/Logo.tsx` (restore `alt="" role="presentation"`) + `Projects/papardon/src/components/sections/FAQ.tsx` (`<h3>` back to `<span>` inside `<summary>`). Re-audit after revert.
+2. **Heading-skip footer scope reset** — remaining "weaker, later" item from 2026-05-08. Strict-WCAG keeping defensible; don't change unless multiple users complain. Location: `audit-parser.ts:975-1023`.
 3. **Image-format check** still firing 13/17 even after Wave 2 calibration. Consider neutral-info reframe in a third calibration pass.
+4. **Watch /learn/vibe-coding get used** — when Chris shares the link, log feedback to `memory/feedback_starter_*` for v0.3 iteration.
 
 **Unsaved decisions:**
-- **CSP nonces.** `audit-parser.ts` doesn't yet detect CSP `'unsafe-inline'` as a Security warning. Worth adding to Security category in a future pass — most sites that DO have CSP are running with `'unsafe-inline'` (incl. bloghands now), so a calibration discussion is warranted before flagging.
-- **Memory writes still pending from 2026-05-08 retrospection** (no action taken since): `feedback_distinguish_block_classes.md` (DNS vs WAF vs UA-filter), `feedback_mine_test_data_before_patching.md` (re-rank when test data expands).
+- **CSP nonces check.** `audit-parser.ts` doesn't yet detect CSP `'unsafe-inline'` as a Security warning. Still pending from 2026-05-11.
+- **Memory writes still pending from 2026-05-08 retrospection:** `feedback_distinguish_block_classes.md`, `feedback_mine_test_data_before_patching.md`.
 
 **Gotchas / Errors encountered:**
-- **None tonight.** Clean type-check, harness ran end-to-end in ~3 min across 23 sites, diff via Node CLI gave a categorical answer (0 regressions, 0 over-passes), commit + push first-try.
+- **`github.com/chrishornak`** doesn't exist as a GitHub org/user. Caused initial wrong-URL push; corrected to `shwishabit/vibe-coding-starter` in 6 spots + re-pushed.
+- **`overflow-x-auto` on `<pre>`** produced horizontal scrollbars on long copyable prompts. Fixed mid-session with `whitespace-pre-wrap break-words` + `overflow-wrap: anywhere`.
+- **Video/doc visual distinction.** Initial VideoCallout used "Watch" + play icon for everything including a docs link. Caught by Chris in screenshot review; refactored to support `kind="video"|"doc"` with distinct icons/labels.
 
 **Process retrospection:**
-- **Tool-end vs site-end diagnosis worked.** Faced with "Business description partially clear," the instinct could have been to warp bloghands hero copy until the regex matched. Instead read the parser source, named the gap (content/publishing vertical absent from all 3 keyword lists), and shipped the fix to its proper home. The tool fix benefits every future content/publishing client and the bloghands hero stays brand-voice. Same pattern worth applying when other "partially clear" warnings hit future projects.
-- **22-site harness paid off again.** Same diff-vs-baseline pattern used in 2026-05-08 sprint caught yesterday's regressions; tonight it gave a clean go-signal in a single Node command. Worth investing in similar harnesses for any other parser-heavy tool.
-- **Test harness baseline expansion is cheap insurance.** Added Blog Hands as a content/publishing baseline alongside PA Pardon's law baseline — when (not if) a future calibration touches this region, the harness will surface a regression on either vertical before push.
+- **Top-bar replacement was a good call.** Chris's instinct that "the in-guide nav is more important than my main website nav" applies to any future documentation-style sub-section. Worth a memory rule: "On docs/guide subpages, swap site nav for slim return-to-home + in-page nav."
+- **Visual signifiers must match content semantics.** A play icon on a docs link is dishonest. Same principle for any badge/chip/icon: type → visual treatment should be 1:1. Surfaced by Chris in screenshot review.
+- **Restructure when asked.** "Your first conversation" was logically misplaced (Q&A fires AFTER they know what they're building, not before). The 5-minute restructure made the flow honest.
 
 **SWOT (session retrospective):**
 
 - **Strengths:**
-  - Diagnosis-before-action: read the parser source first, then named the gap, then fixed it. No code thrown at the symptom.
-  - Targeted edit: 3 regex additions across 12 lines total. Small surface, easy to review, easy to revert.
-  - Verification chain: typecheck → harness against 22 sites + new Blog Hands baseline → per-site Business description status diff → confirmed 0 regress / 0 over-pass / bloghands warn→pass.
-  - Closed an old deferred item (`project_findability_tool_fixes.md` "weaker #1") rather than letting it linger another session.
+  - Built sticky-sidebar-with-active-highlighting as a reusable component (`VibeCodingSidebar`) — could be promoted to a generic `<DocsSidebar />` if Chris adds more guide-style sections.
+  - Verification held every push — `npm run build` exit 0 before every git push; zero broken deploys across 8+ commits in one session.
+  - Honest about Veo limits (text-to-video, can't browse URLs) and proposed the right two-step workflow (Gemini reads → Veo generates).
 
 - **Weaknesses:**
-  - The keyword list as a structure is still brittle — every new vertical needs another calibration sprint. A more general "schema description + h1 keyword density" model might generalize better. Not tonight's fix but worth noting.
-  - Didn't add CSP-strictness check to Security category while in the parser — small adjacent win that would have benefited bloghands' own audit.
+  - Multiple sub-iterations on the sidebar (initial → sticky → mobile sticky → restructure → new component). A clearer up-front [PLAN] would have collapsed 3 commits into 1.
+  - Initial OPTIONAL-SKILLS menu was placeholder fluff with no actual skill files behind it. Chris caught and called for curation.
+  - Video durations are estimates — could have WebFetched 4 YouTube pages for exact, chose speed instead.
 
 - **Opportunities:**
-  - **CSP-strictness Security check** — flag `'unsafe-inline'` and `'unsafe-eval'` in CSP as warn-not-fail (most sites have them). Compound leverage if more Chris-built sites add CSP headers.
-  - **Vertical-coverage audit** — review remaining verticals not yet represented in `hasDescriptionMeta` (e.g., manufacturing, B2B SaaS, nonprofit, education). Could pre-empt the next "partially clear" surprise.
-  - **`feedback_audit_tool_calibration_over_warp.md`** memory write — capture tonight's diagnosis pattern (read parser source, name gap, fix at proper home, don't warp site copy). Reusable principle.
+  - **Promote VibeCodingSidebar → generic DocsSidebar.** Reusable for any future chrishornak docs section.
+  - **Wire a Path A intro video** when Chris generates one in Veo — slot is ready at the hero of `/learn/vibe-coding`.
+  - **Add `/learn` index page** if more guides land here over time.
 
 - **Threats:**
-  - **Keyword-list brittleness** — see Weaknesses. Every new vertical Chris audits could surface another "partially clear" gap until the heuristic generalizes.
-  - **PA Pardon workaround revert still pending** from 2026-05-08 sprint. Workaround code in papardon/Logo.tsx + FAQ.tsx will get re-introduced by future devs (or me) assuming it's still needed if not cleaned up.
-  - **Vercel auto-deploys from `main` with no staging.** Every audit-touching commit goes live immediately. Mitigation: verification chain held tonight; keep doing it.
+  - **PA Pardon workaround revert still pending** from 2026-05-08. Will continue to silently expand if not cleaned up.
+  - **Vercel auto-deploys from `main` with no staging.** Every commit goes live in 60s. Mitigation: verification chain held tonight.
+  - **5MB PNG diagrams** could feel slow on first paint on mobile. Next.js Image optimizes to WebP/AVIF on serve, but worth monitoring Lighthouse on the live page after Vercel's cold-start optimization completes.
