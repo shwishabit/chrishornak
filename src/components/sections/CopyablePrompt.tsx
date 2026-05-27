@@ -44,9 +44,10 @@ export function CopyablePrompt({ text, kind = 'prompt', label }: Props) {
       >
         <pre
           className={[
-            'overflow-x-auto px-4 py-3.5 pr-14 font-mono text-sm leading-relaxed md:text-[0.95rem]',
+            'whitespace-pre-wrap break-words px-4 py-3.5 pr-14 font-mono text-sm leading-relaxed md:text-[0.95rem]',
             isPrompt ? 'text-primary' : 'text-foreground',
           ].join(' ')}
+          style={{ overflowWrap: 'anywhere' }}
         >
           {text}
         </pre>
