@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
+import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
 
 export const metadata: Metadata = {
   title: 'Vibe Coding 101 — Principles',
@@ -230,87 +231,100 @@ const principles: Principle[] = [
   },
 ]
 
+const principleSections = principles.map((p) => ({
+  id: p.id,
+  label: `${p.number}. ${p.title}`,
+}))
+
+const principleExternalLinks = [
+  { href: 'https://github.com/shwishabit/vibe-coding-starter', label: 'Starter repo' },
+  { href: 'https://github.com/shwishabit/vibe-coding-starter/blob/main/OPTIONAL-SKILLS.md', label: 'Optional skills' },
+  { href: 'https://github.com/shwishabit/vibe-coding-starter/blob/main/TROUBLESHOOTING.md', label: 'Troubleshooting' },
+]
+
+function Sidebar() {
+  return <VibeCodingSidebar sections={principleSections} externalLinks={principleExternalLinks} />
+}
+
 export default function PrinciplesPage() {
   return (
     <main id="main-content" className="relative min-h-screen overflow-x-hidden">
       <BackgroundMesh />
       <Navigation />
 
-      <section className="px-6 pt-32 pb-12 md:px-12 md:pt-36 md:pb-16 lg:px-24">
-        <div className="mx-auto max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary">
-            Vibe Coding 101
-          </p>
-          <h1 className="mt-4 font-heading text-3xl leading-[1.15] font-bold tracking-tight md:text-4xl lg:text-5xl">
-            Ten principles for coding with an AI without losing your weekend.
-          </h1>
-          <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
-            These are the rules that separate a good session from a frustrating one. They&rsquo;re
-            also the rules the starter repo enforces — via skills, commands, and the{' '}
-            <code>CLAUDE.md</code> your AI loads on every conversation. Read them once. Come back
-            when something feels wrong.
-          </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            New here?{' '}
-            <Link href="/learn/vibe-coding" className="text-primary underline underline-offset-4 hover:opacity-80">
-              Start with the setup walkthrough →
-            </Link>
-          </p>
-        </div>
-      </section>
+      <div className="mx-auto max-w-7xl px-6 pt-28 pb-24 md:px-10 md:pt-32 md:pb-32 lg:px-12">
+        <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12 xl:gap-16">
+          {/* Sidebar (desktop) */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+              <Sidebar />
+            </div>
+          </aside>
 
-      <section className="px-6 pb-24 md:px-12 md:pb-32 lg:px-24">
-        <div className="mx-auto max-w-3xl">
-          <ol className="space-y-16 md:space-y-20">
-            {principles.map((p) => (
-              <li key={p.id} id={p.id} className="scroll-mt-32">
-                <div className="flex items-baseline gap-4">
-                  <span className="font-heading text-sm font-bold tracking-widest text-primary">
-                    {p.number}
-                  </span>
-                  <h2 className="font-heading text-xl font-bold leading-snug md:text-2xl">
-                    {p.title}
-                  </h2>
-                </div>
-                <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                  {p.body}
-                </div>
-                <div className="mt-4">
-                  <a
-                    href={`#${p.id}`}
-                    className="text-xs uppercase tracking-wider text-primary/60 transition-colors hover:text-primary"
-                    aria-label={`Anchor link to ${p.title}`}
-                  >
-                    # {p.id}
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {/* Mobile TOC */}
+          <details className="mb-8 rounded-lg border border-border/20 bg-muted/10 p-4 lg:hidden">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground">
+              On this page
+            </summary>
+            <div className="mt-4">
+              <Sidebar />
+            </div>
+          </details>
 
-          <div className="mt-20 rounded-xl border border-primary/20 bg-primary/5 p-6 md:p-8">
-            <h3 className="font-heading text-base font-bold md:text-lg">
-              Where to go next
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">
-              Back to the setup walkthrough at{' '}
-              <Link href="/learn/vibe-coding" className="text-primary underline underline-offset-4 hover:opacity-80">
-                /learn/vibe-coding
-              </Link>
-              , or grab the starter at{' '}
-              <a
-                href="https://github.com/shwishabit/vibe-coding-starter"
-                className="text-primary underline underline-offset-4 hover:opacity-80"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                github.com/shwishabit/vibe-coding-starter
-              </a>
-              .
-            </p>
-          </div>
+          <article className="min-w-0">
+            <header>
+              <p className="text-sm font-medium uppercase tracking-widest text-primary">
+                Vibe Coding 101
+              </p>
+              <h1 className="mt-4 font-heading text-3xl leading-[1.15] font-bold tracking-tight md:text-4xl lg:text-5xl">
+                Ten principles for coding with an AI without losing your weekend.
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                These are the rules that separate a good session from a frustrating one.
+                They&rsquo;re also the rules the starter repo enforces — via skills, commands,
+                and the <code>CLAUDE.md</code> your AI loads on every conversation. Read them
+                once. Come back when something feels wrong.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                New here?{' '}
+                <Link
+                  href="/learn/vibe-coding"
+                  className="text-primary underline underline-offset-4 hover:opacity-80"
+                >
+                  Start with the setup walkthrough →
+                </Link>
+              </p>
+            </header>
+
+            <ol className="mt-16 space-y-16 md:space-y-20">
+              {principles.map((p) => (
+                <li key={p.id} id={p.id} className="scroll-mt-28">
+                  <div className="flex items-baseline gap-4">
+                    <span className="font-heading text-sm font-bold tracking-widest text-primary">
+                      {p.number}
+                    </span>
+                    <h2 className="font-heading text-xl font-bold leading-snug md:text-2xl">
+                      {p.title}
+                    </h2>
+                  </div>
+                  <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                    {p.body}
+                  </div>
+                  <div className="mt-4">
+                    <a
+                      href={`#${p.id}`}
+                      className="text-xs uppercase tracking-wider text-primary/60 transition-colors hover:text-primary"
+                      aria-label={`Anchor link to ${p.title}`}
+                    >
+                      # {p.id}
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </article>
         </div>
-      </section>
+      </div>
 
       <Footer />
     </main>
