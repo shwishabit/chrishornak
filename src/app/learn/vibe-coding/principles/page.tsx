@@ -299,12 +299,12 @@ export default function PrinciplesPage() {
               </Link>
               , or grab the starter at{' '}
               <a
-                href="https://github.com/chrishornak/vibe-coding-starter"
+                href="https://github.com/shwishabit/vibe-coding-starter"
                 className="text-primary underline underline-offset-4 hover:opacity-80"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                github.com/chrishornak/vibe-coding-starter
+                github.com/shwishabit/vibe-coding-starter
               </a>
               .
             </p>

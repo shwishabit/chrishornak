@@ -262,7 +262,7 @@ export default function VibeCodingPage() {
             modify without affecting the original.
           </p>
           <pre className="mt-6 overflow-x-auto rounded-lg border border-border/20 bg-muted/20 p-4 text-sm">
-{`git clone https://github.com/chrishornak/vibe-coding-starter.git my-project
+{`git clone https://github.com/shwishabit/vibe-coding-starter.git my-project
 cd my-project
 rm -rf .git && git init`}
           </pre>
@@ -448,7 +448,7 @@ help me set up my workspace
               </li>
               <li>
                 <a
-                  href="https://github.com/chrishornak/vibe-coding-starter"
+                  href="https://github.com/shwishabit/vibe-coding-starter"
                   className="text-primary underline underline-offset-4 hover:opacity-80"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -459,7 +459,7 @@ help me set up my workspace
               </li>
               <li>
                 <a
-                  href="https://github.com/chrishornak/vibe-coding-starter/blob/main/OPTIONAL-SKILLS.md"
+                  href="https://github.com/shwishabit/vibe-coding-starter/blob/main/OPTIONAL-SKILLS.md"
                   className="text-primary underline underline-offset-4 hover:opacity-80"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -470,7 +470,7 @@ help me set up my workspace
               </li>
               <li>
                 <a
-                  href="https://github.com/chrishornak/vibe-coding-starter/blob/main/TROUBLESHOOTING.md"
+                  href="https://github.com/shwishabit/vibe-coding-starter/blob/main/TROUBLESHOOTING.md"
                   className="text-primary underline underline-offset-4 hover:opacity-80"
                   target="_blank"
                   rel="noopener noreferrer"
