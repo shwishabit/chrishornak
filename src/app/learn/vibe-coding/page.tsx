@@ -4,6 +4,7 @@ import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { VibeCodingSidebar } from '@/components/sections/VibeCodingSidebar'
 import { VibeCodingTopBar } from '@/components/sections/VibeCodingTopBar'
+import { VideoCallout } from '@/components/sections/VideoCallout'
 
 const sidebarSections = [
   { id: 'tracks', label: 'Pick a track' },
@@ -124,6 +125,13 @@ export default function VibeCodingPage() {
                 </Link>{' '}
                 — five minutes. They&rsquo;ll save you hours.
               </p>
+
+              <VideoCallout
+                href="https://www.youtube.com/watch?v=96jN2OCOfLs"
+                source="YouTube · Sequoia AI Ascent"
+                title="Andrej Karpathy — From Vibe Coding to Agentic Engineering"
+                note="The man who coined the term, on where it&rsquo;s going. Worth watching after you&rsquo;ve shipped something."
+              />
             </header>
 
             {/* TWO TRACKS */}
@@ -184,6 +192,19 @@ export default function VibeCodingPage() {
             {/* FREE SETUP */}
             <section id="free-setup" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Free Starter setup</h2>
+              <VideoCallout
+                href="https://www.youtube.com/watch?v=f33Fw6NiPpw"
+                source="YouTube"
+                title="Getting Started with Cline — The Best VS Code AI Plugin"
+                note="Full walkthrough of installing and configuring Cline. Use as a visual companion to the steps below."
+              />
+              <VideoCallout
+                href="https://ai.google.dev/gemini-api/docs/api-key"
+                source="Google AI for Developers"
+                title="Using Gemini API keys — official docs"
+                note="The canonical guide for step 3 below. 2-minute read."
+              />
+
               <ol className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
                 <li>
                   <span className="text-foreground font-semibold">1. Install VSCode.</span>{' '}
@@ -236,6 +257,19 @@ export default function VibeCodingPage() {
             {/* RECOMMENDED SETUP */}
             <section id="recommended-setup" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Recommended setup</h2>
+              <VideoCallout
+                href="https://www.anthropic.com/webinars/claude-code-in-an-hour-a-developers-intro"
+                source="Anthropic · Official webinar"
+                title="Claude Code in an Hour — A Developer's Intro"
+                note="Direct from Anthropic. The full intro — installation, prompting patterns, real workflows."
+              />
+              <VideoCallout
+                href="https://www.youtube.com/watch?v=uFO9EAPINWo"
+                source="YouTube"
+                title="Mastering Claude Code — The Complete Visual Breakdown"
+                note="Shorter visual rebuild of Anthropic&rsquo;s 30-minute tutorial. Good if the webinar is too long."
+              />
+
               <ol className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
                 <li>
                   <span className="text-foreground font-semibold">1. Install VSCodium</span> (or
@@ -293,6 +327,13 @@ export default function VibeCodingPage() {
             {/* CLONE */}
             <section id="clone" className="mt-16 scroll-mt-20">
               <h2 className="font-heading text-xl font-bold md:text-2xl">Clone the starter</h2>
+              <VideoCallout
+                href="https://www.youtube.com/watch?v=r8jQ9hVA2qs"
+                source="GitHub · Official"
+                title="A brief introduction to Git for beginners"
+                note="If git is new — watch this first. Two minutes. From GitHub&rsquo;s own channel."
+              />
+
               <p className="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                 A <em>repo</em> is a folder of code with a memory of every change ever made
                 (that&rsquo;s the &ldquo;git&rdquo; part). When you clone it, you get a copy you
