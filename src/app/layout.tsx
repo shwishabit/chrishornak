@@ -133,7 +133,6 @@ export default function RootLayout({
               '@type': 'ContactPoint',
               contactType: 'customer service',
               url: `${siteConfig.domain}/#connect`,
-              email: siteConfig.supportEmail,
             },
           }}
         />

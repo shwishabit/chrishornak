@@ -172,15 +172,22 @@ export default async function GuidePage({
               '@id': `${siteConfig.domain}/signal/${guide.slug}#article`,
               headline: guide.headline,
               description: guide.metaDescription,
+              // Per-guide dynamic OG card doubles as the Article rich-result image
+              // (Google requires Article.image for article enrichment eligibility).
+              image: `${siteConfig.domain}/signal/${guide.slug}/opengraph-image`,
               author: {
                 '@type': 'Person',
                 name: 'Chris Hornak',
                 url: siteConfig.domain,
               },
               publisher: {
-                '@type': 'Person',
+                '@type': 'Organization',
                 name: 'Chris Hornak',
                 url: siteConfig.domain,
+                logo: {
+                  '@type': 'ImageObject',
+                  url: `${siteConfig.domain}/images/wordmark-dark.png`,
+                },
               },
               datePublished: guide.datePublished ? `${guide.datePublished}T00:00:00Z` : undefined,
               dateModified: guide.dateModified ? `${guide.dateModified}T00:00:00Z` : undefined,
