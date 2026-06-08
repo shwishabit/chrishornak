@@ -204,10 +204,10 @@ export default async function BenchmarksPage() {
                   Each site is scored by the same{' '}
                   <a href="/audit" className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary">Findability Check</a>{' '}
                   anyone can run — seven weighted categories covering search, AI readiness, social, mobile,
-                  structure, accessibility, and security. The benchmark was seeded with a set of real
-                  Pittsburgh-area local business sites and grows with every public check. It&apos;s a real
-                  but non-random sample, not a national census, and individual sites are never published —
-                  only the aggregate.
+                  structure, accessibility, and security. The benchmark was seeded with real independent
+                  U.S. businesses across food, hospitality, retail, and local services, and grows with every
+                  public check. It&apos;s a real but non-random sample — skewed toward established independents,
+                  not a national census — and individual sites are never published, only the aggregate.
                   {gated && (
                     <> Comparative percentiles (&ldquo;you beat X% of sites&rdquo;) switch on once the dataset passes {BENCHMARK_MIN_N} sites.</>
                   )}
