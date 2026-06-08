@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Sora, Inter } from 'next/font/google'
 import Script from 'next/script'
 import '@/styles/globals.css'
@@ -19,6 +19,10 @@ const inter = Inter({
   variable: '--font-sans',
   weight: ['400', '500'],
 })
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0a',
+}
 
 export const metadata: Metadata = {
   title: {
