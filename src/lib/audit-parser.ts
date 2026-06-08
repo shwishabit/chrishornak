@@ -942,13 +942,15 @@ function parseAI(page: FetchedPage): AuditItem[] {
       weight: 0.25,
     })
   } else {
+    // Emerging, optional standard almost no site has yet. Informational only
+    // (weight 0, no warning) — it surfaces as an opportunity, not a defect.
     items.push({
       label: 'AI site summary (llms.txt)',
-      status: 'warn',
-      value: 'No llms.txt found',
-      weight: 0.25,
+      status: 'pass',
+      value: 'No llms.txt — optional, emerging standard',
+      weight: 0,
       recommendation:
-        'llms.txt is an emerging standard that helps AI tools understand your site. It\'s a plain-text file at /llms.txt that describes what your site is about, what pages matter, and how to cite you — like a README for AI crawlers.',
+        'llms.txt is an emerging, optional standard that helps AI tools understand your site. It\'s a plain-text file at /llms.txt that describes what your site is about, what pages matter, and how to cite you — like a README for AI crawlers. Worth adding as the standard matures, but not a problem to skip today.',
     })
   }
 
@@ -1700,10 +1702,10 @@ function parseMobile(page: FetchedPage): AuditItem[] {
   } else {
     const modernRatio = (imgSrcs.length - legacyFormats.length) / imgSrcs.length
     const legacyRatio = legacyFormats.length / imgSrcs.length
-    // Most small business sites use JPG/PNG. Treating that as a warn for everyone
-    // creates alarm fatigue. Only warn when legacy formats are heavy (>50%) or
-    // numerous (>10) — otherwise pass with a quiet note.
-    if (legacyRatio < 0.5 && legacyFormats.length < 10) {
+    // Nearly every real site still uses JPG/PNG, so the old >50%-or-10+ threshold
+    // warned ~80% of sites — alarm fatigue for a low-impact issue. Only warn when
+    // it's egregious: the page is overwhelmingly legacy (≥80%) AND image-heavy (≥10).
+    if (legacyRatio < 0.8 || legacyFormats.length < 10) {
       items.push({
         label: 'Image file formats',
         status: 'pass',
@@ -1773,7 +1775,12 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
     }
   }
 
-  // 3. Safe external links
+  // 3. Safe external links — only target="_blank" links ever carried an
+  // "opener" risk (reverse tabnabbing), and every modern browser (Chrome/Edge/
+  // Firefox/Safari since ~2021) applies noopener to them automatically. So a
+  // missing rel="noopener" is no longer a real vulnerability. This is now an
+  // informational check (never a warning) — flagging it on the ~85% of sites
+  // that omit the tag was alarm fatigue for a non-issue.
   const extLinkRe = /<a\b[^>]*href=["']https?:\/\/[^"']*["'][^>]*>/gi
   const extLinks = [...html.matchAll(extLinkRe)].map((m) => m[0])
   let parsedOrigin: string
@@ -1782,10 +1789,10 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
   } catch {
     parsedOrigin = ''
   }
-  const trueExternal = extLinks.filter(
-    (link) => !link.includes(parsedOrigin),
-  )
-  const unsafeExternal = trueExternal.filter(
+  const trueExternal = extLinks.filter((link) => !link.includes(parsedOrigin))
+  // Only new-tab links can be affected; same-tab links never had opener access.
+  const newTabExternal = trueExternal.filter((link) => /target=["']?_blank/i.test(link))
+  const unsafeNewTab = newTabExternal.filter(
     (link) => !/rel=["'][^"']*(noopener|noreferrer)/i.test(link),
   )
 
@@ -1795,33 +1802,22 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: 'No external links to evaluate',
     })
-  } else if (unsafeExternal.length === 0) {
+  } else if (newTabExternal.length === 0 || unsafeNewTab.length === 0) {
     items.push({
       label: 'Safe external links',
       status: 'pass',
-      value: `${trueExternal.length} external links — all secure`,
+      value: `${trueExternal.length} external link${trueExternal.length > 1 ? 's' : ''} — safe`,
     })
   } else {
-    // Most CMS-built sites don't add rel="noopener" by default. Treating any
-    // missing tag as a warn fires for the majority of small business sites.
-    // Only warn when this is widespread; otherwise it's a tiny note.
-    const unsafeRatio = unsafeExternal.length / trueExternal.length
-    if (unsafeRatio < 0.5 && unsafeExternal.length < 5) {
-      items.push({
-        label: 'Safe external links',
-        status: 'pass',
-        value: `${trueExternal.length - unsafeExternal.length} of ${trueExternal.length} external links secure — minor`,
-      })
-    } else {
-      items.push({
-        label: 'Safe external links',
-        status: 'warn',
-        value: `${unsafeExternal.length} of ${trueExternal.length} external links missing a security tag`,
-        weight: 0.5,
-        recommendation:
-          'Most of your outgoing links are missing rel="noopener" — a small security tag that prevents the linked page from interacting with yours. Minor technical fix — most site builders or your developer can add it in one pass.',
-      })
-    }
+    // New-tab links without an explicit rel="noopener". Browsers neutralize this
+    // automatically now, so it's a quiet hygiene note — a pass, not a warning.
+    items.push({
+      label: 'Safe external links',
+      status: 'pass',
+      value: `${trueExternal.length} external links — protected by the browser's built-in safeguards`,
+      recommendation:
+        'A few links open in a new tab without an explicit rel="noopener". Modern browsers add that protection automatically, so there\'s no real risk — adding the tag is optional hygiene for very old browsers.',
+    })
   }
 
   // 4. Form action security

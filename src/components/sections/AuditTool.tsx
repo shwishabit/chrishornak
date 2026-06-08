@@ -522,7 +522,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [progressStep, setProgressStep] = useState(0)
   const [copied, setCopied] = useState(false)
   const [previousResult, setPreviousResult] = useState<AuditHistoryEntry | null>(null)
-  const [benchmark, setBenchmark] = useState<{ n: number; betterThanPct: number | null } | null>(null)
+  const [benchmark, setBenchmark] = useState<{ n: number; avg: number | null; median: number | null; betterThanPct: number | null } | null>(null)
   const hasAutoRun = useRef(false)
   const [inputFocused, setInputFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -693,7 +693,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
         body: JSON.stringify({ domain, overall, categoryScores: catScores, issues }),
       })
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => { if (d?.ok && d.n) setBenchmark({ n: d.n, betterThanPct: d.betterThanPct }) })
+        .then((d) => { if (d?.ok && d.n) setBenchmark({ n: d.n, avg: d.avg, median: d.median, betterThanPct: d.betterThanPct }) })
         .catch(() => { /* analytics is best-effort */ })
     } catch (err) {
       const msg =
@@ -981,7 +981,12 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       </div>
                       {benchmark && (
                         <div>
-                          <BenchmarkBadge n={benchmark.n} betterThanPct={benchmark.betterThanPct} />
+                          <BenchmarkBadge
+                            score={overallScore}
+                            n={benchmark.n}
+                            avg={benchmark.avg}
+                            betterThanPct={benchmark.betterThanPct}
+                          />
                         </div>
                       )}
                       <button
@@ -1134,6 +1139,18 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                     ? "Here\u2019s where I\u2019d start."
                     : "Here\u2019s where I\u2019d start."}
               </h3>
+              {benchmark && benchmark.avg != null && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {overallScore > benchmark.avg ? (
+                    <>That&apos;s <span className="font-semibold text-emerald-400">{overallScore - benchmark.avg} point{overallScore - benchmark.avg !== 1 ? 's' : ''} above</span> the average site we&apos;ve checked ({benchmark.avg} across {benchmark.n.toLocaleString()}).</>
+                  ) : overallScore < benchmark.avg ? (
+                    <>That&apos;s <span className="font-semibold text-amber-400">{benchmark.avg - overallScore} point{benchmark.avg - overallScore !== 1 ? 's' : ''} below</span> the average site we&apos;ve checked ({benchmark.avg} across {benchmark.n.toLocaleString()}).</>
+                  ) : (
+                    <>That&apos;s right at the average of the {benchmark.n.toLocaleString()} sites we&apos;ve checked.</>
+                  )}{' '}
+                  <a href="/audit/benchmarks" className="font-semibold text-primary transition-colors hover:text-primary/80">See the benchmarks &rarr;</a>
+                </p>
+              )}
               <p className="mt-2 text-sm text-muted-foreground">
                 A strong score means you&apos;re findable. The next question is whether visitors are taking action. That&apos;s the conversation.
               </p>

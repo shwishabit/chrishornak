@@ -108,6 +108,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     n: Number(rank?.n ?? 0),
+    avg: rank?.avg ?? null,
+    median: rank?.median ?? null,
     betterThanPct: rank?.better_than_pct ?? null,
   })
 }
