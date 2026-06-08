@@ -135,14 +135,17 @@ export default async function BenchmarksPage() {
                         const lo = i * 10
                         const hi = bucket === 10 ? 100 : bucket * 10 - 1
                         const mid = (lo + hi) / 2
-                        const heightPct = (count / distMax) * 100
+                        // Height in PIXELS off the tallest bar — % height collapses
+                        // because the flex column has no fixed height.
+                        const MAX_BAR_PX = 150
+                        const barPx = count ? Math.max(Math.round((count / distMax) * MAX_BAR_PX), 4) : 0
                         const color = scoreColor(mid).bg
                         return (
                           <div key={bucket} className="flex flex-1 flex-col items-center justify-end gap-1.5">
                             <span className={`text-xs font-semibold tabular-nums ${count ? 'text-foreground' : 'text-transparent'}`}>{count || 0}</span>
                             <div
                               className={`w-full rounded-t ${count ? color : 'bg-muted/20'}`}
-                              style={{ height: `${Math.max(heightPct, count ? 3 : 0)}%`, opacity: count ? 0.9 : 1, minHeight: count ? '4px' : undefined }}
+                              style={{ height: `${barPx}px`, opacity: count ? 0.9 : 1 }}
                             />
                           </div>
                         )
