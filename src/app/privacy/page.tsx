@@ -45,8 +45,11 @@ export default function PrivacyPage() {
                 server I operate to fetch and analyze that website&apos;s public HTML. Your
                 IP address is temporarily logged for rate limiting (kept for 60 seconds,
                 then discarded). No account or personal information is required to use
-                the tool, and no data about the URLs you check is stored after the
-                analysis is returned to your browser.
+                the tool. To power an anonymous, aggregate benchmark of how typical
+                sites score, the website&apos;s domain and its category scores are stored.
+                This is never tied to your IP or any personal information, individual
+                domains are never published, and only aggregate statistics (averages,
+                most-common issues) are shown on the public benchmarks page.
               </p>
             </section>
 

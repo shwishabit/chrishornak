@@ -1751,16 +1751,22 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
         },
   )
 
-  // 2. Mixed content — HTTPS page loading HTTP resources (browsers block these)
+  // 2. Mixed content — an HTTPS page loading SUB-RESOURCES over HTTP (browsers
+  // block these). Only actual resource loads count: src=/srcset= on media and
+  // scripts, plus stylesheet/preload <link> tags. A plain <a href="http://">
+  // link is NOT mixed content — the old regex matched anchor href too, failing
+  // ~65% of sites for normal outbound links (at the heaviest weight in the tool).
   if (isHttps) {
-    const httpResources = html.match(/(?:src|href)=["']http:\/\/[^"']+["']/gi) ?? []
-    // Filter out mailto: and tel: false positives, and only flag actual resource loads
-    const realMixed = httpResources.filter((r) =>
-      !/:\/\/[^"']*\.(pdf|doc|docx)["']/i.test(r) // PDFs/docs linking is fine
+    const srcMixed = html.match(/\b(?:src|srcset)=["'][^"']*http:\/\/[^"']+["']/gi) ?? []
+    const linkMixed = (html.match(/<link\b[^>]*>/gi) ?? []).filter(
+      (tag) =>
+        /href=["']http:\/\//i.test(tag) &&
+        /rel=["'][^"']*(stylesheet|preload|prefetch|modulepreload)/i.test(tag),
     )
+    const realMixed = [...srcMixed, ...linkMixed]
     if (realMixed.length > 0) {
       const examples = realMixed.slice(0, 3).map((r) => {
-        const urlMatch = r.match(/["'](http:\/\/[^"']+)["']/i)
+        const urlMatch = r.match(/(http:\/\/[^"']+)/i)
         return urlMatch ? urlMatch[1].split('/').pop() ?? urlMatch[1] : r
       })
       items.push({

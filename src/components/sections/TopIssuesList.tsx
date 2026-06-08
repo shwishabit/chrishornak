@@ -30,7 +30,14 @@ export function TopIssuesList({ issues }: { issues: TopIssue[] }) {
               {ISSUE_DESCRIPTIONS[issue.label]}
             </p>
           )}
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted/40">
+          <div
+            role="meter"
+            aria-valuenow={Number(issue.pct)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${issue.label}: ${issue.pct}% of checked sites`}
+            className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted/40"
+          >
             <div
               className={issue.status === 'fail' ? 'h-full bg-red-400/70' : 'h-full bg-amber-400/70'}
               style={{ width: `${Math.min(Number(issue.pct), 100)}%` }}

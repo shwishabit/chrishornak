@@ -33,6 +33,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${siteConfig.domain}/audit/benchmarks`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${siteConfig.domain}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',

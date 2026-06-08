@@ -13,15 +13,23 @@ import { TopIssuesList } from '@/components/sections/TopIssuesList'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'The State of Small Business Findability',
+  title: 'The State of Small Business Findability — Benchmark Data',
   alternates: { canonical: '/audit/benchmarks' },
   description:
-    'Real findability data from small business websites — average and median scores, the issues almost everyone misses, and how the seven signals stack up. Updated with every check.',
+    'Real findability data from small business websites: average and median scores, the issues almost everyone misses, and how the seven signals stack up.',
   openGraph: {
+    type: 'article',
     title: 'The State of Small Business Findability',
     description:
       'What we see when we score small business websites: the typical score, the most common gaps, and where the signal breaks down.',
     images: [{ url: '/images/og-image-audit.png', width: 1200, height: 630, alt: 'The State of Small Business Findability' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The State of Small Business Findability',
+    description:
+      'What we see when we score small business websites: the typical score, the most common gaps, and where the signal breaks down.',
+    images: ['/images/og-image-audit.png'],
   },
 }
 
@@ -55,7 +63,7 @@ export default async function BenchmarksPage() {
           {!hasData ? (
             <>
               <h1 className="mt-4 font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-5xl">
-                The data is still warming up.
+                The small business findability benchmark is warming up.
               </h1>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
                 Not enough sites have been checked yet to publish a benchmark.
@@ -113,7 +121,12 @@ export default async function BenchmarksPage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     Where every checked site lands, in 10-point bands.
                   </p>
-                  <div className="mt-6 flex items-end gap-1.5 sm:gap-2" style={{ height: '160px' }}>
+                  <div
+                    role="img"
+                    aria-label={`Distribution of findability scores across ${n.toLocaleString()} checked sites, in 10-point bands`}
+                    className="mt-6 flex items-end gap-1.5 sm:gap-2"
+                    style={{ height: '160px' }}
+                  >
                     {Array.from({ length: 10 }, (_, i) => {
                       const bucket = i + 1
                       const entry = stats.distribution.find((d) => d.bucket === bucket)
@@ -167,7 +180,14 @@ export default async function BenchmarksPage() {
                       .map(({ cat, score }) => (
                         <div key={cat} className="flex items-center gap-4">
                           <span className="w-28 shrink-0 text-sm text-muted-foreground">{cat}</span>
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted/40">
+                          <div
+                            role="meter"
+                            aria-valuenow={score}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${cat} average score: ${score} out of 100`}
+                            className="h-2 flex-1 overflow-hidden rounded-full bg-muted/40"
+                          >
                             <div className={`h-full ${scoreColor(score).bg}`} style={{ width: `${score}%`, opacity: 0.8 }} />
                           </div>
                           <span className={`w-8 shrink-0 text-right text-sm font-semibold ${scoreColor(score).text}`}>{score}</span>
@@ -224,6 +244,23 @@ export default async function BenchmarksPage() {
           ],
         }}
       />
+      {hasData && (
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'Dataset',
+            name: 'Small Business Findability Benchmark',
+            description:
+              'Aggregate findability scores from small business websites — average and median scores out of 100, score distribution, the most common issues, and per-category averages across seven signals.',
+            url: `${siteConfig.domain}/audit/benchmarks`,
+            creator: { '@type': 'Person', name: 'Chris Hornak', url: siteConfig.domain },
+            isAccessibleForFree: true,
+            variableMeasured: 'Website findability score (0–100)',
+            measurementTechnique: 'Automated on-page analysis across search, AI, social, mobile, structure, accessibility, and security signals',
+            dateModified: new Date().toISOString().slice(0, 10),
+          }}
+        />
+      )}
     </main>
   )
 }
