@@ -36,6 +36,7 @@ import {
 } from '@/lib/audit-scoring'
 import { parseAudit, type FetchedPage } from '@/lib/audit-parser'
 import { getPreviousResult, saveAuditResult, type AuditHistoryEntry } from '@/lib/audit-history'
+import { BenchmarkBadge } from '@/components/sections/BenchmarkBadge'
 
 /* ── Category icon map ───────────────────────────────────────────────── */
 
@@ -521,6 +522,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [progressStep, setProgressStep] = useState(0)
   const [copied, setCopied] = useState(false)
   const [previousResult, setPreviousResult] = useState<AuditHistoryEntry | null>(null)
+  const [benchmark, setBenchmark] = useState<{ n: number; betterThanPct: number | null } | null>(null)
   const hasAutoRun = useRef(false)
   const [inputFocused, setInputFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -619,6 +621,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     setResult(null)
     setError(null)
     setPreviousResult(null)
+    setBenchmark(null)
     setActiveTab(OVERVIEW_TAB)
     setProgressStep(0)
 
@@ -676,6 +679,22 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
       // Update URL for sharing
       const domain = normalized.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
       window.history.replaceState(null, '', `/audit?url=${encodeURIComponent(domain)}`)
+
+      // Capture into the benchmark corpus (fire-and-forget — never blocks the audit).
+      // Returns where this site stands vs. everyone else, for the badge.
+      const issues = auditResult.categories.flatMap((cat) =>
+        cat.items
+          .filter((it) => it.status === 'fail' || it.status === 'warn')
+          .map((it) => ({ c: cat.name, l: it.label, s: it.status })),
+      )
+      fetch('/api/audit/record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain, overall, categoryScores: catScores, issues }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d?.ok && d.n) setBenchmark({ n: d.n, betterThanPct: d.betterThanPct }) })
+        .catch(() => { /* analytics is best-effort */ })
     } catch (err) {
       const msg =
         err instanceof DOMException && err.name === 'AbortError'
@@ -773,7 +792,18 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
         </Button>
       </motion.form>
       {!loading && !result && !error && (
-        <p className="mt-3 text-center text-xs text-muted-foreground/80">Usually takes a few seconds</p>
+        <>
+          <p className="mt-3 text-center text-xs text-muted-foreground/80">Usually takes a few seconds</p>
+          <p className="mt-1.5 text-center text-xs text-muted-foreground/50">
+            Anonymous results feed an aggregate benchmark — we never publish individual sites.{' '}
+            <a
+              href="/audit/benchmarks"
+              className="underline decoration-primary/40 underline-offset-2 transition-colors hover:text-muted-foreground hover:decoration-primary"
+            >
+              See the data&nbsp;&rarr;
+            </a>
+          </p>
+        </>
       )}
 
       {/* ── Loading state ──────────────────────────────────────────────── */}
@@ -949,6 +979,11 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       <div className="mt-3">
                         <CategoryScoreBar items={allItems} />
                       </div>
+                      {benchmark && (
+                        <div>
+                          <BenchmarkBadge n={benchmark.n} betterThanPct={benchmark.betterThanPct} />
+                        </div>
+                      )}
                       <button
                         onClick={() => setShowMethodology(true)}
                         className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
