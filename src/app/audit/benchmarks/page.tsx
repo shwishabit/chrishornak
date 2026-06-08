@@ -7,6 +7,7 @@ import { siteConfig } from '@/lib/data'
 import { getBenchmarkStats, getTopIssues } from '@/lib/audit-stats'
 import { BENCHMARK_MIN_N, CATEGORY_ORDER } from '@/lib/benchmark-config'
 import { scoreColor } from '@/lib/audit-scoring'
+import { TopIssuesList } from '@/components/sections/TopIssuesList'
 
 // Always read fresh aggregates.
 export const revalidate = 0
@@ -26,10 +27,8 @@ export const metadata: Metadata = {
 
 const round = (n: number | null) => (n == null ? null : Math.round(n))
 
-const STATUS_LABEL: Record<string, string> = { fail: 'Missing', warn: 'Needs work' }
-
 export default async function BenchmarksPage() {
-  const [stats, topIssues] = await Promise.all([getBenchmarkStats(), getTopIssues(8)])
+  const [stats, topIssues] = await Promise.all([getBenchmarkStats(), getTopIssues(100)])
 
   const n = stats?.n ?? 0
   const hasData = !!stats && n > 0
@@ -150,27 +149,7 @@ export default async function BenchmarksPage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     Ranked by how many of the checked sites trip on them.
                   </p>
-                  <div className="mt-6 space-y-3">
-                    {topIssues.map((issue, i) => (
-                      <div key={`${issue.category}-${issue.label}-${i}`} className="glass-card p-4">
-                        <div className="flex items-baseline justify-between gap-3">
-                          <div className="min-w-0">
-                            <span className="text-sm font-semibold text-foreground">{issue.label}</span>
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              {issue.category} · {STATUS_LABEL[issue.status] ?? issue.status}
-                            </span>
-                          </div>
-                          <span className="shrink-0 font-heading text-sm font-bold text-primary">{issue.pct}%</span>
-                        </div>
-                        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted/40">
-                          <div
-                            className={issue.status === 'fail' ? 'h-full bg-red-400/70' : 'h-full bg-amber-400/70'}
-                            style={{ width: `${Math.min(Number(issue.pct), 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <TopIssuesList issues={topIssues} />
                 </section>
               )}
 
