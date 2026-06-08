@@ -82,7 +82,9 @@ export function scoreColor(score: number) {
 export function scoreItem(item: AuditItem): number {
   if (item.score !== undefined) return item.score
   if (item.status === 'pass') return 1
-  if (item.status === 'warn') return 0.5
+  // Warnings earn partial (not half) credit — a pile of warnings should pull the
+  // score down enough to signal real work, not coast near the top.
+  if (item.status === 'warn') return 0.3
   return 0
 }
 

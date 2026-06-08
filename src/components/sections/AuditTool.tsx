@@ -443,7 +443,7 @@ function MethodologyModal({ onClose }: { onClose: () => void }) {
           <h3 className="text-sm font-semibold text-foreground">Scoring method</h3>
           <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
             Each check on your page earns a status: <span className="text-emerald-400">pass</span> (full
-            credit), <span className="text-amber-400">warning</span> (half credit),
+            credit), <span className="text-amber-400">warning</span> (partial credit),
             or <span className="text-red-400">fail</span> (no credit). Your category
             score is the percentage of total credit earned. Your overall score
             is the weighted average of all categories — so fixing a fail in a
@@ -1151,9 +1151,22 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                   <a href="/audit/benchmarks" className="font-semibold text-primary transition-colors hover:text-primary/80">See the benchmarks &rarr;</a>
                 </p>
               )}
-              <p className="mt-2 text-sm text-muted-foreground">
-                A strong score means you&apos;re findable. The next question is whether visitors are taking action. That&apos;s the conversation.
-              </p>
+              {fails + warns > 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {fails > 0 && (
+                    <><span className="font-semibold text-red-400">{fails} {fails === 1 ? 'issue is' : 'issues are'}</span> actively working against you</>
+                  )}
+                  {fails > 0 && warns > 0 && <>, with </>}
+                  {warns > 0 && (
+                    <><span className="font-semibold text-amber-400">{warns} warning{warns !== 1 ? 's' : ''}</span> {fails > 0 ? 'on top' : 'leaving easy wins on the table'}</>
+                  )}
+                  . Clearing {fails > 0 ? 'the red items' : 'these'} first is where the gains are.
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Clean across the board — you&apos;re findable. The real question now is whether visitors are taking action. That&apos;s the conversation.
+                </p>
+              )}
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
