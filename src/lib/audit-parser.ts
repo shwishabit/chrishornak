@@ -786,23 +786,20 @@ function parseAI(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: 'Original data and citable content found',
     })
-  } else if (citabilitySignals === 1) {
-    items.push({
-      label: 'Citability',
-      status: 'warn',
-      value: 'Some citable content, but could be stronger',
-      weight: 0.5,
-      recommendation:
-        'AI tools cite pages with original data, unique insights, and quotable statements. Adding proprietary stats, case study results, or expert quotes makes your content more reference-worthy. Lower-priority for service businesses where the value is the work, not the writing.',
-    })
   } else {
+    // Original data / stats / quotes are publisher traits. Most local and service
+    // businesses (the majority of sites) legitimately won't have them, so this is
+    // informational (weight 0) — it surfaces as an opportunity without penalizing.
     items.push({
       label: 'Citability',
-      status: 'warn',
-      value: 'No unique data or quotable insights found',
-      weight: 0.5,
+      status: 'pass',
+      weight: 0,
+      value:
+        citabilitySignals === 1
+          ? 'Some citable content — optional to expand'
+          : 'No original data found — optional for service businesses',
       recommendation:
-        'AI tools are more likely to cite pages with original data, specific stats, or quotable statements. Lower-priority if your business is service-led — but if you have results, numbers, or expert opinions worth sharing, surfacing them on the homepage helps AI cite you.',
+        'AI tools are more likely to cite pages with original data, specific stats, or quotable statements. This is optional — most service and local businesses don\'t need it — but if you have results, numbers, or expert opinions worth sharing, surfacing them on the homepage helps AI cite you.',
     })
   }
 
@@ -857,11 +854,11 @@ function parseAI(page: FetchedPage): AuditItem[] {
       earlyContent,
     )
   const hasDescriptionMeta = descMeta.length > 30 &&
-    /(service|product|solution|help|offer|provide|special|expert|consult|coach|therapy|agency|studio|shop|store|moving|clean|repair|design|marketing|law|dental|medical|real estate|insurance|financial|restaurant|salon|spa|construction|plumb|electric|landscap|photograph|catering|fitness|wellness|handcraft|custom|premium|professional|blog|content|writing|writer|copywriter|editorial|publishing|publisher|ghostwrit|newsletter|magazine|publication)/i.test(descMeta)
+    /(service|product|solution|help|offer|provide|special|expert|consult|coach|therapy|agency|studio|shop|store|moving|clean|repair|design|marketing|law|dental|medical|real estate|insurance|financial|restaurant|salon|spa|construction|plumb|electric|landscap|photograph|catering|fitness|wellness|handcraft|custom|premium|professional|blog|content|writing|writer|copywriter|editorial|publishing|publisher|ghostwrit|newsletter|magazine|publication|market|grocer|grocery|butcher|meat|deli|bakery|brewery|brewing|distiller|winery|cafe|coffee|diner|grill|tavern|pizz|auto|automotive|tire|dealer|jewel|furniture|mattress|hardware|supply|lumber|veterinar|animal|pet|groom|barber|nail|tattoo|gym|academy|dance|optical|optometr|vision|chiropract|pharmac|florist|funeral|hotel|motel|inn|equipment|hvac|heating|cooling|roofing|flooring|bank|union)/i.test(descMeta)
   const hasSchemaDescription =
     jsonLdBlocks?.some((b) => /"description"/i.test(b)) ?? false
   const hasValueProp =
-    /(help|grow|save|improve|transform|increase|reduce|solve|deliver|strategy|solution|service|product|business|studio|therapy|coaching|consulting|agency|moving|soap|craft|design|marketing|expert|professional|premier|trusted|leading|quality|custom|write|writing|content|publish)/i.test(
+    /(help|grow|save|improve|transform|increase|reduce|solve|deliver|strategy|solution|service|product|business|studio|therapy|coaching|consulting|agency|moving|soap|craft|design|marketing|expert|professional|premier|trusted|leading|quality|custom|market|grocer|butcher|meat|deli|bakery|brew|cafe|coffee|diner|grill|pizz|auto|tire|dealer|jewel|furniture|mattress|hardware|lumber|veterinar|animal|pet|groom|barber|salon|gym|dental|dentist|optical|chiropract|pharmac|florist|funeral|hotel|inn|repair|write|writing|content|publish)/i.test(
       h1Text,
     )
 
