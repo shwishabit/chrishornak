@@ -345,6 +345,9 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     : []
 
   const blanketDisallow = robotsBlocks.some((b) => b.agent === '*' && b.hasDisallow)
+  // A blanket "Disallow: /" is overridden for Google if Googlebot has its own
+  // block that doesn't disallow — a common "block everyone, allow Google" posture.
+  const googlebotAllowed = robotsBlocks.some((b) => b.agent === 'googlebot' && !b.hasDisallow)
   const blocksCssJs = robotsTxt ? /Disallow:.*\.(css|js)/im.test(robotsTxt) : false
 
   // Check for search-engine-specific blocks. Distinguish essential search engines
@@ -356,7 +359,7 @@ function parseSearch(page: FetchedPage): AuditItem[] {
     robotsBlocks.some((b) => b.agent === bot && b.hasDisallow),
   )
 
-  if (blanketDisallow) {
+  if (blanketDisallow && !googlebotAllowed) {
     items.push({
       label: 'Crawl permissions',
       status: 'fail',
@@ -376,13 +379,16 @@ function parseSearch(page: FetchedPage): AuditItem[] {
         `Your robots.txt is specifically blocking ${blockedEssential.join(' and ')} from crawling your site. If this isn't intentional, remove the Disallow rules for ${blockedEssential.length > 1 ? 'these crawlers' : 'this crawler'}.`,
     })
   } else if (blocksCssJs) {
+    // Google renders JS and usually recovers fine; this is worth flagging but is
+    // rarely the catastrophe a hard FAIL implies.
     items.push({
       label: 'Crawl permissions',
-      status: 'fail',
-      value: 'robots.txt blocks CSS or JavaScript files',
+      status: 'warn',
+      weight: 0.5,
+      value: 'robots.txt blocks some CSS or JavaScript files',
       extracted: truncate(robotsTxt, 300),
       recommendation:
-        'Your robots.txt is preventing Google from loading your CSS or JavaScript. This means Google sees your raw HTML instead of your actual page — layouts, menus, and content can all appear broken. Remove the lines blocking .css and .js files.',
+        'Your robots.txt blocks Google from loading some CSS or JavaScript. Google can usually still render the page, but to be safe it should see your styles and scripts — remove any lines disallowing .css and .js files.',
     })
   } else {
     items.push({
@@ -863,7 +869,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
     Boolean,
   ).length
 
-  if (descSignals >= 3) {
+  if (descSignals >= 2) {
     items.push({
       label: 'Business description',
       status: 'pass',
@@ -1014,10 +1020,11 @@ function parseStructure(page: FetchedPage): AuditItem[] {
   if (h1s.length === 0) {
     items.push({
       label: 'Main headline (H1)',
-      status: 'fail',
-      value: 'None found',
-      recommendation:
-        'Every page needs one main headline (H1) that tells visitors and search engines what the page is about. Add a clear, descriptive H1.',
+      status: looksLikeShell ? 'warn' : 'fail',
+      value: looksLikeShell ? 'None in initial HTML — page is JavaScript-rendered' : 'None found',
+      recommendation: looksLikeShell
+        ? 'No H1 was found in the initial HTML, but this page renders with JavaScript — your H1 may be visible to people yet invisible to this audit and to crawlers that don\'t run JS. Confirm an H1 exists, and consider server-side rendering so search engines reliably see it.'
+        : 'Every page needs one main headline (H1) that tells visitors and search engines what the page is about. Add a clear, descriptive H1.',
     })
   } else if (h1s.length > 1) {
     const h1Texts = h1s.map((h) => {
@@ -1204,16 +1211,18 @@ function parseStructure(page: FetchedPage): AuditItem[] {
     }
   }
 
-  // 4. Content depth — graduated: ≥800 pass, 300-799 warn (sliding), 100-299 warn (low), <100 fail
+  // 4. Content depth — homepages are concise, so the pass bar is moderate (400+).
+  // If the page is a JS shell, the audit only sees initial HTML — don't hard-fail
+  // for content it openly can't see.
   const words = wordCount(html)
-  if (words >= 800) {
+  if (words >= 400) {
     items.push({
       label: 'Content depth',
       status: 'pass',
       value: `~${words.toLocaleString()} words`,
     })
-  } else if (words >= 300) {
-    const depthScore = 0.5 + 0.5 * ((words - 300) / 500)
+  } else if (words >= 150) {
+    const depthScore = 0.5 + 0.5 * ((words - 150) / 250)
     items.push({
       label: 'Content depth',
       status: 'warn',
@@ -1222,14 +1231,14 @@ function parseStructure(page: FetchedPage): AuditItem[] {
       recommendation:
         'Search engines and AI prefer pages with thorough, well-organized content. Expanding your key topics with more detail makes your page more likely to rank and get cited.',
     })
-  } else if (words >= 100) {
+  } else if (looksLikeShell) {
     items.push({
       label: 'Content depth',
       status: 'warn',
-      value: `~${words.toLocaleString()} words — light on content`,
-      score: 0.3,
+      score: 0.5,
+      value: `~${words.toLocaleString()} words in initial HTML — JavaScript-rendered`,
       recommendation:
-        'There isn\'t much text for search engines or AI to work with. Some pages are intentionally visual, but adding more context about what you do helps with findability.',
+        'This page renders its content with JavaScript, so the audit sees a near-empty initial HTML. Your content may be fine for visitors, but crawlers and AI tools that don\'t run JavaScript see the same thin page. Server-side rendering or pre-rendering fixes this.',
     })
   } else {
     items.push({

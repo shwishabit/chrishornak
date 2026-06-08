@@ -119,36 +119,46 @@ export default async function BenchmarksPage() {
                 <section className="mt-16">
                   <h2 className="font-heading text-xl font-bold md:text-2xl">How the scores spread</h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Where every checked site lands, in 10-point bands.
+                    The number of sites in each 10-point band{median != null && <> — half score above {median}, half below</>}.
                   </p>
-                  <div
-                    role="img"
-                    aria-label={`Distribution of findability scores across ${n.toLocaleString()} checked sites, in 10-point bands`}
-                    className="mt-6 flex items-end gap-1.5 sm:gap-2"
-                    style={{ height: '160px' }}
-                  >
-                    {Array.from({ length: 10 }, (_, i) => {
-                      const bucket = i + 1
-                      const entry = stats.distribution.find((d) => d.bucket === bucket)
-                      const count = entry?.count ?? 0
-                      const lo = i * 10
-                      const hi = bucket === 10 ? 100 : bucket * 10 - 1
-                      const mid = (lo + hi) / 2
-                      const heightPct = (count / distMax) * 100
-                      const color = scoreColor(mid).bg
-                      return (
-                        <div key={bucket} className="flex flex-1 flex-col items-center gap-1.5">
-                          <span className="text-[10px] text-muted-foreground">{count || ''}</span>
-                          <div className="flex w-full flex-1 items-end">
+                  <div className="mt-8">
+                    <div
+                      role="img"
+                      aria-label={`Bar graph: distribution of findability scores across ${n.toLocaleString()} checked sites, in 10-point bands`}
+                      className="flex items-end gap-2 border-b border-border/50"
+                      style={{ height: '200px' }}
+                    >
+                      {Array.from({ length: 10 }, (_, i) => {
+                        const bucket = i + 1
+                        const entry = stats.distribution.find((d) => d.bucket === bucket)
+                        const count = entry?.count ?? 0
+                        const lo = i * 10
+                        const hi = bucket === 10 ? 100 : bucket * 10 - 1
+                        const mid = (lo + hi) / 2
+                        const heightPct = (count / distMax) * 100
+                        const color = scoreColor(mid).bg
+                        return (
+                          <div key={bucket} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+                            <span className={`text-xs font-semibold tabular-nums ${count ? 'text-foreground' : 'text-transparent'}`}>{count || 0}</span>
                             <div
-                              className={`w-full rounded-t ${count ? color : 'bg-muted/30'} transition-all`}
-                              style={{ height: `${Math.max(heightPct, count ? 4 : 0)}%`, opacity: count ? 0.85 : 1 }}
+                              className={`w-full rounded-t ${count ? color : 'bg-muted/20'}`}
+                              style={{ height: `${Math.max(heightPct, count ? 3 : 0)}%`, opacity: count ? 0.9 : 1, minHeight: count ? '4px' : undefined }}
                             />
                           </div>
-                          <span className="text-[10px] text-muted-foreground/70">{lo}{bucket === 10 ? '+' : ''}</span>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
+                    {/* x-axis band labels */}
+                    <div className="mt-2 flex gap-2">
+                      {Array.from({ length: 10 }, (_, i) => (
+                        <span key={i} className="flex-1 text-center text-[10px] tabular-nums text-muted-foreground/70">
+                          {i === 9 ? '90+' : `${i * 10}–${i * 10 + 9}`}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-center text-[11px] text-muted-foreground/60">
+                      Findability score (0–100) · bar height = number of sites
+                    </p>
                   </div>
                 </section>
               )}
@@ -204,10 +214,11 @@ export default async function BenchmarksPage() {
                   Each site is scored by the same{' '}
                   <a href="/audit" className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary">Findability Check</a>{' '}
                   anyone can run — seven weighted categories covering search, AI readiness, social, mobile,
-                  structure, accessibility, and security. The benchmark was seeded with real independent
-                  U.S. businesses across food, hospitality, retail, and local services, and grows with every
-                  public check. It&apos;s a real but non-random sample — skewed toward established independents,
-                  not a national census — and individual sites are never published, only the aggregate.
+                  structure, accessibility, and security. The benchmark draws on real small business websites
+                  across the U.S. — local restaurants, shops, auto and home services, medical and professional
+                  practices, and independent makers, spanning small and mid-size cities — and grows with every
+                  public check. It&apos;s a real but non-random sample, not a national census, and individual
+                  sites are never published, only the aggregate.
                   {gated && (
                     <> Comparative percentiles (&ldquo;you beat X% of sites&rdquo;) switch on once the dataset passes {BENCHMARK_MIN_N} sites.</>
                   )}
