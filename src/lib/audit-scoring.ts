@@ -62,14 +62,18 @@ export interface RankedCategory extends AuditCategory {
   weightedScore: number
 }
 
+// Weights lean toward the categories that actually differentiate sites today
+// (AI, Structure, Accessibility) and away from the near-ceiling fundamentals
+// (Mobile, Security) that modern site builders hand out for free — so a strong
+// score reflects real optimization, not platform defaults.
 export const CATEGORY_WEIGHTS: Record<string, number> = {
   'Search': 25,
-  'AI': 25,
+  'AI': 27,
   'Social': 10,
-  'Mobile': 10,
-  'Structure': 20,
-  'Accessibility': 10,
-  'Security': 10,
+  'Mobile': 7,
+  'Structure': 22,
+  'Accessibility': 12,
+  'Security': 7,
 }
 
 /** Unified color thresholds: 75+ green, 40-74 amber, <40 red */

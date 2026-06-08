@@ -337,7 +337,7 @@ const methodologyCategories = [
   },
   {
     name: 'AI',
-    weight: 25,
+    weight: 27,
     why: 'Does AI know you exist? AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, whether AI crawlers can access your site, and whether you have an llms.txt file. This is where most sites have the biggest gap today.',
     sources: 'Authoritas GEO Study (2024), Princeton LLM Citation Research, Schema.org',
   },
@@ -349,25 +349,25 @@ const methodologyCategories = [
   },
   {
     name: 'Mobile',
-    weight: 10,
+    weight: 7,
     why: 'Does it work on their phone? Google has used mobile-first indexing as the default since 2023, meaning it primarily uses the mobile version of your site for ranking. We check viewport configuration, HTML5 standards, tap target spacing, text readability, and image formats. If your site doesn\'t work well on phones, it doesn\'t work well in Google.',
     sources: 'Google Mobile-First Indexing Documentation, Google Search Central',
   },
   {
     name: 'Structure',
-    weight: 20,
+    weight: 22,
     why: 'Is your page well-built? Proper heading hierarchy helps Google understand your topic. Image descriptions are an accessibility requirement and a ranking signal. Internal links distribute ranking power across your site. Content depth determines whether search engines and AI have enough to work with.',
     sources: 'Ahrefs Featured Snippet Research, SEMrush Ranking Factors, WCAG 2.1 Guidelines',
   },
   {
     name: 'Accessibility',
-    weight: 10,
+    weight: 12,
     why: 'Can everyone use your site? About 1 in 4 adults has a disability. If your site isn\'t accessible, you\'re invisible to a quarter of your potential audience — and potentially out of ADA compliance. We check whether screen readers can navigate your page (landmarks, labels, language), whether keyboard users can see what\'s focused, and whether links make sense out of context.',
     sources: 'WCAG 2.1 AA Guidelines, ADA Title III, CDC Disability Statistics',
   },
   {
     name: 'Security',
-    weight: 10,
+    weight: 7,
     why: 'Do visitors trust your site? HTTPS has been a Google ranking signal since 2014, and Chrome marks non-HTTPS sites as "Not Secure." We also check for mixed content, whether external links are safe, whether forms submit data securely, and whether a Content Security Policy is in place. Visitors — and search engines — trust secure sites more.',
     sources: 'Google HTTPS Ranking Signal (2014), Chrome Security Indicators, OWASP Guidelines',
   },
