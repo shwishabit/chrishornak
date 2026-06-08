@@ -8,6 +8,7 @@ import { getBenchmarkStats, getTopIssues } from '@/lib/audit-stats'
 import { BENCHMARK_MIN_N, CATEGORY_ORDER } from '@/lib/benchmark-config'
 import { scoreColor } from '@/lib/audit-scoring'
 import { TopIssuesList } from '@/components/sections/TopIssuesList'
+import { DistributionChart } from '@/components/sections/DistributionChart'
 
 // Always read fresh aggregates.
 export const revalidate = 0
@@ -45,8 +46,6 @@ export default async function BenchmarksPage() {
   const avg = round(stats?.avg ?? null)
   const median = round(stats?.median ?? null)
   const topIssue = topIssues[0]
-
-  const distMax = Math.max(1, ...(stats?.distribution ?? []).map((d) => d.count))
 
   return (
     <main id="main-content" className="relative min-h-screen overflow-x-hidden">
@@ -107,7 +106,10 @@ export default async function BenchmarksPage() {
                   { label: 'Sites checked', value: n.toLocaleString() },
                   { label: 'Range', value: stats?.min != null && stats?.max != null ? `${round(stats.min)}–${round(stats.max)}` : '—' },
                 ].map((stat) => (
-                  <div key={stat.label} className="glass-card p-4 text-center">
+                  <div
+                    key={stat.label}
+                    className="glass-card p-4 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 active:scale-95"
+                  >
                     <div className="font-heading text-3xl font-bold text-primary">{stat.value}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{stat.label}</div>
                   </div>
@@ -121,48 +123,7 @@ export default async function BenchmarksPage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     The number of sites in each 10-point band{median != null && <> — half score above {median}, half below</>}.
                   </p>
-                  <div className="mt-8">
-                    <div
-                      role="img"
-                      aria-label={`Bar graph: distribution of findability scores across ${n.toLocaleString()} checked sites, in 10-point bands`}
-                      className="flex items-end gap-2 border-b border-border/50"
-                      style={{ height: '200px' }}
-                    >
-                      {Array.from({ length: 10 }, (_, i) => {
-                        const bucket = i + 1
-                        const entry = stats.distribution.find((d) => d.bucket === bucket)
-                        const count = entry?.count ?? 0
-                        const lo = i * 10
-                        const hi = bucket === 10 ? 100 : bucket * 10 - 1
-                        const mid = (lo + hi) / 2
-                        // Height in PIXELS off the tallest bar — % height collapses
-                        // because the flex column has no fixed height.
-                        const MAX_BAR_PX = 150
-                        const barPx = count ? Math.max(Math.round((count / distMax) * MAX_BAR_PX), 4) : 0
-                        const color = scoreColor(mid).bg
-                        return (
-                          <div key={bucket} className="flex flex-1 flex-col items-center justify-end gap-1.5">
-                            <span className={`text-xs font-semibold tabular-nums ${count ? 'text-foreground' : 'text-transparent'}`}>{count || 0}</span>
-                            <div
-                              className={`w-full rounded-t ${count ? color : 'bg-muted/20'}`}
-                              style={{ height: `${barPx}px`, opacity: count ? 0.9 : 1 }}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                    {/* x-axis band labels */}
-                    <div className="mt-2 flex gap-2">
-                      {Array.from({ length: 10 }, (_, i) => (
-                        <span key={i} className="flex-1 text-center text-[10px] tabular-nums text-muted-foreground/70">
-                          {i === 9 ? '90+' : `${i * 10}–${i * 10 + 9}`}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="mt-3 text-center text-[11px] text-muted-foreground/60">
-                      Findability score (0–100) · bar height = number of sites
-                    </p>
-                  </div>
+                  <DistributionChart distribution={stats.distribution} n={n} />
                 </section>
               )}
 
@@ -191,8 +152,8 @@ export default async function BenchmarksPage() {
                       .map((cat) => ({ cat, score: Math.round(stats.categoryAvgs[cat]) }))
                       .sort((a, b) => a.score - b.score)
                       .map(({ cat, score }) => (
-                        <div key={cat} className="flex items-center gap-4">
-                          <span className="w-28 shrink-0 text-sm text-muted-foreground">{cat}</span>
+                        <div key={cat} className="group -mx-2 flex items-center gap-4 rounded-lg px-2 py-1 transition-colors hover:bg-muted/10">
+                          <span className="w-28 shrink-0 text-sm text-muted-foreground transition-colors group-hover:text-foreground">{cat}</span>
                           <div
                             role="meter"
                             aria-valuenow={score}
@@ -201,9 +162,9 @@ export default async function BenchmarksPage() {
                             aria-label={`${cat} average score: ${score} out of 100`}
                             className="h-2 flex-1 overflow-hidden rounded-full bg-muted/40"
                           >
-                            <div className={`h-full ${scoreColor(score).bg}`} style={{ width: `${score}%`, opacity: 0.8 }} />
+                            <div className={`h-full ${scoreColor(score).bg} opacity-80 transition-opacity duration-300 group-hover:opacity-100`} style={{ width: `${score}%` }} />
                           </div>
-                          <span className={`w-8 shrink-0 text-right text-sm font-semibold ${scoreColor(score).text}`}>{score}</span>
+                          <span className={`w-8 shrink-0 text-right text-sm font-semibold ${scoreColor(score).text} transition-transform group-hover:scale-110`}>{score}</span>
                         </div>
                       ))}
                   </div>

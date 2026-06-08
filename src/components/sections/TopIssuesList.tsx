@@ -15,7 +15,10 @@ export function TopIssuesList({ issues }: { issues: TopIssue[] }) {
   return (
     <div className="mt-6 space-y-3">
       {shown.map((issue, i) => (
-        <div key={`${issue.category}-${issue.label}-${issue.status}-${i}`} className="glass-card p-4">
+        <div
+          key={`${issue.category}-${issue.label}-${issue.status}-${i}`}
+          className="group glass-card p-4 transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 active:scale-[0.99]"
+        >
           <div className="flex items-baseline justify-between gap-3">
             <div className="min-w-0">
               <span className="text-sm font-semibold text-foreground">{issue.label}</span>
