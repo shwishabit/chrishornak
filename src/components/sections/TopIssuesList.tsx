@@ -8,12 +8,29 @@ import type { TopIssue } from '@/lib/audit-stats'
 const STATUS_LABEL: Record<string, string> = { fail: 'Missing', warn: 'Needs work' }
 const INITIAL = 8
 
+// Bar color encodes PREVALENCE, not severity — this section is about what most
+// sites miss, so the eye should read "how common" off the color. Smooth amber→red
+// ramp as the share of affected sites climbs (top issues land ~85%, the tail ~1%).
+// Severity (fail vs warn) lives in the text label instead.
+function heatColor(pct: number): string {
+  const t = Math.min(Math.max(pct, 0) / 80, 1)
+  const hue = Math.round(42 - 42 * t) // 42° amber (rare) → 0° red (near-universal)
+  const alpha = (0.45 + 0.4 * t).toFixed(2)
+  return `hsl(${hue} 85% 52% / ${alpha})`
+}
+
 export function TopIssuesList({ issues }: { issues: TopIssue[] }) {
   const [showAll, setShowAll] = useState(false)
   const shown = showAll ? issues : issues.slice(0, INITIAL)
 
   return (
     <div className="mt-6 space-y-3">
+      <p className="text-xs leading-relaxed text-muted-foreground/70">
+        Each bar shows how many checked sites have that issue — the longer and redder
+        it runs, the more common it is. <span className="text-muted-foreground">Missing</span> means
+        the element is absent; <span className="text-muted-foreground">Needs work</span> means it
+        exists but is weak.
+      </p>
       {shown.map((issue, i) => (
         <div
           key={`${issue.category}-${issue.label}-${issue.status}-${i}`}
@@ -23,7 +40,10 @@ export function TopIssuesList({ issues }: { issues: TopIssue[] }) {
             <div className="min-w-0">
               <span className="text-sm font-semibold text-foreground">{issue.label}</span>
               <span className="ml-2 text-xs text-muted-foreground">
-                {issue.category} · {STATUS_LABEL[issue.status] ?? issue.status}
+                {issue.category} ·{' '}
+                <span className={issue.status === 'fail' ? 'font-medium text-foreground/70' : ''}>
+                  {STATUS_LABEL[issue.status] ?? issue.status}
+                </span>
               </span>
             </div>
             <span className="shrink-0 font-heading text-sm font-bold text-primary">{issue.pct}%</span>
@@ -42,8 +62,11 @@ export function TopIssuesList({ issues }: { issues: TopIssue[] }) {
             className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted/40"
           >
             <div
-              className={issue.status === 'fail' ? 'h-full bg-red-400/70' : 'h-full bg-amber-400/70'}
-              style={{ width: `${Math.min(Number(issue.pct), 100)}%` }}
+              className="h-full rounded-full"
+              style={{
+                width: `${Math.min(Number(issue.pct), 100)}%`,
+                backgroundColor: heatColor(Number(issue.pct)),
+              }}
             />
           </div>
         </div>
