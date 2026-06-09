@@ -3,6 +3,8 @@ import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { WorkGallery } from '@/components/sections/WorkGallery'
+import { ClientLogos } from '@/components/sections/ClientLogos'
+import { Testimonials } from '@/components/sections/Testimonials'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig, workContent, projects, connectContent } from '@/lib/data'
 
@@ -49,7 +51,28 @@ export default function WorkPage() {
         </div>
       </header>
 
+      {/* Trust bar — recognizable brands I've worked with */}
+      <section className="relative px-6 pb-20 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Businesses I&apos;ve worked with
+          </p>
+          <ClientLogos className="mt-8 border-y border-border/50 py-10" />
+        </div>
+      </section>
+
       <WorkGallery />
+
+      {/* Testimonials — third-party validation before the ask */}
+      <section className="relative px-6 pb-24 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm font-medium uppercase tracking-widest text-primary">
+            In their words
+          </p>
+          <span className="mt-2 block h-px w-12 bg-primary/40" />
+          <Testimonials className="mt-10" />
+        </div>
+      </section>
 
       {/* Closing CTA */}
       <section className="relative px-6 pb-28 md:px-12 lg:px-24">
