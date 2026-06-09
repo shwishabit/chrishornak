@@ -81,9 +81,10 @@ async function resolveAndCheck(hostname: string): Promise<boolean> {
 async function safeFetch(
   url: string,
   maxBytes: number,
+  timeoutMs: number = FETCH_TIMEOUT,
 ): Promise<{ body: string; status: number; finalUrl: string; headers: Headers; responseTimeMs: number } | null> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
   const start = Date.now()
 
   try {
@@ -110,6 +111,31 @@ async function safeFetch(
     clearTimeout(timeout)
     return null
   }
+}
+
+// Main page fetch with a single transient-blip retry. Vercel's edge can
+// intermittently challenge or reset datacenter-IP requests (the audit Lambda)
+// while serving browsers cleanly — a once-off null that resolves on a retry.
+// We ONLY retry a *fast* failure (a thrown/refused/challenged connection
+// returns in well under a second); a slow failure means the 8s timeout fired,
+// i.e. the site is genuinely slow/down and there's no time budget to retry.
+const FAST_FAIL_MS = 2_000 // a failure quicker than this is a transient blip, not a real timeout
+const RETRY_TIMEOUT = 4_000 // shorter budget for the retry so total stays under Vercel's limit
+const RETRY_BACKOFF_MS = 250
+
+async function fetchPageWithRetry(
+  url: string,
+  maxBytes: number,
+): Promise<{ body: string; status: number; finalUrl: string; headers: Headers; responseTimeMs: number } | null> {
+  const start = Date.now()
+  const first = await safeFetch(url, maxBytes)
+  if (first) return first
+
+  // Only retry if the first attempt failed FAST (transient throw, not an 8s timeout).
+  if (Date.now() - start >= FAST_FAIL_MS) return null
+
+  await new Promise((resolve) => setTimeout(resolve, RETRY_BACKOFF_MS))
+  return safeFetch(url, maxBytes, RETRY_TIMEOUT)
 }
 
 /* ── og:image direct-fetch (Facebook-scraper simulation) ───────────────── */
@@ -299,7 +325,7 @@ export async function GET(request: NextRequest) {
   ]
 
   const [pageResult, robotsResult, llmsTxtResult, ...sitemapResults] = await Promise.all([
-    safeFetch(targetUrl, MAX_HTML),
+    fetchPageWithRetry(targetUrl, MAX_HTML),
     safeFetch(`${parsed.origin}/robots.txt`, MAX_AUX),
     safeFetch(`${parsed.origin}/llms.txt`, MAX_AUX),
     ...commonSitemaps.map((path) => safeFetch(path, MAX_AUX)),
