@@ -83,14 +83,15 @@ export default function WorkPage() {
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
             {connectContent.body}
           </p>
-          <a
-            href={connectContent.ctaLink}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            data-cal-link="chris-hornak/30min"
+            data-cal-namespace="30min"
+            data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}'
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
           >
             {connectContent.ctaText}
-          </a>
+          </button>
         </div>
       </section>
 
