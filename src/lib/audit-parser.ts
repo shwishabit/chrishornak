@@ -1590,14 +1590,17 @@ function parseMobile(page: FetchedPage): AuditItem[] {
   }
 
   // 2. Doctype
+  // Pure hygiene every template hands out — keep the check, but weight it low so
+  // it stops acting as a free point that props up the category average.
   const hasDoctype = /<!DOCTYPE\s+html>/i.test(html)
   items.push(
     hasDoctype
-      ? { label: 'Doctype', status: 'pass' as Status, value: 'Valid HTML5 doctype' }
+      ? { label: 'Doctype', status: 'pass' as Status, value: 'Valid HTML5 doctype', weight: 0.25 }
       : {
           label: 'Doctype',
           status: 'warn' as Status,
           value: 'Missing or non-standard doctype',
+          weight: 0.25,
           recommendation:
             'A proper HTML5 doctype (<!DOCTYPE html>) ensures browsers render your page in standards mode. Without it, layout can break unpredictably.',
         },
@@ -1611,12 +1614,14 @@ function parseMobile(page: FetchedPage): AuditItem[] {
       status: 'pass',
       value: `${charsetMeta[1].toUpperCase()} declared`,
       extracted: `<meta charset="${charsetMeta[1]}" />`,
+      weight: 0.25,
     })
   } else {
     items.push({
       label: 'Character encoding',
       status: 'warn',
       value: 'No charset declared',
+      weight: 0.25,
       recommendation:
         'Without a character encoding declaration, browsers may display special characters incorrectly. Add: <meta charset="utf-8" /> in your <head>.',
     })
@@ -1732,6 +1737,35 @@ function parseMobile(page: FetchedPage): AuditItem[] {
           'Most of your images use older file formats (PNG/JPG) that load slower on mobile. Converting to WebP or AVIF typically cuts file size 25–35% with no visible quality loss.',
       })
     }
+  }
+
+  // 7. Responsive images — srcset/sizes/<picture> let each device download an
+  //    appropriately-sized image instead of one fixed desktop-scale file. Unlike
+  //    doctype/charset, this genuinely varies across sites, so it differentiates.
+  const pictureCount = (html.match(/<picture[\s>]/gi) ?? []).length
+  const responsiveImgs = realImgs.filter(
+    (img) => /\ssrcset=/i.test(img) || /\ssizes=/i.test(img),
+  )
+  if (realImgs.length <= 2) {
+    items.push({
+      label: 'Responsive images',
+      status: 'pass',
+      value: realImgs.length === 0 ? 'No images to evaluate' : 'Too few images to matter',
+    })
+  } else if (responsiveImgs.length > 0 || pictureCount > 0) {
+    items.push({
+      label: 'Responsive images',
+      status: 'pass',
+      value: `${responsiveImgs.length + pictureCount} of ${realImgs.length} images serve responsive sources`,
+    })
+  } else {
+    items.push({
+      label: 'Responsive images',
+      status: 'warn',
+      value: `${realImgs.length} images, none with responsive sources`,
+      recommendation:
+        'Your images ship a single fixed-size file to every device, so phones download desktop-scale images and load slower. Add srcset/sizes (or a <picture> element) so each device gets an appropriately-sized image — most modern site builders and CMS image tools do this automatically.',
+    })
   }
 
   return items
@@ -1896,16 +1930,48 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
       label: 'Content security policy',
       status: 'pass',
       value: cspHeader ? 'Set via HTTP header' : 'Set via meta tag',
-      weight: 0.5,
     })
   } else {
     items.push({
       label: 'Content security policy',
       status: 'warn',
       value: 'No CSP found',
-      weight: 0.5,
       recommendation:
         'A Content Security Policy tells browsers which scripts and resources are allowed to run on your page. Without one, your site is more vulnerable to code injection. This is an advanced setting — ask your developer about it.',
+    })
+  }
+
+  // 5b. Security headers — HSTS + X-Content-Type-Options signal a deliberately
+  //     hardened server. Default hosting ships neither, so this separates a
+  //     well-configured site from a template default (unlike HTTPS, which is now
+  //     near-universal and hands everyone the same points).
+  const hasHsts = !!headers['strict-transport-security']
+  const hasNosniff = /nosniff/i.test(headers['x-content-type-options'] ?? '')
+  const secHeaders = [hasHsts && 'HSTS', hasNosniff && 'X-Content-Type-Options'].filter(
+    Boolean,
+  ) as string[]
+  if (secHeaders.length === 2) {
+    items.push({
+      label: 'Security headers',
+      status: 'pass',
+      value: 'HSTS and X-Content-Type-Options set',
+      extracted: secHeaders.join(', '),
+    })
+  } else if (secHeaders.length === 1) {
+    items.push({
+      label: 'Security headers',
+      status: 'warn',
+      value: `Only ${secHeaders[0]} set`,
+      recommendation:
+        'Your server sends one hardening header but not the other. Adding both Strict-Transport-Security (forces HTTPS) and X-Content-Type-Options: nosniff (blocks MIME-type sniffing attacks) is a quick win your host or developer can configure.',
+    })
+  } else {
+    items.push({
+      label: 'Security headers',
+      status: 'warn',
+      value: 'No hardening headers found',
+      recommendation:
+        'Your server isn\'t sending security headers like Strict-Transport-Security (forces HTTPS) or X-Content-Type-Options: nosniff (blocks MIME-type sniffing attacks). These are a standard, low-effort hardening step — ask your host or developer to add them.',
     })
   }
 

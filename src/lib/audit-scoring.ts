@@ -97,6 +97,17 @@ const CRITICAL_CHECKS: Record<string, string> = {
   'Search': 'Indexability',
 }
 
+/* Weakest-link gate — findability's substance lives in AI + Structure. A pure
+ * weighted average lets strength in the easy, near-ceiling categories (Mobile,
+ * Security, a title tag) paper over a failing core, so a site that bombs the
+ * two things that matter most can still average its way to a green score. When
+ * a core category falls below CORE_FAIL_THRESHOLD, the overall is capped at
+ * CORE_FAIL_CAP (below the 75 green line). Same spirit as CRITICAL_CHECKS, one
+ * level softer — a penalty, not a zero. */
+const CORE_CATEGORIES = ['AI', 'Structure']
+const CORE_FAIL_THRESHOLD = 50
+const CORE_FAIL_CAP = 70
+
 export function scoreCategoryPercent(name: string, items: AuditItem[]): number {
   if (items.length === 0) return 0
 
@@ -119,14 +130,21 @@ export function scoreCategoryPercent(name: string, items: AuditItem[]): number {
 export function computeOverallScore(categories: AuditCategory[]): number {
   let weightedSum = 0
   let totalWeight = 0
+  let coreShortfall = false
 
   for (const cat of categories) {
     const weight = CATEGORY_WEIGHTS[cat.name] ?? 5
-    weightedSum += scoreCategoryPercent(cat.name, cat.items) * weight
+    const pct = scoreCategoryPercent(cat.name, cat.items)
+    weightedSum += pct * weight
     totalWeight += weight
+    if (CORE_CATEGORIES.includes(cat.name) && pct * 100 < CORE_FAIL_THRESHOLD) {
+      coreShortfall = true
+    }
   }
 
-  return totalWeight > 0 ? Math.round(weightedSum / totalWeight * 100) : 0
+  if (totalWeight === 0) return 0
+  const overall = Math.round((weightedSum / totalWeight) * 100)
+  return coreShortfall ? Math.min(overall, CORE_FAIL_CAP) : overall
 }
 
 export function computeCategoryScore(category: AuditCategory): number {
