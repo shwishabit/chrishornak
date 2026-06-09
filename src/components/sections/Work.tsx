@@ -1,7 +1,9 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import { testimonials } from '@/lib/data'
 import { fadeUp, stagger, ease } from '@/lib/animations'
 
@@ -142,6 +144,25 @@ export function Work() {
             </motion.div>
           ))}
         </div>
+
+        {/* Teaser → full portfolio */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, ease }}
+          className="mt-14 flex flex-col items-center gap-4 border-t border-border/50 pt-12 text-center"
+        >
+          <p className="max-w-md text-base text-muted-foreground">
+            I build the work too — software of my own and brands for the businesses I partner with.
+          </p>
+          <Link
+            href="/work"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-6 py-2.5 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-glow"
+          >
+            See selected work <ArrowRight className="h-4 w-4" />
+          </Link>
+        </motion.div>
       </div>
     </section>
   )

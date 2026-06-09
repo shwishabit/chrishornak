@@ -1,6 +1,6 @@
 // src/lib/data.ts — Chris Hornak personal brand hub
 
-import type { NavLink, SiteConfig, Testimonial } from './types'
+import type { NavLink, Project, SiteConfig, Testimonial } from './types'
 
 export const siteConfig: SiteConfig = {
   brandName: 'Chris Hornak',
@@ -14,7 +14,7 @@ export const siteConfig: SiteConfig = {
 export const navLinks: NavLink[] = [
   { label: 'About', href: '/#about' },
   { label: 'Approach', href: '/#services' },
-  { label: 'Work', href: '/#work' },
+  { label: 'Work', href: '/work' },
   { label: 'Be The Signal', href: '/signal' },
   { label: 'Findability Check', href: '/audit' },
 ]
@@ -68,6 +68,119 @@ export const testimonials: Testimonial[] = [
     company: 'SkillsTX',
     initials: 'JK',
     image: '/images/testimonials/john-kleist.jpg',
+  },
+]
+
+export const workContent = {
+  eyebrow: 'Selected work',
+  headline: 'Strategy, made real.',
+  intro:
+    'I don\'t just advise on this stuff. I build it. Brands and sites for the businesses I work with, plus companies and products of my own. Here\'s a few, with the thinking behind each one.',
+  clientLabel: 'For the businesses I work with',
+  ownedLabel: 'And a few of my own',
+}
+
+export const projects: Project[] = [
+  // ── Client work (leads the page) ──
+  {
+    slug: 'pontiva',
+    name: 'Pontiva Advisory',
+    kind: 'client',
+    url: 'https://pontivaadvisory.com',
+    category: 'Energy advisory · Client',
+    role: 'Positioning · Brand · Build',
+    outcome:
+      'A veteran energy advisor with a Goldman-and-bp résumé, and no website to match it. We built a presence with institutional weight, so a solo practice reads like the firm it competes against.',
+    image: '/images/work/pontiva.webp',
+  },
+  {
+    slug: 'pa-pardon',
+    name: 'PA Pardon',
+    kind: 'client',
+    url: 'https://www.papardon.com/',
+    category: 'Law firm · Client',
+    role: 'Strategy · Brand · Build',
+    outcome:
+      'A Pittsburgh expungement attorney whose old site buried 30 years of work. We rebuilt it around one promise, your record can be cleared, with the city\'s own bridges carrying the weight. A clear path from a worried search to a free evaluation.',
+    image: '/images/work/pa-pardon.webp',
+  },
+  {
+    slug: 'tommie-whitener',
+    name: 'Tommie W. Whitener',
+    kind: 'client',
+    url: 'https://tommiewhitener.com',
+    category: 'Author · Client',
+    role: 'Brand · Build',
+    outcome:
+      'Seven novels and a life spent watching people closely. The site needed to read like his prose, so we built it editorial and unhurried, with the writing out front instead of the design.',
+    image: '/images/work/tommie-whitener.webp',
+  },
+  {
+    slug: 'speranza',
+    name: 'Speranza Consulting',
+    kind: 'client',
+    url: 'https://www.speranzaconsulting.com/',
+    category: 'Consulting · Client',
+    role: 'Positioning · Brand · Build',
+    outcome:
+      'A consulting and investments firm that had no online presence at all. We built the whole thing from scratch, positioning, brand, and site, so a multi-industry practice finally had a home that matched its ambition.',
+    image: '/images/work/speranza.webp',
+  },
+  {
+    slug: 'custom-craft',
+    name: 'Custom Craft Construction',
+    kind: 'client',
+    url: 'https://www.customcraftwv.com/',
+    category: 'Home construction · Client',
+    role: 'Brand · Build',
+    outcome:
+      'A custom builder in the Ohio Valley whose best sales tool was the work itself. The site leads with finished spaces, kitchens and baths front and center, so the craft does the selling before a word does.',
+    image: '/images/work/custom-craft.webp',
+  },
+  // ── Built & owned (closes the page) ──
+  {
+    slug: 'swift-growth',
+    name: 'Swift Growth Marketing',
+    kind: 'owned',
+    url: 'https://swiftgrowth.marketing',
+    category: 'Agency · Co-founded',
+    role: 'Positioning · Brand · Build',
+    outcome:
+      'My agency, and the team behind a lot of the work on this page. Built on a simple bet: buyers start with questions, not ads, and the brands that answer them best become the ones people trust.',
+    image: '/images/work/swift-growth.webp',
+  },
+  {
+    slug: 'blog-hands',
+    name: 'Blog Hands',
+    kind: 'owned',
+    url: 'https://bloghands.com',
+    category: 'SaaS · Built & owned',
+    role: 'Strategy · Brand · Full-stack build',
+    outcome:
+      'A content service I\'d run since 2012, rebuilt as software. Drop in a URL and get a blog post in your brand voice, AI by default with a human on demand. The service became the product.',
+    image: '/images/work/bloghands.webp',
+  },
+  {
+    slug: 'f0rmless',
+    name: 'f0rmless',
+    kind: 'owned',
+    url: 'https://f0rmless.com',
+    category: 'Product · Built & owned',
+    role: 'Concept · Brand · Build',
+    outcome:
+      'Competitive gaming\'s schedule lives scattered across a dozen sites. f0rmless pulls every match into one broadcast-style guide, 12 games and one live signal. The esports TV guide that didn\'t exist yet.',
+    image: '/images/work/f0rmless.webp',
+  },
+  {
+    slug: 'findability-check',
+    name: 'Findability Check',
+    kind: 'owned',
+    url: '/audit',
+    category: 'Tool · Built & owned',
+    role: 'Product · Build · Research',
+    outcome:
+      'The first thing I check on any website, turned into a free tool anyone can run. It scores the seven signals that decide whether people and AI can find you, benchmarked against 190+ real businesses. Try it on this site right now.',
+    image: '/images/work/findability.webp',
   },
 ]
 

@@ -27,6 +27,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...guideEntries,
     {
+      url: `${siteConfig.domain}/work`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
       url: `${siteConfig.domain}/audit`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
