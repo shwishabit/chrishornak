@@ -174,6 +174,106 @@ For smaller projects, I work hands-on. For larger ones, I bring in the right peo
 
 ---
 
+## 📍 Session State (updated 2026-06-08 cont. · audit "couldn't reach" false-positive — fast-fail retry on the page fetch, site `aa54d56` / parent `f74abc7`)
+
+**Last worked on (2026-06-08 cont.):**
+The audit reported "We couldn't reach f0rmless.com" for a site that was actually online (apex `308 → www`, www `200` in <1s, even with the exact `SiteCheck/1.0` UA). Traced it to `safeFetch` returning null on the main page fetch — a transient Vercel-edge blip (datacenter-IP request challenged/reset while browsers are served cleanly). The live audit reproduced clean, so it had self-healed. Added a scoped retry: `fetchPageWithRetry()` retries the page fetch **once, only on a fast failure** (`<2s` = transient throw, not the 8s timeout — no budget to retry a real timeout, and it wouldn't help). Retry uses a shorter 4s timeout + 250ms backoff so worst case stays under Vercel's ~10s function limit. Aux fetches (robots/sitemap/llms) stay single-shot.
+
+**Files touched:**
+- `site/src/app/api/audit/route.ts` — `safeFetch` gains an optional `timeoutMs` param; new `fetchPageWithRetry()` helper (fast-fail-guarded single retry); page fetch at the `Promise.all` switched to use it. Aux fetches unchanged.
+
+**Where we are:** 🟢 Shipped. tsc 0 / build 0 (16 routes) / live audit re-verified clean post-deploy. Site submodule pushed to `shwishabit/chrishornak` (`aa54d56`); parent pointer bumped (`f74abc7`, no remote — local hygiene).
+
+**Next action:**
+None required. Optional: if "couldn't reach" false-positives recur on sites that ARE up, consider a 2nd-opinion fetch from a non-Vercel egress, or surface a softer "temporarily unreachable, retry" state distinct from the hard-down copy.
+
+**Unsaved decisions:** none — committed + pushed + verified.
+
+**Gotchas / Errors encountered:**
+- Parent repo `Projects/chrishornak` has **no git remote** — Vercel deploys from the `site/` submodule's own GitHub repo. The parent pointer bump is local-only bookkeeping. (Also: parent tree carries pre-existing uncommitted `agent.md`/`CHANGELOG.md`/`backlog.md` + untracked `clarity-cover.*` from a prior session — left untouched, not mine.)
+
+**SWOT (session retrospective):**
+- **Strengths** — assessed before touching code (DNS + HTTP + exact-UA + live-audit reproduction proved the site was up and the tool's fetch was the variable); the retry was designed around the real failure mode (fast transient vs slow timeout) instead of a naive doubling that would blow the 10s budget; verified tsc+build before push.
+- **Weaknesses** — the retry's benefit can't be directly observed (happy path is unchanged); confidence rests on logic + no-regression, not a reproduced blip-then-recovery.
+- **Opportunities** — a "soft unreachable" state (retry-suggested) vs the current hard-down copy would read better for transient cases.
+- **Threats** — Vercel-to-Vercel fetch flakiness is environmental and could recur; the retry masks the common case but a persistent datacenter-IP block would still (correctly) surface as unreachable.
+
+---
+
+## 📍 Session State (updated 2026-06-08 · Findability Benchmark feature SHIPPED + 4-round scoring recalibration — 193-site dataset, HEAD `e4f9da0`)
+
+**Last worked on (2026-06-08):**
+Built the Findability Benchmark end-to-end: every audit now feeds an aggregate dataset, the result page shows a per-site percentile + comparison vs the average, and a public editorial research page lives at `/audit/benchmarks`. Seeded **193 real small business sites** and ran FOUR data-driven calibration rounds that materially fixed the scoring — it was too lenient (avg 80→75, median 83→78, min 46→35, real bottom tail now; ~26% score <70 vs ~1% before).
+
+**Files touched (all live on origin/main, HEAD `e4f9da0`, 12 commits `88e2438`→`e4f9da0`):**
+- `site/supabase/migrations/0001_audit_runs.sql` + `0002_benchmark_rank_avg.sql` (NEW) — table + RLS insert-only + security-definer RPCs (`benchmark_stats`/`benchmark_top_issues`/`benchmark_rank`). Applied to the **Blog Hands Production** Supabase project (see Hosting).
+- `site/src/lib/{supabase,audit-stats,benchmark-config,issue-descriptions}.ts` (NEW)
+- `site/src/app/api/audit/record/route.ts` (NEW) — non-blocking capture; returns n/avg/median/percentile
+- `site/src/components/sections/{BenchmarkBadge,TopIssuesList,DistributionChart}.tsx` (NEW)
+- `site/src/app/audit/benchmarks/page.tsx` (NEW) — editorial research page; scores 100 on the rubric; interactive hover/tap bar graph
+- `site/src/components/sections/AuditTool.tsx` — capture wiring, benchmark badge + CTA comparison, gap-focused messaging, methodology weights
+- `site/src/lib/audit-scoring.ts` — **warn credit 0.5→0.3**; **category weights rebalanced** (AI 25→27, Structure 20→22, Accessibility 10→12, Mobile 10→7, Security 10→7)
+- `site/src/lib/audit-parser.ts` — calibration fixes (see CHANGELOG 2026-06-08)
+- `site/src/app/privacy/page.tsx` (data-storage disclosure), `sitemap.ts` (+`/audit/benchmarks`), `layout.tsx` (theme-color)
+- `site/scripts/{seed-benchmarks,seed-benchmarks-bulk,seed-benchmarks-local}.ts` (NEW) — the 3 seed sources
+
+**Where we are:** 🟢 LIVE + verified on prod. 193 real businesses (avg 75, median 78, min 35, max 94). Percentile active (n≥100). Benchmark page reads the live DB uncached → updates on every new audit.
+
+**Next action:**
+1. Audit real sites on the live tool to feel the stricter scoring + the "you beat X%" percentile.
+2. (Optional further calibration) "Answerable content" still warns on 85% (kept scored — FAQs are universally achievable) + CSP 72%; revisit if users say they're noise.
+
+**Unsaved decisions:** none — everything committed + pushed + live-verified.
+
+**Gotchas / Errors encountered:**
+- **Supabase free-project limit (2/account) hit** → couldn't create a dedicated chrishornak project, so `audit_runs` + RPCs live inside the **Blog Hands Production** Supabase project (`avsokercllnaiifoibwj`), isolated (RLS insert-only, never touches Blog Hands tables). Reversible.
+- **VisitPittsburgh directory is JS-rendered (unscrapeable); the Enigma directory (`enigma.com/directory/<st>/<city>/`) is STATIC** — yielded ~140 ordinary SMBs across WV/OH/PA/KY (the realistic-sample source).
+- **Distribution bars collapsed to min height** — `height: %` on an auto-height flex parent resolves to 0; fixed with pixel heights off the tallest bar.
+- **Vercel env (`SUPABASE_URL`/`SUPABASE_ANON_KEY`) lives under a Vercel team Chris owns, not the shwishabit CLI scope** — Chris added them in the dashboard + redeployed (anon key is publishable, non-secret).
+
+**Process retrospection:**
+- **The corpus is a calibration radar** — any check firing on >75% of real sites is either a universal truth or an over-tuned check. Surfaced + fixed 6 real "our-end" scoring bugs this session. Codified as `feedback_benchmark_calibration_radar.md`.
+- **Scoring-compression lesson:** a weighted average over mostly-passing fundamentals + half-credit warnings clusters everyone ~80. Restore signal by making warnings cost more + weighting toward high-variance categories, not platform defaults (Mobile/Security near-ceiling).
+
+**SWOT:**
+- **Strengths** — full feature in one session (DB→capture→UI→editorial page→193-site dataset); each calibration round verified against the live dataset before locking; every "our-end" claim verified against parser source before asserting; findability self-check caught the new page at 83 and drove it to 100.
+- **Weaknesses** — reseeded the corpus ~6× (~12 min each) as calibration evolved; could have batched scoring changes into fewer reseeds. First seed (notable independents) skewed avg high before the Enigma local-SMB correction.
+- **Opportunities** — the benchmark is original research → a "State of Small Business Findability" content/LinkedIn asset; record endpoint trusts client scores (server-side re-scoring would harden it); benchmarks page recomputes per request (light caching at scale).
+- **Threats** — Answerable content (85%) + CSP (72%) still high (next calibration candidates); record-endpoint spoofable; `audit_runs` lives in the flagship Blog Hands prod DB (low-risk, but coupled).
+
+---
+
+## 📍 Session State (updated 2026-06-05 · structured-data findability fixes — 89→~99 on the rubric, 1 commit PUSHED)
+
+**Last worked on (2026-06-05):**
+Ran the `findability-auditor` against the live site (scored **89/100**, 6 flagged). After verifying each against the actual source, **3 were real wins, 2 were false positives, 1 a UX judgment call left alone.** Shipped the 3 (`00a4469` on `shwishabit/chrishornak` main, Vercel auto-deployed, live-verified):
+1. **Raw email removed from Person/ContactPoint JSON-LD** ([layout.tsx](site/src/app/layout.tsx)) — was leaking `chris@chrishornak.com` into every page's source HTML; the `/#connect` URL carries the contact path. Enforces [[feedback-no-email-addresses-on-websites]].
+2. **`Article.image` added** to all 6 guide schemas ([signal/[slug]/page.tsx](site/src/app/signal/[slug]/page.tsx)) → the existing per-guide dynamic OG card; required for Article rich-result eligibility.
+3. **`Article.publisher` Person → Organization + `ImageObject` logo** (same file, `wordmark-dark.png`) per Google article-enrichment requirements.
+
+**Skipped, with reasons (don't re-flag):**
+- **`/signal` OG image** — false positive. Live HTML already emits `og:image → /signal/opengraph-image` via Next's file-based `opengraph-image.tsx`; adding explicit metadata would duplicate the tag.
+- **Audit meta description (167 chars)** — the site's *own* tool grades descriptions 160–220 sliding, so 167 already scores; trimming wouldn't lift it.
+- **Reduced-motion blanket disable** ([globals.css](site/src/styles/globals.css)) — passes the rubric; the conservative default is right for the audience (and Chris's ADHD). Left intentionally. If ever scoped, document as an explicit exception.
+
+**Where we are:** 🟢 LIVE + verified. Guide pages emit `Article.image` + `Organization` publisher; home has no raw email (both confirmed in live HTML). tsc 0 / build 0.
+
+**Next action (ordered):**
+1. **Run chrishornak.com/audit on itself** post-deploy to confirm the score moved (also the standing backlog "Now" item).
+2. **Google Rich Results Test** on a guide URL — confirm Article validates with the new `image` + Organization publisher.
+3. Manual nits flagged, not chased: verify **HSTS** header on prod (`curl -sI chrishornak.com | grep -i strict`; add to `next.config.ts` header rule if absent); **mobile-menu ARIA** (`role="menu"` with `<a>` children wants `role="menuitem"` — possible axe violation).
+
+**Unsaved decisions:** none — all 3 fixes committed + pushed + live-verified.
+
+**Gotchas / Errors encountered:**
+- **`site/` is a nested git repo** (remote `shwishabit/chrishornak`); the parent `Projects/chrishornak` has no `origin` and tracks `site` as a dirty submodule pointer. Commit + push from inside `site/`, not the parent.
+- Auditor's `email`-key grep on rendered HTML initially read as "still 1 present" — it was the contact form's `<input type="email">` field, not a raw address. Confirmed the actual address + `mailto:` are gone.
+
+**Process retrospection:**
+- **Verify auditor findings against source before acting** — 2 of 6 were false positives that build/live HTML inspection caught (Next file-based OG, the site's own 160–220 description band). Relaying an audit verbatim would have shipped a duplicate OG tag and a pointless description trim.
+
+---
+
 ## 📍 Session State (updated 2026-05-26 · /learn/vibe-coding + /principles SHIPPED with sidebar, diagrams, video callouts, copy-paste prompts)
 
 **Last worked on:**
