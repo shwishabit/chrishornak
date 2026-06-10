@@ -9,7 +9,7 @@ import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig, workContent, projects, connectContent } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Selected Work',
+  title: 'Selected Work — Brands, Sites & Products',
   alternates: { canonical: '/work' },
   description:
     'Software, products, and brands I\'ve built — for companies of my own and for the businesses I work with. The strategy made real, with the thinking behind each one.',

@@ -6,7 +6,7 @@ export const siteConfig: SiteConfig = {
   brandName: 'Chris Hornak',
   supportEmail: 'chris@chrishornak.com',
   copyrightYear: new Date().getFullYear(),
-  defaultTitle: 'Chris Hornak | Marketing Strategist for Growing Businesses',
+  defaultTitle: 'Marketing Strategist for Growing Businesses | Chris Hornak',
   defaultDescription: 'Marketing strategist helping businesses get found, stay found, and turn visibility into results. Strategy that makes everything else work.',
   domain: 'https://chrishornak.com',
 }

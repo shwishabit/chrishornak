@@ -7,7 +7,7 @@ import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Be The Signal',
+  title: 'Be The Signal — Guides to Getting Found Online',
   alternates: {
     canonical: '/signal',
   },

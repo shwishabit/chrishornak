@@ -8,7 +8,7 @@ import { PlatformBar } from '@/components/ui/PlatformBar'
 import { siteConfig, auditFaqs } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Findability Check',
+  title: 'Free Findability Check — SEO & AI Search Audit',
   alternates: {
     canonical: '/audit',
   },

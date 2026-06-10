@@ -38,7 +38,7 @@ export function ClientLogos({ className = '' }: { className?: string }) {
           >
             <Image
               src={client.logo}
-              alt={client.name}
+              alt={`${client.name} logo`}
               width={120}
               height={64}
               className={`w-auto max-w-full object-contain ${sizeClasses[client.size]}`}

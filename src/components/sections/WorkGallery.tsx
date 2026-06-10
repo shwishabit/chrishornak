@@ -62,7 +62,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
           <div className="relative aspect-[1440/900] overflow-hidden">
             <Image
               src={project.image}
-              alt={`${project.name} — screenshot`}
+              alt={`${project.name} — ${project.category}, built by Chris Hornak`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03]"

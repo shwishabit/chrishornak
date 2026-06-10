@@ -14,7 +14,7 @@ import { DistributionChart } from '@/components/sections/DistributionChart'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'The State of Small Business Findability — Benchmark Data',
+  title: 'The State of Small Business Findability',
   alternates: { canonical: '/audit/benchmarks' },
   description:
     'Real findability data from small business websites: average and median scores, the issues almost everyone misses, and how the seven signals stack up.',

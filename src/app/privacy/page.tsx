@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     canonical: '/privacy',
   },
   description: 'Privacy policy for chrishornak.com — how your information is collected, used, and protected.',
+  robots: { index: false, follow: true },
 }
 
 export default function PrivacyPage() {
