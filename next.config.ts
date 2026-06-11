@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://tommiewwhitener.substack.com https://formsubmit.co",
-              "frame-src 'none'",
+              "frame-src https://www.google.com",
             ].join('; '),
           },
         ],
