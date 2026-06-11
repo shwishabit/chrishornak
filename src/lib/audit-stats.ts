@@ -5,7 +5,7 @@
  * ─────────────────────────────────────────────────────────────────────── */
 
 import { getSupabase } from './supabase'
-import { RPC_STATS, RPC_TOP_ISSUES } from './benchmark-config'
+import { RPC_STATS, RPC_TOP_ISSUES, RPC_IMPROVEMENT } from './benchmark-config'
 
 export interface BenchmarkStats {
   n: number
@@ -51,4 +51,30 @@ export async function getTopIssues(limit = 8): Promise<TopIssue[]> {
   const { data, error } = await sb.rpc(RPC_TOP_ISSUES, { limit_n: limit })
   if (error || !Array.isArray(data)) return []
   return data as TopIssue[]
+}
+
+/** First-vs-latest score across sites that re-audited. Powers the "sites that
+ *  came back improved by N points" credibility stat. Fails soft to null. */
+export interface BenchmarkImprovement {
+  nReturned: number
+  avgDelta: number | null
+  avgFirst: number | null
+  avgLatest: number | null
+  improvedPct: number | null
+  medianDelta: number | null
+}
+
+export async function getBenchmarkImprovement(): Promise<BenchmarkImprovement | null> {
+  const sb = getSupabase()
+  if (!sb) return null
+  const { data, error } = await sb.rpc(RPC_IMPROVEMENT)
+  if (error || !data) return null
+  return {
+    nReturned: Number(data.n_returned ?? 0),
+    avgDelta: data.avg_delta ?? null,
+    avgFirst: data.avg_first ?? null,
+    avgLatest: data.avg_latest ?? null,
+    improvedPct: data.improved_pct ?? null,
+    medianDelta: data.median_delta ?? null,
+  }
 }

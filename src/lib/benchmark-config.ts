@@ -13,6 +13,7 @@ export const TBL_AUDIT_RUNS = 'audit_runs'
 export const RPC_STATS = 'benchmark_stats'
 export const RPC_TOP_ISSUES = 'benchmark_top_issues'
 export const RPC_RANK = 'benchmark_rank'
+export const RPC_IMPROVEMENT = 'benchmark_improvement'
 
 /** The seven findability categories, canonical order. */
 export const CATEGORY_ORDER = [

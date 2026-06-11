@@ -204,7 +204,7 @@ function CategoryScoreBar({ items, muted = false }: { items: AuditItem[]; muted?
 
 /* ── Audit item row ───────────────────────────────────────────────────────── */
 
-function AuditItemRow({ item }: { item: AuditItem }) {
+function AuditItemRow({ item, category }: { item: AuditItem; category?: string }) {
   return (
     <div className="flex gap-3 py-3 first:pt-0 last:pb-0">
       <StatusIcon status={item.status} />
@@ -212,6 +212,11 @@ function AuditItemRow({ item }: { item: AuditItem }) {
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className="text-sm font-medium text-foreground">{item.label}</span>
           <span className="text-xs text-muted-foreground">{item.value}</span>
+          {category && (
+            <span className="ml-auto shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/45">
+              {category}
+            </span>
+          )}
         </div>
         {item.extracted && (
           <pre className="mt-1.5 overflow-hidden whitespace-pre-wrap break-all rounded-md border border-border/30 bg-muted/30 px-3 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
@@ -517,6 +522,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AuditResult | null>(null)
   const [activeTab, setActiveTab] = useState(OVERVIEW_TAB)
+  const [statusFilter, setStatusFilter] = useState<Status | null>(null)
   const [showMethodology, setShowMethodology] = useState(false)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [progressStep, setProgressStep] = useState(0)
@@ -623,6 +629,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
     setPreviousResult(null)
     setBenchmark(null)
     setActiveTab(OVERVIEW_TAB)
+    setStatusFilter(null)
     setProgressStep(0)
 
     const normalized = normalizeUrl(url)
@@ -724,6 +731,15 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
   const passes = allItems.filter((i) => i.status === 'pass').length
   const warns = allItems.filter((i) => i.status === 'warn').length
   const fails = allItems.filter((i) => i.status === 'fail').length
+
+  // Cross-category checks for the active status filter, worst-category-first.
+  const filteredChecks = statusFilter
+    ? ranked.flatMap((cat) =>
+        cat.items
+          .filter((i) => i.status === statusFilter)
+          .map((item) => ({ item, category: cat.name })),
+      )
+    : []
 
   const tabs = result
     ? [OVERVIEW_TAB, ...result.categories.map((c) => c.name)]
@@ -965,18 +981,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                         </p>
                       )}
 
-                      <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 sm:justify-start">
-                        <span className="flex items-center gap-1.5 text-sm text-emerald-400">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> {passes} passed
-                        </span>
-                        <span className="flex items-center gap-1.5 text-sm text-amber-400">
-                          <AlertTriangle className="h-3.5 w-3.5" /> {warns} warnings
-                        </span>
-                        <span className="flex items-center gap-1.5 text-sm text-red-400">
-                          <XCircle className="h-3.5 w-3.5" /> {fails} failed
-                        </span>
-                      </div>
-                      <div className="mt-3">
+                      <div className="mt-4">
                         <CategoryScoreBar items={allItems} />
                       </div>
                       {benchmark && (
@@ -999,9 +1004,70 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                     </div>
                   </div>
 
-                  {/* Category list */}
-                  <div className="glass-card divide-y divide-border/20 overflow-hidden">
-                    {ranked.map((category) => {
+                  {/* Results box — status filter toolbar + swappable body */}
+                  <div className="glass-card overflow-hidden">
+                    {/* Filter toolbar */}
+                    <div className="flex flex-wrap items-center gap-2 border-b border-border/30 px-4 py-3">
+                      <span className="mr-0.5 hidden text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50 sm:inline">
+                        Show
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter(null)}
+                        aria-pressed={!statusFilter}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${!statusFilter ? 'border-border bg-muted/60 text-foreground' : 'border-border/50 text-muted-foreground hover:bg-muted/30 hover:text-foreground'}`}
+                      >
+                        All <span className="text-muted-foreground">{allItems.length}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter((f) => (f === 'fail' ? null : 'fail'))}
+                        aria-pressed={statusFilter === 'fail'}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${statusFilter === 'fail' ? 'border-red-400/50 bg-red-400/15 text-red-400 ring-1 ring-red-400/40' : 'border-border/50 text-muted-foreground hover:bg-muted/30 hover:text-foreground'}`}
+                      >
+                        <XCircle className="h-3.5 w-3.5" /> {fails} Failed
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter((f) => (f === 'warn' ? null : 'warn'))}
+                        aria-pressed={statusFilter === 'warn'}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${statusFilter === 'warn' ? 'border-amber-400/50 bg-amber-400/15 text-amber-400 ring-1 ring-amber-400/40' : 'border-border/50 text-muted-foreground hover:bg-muted/30 hover:text-foreground'}`}
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5" /> {warns} Warnings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter((f) => (f === 'pass' ? null : 'pass'))}
+                        aria-pressed={statusFilter === 'pass'}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${statusFilter === 'pass' ? 'border-emerald-400/50 bg-emerald-400/15 text-emerald-400 ring-1 ring-emerald-400/40' : 'border-border/50 text-muted-foreground hover:bg-muted/30 hover:text-foreground'}`}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" /> {passes} Passed
+                      </button>
+                    </div>
+
+                    {/* Body — filtered cross-category checks when a status is selected */}
+                    {statusFilter ? (
+                      filteredChecks.length > 0 ? (
+                        <div className="divide-y divide-border/20 px-6">
+                          {filteredChecks.map(({ item, category }) => (
+                            <div key={`${category}-${item.label}`} className="py-4">
+                              <AuditItemRow item={item} category={category} />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-6 py-8 text-center text-sm text-muted-foreground">
+                          {statusFilter === 'fail'
+                            ? 'No failed checks — nothing actively working against you.'
+                            : statusFilter === 'warn'
+                              ? 'No warnings — clean across the board.'
+                              : 'No passing checks yet.'}
+                        </p>
+                      )
+                    ) : (
+                      /* Default — category list */
+                      <div className="divide-y divide-border/20">
+                        {ranked.map((category) => {
                       const catScoreVal = category.score
                       const iconColor = scoreColor(catScoreVal).ring
 
@@ -1060,6 +1126,8 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                       </button>
                       )
                     })}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
