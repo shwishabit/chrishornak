@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CUSTOMIZE: meta description and title -->
+    <meta name="description" content="Proposal from Chris Hornak — danieltosh.com website updates">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Proposal — Daniel Tosh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --teal: #2dd4a8;
+            --teal-rgb: 45, 212, 168;
+            --dark: #0a0a0a;
+            --light-bg: #f7f7f8;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; color: var(--dark); }
+        .font-display { font-family: 'Sora', sans-serif; }
+        @page { size: letter; margin: 0; }
+
+        /* PRINT */
+        @media print {
+            body { background: white !important; margin: 0 !important; padding: 0 !important; zoom: 1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .document-wrapper { display: block !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; }
+            .page-container {
+                transform: none !important;
+                zoom: 1 !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 8.5in !important;
+                height: 11in !important;
+                padding: 0.4in 0.5in !important;
+                overflow: hidden !important;
+                display: flex;
+                flex-direction: column;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            /* Remove inner horizontal padding in print — page-container handles it */
+            .print-px-0 { padding-left: 0 !important; padding-right: 0 !important; }
+        }
+
+        /* DESKTOP SCREEN — fixed page preview */
+        @media screen and (min-width: 769px) {
+            .document-wrapper { width: 100%; display: flex; justify-content: center; padding-bottom: 50px; overflow-x: auto; }
+            .page-container {
+                zoom: 1.5;
+                -moz-transform: scale(1.5);
+                -moz-transform-origin: top center;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 20px 60px rgba(0,0,0,0.06);
+                margin: 0 auto;
+                background: white;
+                width: 8.5in;
+                height: 11in;
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+            }
+            @supports (-moz-appearance:none) {
+                .page-container { margin-bottom: 50% !important; }
+            }
+        }
+
+        /* MOBILE SCREEN — responsive flow */
+        @media screen and (max-width: 768px) {
+            .document-wrapper { padding: 0; }
+            .page-container {
+                background: white;
+                width: 100%; height: auto !important;
+                display: flex; flex-direction: column;
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+            /* Layout */
+            .page-container .grid-cols-2 { grid-template-columns: 1fr !important; }
+            .page-container [class*="px-10"] { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+            .page-container [class*="gap-x-8"] { gap: 1.5rem !important; }
+
+            /* Typography — scale up since there's no 1.5x zoom on mobile */
+            .page-container h1 { font-size: clamp(22px, 6vw, 28px) !important; }
+            .page-container [class*="text-[9"] { font-size: 14px !important; }
+            .page-container [class*="text-[10"] { font-size: 15px !important; }
+            .page-container [class*="text-[11"] { font-size: 16px !important; }
+            .page-container [class*="text-[12"] { font-size: 17px !important; }
+            .page-container [class*="text-[17"] { font-size: 24px !important; }
+            .page-container .font-display[class*="text-[9"] { font-size: 12px !important; }
+            .page-container img.h-7 { height: 2rem !important; }
+
+            /* Spacing — breathe on mobile */
+            .page-container [class*="gap-y-4"] { gap: 1.75rem !important; }
+            .page-container [class*="space-y-2"] > * + * { margin-top: 0.75rem !important; }
+            .page-container [class*="space-y-3"] > * + * { margin-top: 1rem !important; }
+            .page-container [class*="py-5"] { padding-top: 1.75rem !important; padding-bottom: 1.75rem !important; }
+            .page-container [class*="pt-5"] { padding-top: 1.75rem !important; }
+            .page-container [class*="pb-2"] { padding-bottom: 1.25rem !important; }
+            .page-container [class*="pt-7"] { padding-top: 1.75rem !important; }
+            .page-container [class*="pb-4"] { padding-bottom: 1.25rem !important; }
+            .page-container [class*="p-3.5"] { padding: 1.25rem !important; }
+            .page-container [class*="p-4"] { padding: 1.25rem !important; }
+            .page-container [class*="p-5"] { padding: 1.5rem !important; }
+            .page-container [class*="mb-2.5"] { margin-bottom: 0.875rem !important; }
+            .page-container [class*="mb-3"] { margin-bottom: 1rem !important; }
+            .page-container [class*="mb-4"] { margin-bottom: 1.25rem !important; }
+            .page-container .rounded-lg { border-radius: 12px !important; }
+            .page-container > div:last-child { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+
+            /* Control bar */
+            .no-print { padding-left: 1rem !important; padding-right: 1rem !important; width: 100% !important; }
+            .no-print > div:first-child { flex-direction: column; gap: 1rem; }
+            .no-print > div:first-child > div:last-child { width: 100%; }
+            .no-print > div:first-child > div:last-child button { flex: 1; justify-content: center; }
+
+            /* Overlay */
+            .overlay-card { padding: 1.5rem !important; border-radius: 16px !important; }
+            .overlay-content { width: 96% !important; }
+            .overlay-card .grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+            .overlay-card .grid-cols-2 { grid-template-columns: 1fr !important; }
+            .metric-value { font-size: 2rem !important; }
+            .cap-inner { height: 180px !important; }
+        }
+
+        /* ===== OVERLAY ===== */
+        .overlay {
+            position: fixed; inset: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+        .overlay-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .overlay-content {
+            position: relative; z-index: 1;
+            max-width: 960px; width: 92%;
+            max-height: 88vh; overflow-y: auto;
+            transform: translateY(30px) scale(0.97);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .overlay.active .overlay-content { transform: translateY(0) scale(1); }
+        .overlay-card {
+            transform-style: preserve-3d;
+            background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 40px 80px rgba(0,0,0,0.5);
+        }
+
+        /* Capability card — 3D flip */
+        .cap-wrap {
+            perspective: 800px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+        .cap-inner {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+        .cap-wrap:hover .cap-inner, .cap-wrap:focus-within .cap-inner { transform: rotateY(180deg); }
+        .cap-front, .cap-back {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .cap-front {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .cap-back {
+            background: rgba(var(--teal-rgb), 0.08);
+            border: 1px solid rgba(var(--teal-rgb), 0.2);
+            transform: rotateY(180deg);
+            justify-content: center;
+        }
+        .cap-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.75rem;
+            background: rgba(var(--teal-rgb), 0.1);
+        }
+        .cap-icon svg { width: 18px; height: 18px; color: var(--teal); }
+        .cap-check { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; }
+        .cap-check span { color: var(--teal); font-size: 11px; line-height: 1; margin-top: 1px; }
+        .cap-check p { font-size: 11px; color: #d1d5db; line-height: 1.35; }
+
+        /* Metric counter */
+        .metric-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px;
+        }
+        .metric-value {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            line-height: 1;
+            color: var(--teal);
+        }
+
+        /* Slide animation */
+        .slide-up {
+            opacity: 0; transform: translateY(16px);
+            animation: slideUp 0.5s ease forwards;
+        }
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-up:nth-child(1) { animation-delay: 0.1s; }
+        .slide-up:nth-child(2) { animation-delay: 0.18s; }
+        .slide-up:nth-child(3) { animation-delay: 0.26s; }
+        .slide-up:nth-child(4) { animation-delay: 0.34s; }
+        .slide-up:nth-child(5) { animation-delay: 0.42s; }
+        .slide-up:nth-child(6) { animation-delay: 0.50s; }
+
+        /* Progress dots */
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); transition: all 0.3s ease; }
+        .dot.active { background: var(--teal); width: 24px; border-radius: 4px; }
+
+        /* Critical layout — renders before Tailwind compiles */
+        body { margin: 0; }
+        img { max-width: 100%; height: auto; }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            .cap-wrap:hover .cap-inner { transform: none !important; }
+        }
+        :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+    </style>
+</head>
+<body class="bg-neutral-100 text-black font-sans">
+
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-bold">Skip to content</a>
+
+    <!-- =============================================
+         CONTROL BAR
+         ============================================= -->
+    <nav aria-label="Proposal controls" class="no-print mx-auto py-6 px-4 flex flex-col gap-3" style="width: calc(8.5in * 1.5);">
+        <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-neutral-200/60">
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-neutral-400 font-medium tracking-wide uppercase">Proposal</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="openOverlay()"
+                    class="group px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2.5 text-white relative overflow-hidden cursor-pointer"
+                    style="background: var(--dark);">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
+                        See What's Possible
+                    </span>
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background: linear-gradient(135deg, var(--dark) 0%, #1a2e3a 100%);"></div>
+                </button>
+                <button onclick="window.print()"
+                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm text-white hover:opacity-90 cursor-pointer"
+                    style="background: var(--teal);">
+                    Print / Save PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =============================================
+         INTERACTIVE OVERLAY
+         ============================================= -->
+    <div id="overlay" class="overlay no-print" role="dialog" aria-modal="true" aria-label="Interactive proposal details">
+        <div class="overlay-backdrop" onclick="closeOverlay()"></div>
+        <div class="overlay-content">
+            <div class="overlay-card relative">
+                <!-- Glow accents -->
+                <div class="absolute top-0 right-0 w-48 h-48 rounded-full opacity-[0.05]" style="background: var(--teal); filter: blur(80px); pointer-events: none;"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-[0.04]" style="background: var(--teal); filter: blur(60px); pointer-events: none;"></div>
+
+                <!-- Header -->
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <!-- CUSTOMIZE: Overlay title -->
+                        <p class="font-display text-[11px] font-600 uppercase tracking-[0.2em] mb-2" style="color: var(--teal);">Beyond This Project</p>
+                        <h2 id="overlay-title" class="font-display font-800 text-2xl text-white leading-tight">What else I can do</h2>
+                    </div>
+                    <button onclick="closeOverlay()" aria-label="Close overlay" class="text-neutral-600 hover:text-white transition-colors text-2xl leading-none cursor-pointer">&times;</button>
+                </div>
+
+                <!-- Content -->
+                <div id="overlay-result"></div>
+
+                <!-- Footer: dots + nav -->
+                <div class="flex justify-between items-center mt-8 pt-5 border-t border-white/5">
+                    <div id="overlay-dots" class="flex gap-2 items-center"></div>
+                    <button id="overlay-next-btn" onclick="nextSlide()"
+                        class="font-display text-sm font-600 px-6 py-2.5 rounded-xl transition-all hover:opacity-90 text-neutral-900 cursor-pointer"
+                        style="background: var(--teal);">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================================
+         THE PAGE
+         ============================================= -->
+    <main id="main-content" class="document-wrapper">
+        <article class="page-container bg-white relative overflow-hidden">
+
+            <!-- ===== HEADER ===== -->
+            <div class="flex items-center justify-between px-10 pt-7 pb-4 shrink-0 print-px-0">
+                <img src="wordmark-light.png" alt="Chris Hornak" class="h-7 w-auto" loading="eager" decoding="async">
+                <div class="text-right">
+                    <!-- CUSTOMIZE: Client name, date -->
+                    <p class="font-display text-[10px] font-700 text-neutral-400 uppercase tracking-[0.15em]">Prepared for <strong class="text-neutral-700">Daniel Tosh</strong></p>
+                    <p class="text-[9px] text-neutral-400 mt-0.5">danieltosh.com · June 2026</p>
+                </div>
+            </div>
+
+            <!-- ===== PROBLEM BAND ===== -->
+            <div class="px-10 py-5 shrink-0 print-px-0" style="background: var(--light-bg);">
+                <!-- CUSTOMIZE: The client's problem as a headline -->
+                <h1 class="font-display font-800 text-[22px] leading-tight tracking-tight text-neutral-900">
+                    New episodes that post themselves.<br/>A guest pipeline that fills itself.
+                </h1>
+                <p class="text-[11px] text-neutral-500 mt-2.5 leading-relaxed max-w-[88%]">
+                    <!-- CUSTOMIZE: 1-2 sentences expanding the problem -->
+                    Right now the site doesn't surface the latest YouTube episodes on its own, and there's no clean way for fans or bookers to pitch a guest. Two focused additions fix both &mdash; modeled on what Theo Von's site does well &mdash; built to run lean, with one small annual license as the only ongoing cost.
+                </p>
+            </div>
+
+            <!-- ===== MAIN CONTENT ===== -->
+            <div class="grid grid-cols-2 gap-x-8 flex-grow overflow-hidden px-10 pt-5 pb-2 print-px-0">
+
+                <!-- ========== LEFT ========== -->
+                <div class="flex flex-col h-full gap-y-4 overflow-hidden">
+
+                    <!-- OUTCOME -->
+                    <div class="shrink-0">
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-2.5" style="color: var(--teal);">What Changes</p>
+                        <div class="space-y-3.5">
+                            <div class="pl-4" style="border-left: 3px solid var(--teal);">
+                                <p class="text-[11px] font-bold text-neutral-900 leading-none mb-1">Latest episodes, always live</p>
+                                <p class="text-[10.5px] text-neutral-500 leading-snug">New YouTube uploads appear automatically and play right on the page &mdash; fans watch without leaving the site, and there's no manual embedding ever again.</p>
+                            </div>
+                            <div class="pl-4" style="border-left: 3px solid var(--teal);">
+                                <p class="text-[11px] font-bold text-neutral-900 leading-none mb-1">A real "Be on the Show" pipeline</p>
+                                <p class="text-[10.5px] text-neutral-500 leading-snug">Fans and bookers pitch guests through a clean form &mdash; with the exact fields you want, saved in WordPress and emailed to whoever handles booking.</p>
+                            </div>
+                            <div class="pl-4" style="border-left: 3px solid var(--teal);">
+                                <p class="text-[11px] font-bold text-neutral-900 leading-none mb-1">Lean, predictable overhead</p>
+                                <p class="text-[10.5px] text-neutral-500 leading-snug">The form runs free, with spam protection built in. The episode grid uses one small license (~$49/yr) &mdash; the only recurring cost &mdash; and both are vendor-maintained, so there's nothing fragile to babysit.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THE BUILD -->
+                    <div class="shrink-0">
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-2.5" style="color: var(--teal);">The Build</p>
+                        <div class="space-y-2.5">
+                            <div class="bg-neutral-50 rounded-lg p-3.5">
+                                <p class="text-[11px] font-bold text-neutral-800 leading-none mb-1">1 · Auto-updating episode grid</p>
+                                <p class="text-[10px] text-neutral-500 leading-snug">Your latest episodes in a styled grid, each playing inline so fans stay on the site &mdash; plus a "Watch all on YouTube" link. Pulls new uploads on its own.</p>
+                                <p class="text-[8.5px] text-neutral-400 mt-1.5 font-semibold uppercase tracking-wide">Plugin: <a href="https://smashballoon.com/youtube-feed/" target="_blank" rel="noopener" class="text-neutral-600 hover:text-neutral-900" style="text-decoration: underline; text-decoration-color: var(--teal); text-underline-offset: 2px;">Smash Balloon YouTube Feed Pro</a> <span class="text-neutral-600">($49/yr)</span></p>
+                            </div>
+                            <div class="bg-neutral-50 rounded-lg p-3.5">
+                                <p class="text-[11px] font-bold text-neutral-800 leading-none mb-1">2 · "Be on the Show" guest form</p>
+                                <p class="text-[10px] text-neutral-500 leading-snug">Custom fields, spam protection, submissions stored in WordPress and routed to your inbox &mdash; with your consent language built in.</p>
+                                <p class="text-[8.5px] text-neutral-400 mt-1.5 font-semibold uppercase tracking-wide">Plugin: <a href="https://fluentforms.com/" target="_blank" rel="noopener" class="text-neutral-600 hover:text-neutral-900" style="text-decoration: underline; text-decoration-color: var(--teal); text-underline-offset: 2px;">Fluent Forms</a> <span class="text-neutral-600">(Free)</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VISUAL / MOCKUP -->
+                    <div class="flex-grow min-h-0 overflow-hidden flex flex-col">
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-2 text-neutral-400">Preview</p>
+                        <div class="rounded-lg bg-neutral-50 border border-neutral-200/60 flex-grow overflow-hidden p-3 flex flex-col gap-2.5">
+                            <!-- Episode grid mock -->
+                            <div>
+                                <p class="text-[8px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Latest Episodes &mdash; auto-updating</p>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <div class="aspect-video rounded bg-neutral-200/70 flex items-center justify-center"><div class="w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px]" style="border-left-color: var(--teal);"></div></div>
+                                    <div class="aspect-video rounded bg-neutral-200/70 flex items-center justify-center"><div class="w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px]" style="border-left-color: var(--teal);"></div></div>
+                                    <div class="aspect-video rounded bg-neutral-200/70 flex items-center justify-center"><div class="w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px]" style="border-left-color: var(--teal);"></div></div>
+                                </div>
+                            </div>
+                            <!-- Form mock -->
+                            <div class="bg-white rounded border border-neutral-200/70 p-2.5">
+                                <p class="text-[8px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Be on the Show</p>
+                                <div class="space-y-1.5">
+                                    <div class="h-3 rounded bg-neutral-100 w-full"></div>
+                                    <div class="h-3 rounded bg-neutral-100 w-full"></div>
+                                    <div class="h-6 rounded bg-neutral-100 w-full"></div>
+                                </div>
+                                <div class="mt-2 inline-flex items-center rounded px-2.5 py-1 text-[8px] font-bold text-neutral-900" style="background: var(--teal);">Submit pitch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== RIGHT ========== -->
+                <div class="flex flex-col h-full gap-y-4 overflow-hidden">
+
+                    <!-- INVESTMENT -->
+                    <div class="bg-neutral-900 text-white rounded-lg p-5 shrink-0 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 rounded-full opacity-[0.07]" style="background: var(--teal); filter: blur(40px);"></div>
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-4" style="color: var(--teal);">Investment</p>
+
+                        <!-- One-off project fee -->
+                        <div class="rounded-md p-3.5 mb-3 relative" style="background: rgba(var(--teal-rgb), 0.08); border: 1px solid rgba(var(--teal-rgb), 0.25);">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <span class="font-display font-bold text-[12px] text-white">Project Fee</span>
+                                <span class="font-display font-800 text-[17px]" style="color: var(--teal);">$2,250</span>
+                            </div>
+                            <p class="text-[10px] text-neutral-400 leading-snug mb-2.5">One-time. Both features built, tested, and live &mdash; typically within about a week of access.</p>
+                            <ul class="text-[10px] text-neutral-300 space-y-1.5">
+                                <li class="flex gap-2"><span style="color: var(--teal);">&#10003;</span> Auto-updating YouTube episode grid, styled to match</li>
+                                <li class="flex gap-2"><span style="color: var(--teal);">&#10003;</span> Custom "Be on the Show" form + spam protection</li>
+                                <li class="flex gap-2"><span style="color: var(--teal);">&#10003;</span> Submissions stored in WordPress + routed to your inbox</li>
+                                <li class="flex gap-2"><span style="color: var(--teal);">&#10003;</span> Mobile-responsive, tested live on your theme</li>
+                                <li class="flex gap-2"><span style="color: var(--teal);">&#10003;</span> Revisions until it's dialed in &mdash; we refine together</li>
+                            </ul>
+                        </div>
+                        <!-- Software note -->
+                        <div class="rounded-md p-3 border border-neutral-700">
+                            <p class="text-[10px] text-neutral-300 leading-snug"><strong class="text-white">Software:</strong> The "Be on the Show" form runs on free plugins &mdash; $0. For the episode grid I recommend the premium feed license, <strong class="text-white">~$49/yr</strong> (single site, billed to you directly) &mdash; it's what makes the grid match the site and stay maintenance-free. This is separate from the project fee, not included in it.</p>
+                        </div>
+                    </div>
+
+                    <!-- NEXT STEPS -->
+                    <div class="shrink-0 rounded-lg p-4 bg-neutral-50 border border-neutral-200/60">
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-3" style="color: var(--teal);">Next Steps</p>
+                        <div class="space-y-2.5">
+                            <div class="flex gap-3 items-start">
+                                <div class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0 mt-0.5" style="background: var(--teal);">1</div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-neutral-900 leading-none mb-0.5">Approve the scope</p>
+                                    <p class="text-[10px] text-neutral-500 leading-snug">Reply to confirm and I'll send an invoice for the project fee.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0 mt-0.5 bg-neutral-300">2</div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-neutral-900 leading-none mb-0.5">Payment &amp; access</p>
+                                    <p class="text-[10px] text-neutral-500 leading-snug">Fee is due up front. Send WordPress admin access and we start right away.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0 mt-0.5 bg-neutral-300">3</div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-neutral-900 leading-none mb-0.5">Direct access</p>
+                                    <p class="text-[10px] text-neutral-500 leading-snug">Available 10&ndash;6 ET (7&ndash;3 PT) by email and phone. Schedule a video call at <a href="https://cal.com/chris-hornak/huddle" target="_blank" style="color: var(--teal); text-decoration: underline;">cal.com/chris-hornak/huddle</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WHAT I NEED FROM YOU (fills remaining space) -->
+                    <div class="flex-grow min-h-0 overflow-hidden flex flex-col rounded-lg p-4 border border-neutral-200/60">
+                        <p class="font-display text-[9px] font-700 uppercase tracking-[0.2em] mb-2.5" style="color: var(--teal);">What I Need From You</p>
+                        <div class="space-y-2 flex-grow">
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] mt-0.5" style="color: var(--teal);">&#10003;</span>
+                                <p class="text-[10px] text-neutral-600"><strong class="text-neutral-800">WordPress access</strong> &mdash; an admin login, or a limited role I'll specify, to build and test on the live theme.</p>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] mt-0.5" style="color: var(--teal);">&#10003;</span>
+                                <p class="text-[10px] text-neutral-600"><strong class="text-neutral-800">Where submissions go</strong> &mdash; which inbox, and who handles booking.</p>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] mt-0.5" style="color: var(--teal);">&#10003;</span>
+                                <p class="text-[10px] text-neutral-600"><strong class="text-neutral-800">Any legal / consent language</strong> &mdash; or I'll supply a standard release.</p>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-[10px] mt-0.5" style="color: var(--teal);">&#10003;</span>
+                                <p class="text-[10px] text-neutral-600"><strong class="text-neutral-800">A point of contact</strong> &mdash; one person for questions during the build.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===== FOOTER ===== -->
+            <footer class="mt-auto px-10 py-4 flex items-center justify-between shrink-0 border-t border-neutral-100 print-px-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-2 h-2 rounded-full" style="background: var(--teal);"></div>
+                    <!-- CUSTOMIZE: CTA -->
+                    <p class="text-[11px] font-display font-bold text-neutral-800">Reply to this email to get started</p>
+                </div>
+                <a href="https://chrishornak.com" target="_blank" rel="noopener" class="text-[9px] text-neutral-400 hover:text-neutral-600 transition-colors no-underline">chrishornak.com</a>
+            </footer>
+
+        </article>
+    </main>
+
+    <!-- =============================================
+         OVERLAY SCRIPT
+         ============================================= -->
+    <script>
+        // CUSTOMIZE: Each slide is { title, html }.
+        // Slide 1: Capability grid with icons
+        // Slide 2: Sample deliverables / what they receive
+        // Slide 3: Results metrics with animated counters
+        //
+        // The template includes example slides showing Chris's actual capabilities.
+        // Replace the content per proposal but keep the visual structure.
+
+        const slides = [
+            {
+                title: "What I bring to the table",
+                html: `
+                <p class="text-sm text-neutral-500 mb-5">Full-stack digital strategy — hover any card to see the details.</p>
+                <div class="grid grid-cols-3 gap-3">
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">SEO &amp; Search</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Get found by the people already looking for what you offer.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Technical site audits</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Keyword strategy &amp; mapping</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>On-page optimization</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Schema &amp; structured data</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Google Business Profile</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">Content Strategy</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Content that earns attention and drives action.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Blog articles &amp; guides</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Landing page copy</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Email sequences</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Editorial calendars</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>SEO &amp; AEO optimized</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">Web Development</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Sites built to convert, not just exist.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Next.js &amp; React builds</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>WordPress &amp; Shopify</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Page speed optimization</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Mobile-first responsive</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>WCAG accessibility</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">AI &amp; AEO</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Be the answer when AI tools respond to your audience.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Answer engine optimization</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Structured data strategy</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Citation building</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>ChatGPT &amp; Perplexity</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>AI-ready content</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.764m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">Brand &amp; Design</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Visual identity that separates you from the template crowd.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Logo &amp; visual identity</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Typography systems</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Color palette design</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Editorial direction</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Brand guidelines</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cap-wrap">
+                        <div class="cap-inner">
+                            <div class="cap-front">
+                                <div class="cap-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+                                <p class="font-display font-bold text-sm text-white mb-1">Analytics &amp; CRO</p>
+                                <p class="text-xs text-neutral-500 leading-snug">Measure what matters, then improve what moves the needle.</p>
+                            </div>
+                            <div class="cap-back">
+                                <div class="cap-check"><span>&#10003;</span><p>Google Analytics setup</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Conversion tracking</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>A/B testing strategy</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Performance reporting</p></div>
+                                <div class="cap-check"><span>&#10003;</span><p>Rank &amp; traffic analysis</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>`
+            },
+            {
+                title: "What you'll receive",
+                html: `
+                <p class="text-sm text-neutral-500 mb-6">Tangible deliverables with real strategic thinking behind them.</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Top Left: Custom Websites -->
+                    <div class="slide-up rounded-xl overflow-hidden p-4" style="background: rgba(var(--teal-rgb), 0.06); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full" style="background: var(--teal);"></div>
+                                <span class="font-display font-bold text-xs text-white uppercase tracking-wider">Custom Websites</span>
+                            </div>
+                            <div class="rounded-lg p-3" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                                <div class="rounded h-5 mb-2 flex items-center px-2 gap-1" style="background: rgba(var(--teal-rgb), 0.08);"><div class="w-1.5 h-1.5 rounded-full bg-red-400"></div><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div><div class="w-1.5 h-1.5 rounded-full bg-green-400"></div></div>
+                                <div class="rounded p-2 mb-1.5" style="background: rgba(var(--teal-rgb), 0.08); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                                    <div class="h-2 rounded-full w-3/4 mb-1.5" style="background: rgba(var(--teal-rgb), 0.2);"></div>
+                                    <div class="h-1.5 rounded-full w-full mb-1" style="background: rgba(var(--teal-rgb), 0.12);"></div>
+                                    <div class="h-1.5 rounded-full w-2/3" style="background: rgba(var(--teal-rgb), 0.12);"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-1"><div class="h-6 rounded" style="background: rgba(var(--teal-rgb), 0.05);"></div><div class="h-6 rounded" style="background: rgba(var(--teal-rgb), 0.05);"></div><div class="h-6 rounded" style="background: rgba(var(--teal-rgb), 0.05);"></div></div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500 mt-3">Mobile-first, fast-loading, conversion-optimized — built to your brand.</p>
+                        </div>
+                    </div>
+                    <!-- Top Right: Content Development -->
+                    <div class="slide-up rounded-xl overflow-hidden p-4" style="background: rgba(var(--teal-rgb), 0.06); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full" style="background: var(--teal);"></div>
+                                <span class="font-display font-bold text-xs text-white uppercase tracking-wider">Content Development</span>
+                            </div>
+                            <div class="rounded-lg p-3 space-y-2" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                                <div class="flex items-center gap-2 p-1.5 rounded" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.18);"><div class="w-1.5 h-1.5 rounded-full" style="background: var(--teal);"></div><span class="text-[10px] text-neutral-300 font-medium">3 Key Indicators for Q1 2026</span><span class="text-[8px] text-neutral-600 ml-auto">Published</span></div>
+                                <div class="flex items-center gap-2 p-1.5 rounded" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.18);"><div class="w-1.5 h-1.5 rounded-full" style="background: var(--teal);"></div><span class="text-[10px] text-neutral-300 font-medium">Why Efficiency Is the New Alpha</span><span class="text-[8px] text-neutral-600 ml-auto">Published</span></div>
+                                <div class="flex items-center gap-2 p-1.5 rounded" style="background: rgba(var(--teal-rgb), 0.04); border: 1px solid rgba(var(--teal-rgb), 0.1);"><div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div><span class="text-[10px] text-neutral-400 font-medium">Direct Investment Trends</span><span class="text-[8px] text-neutral-600 ml-auto">In Progress</span></div>
+                                <div class="flex items-center gap-2 p-1.5 rounded" style="background: rgba(var(--teal-rgb), 0.04); border: 1px solid rgba(var(--teal-rgb), 0.1);"><div class="w-1.5 h-1.5 rounded-full bg-neutral-600"></div><span class="text-[10px] text-neutral-500 font-medium">Succession Planning 2.0</span><span class="text-[8px] text-neutral-600 ml-auto">Queued</span></div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500 mt-3">Keyword-mapped articles with publish schedule and SEO targets.</p>
+                        </div>
+                    </div>
+                    <!-- Bottom Left: Optimization Audits -->
+                    <div class="slide-up rounded-xl overflow-hidden p-4" style="background: rgba(var(--teal-rgb), 0.06); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full" style="background: var(--teal);"></div>
+                                <span class="font-display font-bold text-xs text-white uppercase tracking-wider">Optimization Audits</span>
+                            </div>
+                            <div class="rounded-lg p-3 space-y-2.5" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-neutral-400">Page Speed</span><span class="text-[11px] font-bold text-red-400">38 / 100</span></div>
+                                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(var(--teal-rgb), 0.1);"><div class="h-full rounded-full bg-red-400" style="width: 38%"></div></div>
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-neutral-400">SEO Score</span><span class="text-[11px] font-bold text-amber-400">62 / 100</span></div>
+                                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(var(--teal-rgb), 0.1);"><div class="h-full rounded-full bg-amber-400" style="width: 62%"></div></div>
+                                <div class="flex justify-between items-center"><span class="text-[11px] text-neutral-400">Accessibility</span><span class="text-[11px] font-bold" style="color: var(--teal);">91 / 100</span></div>
+                                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(var(--teal-rgb), 0.1);"><div class="h-full rounded-full" style="width: 91%; background: var(--teal);"></div></div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500 mt-3">Prioritized action items with projected impact for each fix.</p>
+                        </div>
+                    </div>
+                    <!-- Bottom Right: Analysis & Reporting -->
+                    <div class="slide-up rounded-xl overflow-hidden p-4" style="background: rgba(var(--teal-rgb), 0.06); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full" style="background: var(--teal);"></div>
+                                <span class="font-display font-bold text-xs text-white uppercase tracking-wider">Analysis &amp; Reporting</span>
+                            </div>
+                            <div class="rounded-lg p-3" style="background: rgba(var(--teal-rgb), 0.1); border: 1px solid rgba(var(--teal-rgb), 0.15);">
+                                <div class="flex items-center justify-between mb-2"><span class="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">Organic Traffic</span><span class="text-[11px] font-bold" style="color: var(--teal);">+47%</span></div>
+                                <div class="flex items-end gap-[3px] h-14">
+                                    <div class="flex-1 rounded-t" style="height: 30%; background: rgba(var(--teal-rgb), 0.3);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 35%; background: rgba(var(--teal-rgb), 0.35);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 42%; background: rgba(var(--teal-rgb), 0.4);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 38%; background: rgba(var(--teal-rgb), 0.45);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 55%; background: rgba(var(--teal-rgb), 0.55);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 62%; background: rgba(var(--teal-rgb), 0.65);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 58%; background: rgba(var(--teal-rgb), 0.7);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 72%; background: rgba(var(--teal-rgb), 0.8);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 80%; background: rgba(var(--teal-rgb), 0.9);"></div>
+                                    <div class="flex-1 rounded-t" style="height: 92%; background: var(--teal);"></div>
+                                </div>
+                                <div class="flex justify-between mt-1.5"><span class="text-[8px] text-neutral-400">Jan</span><span class="text-[8px] text-neutral-400">Oct</span></div>
+                            </div>
+                            <p class="text-[11px] text-neutral-500 mt-3">Monthly performance reports with trends, rankings, and strategic next steps.</p>
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function openOverlay() {
+            currentSlide = 0;
+            renderSlide();
+            document.getElementById('overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOverlay() {
+            document.getElementById('overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            const result = document.getElementById('overlay-result');
+            result.style.opacity = '0';
+            result.style.transform = 'translateY(8px)';
+            result.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            setTimeout(() => {
+                renderSlide();
+                result.style.opacity = '1';
+                result.style.transform = 'translateY(0)';
+            }, 250);
+        }
+
+        function renderSlide() {
+            const result = document.getElementById('overlay-result');
+            const slide = slides[currentSlide];
+            result.innerHTML = slide.html;
+            document.getElementById('overlay-title').textContent = slide.title;
+            document.getElementById('overlay-next-btn').textContent = currentSlide < slides.length - 1 ? 'Next' : 'Back to Start';
+
+            // Render dots
+            const dots = document.getElementById('overlay-dots');
+            dots.innerHTML = slides.map((_, i) =>
+                `<div class="dot ${i === currentSlide ? 'active' : ''}"></div>`
+            ).join('');
+
+            // Animate counters if present
+            result.querySelectorAll('.metric-value[data-target]').forEach(el => {
+                const target = parseFloat(el.dataset.target);
+                const suffix = el.dataset.suffix || '';
+                const decimals = parseInt(el.dataset.decimals || '0');
+                animateCounter(el, target, suffix, decimals);
+            });
+        }
+
+        function animateCounter(el, target, suffix, decimals) {
+            const duration = 1200;
+            const start = performance.now();
+            function tick(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                const value = (target * ease).toFixed(decimals);
+                el.textContent = value + suffix;
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeOverlay();
+            if (e.key === 'ArrowRight' && document.getElementById('overlay').classList.contains('active')) nextSlide();
+        });
+    </script>
+</body>
+</html>
