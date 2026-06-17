@@ -1,0 +1,234 @@
+/* ============================================================================
+   A.T.C. Business Services Inc. · site.css
+   Art direction: "Established Authority"
+   Navy + champagne gold, classic serif display, photo-free / typographic.
+   Matches their real brand: navy ground, gold geometric lion-shield crest,
+   high-contrast serif wordmark. Overrides the kit swap points + adds the
+   financial-authority components Little Fawns never had (credential seal,
+   bookkeeping tiers, heritage panel). Markup leans on the kit; flourishes here.
+   ========================================================================== */
+
+:root {
+  /* swap point #1 — fonts (echo the logo's high-contrast classic serif) */
+  --font-heading: "Cormorant Garamond", Georgia, serif;
+  --font-sans:    "Inter", system-ui, sans-serif;
+
+  /* swap point #2 — palette: ivory page, brand navy ink, champagne + gold */
+  --c-bg:          hsl(40 33% 97.5%);  /* warm ivory paper      */
+  --c-surface:     hsl(40 28% 95.5%);  /* raised card           */
+  --c-surface-alt: hsl(40 30% 93.5%);  /* warm section banding   */
+  --c-ink:         hsl(214 46% 18%);   /* brand navy text (never #000) */
+  --c-ink-soft:    hsl(214 16% 39%);
+  --c-border:      hsl(40 20% 86%);
+
+  --c-primary:      hsl(214 58% 23%);  /* brand navy — buttons / CTA / links */
+  --c-primary-ink:  hsl(40 36% 97%);   /* ivory on navy */
+  --c-primary-soft: hsl(214 58% 23% / 0.07);
+  --c-primary-line: hsl(214 58% 23% / 0.26);
+
+  --c-gold:      hsl(40 62% 44%);      /* rich gold — accents on ivory */
+  --c-champagne: hsl(42 44% 72%);      /* soft champagne — on navy     */
+  --c-navy-deep: hsl(214 62% 13%);
+
+  /* tighten the radius register — squarer, more institutional than LF */
+  --r-sm: 5px; --r-md: 8px; --r-lg: 11px; --r-xl: 14px; --r-2xl: 20px;
+}
+
+/* ── Type tuning for the serif display ──────────────────────────────────── */
+h1, h2, h3, h4 { letter-spacing: -0.005em; font-weight: 600; }
+.h-display { font-weight: 600; letter-spacing: -0.01em; line-height: 1.02; }
+.h-section { font-weight: 600; }
+.lede { font-family: var(--font-sans); }
+
+/* kicker → gold, a touch more refined */
+.kicker { color: var(--c-gold); font-family: var(--font-sans); letter-spacing: 0.22em; }
+.kicker::before { background: var(--c-gold); opacity: 0.7; }
+
+/* buttons + nav links read in the clean sans, not the serif */
+.btn { font-family: var(--font-sans); font-weight: 600; letter-spacing: 0.01em; }
+.btn--primary { background: var(--c-primary); }
+.btn--ghost { border-color: var(--c-primary-line); }
+.btn--ghost:hover { border-color: var(--c-primary); background: var(--c-primary-soft); }
+.nav__links a { font-family: var(--font-sans); }
+.nav__links a:hover { color: var(--c-gold); }
+.proofbar__lab, .svc__age, .steps__h, .pill, .trustbar__item, .testi__name, .foot__h { font-family: var(--font-sans); }
+
+/* ── Brand lockup (serif crest wordmark) ────────────────────────────────── */
+.nav__brand { gap: 0.7rem; }
+/* brand mark = their REAL lion-shield icon (cropped from the supplied logo).
+   logo-icon-navy.png = navy chip (light contexts) · logo-icon.png = transparent
+   (placed on navy panels so the shield's seams show the panel through). */
+.seal { flex: none; display: block; }
+/* logo-shield.png = real shield w/ navy seams + blue outline, transparent outside
+   (used on light areas). logo-icon.png = seamless transparent (used on navy panels). */
+.wordmark {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--c-ink);
+  display: block;
+}
+.wordmark small {
+  display: block;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.5em;
+  letter-spacing: 0.26em;
+  color: var(--c-gold);
+  margin-top: 0.15em;
+}
+.nav__brand .wordmark { font-size: var(--fs-xl); }
+@media (max-width: 600px) {
+  .nav__brand .wordmark { font-size: var(--fs-lg); }
+  .nav__callnum { display: none; }
+}
+
+/* ── HERO — copy left, credential seal-card right (NOT LF's illustrated scene) */
+.hero {
+  background:
+    radial-gradient(46% 52% at 92% 6%, hsl(42 44% 72% / 0.30), transparent 70%),
+    radial-gradient(40% 46% at 2% 96%, hsl(214 58% 23% / 0.05), transparent 72%);
+}
+.hero__title { font-size: var(--fs-5xl); }
+.hero__title .pop { color: var(--c-gold); font-style: italic; }
+
+/* the credential card — a navy "since 2000" seal panel */
+.credcard {
+  position: relative;
+  background: linear-gradient(160deg, var(--c-primary) 0%, var(--c-navy-deep) 100%);
+  color: var(--c-primary-ink);
+  border-radius: var(--r-2xl);
+  padding: clamp(2rem, 1.4rem + 2.4vw, 3.2rem);
+  box-shadow: var(--sh-xl);
+  overflow: hidden;
+}
+.credcard::after { /* faint guilloché corner flourish */
+  content: ""; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px;
+  border-radius: 50%; border: 1px solid hsl(42 44% 72% / 0.18);
+  box-shadow: 0 0 0 16px hsl(42 44% 72% / 0.05), inset 0 0 0 14px hsl(42 44% 72% / 0.07);
+}
+.credcard__seal { width: 84px; height: auto; margin-bottom: 1.2rem; }
+.credcard__est { font-family: var(--font-heading); font-weight: 600; line-height: 0.95; }
+.credcard__est .yr { display: block; font-size: clamp(3.2rem, 2.2rem + 5vw, 5rem); color: var(--c-champagne); letter-spacing: -0.01em; }
+.credcard__est .lab { font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: hsl(42 44% 72% / 0.85); }
+.credcard__rule { height: 1px; background: hsl(42 44% 72% / 0.22); margin: 1.5rem 0; }
+.credcard__list { display: grid; gap: 0.85rem; }
+.credcard__list li { display: flex; gap: 0.7rem; align-items: flex-start; font-family: var(--font-sans); font-size: var(--fs-sm); color: hsl(40 36% 97% / 0.9); }
+.credcard__list svg { flex: none; margin-top: 1px; color: var(--c-champagne); }
+
+.hero__meta .trustbar__item { color: var(--c-ink-soft); opacity: 0.85; }
+.hero__meta .trustbar__item svg { color: var(--c-gold); }
+
+/* ── PROOF BAR — gold serif numerals ────────────────────────────────────── */
+.proofbar { border-block: 1px solid var(--c-border); padding-block: 0.5rem; }
+.proofbar__num { color: var(--c-gold); font-weight: 600; }
+.proofbar__lab { color: var(--c-ink-soft); }
+
+/* ── RELIEF (problem → solution) — pain list + resolution, NOT LF's 2-col compare */
+.relief { display: grid; gap: clamp(1.6rem, 1rem + 2vw, 3rem); align-items: center; }
+@media (min-width: 880px) { .relief { grid-template-columns: 1fr 1fr; } }
+.relief__pains { display: grid; gap: 0.7rem; }
+.relief__pain {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--r-md); padding: 0.95rem 1.15rem;
+  font-size: var(--fs-base); color: var(--c-ink-soft);
+}
+.relief__pain svg { flex: none; margin-top: 2px; color: hsl(8 55% 52%); opacity: 0.8; }
+.relief__answer { border-left: 3px solid var(--c-gold); padding-left: 1.4rem; }
+.relief__answer .h-section { font-size: var(--fs-2xl); margin-bottom: 0.8rem; }
+.relief__answer p { color: var(--c-ink-soft); }
+.relief__answer p + p { margin-top: 0.9rem; }
+
+/* ── SERVICES grid — icon cards, no photos ──────────────────────────────── */
+.svc__card.card { padding: clamp(1.4rem, 1rem + 1vw, 1.9rem); }
+.svc__icon { width: 3rem; height: 3rem; background: var(--c-primary-soft); color: var(--c-primary); border-radius: var(--r-md); }
+.svc__name { font-weight: 600; }
+.svc__p { color: var(--c-ink-soft); font-size: var(--fs-sm); }
+
+/* ── BOOKKEEPING TIERS (Levels I–IV) — A.T.C.'s real differentiator ─────── */
+.tiers { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .tiers { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1000px) { .tiers { grid-template-columns: repeat(4, 1fr); } }
+.tier {
+  position: relative; background: var(--c-surface); border: 1px solid var(--c-border);
+  border-top: 3px solid var(--c-primary-line); border-radius: var(--r-lg);
+  padding: 1.5rem 1.4rem; display: flex; flex-direction: column; gap: 0.9rem;
+  transition: border-color var(--dur-mid) var(--ease-out), transform var(--dur-mid) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out);
+}
+.tier:hover { transform: translateY(-4px); border-top-color: var(--c-gold); box-shadow: var(--sh-lg); }
+.tier__rn { font-family: var(--font-heading); font-weight: 600; font-size: var(--fs-3xl); color: var(--c-gold); line-height: 0.9; }
+.tier__name { font-family: var(--font-sans); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--c-ink-soft); }
+.tier__rule { height: 1px; background: var(--c-border); }
+.tier__bands { display: grid; gap: 0.55rem; }
+.tier__band { font-size: var(--fs-sm); color: var(--c-ink-soft); display: flex; gap: 0.5rem; align-items: baseline; }
+.tier__band b { color: var(--c-ink); font-weight: 600; font-family: var(--font-sans); }
+.tier__or { text-align: center; font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-gold); opacity: 0.7; }
+.tiers__note { margin-top: 1.6rem; text-align: center; font-size: var(--fs-sm); color: var(--c-ink-soft); }
+.tiers__note b { color: var(--c-ink); font-family: var(--font-sans); font-weight: 600; }
+
+/* ── HOW IT WORKS — gold serif step numerals ────────────────────────────── */
+.steps__item { background: var(--c-surface); border-color: var(--c-border); border-radius: var(--r-lg); }
+.steps__n { color: var(--c-gold); }
+
+/* ── HERITAGE / FOUNDER panel (in place of LF's testimonial wall) ───────── */
+.heritage { display: grid; gap: clamp(1.8rem, 1rem + 2.5vw, 3.4rem); align-items: center; }
+@media (min-width: 900px) { .heritage { grid-template-columns: 0.9fr 1.1fr; } }
+.heritage__mark { display: grid; place-items: center; }
+.heritage__mark .seal { width: clamp(150px, 12vw, 210px); height: auto; filter: drop-shadow(0 16px 34px hsl(214 46% 18% / 0.18)); }
+.heritage__q { font-family: var(--font-heading); font-weight: 500; font-size: var(--fs-3xl); line-height: 1.22; color: var(--c-ink); }
+.heritage__q .mark { color: var(--c-gold); }
+.heritage__sig { margin-top: 1.4rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--c-ink-soft); }
+.heritage__sig b { color: var(--c-ink); font-weight: 600; }
+
+/* ── REVIEW placeholder (honest — no reviews exist yet) ─────────────────── */
+.revplace {
+  margin-top: 2.2rem; border: 1.5px dashed var(--c-border); border-radius: var(--r-lg);
+  background: transparent; padding: 1.8rem; text-align: center; color: var(--c-ink-soft);
+  display: grid; gap: 0.5rem; place-items: center;
+}
+.revplace svg { color: var(--c-gold); opacity: 0.6; }
+.revplace b { font-family: var(--font-sans); color: var(--c-ink); font-weight: 600; }
+.revplace span { font-size: var(--fs-sm); max-width: 42ch; }
+
+/* ── trust strip ────────────────────────────────────────────────────────── */
+.tstrip { display: flex; flex-wrap: wrap; gap: 0.9rem 2rem; justify-content: center; }
+.tstrip__item { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 600; color: var(--c-ink); }
+.tstrip__item svg { color: var(--c-gold); flex: none; }
+
+/* ── FINAL CTA — navy, gold seam (override LF's orange gradient) ─────────── */
+.cta { background: linear-gradient(150deg, var(--c-primary) 0%, var(--c-navy-deep) 100%); }
+.cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 80% at 85% 10%, hsl(42 44% 72% / 0.16), transparent 60%); pointer-events: none; }
+.cta .kicker { color: var(--c-champagne); }
+.cta .kicker::before { background: var(--c-champagne); }
+.cta__ways { margin-top: 1.8rem; display: flex; flex-wrap: wrap; gap: 1rem 2.4rem; justify-content: center; align-items: center; }
+.cta__way { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-sans); font-weight: 600; color: var(--c-primary-ink); }
+.cta__way svg { color: var(--c-champagne); flex: none; }
+.cta__way a { border-bottom: 1px solid hsl(42 44% 72% / 0.4); }
+.cta__free { margin-top: 1.4rem; font-family: var(--font-sans); font-size: var(--fs-sm); color: hsl(42 44% 72% / 0.9); }
+.cta__free a { color: var(--c-champagne); border-bottom: 1px solid hsl(42 44% 72% / 0.4); }
+
+/* contact form (replaces published email — no scrapeable address on the page) */
+.cta__form { max-width: 32rem; margin: 1.9rem auto 0; display: grid; gap: 0.85rem; text-align: left; }
+.cta__row { display: grid; gap: 0.85rem; }
+@media (min-width: 520px) { .cta__row { grid-template-columns: 1fr 1fr; } }
+.cta__field { display: grid; gap: 0.32rem; }
+.cta__field > span { font-family: var(--font-sans); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(42 44% 72% / 0.92); }
+.cta__form .field { background: hsl(40 36% 97% / 0.96); border-color: transparent; color: var(--c-ink); }
+.cta__form .field:focus { border-color: var(--c-champagne); box-shadow: 0 0 0 3px hsl(42 44% 72% / 0.3); }
+.cta__submit { margin-top: 0.4rem; justify-self: start; background: var(--c-champagne); color: var(--c-navy-deep); font-weight: 700; box-shadow: var(--sh-md); }
+.cta__submit:hover { background: hsl(42 52% 80%); }
+.cta__thanks { max-width: 32rem; margin: 1.9rem auto 0; padding: 1.4rem 1.6rem; border: 1px solid hsl(42 44% 72% / 0.3); border-radius: var(--r-lg); color: var(--c-primary-ink); font-family: var(--font-sans); }
+.cta__thanks strong { color: var(--c-champagne); }
+.cta__thanks a { color: var(--c-champagne); border-bottom: 1px solid hsl(42 44% 72% / 0.4); }
+
+/* ── FOOTER — navy crest ────────────────────────────────────────────────── */
+.foot { background: var(--c-navy-deep); color: hsl(40 30% 88%); }
+.foot .wordmark { color: var(--c-bg); }
+.foot .wordmark small { color: var(--c-champagne); }
+.foot__h { color: var(--c-bg); }
+
+/* ── reveal default already handled by base.css ─────────────────────────── */

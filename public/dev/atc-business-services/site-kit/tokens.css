@@ -1,0 +1,89 @@
+/* ============================================================================
+   SITE-KIT · tokens.css
+   Reusable design-token system for Swift Growth spec sites.
+   Token grouping order lifted from chrishornak / pontiva / inlight globals.css.
+
+   ── HOW TO RE-SKIN PER SITE ───────────────────────────────────────────────
+   Each site's own stylesheet (site.css) overrides ONLY two things:
+     1. The font swap points:  --font-heading, --font-sans
+     2. The palette block:      --c-* custom properties
+   Everything else (scale, rhythm, radii, shadow, easing) stays constant so
+   the kit reads as one system while each site reads as its own brand.
+   ========================================================================== */
+
+:root {
+  /* ── 1. TYPOGRAPHY (swap point #1) ──────────────────────────────────── */
+  --font-heading: "Fredoka", system-ui, sans-serif;
+  --font-sans:    "Nunito Sans", system-ui, sans-serif;
+
+  /* Fluid type scale — clamp(min, preferred, max). One scale, every site. */
+  --fs-xs:   0.78rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   clamp(1.2rem, 1.05rem + 0.6vw, 1.4rem);
+  --fs-2xl:  clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+  --fs-3xl:  clamp(1.9rem, 1.5rem + 1.8vw, 2.7rem);
+  --fs-4xl:  clamp(2.4rem, 1.8rem + 3vw, 3.8rem);
+  --fs-5xl:  clamp(3rem, 2.1rem + 4.4vw, 5rem);
+
+  --lh-tight: 1.08;
+  --lh-snug:  1.25;
+  --lh-body:  1.65;
+
+  --fw-normal:   400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ── 2. PALETTE (swap point #2) ─────────────────────────────────────────
+     Defaults below are a neutral fallback. Every site.css REPLACES these.
+     Naming is semantic, not literal, so a re-skin needs no markup changes. */
+  --c-bg:          hsl(40 40% 98%);   /* page background           */
+  --c-surface:     hsl(40 30% 96%);   /* raised card surface       */
+  --c-surface-alt: hsl(80 22% 95%);   /* alternate section banding */
+  --c-ink:         hsl(25 30% 18%);   /* primary text (never #000) */
+  --c-ink-soft:    hsl(25 14% 38%);   /* muted/secondary text      */
+  --c-border:      hsl(35 28% 86%);   /* hairline borders          */
+
+  --c-primary:        hsl(22 88% 52%);   /* lead accent            */
+  --c-primary-ink:    hsl(0 0% 100%);    /* text on primary fill   */
+  --c-primary-soft:   hsl(22 88% 52% / 0.12);
+  --c-primary-line:   hsl(22 88% 52% / 0.32);
+
+  --c-accent-2: hsl(110 32% 44%);  /* secondary brand (sage/green) */
+  --c-accent-3: hsl(205 72% 52%);  /* playful pop (blue)           */
+  --c-accent-4: hsl(45 92% 56%);   /* playful pop (yellow)         */
+  --c-accent-5: hsl(345 68% 76%);  /* playful pop (blush)          */
+  --c-gold:     hsl(38 72% 54%);
+
+  /* ── 3. RADII (constant — rounded register for warm/playful brands) ──── */
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-xl:   28px;
+  --r-2xl:  40px;
+  --r-full: 999px;
+
+  /* ── 4. SHADOW (constant — soft, warm-tinted, low opacity) ───────────── */
+  --sh-sm: 0 1px 2px hsl(25 30% 18% / 0.05);
+  --sh-md: 0 6px 18px hsl(25 30% 18% / 0.07);
+  --sh-lg: 0 16px 40px hsl(25 30% 18% / 0.10);
+  --sh-xl: 0 28px 60px hsl(25 30% 18% / 0.13);
+
+  /* ── 5. RHYTHM (constant — section breathing + content widths) ───────── */
+  --section-py:    clamp(4rem, 2.5rem + 6vw, 7rem);
+  --section-py-sm: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  --hero-pt:       clamp(6.5rem, 5rem + 6vw, 9.5rem);
+  --w-page:  72rem;   /* max content container   */
+  --w-prose: 38rem;   /* readable paragraph width */
+  --w-head:  46rem;   /* display heading width    */
+  --gutter:  clamp(1.25rem, 0.5rem + 3vw, 3rem);
+
+  /* ── 6. MOTION (constant — shared easing/duration from the 3 references) */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-mid:  280ms;
+  --dur-slow: 520ms;
+}
