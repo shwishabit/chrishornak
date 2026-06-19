@@ -1,0 +1,156 @@
+/* ============================================================================
+   SITE-KIT · base.css
+   Reset + layout primitives + liftable utilities (kicker, button, card,
+   input, logo bar). No framework. Consumes tokens.css.
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img, svg, picture { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+:focus-visible { outline: 3px solid var(--c-primary-line); outline-offset: 3px; border-radius: var(--r-sm); }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+}
+
+/* ── Layout primitives ──────────────────────────────────────────────────── */
+.kit-page    { overflow-x: clip; }
+.container   { width: 100%; max-width: var(--w-page); margin-inline: auto; padding-inline: var(--gutter); }
+.section     { padding-block: var(--section-py); }
+.section--alt { background: var(--c-surface-alt); }
+.section--ink { background: var(--c-ink); color: var(--c-bg); }
+.section--ink h1, .section--ink h2, .section--ink h3 { color: var(--c-bg); }
+.section--band { padding-block: var(--section-py-sm); }
+
+.stack > * + * { margin-top: 1rem; }
+.measure { max-width: var(--w-prose); }
+.center  { margin-inline: auto; text-align: center; }
+
+/* ── Eyebrow / kicker (replaces colored pills with type hierarchy) ──────── */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-primary);
+}
+.kicker::before {
+  content: "";
+  width: 1.6rem; height: 2px;
+  background: var(--c-primary);
+  border-radius: var(--r-full);
+  opacity: 0.55;
+}
+.kicker--center { justify-content: center; }
+
+/* ── Headings helpers ───────────────────────────────────────────────────── */
+.h-display { font-size: var(--fs-5xl); max-width: var(--w-head); }
+.h-section { font-size: var(--fs-3xl); }
+.lede { font-size: var(--fs-lg); color: var(--c-ink-soft); max-width: var(--w-prose); }
+
+/* ── Buttons (dual-CTA pattern) ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-heading);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-base);
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--r-full);
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-mid) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn--primary { background: var(--c-primary); color: var(--c-primary-ink); box-shadow: var(--sh-md); }
+.btn--primary:hover { box-shadow: var(--sh-lg); }
+.btn--ghost { background: transparent; color: var(--c-ink); border: 2px solid var(--c-border); }
+.btn--ghost:hover { border-color: var(--c-primary-line); }
+.btn--lg { padding: 1.05rem 2rem; font-size: var(--fs-lg); }
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+  box-shadow: var(--sh-sm);
+}
+.card--lift { transition: transform var(--dur-mid) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out); }
+.card--lift:hover { transform: translateY(-4px); box-shadow: var(--sh-lg); }
+
+/* Left-border card (pontiva pattern) */
+.card--edge {
+  background: var(--c-surface);
+  border: none;
+  border-left: 4px solid var(--c-primary-line);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  padding: 1.4rem 1.5rem;
+  transition: border-color var(--dur-mid) var(--ease-out);
+}
+.card--edge:hover { border-left-color: var(--c-primary); }
+
+/* ── Inputs (inlight .input recipe) ─────────────────────────────────────── */
+.field {
+  width: 100%;
+  background: var(--c-bg);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 0.85rem 1rem;
+  font-size: var(--fs-base);
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+}
+.field:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px var(--c-primary-soft); }
+
+/* ── Pills / badges (used sparingly, status only) ───────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: var(--fs-xs); font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--r-full);
+}
+.pill--open   { background: hsl(140 50% 94%); color: hsl(140 55% 28%); }
+.pill--full   { background: hsl(0 0% 93%);    color: hsl(0 0% 40%); }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: var(--r-full); background: currentColor; }
+
+/* ── Logo / trust bar treatment ─────────────────────────────────────────── */
+.trustbar { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(1.5rem, 4vw, 3rem); }
+.trustbar__item {
+  font-size: var(--fs-sm); font-weight: var(--fw-bold);
+  color: var(--c-ink-soft); opacity: 0.7;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+
+/* ── Reveal-on-scroll (progressive enhancement; safe without JS) ─────────── */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); }
+.reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .btn:hover, .card--lift:hover { transform: none; }
+}

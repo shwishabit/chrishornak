@@ -1,0 +1,145 @@
+/* ============================================================================
+   SITE-KIT · sections.css
+   Section-variant library — the anti-clone engine.
+   Each AIDA section has 2–3 archetypes; a site draws a DIFFERENT combination
+   so no two spec sites read as the same foundation. Variants are marked
+   [A]/[B]/[C]. Consumes tokens.css + base.css.
+
+   AIDA spine: Nav → Hero → Proof → Problem/Solution → Services →
+               How-It-Works → Deep Proof → Final CTA → Footer
+   ========================================================================== */
+
+/* ── NAV ────────────────────────────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: hsl(40 40% 98% / 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--c-border);
+}
+.nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 0.7rem; }
+.nav__brand { display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-heading); font-weight: var(--fw-semibold); font-size: var(--fs-lg); }
+.nav__links { display: none; gap: 1.6rem; }
+.nav__links a { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--c-ink-soft); transition: color var(--dur-fast); }
+.nav__links a:hover { color: var(--c-primary); }
+@media (min-width: 820px) { .nav__links { display: flex; } }
+
+/* mobile hamburger toggle (CSS-only, no JS) */
+.nav__burger { display: none; flex-direction: column; gap: 5px; margin-left: auto; padding: 0.55rem; background: none; border: 0; cursor: pointer; }
+.nav__burger span { display: block; width: 24px; height: 2px; background: var(--c-ink); border-radius: 2px; transition: transform var(--dur-fast) ease, opacity var(--dur-fast) ease; }
+.nav__toggle:checked ~ .nav__burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav__toggle:checked ~ .nav__burger span:nth-child(2) { opacity: 0; }
+.nav__toggle:checked ~ .nav__burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (max-width: 819px) {
+  .nav__burger { display: flex; }
+  .nav__links {
+    display: flex; flex-direction: column; gap: 0;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--c-bg); border-bottom: 1px solid var(--c-border); box-shadow: var(--sh-lg);
+    max-height: 0; overflow: hidden; visibility: hidden;
+    transition: max-height var(--dur) ease, visibility var(--dur) ease;
+  }
+  .nav__toggle:checked ~ .nav__links { max-height: 70vh; visibility: visible; }
+  .nav__links a { padding: 0.95rem 1.4rem; border-top: 1px solid var(--c-border); font-size: var(--fs-sm); }
+}
+
+/* ── HERO ───────────────────────────────────────────────────────────────── */
+/* [A] split: copy left, illustrated scene right (Little Fawns uses this) */
+.hero { position: relative; padding-top: var(--hero-pt); padding-bottom: var(--section-py); overflow: clip; }
+.hero__grid { display: grid; gap: clamp(2rem, 4vw, 4rem); align-items: center; }
+@media (min-width: 900px) { .hero__grid { grid-template-columns: 1.05fr 0.95fr; } }
+.hero__title { font-size: var(--fs-5xl); letter-spacing: -0.02em; }
+.hero__title .pop { color: var(--c-primary); }
+.hero__lede { margin-top: 1.4rem; }
+.hero__cta { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.9rem; }
+.hero__meta { margin-top: 1.8rem; display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; }
+
+/* Illustrated woodland scene (pure CSS/SVG — no stock photo pretending to be their room) */
+.scene {
+  position: relative; aspect-ratio: 5 / 5.2;
+  border-radius: var(--r-2xl);
+  background:
+    radial-gradient(120% 90% at 50% 8%, hsl(200 60% 86%) 0%, hsl(200 55% 80%) 30%, transparent 62%),
+    linear-gradient(180deg, hsl(95 38% 72%) 0%, hsl(98 40% 60%) 60%, hsl(100 42% 52%) 100%);
+  box-shadow: var(--sh-xl);
+  overflow: hidden;
+  display: grid; place-items: end center;
+}
+.scene__sun { position: absolute; top: 9%; left: 16%; width: 16%; aspect-ratio: 1; border-radius: var(--r-full); background: var(--c-accent-4); box-shadow: 0 0 50px hsl(45 92% 56% / 0.6); }
+.scene__hill { position: absolute; bottom: 0; left: -10%; width: 120%; height: 38%; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: hsl(100 40% 46%); }
+.scene__fawn { position: relative; z-index: 2; width: 56%; margin-bottom: 8%; filter: drop-shadow(0 12px 18px hsl(25 40% 20% / 0.25)); }
+.scene__badge {
+  position: absolute; z-index: 3; top: 7%; right: 7%;
+  background: var(--c-bg); color: var(--c-ink);
+  border-radius: var(--r-full); padding: 0.55rem 0.95rem;
+  font-family: var(--font-heading); font-weight: var(--fw-semibold); font-size: var(--fs-sm);
+  box-shadow: var(--sh-md); display: flex; align-items: center; gap: 0.4rem;
+}
+.scene__leaf { position: absolute; border-radius: 0 var(--r-full) 0 var(--r-full); opacity: 0.85; }
+
+/* ── IMMEDIATE PROOF BAR ────────────────────────────────────────────────── */
+.proofbar { display: grid; gap: 1rem; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 760px) { .proofbar { grid-template-columns: repeat(4, 1fr); } }
+.proofbar__item { text-align: center; padding: 0.5rem; }
+.proofbar__num { font-family: var(--font-heading); font-weight: var(--fw-semibold); font-size: var(--fs-2xl); color: var(--c-primary); line-height: 1; }
+.proofbar__lab { margin-top: 0.4rem; font-size: var(--fs-sm); color: var(--c-ink-soft); font-weight: var(--fw-semibold); }
+
+/* ── PROBLEM / SOLUTION — compare (Little Fawns: vs Big Box) ─────────────── */
+.compare { display: grid; gap: 1.2rem; }
+@media (min-width: 820px) { .compare { grid-template-columns: 1fr 1fr; } }
+.compare__col { border-radius: var(--r-xl); padding: clamp(1.4rem, 1rem + 1.5vw, 2.2rem); }
+.compare__col--them { background: var(--c-surface); border: 1px solid var(--c-border); }
+.compare__col--us { background: var(--c-primary-soft); border: 2px solid var(--c-primary-line); position: relative; }
+.compare__col--us::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: var(--c-primary); border-radius: var(--r-xl) var(--r-xl) 0 0; }
+.compare__h { font-family: var(--font-heading); font-size: var(--fs-xl); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+.compare__list > li { display: flex; gap: 0.7rem; align-items: flex-start; padding-block: 0.5rem; font-size: var(--fs-base); }
+.compare__list .mk { flex: none; margin-top: 0.15rem; width: 1.2rem; height: 1.2rem; }
+.compare__col--them .mk { color: var(--c-ink-soft); }
+.compare__col--us .mk { color: var(--c-accent-2); }
+
+/* ── SERVICES grid (enrollment status) ──────────────────────────────────── */
+.svc { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .svc { grid-template-columns: repeat(3, 1fr); } }
+.svc__card { display: flex; flex-direction: column; gap: 0.7rem; }
+.svc__top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.svc__age { font-size: var(--fs-sm); color: var(--c-ink-soft); font-weight: var(--fw-semibold); }
+.svc__name { font-family: var(--font-heading); font-size: var(--fs-xl); }
+.svc__icon { width: 2.6rem; height: 2.6rem; border-radius: var(--r-full); display: grid; place-items: center; }
+
+/* ── HOW IT WORKS — steps with connector (chrishharak arrow idea, no JS) ── */
+.steps { display: grid; gap: 1rem; counter-reset: step; }
+@media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+.steps__item { position: relative; padding: 1.4rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-xl); }
+.steps__n { counter-increment: step; font-family: var(--font-heading); font-weight: var(--fw-semibold); font-size: var(--fs-2xl); color: var(--c-primary); line-height: 1; }
+.steps__n::before { content: counter(step); }
+.steps__h { font-family: var(--font-heading); font-size: var(--fs-lg); margin: 0.5rem 0 0.3rem; }
+
+/* ── DEEP PROOF — testimonials + honest placeholder ─────────────────────── */
+.testi { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .testi { grid-template-columns: repeat(3, 1fr); } }
+.testi__quote { font-size: var(--fs-base); line-height: var(--lh-body); }
+.testi__by { margin-top: 1rem; display: flex; align-items: center; gap: 0.7rem; }
+.testi__av { width: 2.5rem; height: 2.5rem; border-radius: var(--r-full); display: grid; place-items: center; font-family: var(--font-heading); font-weight: var(--fw-semibold); color: var(--c-primary-ink); }
+.testi__name { font-weight: var(--fw-bold); font-size: var(--fs-sm); }
+/* honest "your reviews here" placeholder */
+.testi__placeholder { border: 2px dashed var(--c-border); background: transparent; display: grid; place-items: center; text-align: center; color: var(--c-ink-soft); min-height: 9rem; }
+
+/* ── FINAL CTA panel ────────────────────────────────────────────────────── */
+.cta {
+  position: relative; overflow: hidden;
+  border-radius: var(--r-2xl);
+  background: linear-gradient(135deg, var(--c-primary) 0%, hsl(30 84% 56%) 100%);
+  color: var(--c-primary-ink);
+  padding: clamp(2.2rem, 1.5rem + 4vw, 4.5rem) var(--gutter);
+  text-align: center;
+}
+.cta h2 { color: var(--c-primary-ink); }
+.cta__phone { display: inline-flex; align-items: center; gap: 0.6rem; margin-top: 1.4rem; font-family: var(--font-heading); font-weight: var(--fw-semibold); font-size: var(--fs-3xl); }
+.cta__leaf { position: absolute; opacity: 0.18; }
+
+/* ── FOOTER ─────────────────────────────────────────────────────────────── */
+.foot { background: var(--c-ink); color: hsl(40 30% 88%); padding-block: var(--section-py-sm); }
+.foot__grid { display: grid; gap: 2rem; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .foot__grid { grid-template-columns: 1.4fr 1fr 1fr; } }
+.foot a:hover { color: var(--c-bg); }
+.foot__h { font-family: var(--font-heading); font-weight: var(--fw-semibold); color: var(--c-bg); margin-bottom: 0.7rem; }
+.foot__note { margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid hsl(40 30% 88% / 0.15); font-size: var(--fs-xs); color: hsl(40 30% 88% / 0.6); display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; justify-content: space-between; }
