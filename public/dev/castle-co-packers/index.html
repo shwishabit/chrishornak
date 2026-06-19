@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Spec / pitch asset — not the client's official site yet. Keep out of the index. -->
 <meta name="robots" content="noindex, nofollow">
-<title>Castle Co-Packers · Contract Bottling for Beverages, Teas &amp; Shots — Latrobe, PA</title>
+<title>Castle Co-Packers · Contract Bottling — Latrobe, PA</title>
 <meta name="description" content="Independent contract bottling plant in Latrobe, PA. Hot-fill plastic and glass from 2.5 oz shots to 64 oz multi-serve, brewed from real tea leaves. OU Kosher, Gluten-Free and AIB certified. Bottling high-end specialty brands since 2005.">
 <link rel="canonical" href="https://chrishornak.com/dev/castle-co-packers/">
 <meta property="og:type" content="website">
@@ -18,16 +18,14 @@
 <meta property="og:image:alt" content="Castle Co-Packers — contract bottling for beverages, teas and shots in Latrobe, PA.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Castle Co-Packers · The independent bottling plant high-end brands trust">
-<meta name="twitter:description" content="Contract bottling for beverages, teas &amp; shots — hot-fill plastic and glass, 2.5 oz to 64 oz, brewed from real tea leaves. Latrobe, PA.">
 <meta name="twitter:image" content="https://chrishornak.com/dev/castle-co-packers/og.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Archivo+Expanded:wght@600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="/dev/castle-co-packers/site-kit/tokens.css">
 <link rel="stylesheet" href="/dev/castle-co-packers/site-kit/base.css">
-<link rel="stylesheet" href="/dev/castle-co-packers/site-kit/sections.css">
 <link rel="stylesheet" href="/dev/castle-co-packers/site.css">
 
 <script type="application/ld+json">
@@ -49,7 +47,7 @@
 
 <div class="kit-page">
 
-<!-- ── NAV ───────────────────────────────────────────────────────────────── -->
+<!-- ── NAV (dark) ────────────────────────────────────────────────────────── -->
 <header class="nav">
   <div class="container nav__inner">
     <a class="nav__brand" href="#top" aria-label="Castle Co-Packers home">
@@ -57,246 +55,207 @@
     </a>
     <input type="checkbox" id="nav-toggle" class="nav__toggle" hidden>
     <nav class="nav__links" id="nav-menu" aria-label="Primary">
-      <a href="#capabilities">Capabilities</a>
-      <a href="#difference">The difference</a>
-      <a href="#how">How it works</a>
-      <a href="#about">About</a>
+      <a href="#lineup">Capabilities</a>
+      <a href="#difference">Real-leaf tea</a>
+      <a href="#line">The line</a>
+      <a href="#brands">Brands</a>
     </nav>
     <label for="nav-toggle" class="nav__burger" aria-label="Open menu" aria-controls="nav-menu">
       <span></span><span></span><span></span>
     </label>
-    <a class="btn btn--primary nav__call" href="#contact">Start a project</a>
+    <a class="btn nav__cta" href="#contact">Start a project</a>
   </div>
 </header>
 
 <main id="top">
 
-<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="container hero__grid">
-    <div class="hero__copy reveal">
-      <span class="kicker">Contract Bottling · Latrobe, PA · Since 2005</span>
-      <h1 class="hero__title">The independent bottling plant for <span class="pop">high-end</span> beverages, teas &amp; shots.</h1>
-      <p class="hero__lede lede">Four hot-fill lines, a fifth on the way. Plastic and glass, from 2.5&nbsp;oz energy shots
-        to 64&nbsp;oz multi-serve. And we brew our teas from real leaves — not powders. One of a handful
-        of co-packers in the country who can.</p>
-      <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href="#capabilities">Explore capabilities</a>
-        <a class="btn btn--ghost btn--lg" href="#contact">Start a project</a>
-      </div>
-      <div class="hero__meta">
-        <span class="trustbar__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> OU Kosher</span>
-        <span class="trustbar__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Gluten-Free</span>
-        <span class="trustbar__item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> AIB Certified</span>
-      </div>
+<!-- ── HERO (full-bleed treated line photo + scrim) ──────────────────────── -->
+<section class="bhero">
+  <img class="bhero__bg" src="/dev/castle-co-packers/assets/factory-hero.jpg" alt="" aria-hidden="true">
+  <div class="container bhero__inner">
+    <span class="kicker kicker--light">Contract bottling · Latrobe, PA · since 2005</span>
+    <h1 class="bhero__title">Your beverage,<br>bottled right.</h1>
+    <p class="bhero__lede">Independent hot-fill bottling for high-end teas, sodas and shots — plastic and glass,
+      2.5&nbsp;oz to 64&nbsp;oz, and tea brewed from real leaves, not powder.</p>
+    <div class="bhero__cta">
+      <a class="btn btn--amber btn--lg" href="#lineup">See what we run</a>
+      <a class="btn btn--clear btn--lg" href="#contact">Start a project</a>
     </div>
-    <div class="hero__visual reveal">
-      <div class="speccard">
-        <div class="speccard__head">
-          <span class="speccard__est">Est. 2005</span>
-          <span class="speccard__loc">Latrobe, PA</span>
-        </div>
-        <div class="speccard__rule"></div>
-        <ul class="speccard__list">
-          <li><span class="speccard__k">Production lines</span><span class="speccard__v">5 hot-fill</span></li>
-          <li><span class="speccard__k">Fill range</span><span class="speccard__v">2.5–64 oz</span></li>
-          <li><span class="speccard__k">Containers</span><span class="speccard__v">Plastic &amp; glass</span></li>
-          <li><span class="speccard__k">Specialty</span><span class="speccard__v">Real-leaf tea brewing</span></li>
-          <li><span class="speccard__k">Logistics</span><span class="speccard__v">500,000 sq ft</span></li>
-          <li><span class="speccard__k">Certified</span><span class="speccard__v">OU Kosher · GF · AIB</span></li>
-        </ul>
-      </div>
+  </div>
+  <!-- broadcast-style lower-third spec strip -->
+  <div class="specstrip">
+    <div class="container specstrip__row">
+      <span><b>5</b> hot-fill lines</span>
+      <span><b>2.5–64</b> oz</span>
+      <span>Plastic &amp; glass</span>
+      <span>Real-leaf tea</span>
+      <span>OU Kosher · GF · AIB</span>
     </div>
   </div>
 </section>
 
-<!-- ── PHOTO BAND (real plant, treated; tagline cropped via framing) ──────── -->
-<section class="pband reveal" aria-label="Castle Co-Packers production floor">
-  <img src="/dev/castle-co-packers/assets/factory-hero.jpg" alt="Bottles moving along a hot-fill production line at Castle Co-Packers in Latrobe, PA" loading="lazy">
-  <div class="pband__cap container">
-    <span class="kicker kicker--light">On the floor in Latrobe</span>
-    <p class="pband__line">Bottling ideas and innovation since 2005.</p>
+<!-- ── STAT LEDGER ───────────────────────────────────────────────────────── -->
+<section class="ledger">
+  <div class="container ledger__row">
+    <div class="ledger__cell"><span class="ledger__n">20<i>+</i></span><span class="ledger__l">years bottling</span></div>
+    <div class="ledger__cell"><span class="ledger__n">90<i>+</i></span><span class="ledger__l">brands bottled</span></div>
+    <div class="ledger__cell"><span class="ledger__n">5</span><span class="ledger__l">production lines</span></div>
+    <div class="ledger__cell"><span class="ledger__n">500<i>k</i></span><span class="ledger__l">sq ft of logistics</span></div>
   </div>
 </section>
 
-<!-- ── IMMEDIATE PROOF ───────────────────────────────────────────────────── -->
-<section class="section--band">
-  <div class="container">
-    <div class="proofbar">
-      <div class="proofbar__item"><div class="proofbar__num">20<span>+</span></div><div class="proofbar__lab">years bottling</div></div>
-      <div class="proofbar__item"><div class="proofbar__num">5</div><div class="proofbar__lab">production lines</div></div>
-      <div class="proofbar__item"><div class="proofbar__num">90<span>+</span></div><div class="proofbar__lab">brands bottled</div></div>
-      <div class="proofbar__item"><div class="proofbar__num">500<span>k</span></div><div class="proofbar__lab">sq ft of logistics</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ── THE DIFFERENCE — real-leaf tea brewing (the wedge) ─────────────────── -->
+<!-- ── THE DIFFERENCE — real-leaf tea ────────────────────────────────────── -->
 <section class="section section--ink" id="difference">
   <div class="container diff">
     <div class="diff__copy reveal">
       <span class="kicker kicker--light">The Castle difference</span>
-      <h2 class="h-section">Brewed from real tea leaves. Never from powder.</h2>
+      <h2 class="diff__h">Brewed from real tea leaves. Never from powder.</h2>
       <p class="diff__p">Most bottled tea starts as a powder or concentrate — faster, cheaper, and you can taste it.
-        Castle is one of a handful of contract producers in the country that brews bottled tea directly from
-        the leaf, the way the best brands insist on.</p>
-      <p class="diff__p">It's the same reason high-end, specialized brands bring their recipes here: when the product
-        is the whole pitch, the bottling can't be the weak link.</p>
+        Castle is one of a handful of contract producers in the country that brews bottled tea straight from
+        the leaf, the way the best brands insist on. When the product is the whole pitch, the bottling can't
+        be the weak link.</p>
     </div>
     <ul class="diff__points reveal">
-      <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg><div><b>Real-leaf brewing</b><span>A cleaner, truer flavor than powder or concentrate.</span></div></li>
-      <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg><div><b>High-end focus</b><span>Built around specialized brands, not commodity runs.</span></div></li>
-      <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><div><b>Recipe fidelity</b><span>Your formula, bottled the way you intended it.</span></div></li>
+      <li><span class="diff__ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span><div><b>Real-leaf brewing</b><span>A cleaner, truer flavor than powder or concentrate.</span></div></li>
+      <li><span class="diff__ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></span><div><b>High-end focus</b><span>Built around specialized brands, not commodity runs.</span></div></li>
+      <li><span class="diff__ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></span><div><b>Recipe fidelity</b><span>Your formula, bottled the way you intended it.</span></div></li>
     </ul>
   </div>
 </section>
 
-<!-- ── CAPABILITIES MATRIX (the real spec sheet) ─────────────────────────── -->
-<section class="section" id="capabilities">
+<!-- ── SIGNATURE: BOTTLE-SIZE LINEUP ─────────────────────────────────────── -->
+<section class="section" id="lineup">
   <div class="container">
-    <div class="center stack" style="margin-bottom:2.8rem">
-      <span class="kicker kicker--center">Full capabilities</span>
-      <h2 class="h-section">Every fill, spec'd out</h2>
-      <p class="lede center">Plastic and glass hot-fill across the full size range, plus the repacking, brewing
-        and logistics that get finished product out the door. Here's what runs at Castle today.</p>
+    <div class="lead reveal">
+      <span class="kicker">What we run</span>
+      <h2 class="lead__h">From a 2.5&nbsp;oz shot to a 64&nbsp;oz multi-serve</h2>
+      <p class="lead__p">One plant, the whole size range — hot-fill plastic and glass, energy shots to family multi-serve.
+        Pick a size; we almost certainly run it.</p>
     </div>
-    <div class="caps">
-      <div class="caps__group card reveal">
-        <div class="caps__top"><span class="caps__tag">Plastic</span><h3 class="caps__h">Hot-fill plastic</h3></div>
-        <ul class="caps__list">
-          <li><b>2.5 oz</b> energy shots, sleeve label</li>
-          <li><b>8 / 10 / 12 / 16 oz</b> — cut-and-stack or sleeve, 12 &amp; 24 pack</li>
-          <li><b>16 / 16.9 oz</b> Power Flex longneck &amp; dome</li>
-          <li><b>20 / 32 oz</b> — 38 mm or 43 mm, 6 / 8 / 12 / 24 pack</li>
-          <li><b>46 oz</b> proprietary bottle, sleeve label</li>
-          <li><b>64 oz</b> round (rectangular in development)</li>
-        </ul>
-        <p class="caps__note">Amcor, Ball, Constar &amp; Graham bottles.</p>
-      </div>
 
-      <div class="caps__group card reveal">
-        <div class="caps__top"><span class="caps__tag">Glass</span><h3 class="caps__h">Hot-fill glass</h3></div>
-        <ul class="caps__list">
-          <li><b>10 / 14 / 16 / 18 / 20 oz</b> — cut-and-stack or sleeve, 12 &amp; 24 pack</li>
-          <li><b>32 oz</b> — 6 / 8 / 12 pack</li>
-          <li>Front, back &amp; spot labeling</li>
-          <li>Cold-glue or pressure-sensitive application</li>
-        </ul>
-        <p class="caps__note">Premium glass presentation for shelf-standout brands.</p>
-      </div>
+    <div class="lineup reveal" role="img" aria-label="Bottle sizes Castle runs, from 2.5 oz up to 64 oz">
+      <!-- each bottle scales by height; shared baseline -->
+      <div class="bot"><svg class="bot__svg" style="--h:48px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">2.5<i>oz</i></span><span class="bot__t">shot</span></div>
+      <div class="bot"><svg class="bot__svg" style="--h:66px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">8<i>oz</i></span></div>
+      <div class="bot"><svg class="bot__svg" style="--h:82px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">12<i>oz</i></span></div>
+      <div class="bot"><svg class="bot__svg" style="--h:96px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">16<i>oz</i></span></div>
+      <div class="bot"><svg class="bot__svg" style="--h:108px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">20<i>oz</i></span></div>
+      <div class="bot"><svg class="bot__svg" style="--h:126px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">32<i>oz</i></span></div>
+      <div class="bot bot--hero"><svg class="bot__svg" style="--h:150px" viewBox="0 0 40 150" aria-hidden="true"><use href="#bottle"/></svg><span class="bot__oz">64<i>oz</i></span><span class="bot__t">multi-serve</span></div>
+    </div>
 
-      <div class="caps__group card reveal">
-        <div class="caps__top"><span class="caps__tag caps__tag--soon">Coming online</span><h3 class="caps__h">Cold-fill, non-carbonated</h3></div>
-        <ul class="caps__list">
-          <li><b>8 / 10 / 12 / 16 / 20 / 24 oz</b></li>
-          <li>28 mm flat cap or sports cap</li>
-          <li>12 &amp; 24 pack, cut-and-stack</li>
-          <li>Blended products (no straight water)</li>
+    <!-- the real spec sheet -->
+    <div class="spec reveal">
+      <div class="spec__col">
+        <div class="spec__hd"><span class="spec__tag">Plastic</span><span class="spec__sz">2.5 – 64 oz</span></div>
+        <ul class="spec__list">
+          <li><span class="spec__k">2.5 oz</span><span class="spec__v">energy shots, sleeve label · Amcor</span></li>
+          <li><span class="spec__k">8 / 10 / 12 / 16 oz</span><span class="spec__v">cut-and-stack or sleeve · 12 &amp; 24 pack</span></li>
+          <li><span class="spec__k">16 / 16.9 oz</span><span class="spec__v">Power Flex longneck &amp; dome</span></li>
+          <li><span class="spec__k">20 / 32 oz</span><span class="spec__v">38 / 43 mm · 6 / 8 / 12 / 24 pack</span></li>
+          <li><span class="spec__k">46 oz</span><span class="spec__v">proprietary bottle, sleeve label</span></li>
+          <li><span class="spec__k">64 oz</span><span class="spec__v">round · rectangular in development</span></li>
         </ul>
-        <p class="caps__note">A fifth line expanding the cold-fill range.</p>
+        <p class="spec__ft">Amcor · Ball · Constar · Graham</p>
       </div>
-
-      <div class="caps__group card reveal">
-        <div class="caps__top"><span class="caps__tag">Beyond the fill</span><h3 class="caps__h">Brewing, packing &amp; logistics</h3></div>
-        <ul class="caps__list">
-          <li><b>Real-leaf tea brewing</b> — direct from the leaf</li>
-          <li>Liquefiers for blending pectin &amp; gums</li>
-          <li>Repacking 4 / 6 / 8 / 12 packs with rings</li>
-          <li>Variety packing with registered film</li>
-          <li>On-site 500,000 sq ft warehouse &amp; logistics</li>
-          <li>OU Kosher · Gluten-Free · AIB certified</li>
+      <div class="spec__col">
+        <div class="spec__hd"><span class="spec__tag">Glass</span><span class="spec__sz">10 – 32 oz</span></div>
+        <ul class="spec__list">
+          <li><span class="spec__k">10 / 14 / 16 oz</span><span class="spec__v">cut-and-stack or sleeve · 12 &amp; 24 pack</span></li>
+          <li><span class="spec__k">18 / 20 oz</span><span class="spec__v">front, back &amp; spot labeling</span></li>
+          <li><span class="spec__k">32 oz</span><span class="spec__v">6 / 8 / 12 pack</span></li>
+          <li><span class="spec__k">Application</span><span class="spec__v">cold-glue or pressure-sensitive</span></li>
         </ul>
-        <p class="caps__note">One partner from recipe to pallet.</p>
+        <p class="spec__ft">Premium glass for shelf-standout brands</p>
+      </div>
+      <div class="spec__col spec__col--soon">
+        <div class="spec__hd"><span class="spec__tag spec__tag--soon">Coming online</span><span class="spec__sz">8 – 24 oz</span></div>
+        <ul class="spec__list">
+          <li><span class="spec__k">8–24 oz</span><span class="spec__v">28 mm flat or sports cap</span></li>
+          <li><span class="spec__k">Cold-fill</span><span class="spec__v">non-carbonated, blended products</span></li>
+          <li><span class="spec__k">Packs</span><span class="spec__v">12 &amp; 24, cut-and-stack</span></li>
+          <li><span class="spec__k">Plus</span><span class="spec__v">repacking, variety packing, liquefiers</span></li>
+        </ul>
+        <p class="spec__ft">A fifth line, expanding the range</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── DIVIDER BAND (real plant strip, treated) ──────────────────────────── -->
-<div class="divband" role="presentation">
-  <img src="/dev/castle-co-packers/assets/factory-line.jpg" alt="" aria-hidden="true" loading="lazy">
-</div>
-
-<!-- ── TRUSTED TO BOTTLE (brands — confirm name-drop with client) ─────────── -->
-<section class="section section--alt" id="brands">
-  <div class="container center stack">
-    <span class="kicker kicker--center">Trusted to bottle</span>
-    <h2 class="h-section">The brands that hand Castle their recipe</h2>
-    <p class="lede center">Castle has bottled for cutting-edge, better-for-you beverage names — proof that when the
-      product has to be right, this is where it gets made.</p>
-    <ul class="brands reveal">
-      <li>Argo All-Natural Tea</li>
-      <li>Guayakí Yerba Mate</li>
-      <li>Harney &amp; Sons</li>
-      <li>Giant Eagle private label</li>
-    </ul>
-    <p class="brands__note">Brands shown are produced under contract at Castle. Your label belongs on this list.</p>
+<!-- ── THE LINE — production process as connected stations ───────────────── -->
+<section class="section section--ink" id="line">
+  <div class="container">
+    <div class="lead lead--light reveal">
+      <span class="kicker kicker--light">From recipe to pallet</span>
+      <h2 class="lead__h">One partner, the whole line</h2>
+    </div>
+    <ol class="line">
+      <li class="line__stop reveal"><span class="line__dot"></span><span class="line__no">01</span><b>Your recipe</b><span>Send your formula, target bottle, label and volume.</span></li>
+      <li class="line__stop reveal"><span class="line__dot"></span><span class="line__no">02</span><b>Brew &amp; blend</b><span>Tea brewed from real leaves; liquefiers for pectin &amp; gums.</span></li>
+      <li class="line__stop reveal"><span class="line__dot"></span><span class="line__no">03</span><b>Hot-fill</b><span>Plastic or glass, 2.5 to 64 oz, on the matched line.</span></li>
+      <li class="line__stop reveal"><span class="line__dot"></span><span class="line__no">04</span><b>Label &amp; pack</b><span>Sleeve or cut-and-stack; repack &amp; variety packing.</span></li>
+      <li class="line__stop reveal"><span class="line__dot"></span><span class="line__no">05</span><b>Warehouse &amp; ship</b><span>Staged and shipped from 500,000 sq ft on site.</span></li>
+    </ol>
   </div>
 </section>
 
-<!-- ── HOW IT WORKS ──────────────────────────────────────────────────────── -->
-<section class="section" id="how">
+<!-- ── TRUSTED TO BOTTLE — logo wall (real logos drop in) ─────────────────── -->
+<section class="section" id="brands">
   <div class="container">
-    <div class="center stack" style="margin-bottom:2.6rem">
-      <span class="kicker kicker--center">Getting started</span>
-      <h2 class="h-section">From recipe to pallet, in three steps</h2>
+    <div class="lead reveal">
+      <span class="kicker">Trusted to bottle</span>
+      <h2 class="lead__h">Brands that hand Castle their recipe</h2>
     </div>
-    <div class="steps">
-      <div class="steps__item reveal"><div class="steps__n"></div><h3 class="steps__h">Tell us your product</h3><p class="steps__p">Send your formula, target bottle, labeling and volume. We'll talk through the run and what your product needs.</p></div>
-      <div class="steps__item reveal"><div class="steps__n"></div><h3 class="steps__h">We spec the line</h3><p class="steps__p">We match it to the right line, container and pack — brewing from real leaves where the recipe calls for it.</p></div>
-      <div class="steps__item reveal"><div class="steps__n"></div><h3 class="steps__h">Bottled, packed &amp; shipped</h3><p class="steps__p">We run it, pack it and ship it from our 500,000 sq ft warehouse. One partner, recipe to pallet.</p></div>
+    <div class="wall reveal">
+      <div class="wall__cell"><span class="wall__ph">Argo Tea</span></div>
+      <div class="wall__cell"><span class="wall__ph">Guayakí Yerba Mate</span></div>
+      <div class="wall__cell"><span class="wall__ph">Harney &amp; Sons</span></div>
+      <div class="wall__cell"><span class="wall__ph">Giant Eagle</span></div>
     </div>
+    <p class="wall__note">Brands produced under contract at Castle. <i>Your label belongs on this wall.</i></p>
   </div>
 </section>
 
-<!-- ── ABOUT / FOUNDER ───────────────────────────────────────────────────── -->
-<section class="section section--alt" id="about">
-  <div class="container">
-    <div class="founder">
-      <div class="founder__mark reveal">
-        <img class="founder__logo" src="/dev/castle-co-packers/assets/logo.png" alt="" aria-hidden="true">
-      </div>
-      <div class="reveal">
-        <span class="kicker">A beverage family, four generations deep</span>
-        <figure class="founder__q">
-          <p>"We make awesome sodas and teas for some <span class="mark">fun people</span> — high-end,
-            specialized brands you'll recognize on the shelf."</p>
-        </figure>
-        <p class="founder__sig">President &amp; CEO <b>Brian Dworkin</b> came up in a Connecticut beverage family
-          whose roots run back to 1904. He took over the former Chestnut Ridge Beverage plant in Latrobe and rebuilt
-          it line by line — from a single production line into a five-line, state-of-the-art bottling operation that
-          recycles 90% of its materials.</p>
-        <div class="revplace">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.8 6.9-.9z"/></svg>
-          <b>Brand references will live here</b>
-          <span>As Castle adds customer references, real words from the brands they bottle will appear right here.</span>
-        </div>
-      </div>
-    </div>
+<!-- ── ABOUT / FOUNDER — horizontal strip ────────────────────────────────── -->
+<section class="founder2" id="about">
+  <img class="founder2__bg" src="/dev/castle-co-packers/assets/factory-line.jpg" alt="" aria-hidden="true">
+  <div class="container founder2__inner reveal">
+    <span class="kicker kicker--light">A beverage family, four generations deep</span>
+    <p class="founder2__q">"We make awesome sodas and teas for some <span class="mark">fun people</span> — high-end,
+      specialized brands you'll recognize on the shelf."</p>
+    <p class="founder2__sig">President &amp; CEO <b>Brian Dworkin</b> came up in a Connecticut beverage family with
+      roots back to 1904. He took over the former Chestnut Ridge Beverage plant in Latrobe and rebuilt it line by
+      line — from a single line into a five-line operation that recycles 90% of its materials.</p>
   </div>
 </section>
 
-<!-- ── FINAL CTA ─────────────────────────────────────────────────────────── -->
-<section class="section" id="contact">
-  <div class="container">
-    <div class="cta reveal">
-      <span class="kicker kicker--center kicker--light">Let's talk runs</span>
-      <h2 class="h-section" style="max-width:18ch;margin-inline:auto">Have a beverage to bottle?</h2>
-      <p class="cta__sub">Tell us about your product and volume. We'll get back to you with the line, the pack and the next step.</p>
+<!-- ── CONTACT — split: pitch left, form right ───────────────────────────── -->
+<section class="contact" id="contact">
+  <div class="container contact__grid">
+    <div class="contact__copy reveal">
+      <span class="kicker kicker--light">Let's talk runs</span>
+      <h2 class="contact__h">Have a beverage to bottle?</h2>
+      <p class="contact__p">Tell us your product and volume. We'll come back with the line, the pack and the next step.</p>
+      <a class="contact__phone" href="tel:+17248794748">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+        724-879-4748
+      </a>
+      <p class="contact__addr">11 Lloyd Ave, Latrobe, PA 15650</p>
+    </div>
+    <div class="contact__formwrap reveal">
       <!-- DEPLOY GATE: wire `action` to Swift Growth's form endpoint (Formspree / Web3Forms / SMTP2GO), routed to Castle sales, before launch. No raw email on the page by design. -->
-      <form class="cta__form" method="POST" action="https://formspree.io/f/REPLACE_AT_DEPLOY" novalidate>
-        <div class="cta__row">
-          <label class="cta__field"><span>Name</span><input class="field" type="text" name="name" autocomplete="name" required></label>
-          <label class="cta__field"><span>Company</span><input class="field" type="text" name="company" autocomplete="organization"></label>
+      <form class="cform" method="POST" action="https://formspree.io/f/REPLACE_AT_DEPLOY" novalidate>
+        <div class="cform__row">
+          <label class="cform__field"><span>Name</span><input class="field" type="text" name="name" autocomplete="name" required></label>
+          <label class="cform__field"><span>Company</span><input class="field" type="text" name="company" autocomplete="organization"></label>
         </div>
-        <div class="cta__row">
-          <label class="cta__field"><span>Phone</span><input class="field" type="tel" name="phone" autocomplete="tel"></label>
-          <label class="cta__field"><span>Email</span><input class="field" type="email" name="email" autocomplete="email" required></label>
+        <div class="cform__row">
+          <label class="cform__field"><span>Phone</span><input class="field" type="tel" name="phone" autocomplete="tel"></label>
+          <label class="cform__field"><span>Email</span><input class="field" type="email" name="email" autocomplete="email" required></label>
         </div>
-        <label class="cta__field"><span>What are you looking to bottle?</span><textarea class="field" name="message" rows="3" placeholder="Product, container, volume — as much as you know." required></textarea></label>
-        <button class="btn cta__submit" type="submit">Request a quote</button>
+        <label class="cform__field"><span>What are you looking to bottle?</span><textarea class="field" name="message" rows="3" placeholder="Product, container, volume — as much as you know." required></textarea></label>
+        <button class="btn btn--amber cform__submit" type="submit">Request a quote</button>
       </form>
-      <p class="cta__free">Prefer to call? <a href="tel:+17248794748">724-879-4748</a> &nbsp;·&nbsp; 11 Lloyd Ave, Latrobe, PA 15650</p>
     </div>
   </div>
 </section>
@@ -328,6 +287,20 @@
 
 </div>
 
+<!-- shared bottle silhouette -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="hsl(38 80% 60%)"/>
+    <stop offset="0.5" stop-color="hsl(32 78% 50%)"/>
+    <stop offset="1" stop-color="hsl(28 74% 42%)"/>
+  </linearGradient>
+  <g id="bottle">
+    <rect x="14" y="2" width="12" height="9" rx="1.6" fill="hsl(214 30% 30%)"/>
+    <path d="M16 11 v9 c0 4 -7 6 -7 13 v108 a7 7 0 0 0 7 7 h8 a7 7 0 0 0 7 -7 v-108 c0 -7 -7 -9 -7 -13 v-9 z" fill="url(#amber)"/>
+    <rect x="12.5" y="40" width="3" height="98" rx="1.5" fill="hsl(45 90% 80%)" opacity="0.5"/>
+  </g>
+</defs></svg>
+
 <script>
 /* progressive reveal — safe, sub-vestibular, respects reduced-motion via CSS */
 (function () {
@@ -339,17 +312,15 @@
   els.forEach(function (e) { io.observe(e); });
 })();
 
-/* contact form — graceful confirmation. When a real endpoint is wired into the
-   form's `action`, swap this for a fetch POST; until then it never errors and
-   always points the visitor to the phone. */
+/* contact form — graceful confirmation until a real endpoint is wired in. */
 (function () {
-  var form = document.querySelector('.cta__form');
+  var form = document.querySelector('.cform');
   if (!form) return;
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var name = (form.querySelector('[name=name]') || {}).value || '';
     var msg = document.createElement('div');
-    msg.className = 'cta__thanks';
+    msg.className = 'cform__thanks';
     msg.innerHTML = '<strong>Thanks' + (name ? ', ' + name.replace(/[<>]/g, '') : '') +
       '!</strong> We’ll be in touch within one business day. Prefer to talk now? Call ' +
       '<a href="tel:+17248794748">724-879-4748</a>.';
