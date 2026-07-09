@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Chris Hornak — Brand Kit</title>
+<style>
+  :root{ --bg:#0a0a0a; --panel:#141414; --ink:#f0f0f0; --muted:#8a8a8a; --line:#242424; --teal:#2dd4a8; --light:#ffffff; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:64px 24px 96px}
+  header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:48px}
+  h1{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin:0 0 10px;font-weight:600}
+  header .name{display:flex;align-items:center;gap:10px;font-size:38px;font-weight:700;letter-spacing:-.02em;margin:0}
+  header .dot{width:11px;height:11px;border-radius:50%;background:var(--teal);display:inline-block;margin-top:14px}
+  header p{color:var(--muted);margin:14px 0 0;max-width:62ch}
+  section{margin:0 0 56px}
+  h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:600;margin:0 0 20px;border-bottom:1px solid var(--line);padding-bottom:8px}
+  .row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+  .plate{flex:1;min-width:280px;border:1px solid var(--line);border-radius:14px;padding:36px 30px;display:flex;align-items:center;justify-content:center}
+  .plate.dark{background:var(--bg)} .plate.light{background:var(--light)}
+  .plate img{max-width:100%;height:auto}
+  .plate.wm img{height:56px} .plate.mk img{height:96px}
+  .grid{display:grid;gap:16px}
+  .cards4{grid-template-columns:repeat(4,1fr)} .cards3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:720px){.cards4,.cards3{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .card .sw{aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+  .card img{width:100%;display:block}
+  .card .meta{padding:12px 14px;border-top:1px solid var(--line);font-size:13px}
+  .card .meta b{display:block;font-weight:600} .card .meta span{color:var(--muted);font-size:12px}
+  .bannerbox{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px}
+  .bannerbox img{width:100%;display:block}
+  .pal{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.pal{grid-template-columns:1fr}}
+  .chip{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .chip .fill{height:78px} .chip .lab{padding:10px 12px;font-size:12px}
+  .chip .lab b{display:block;font-weight:600;font-size:13px} .chip .lab code{color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .rule h3{margin:0 0 8px;font-size:14px} .rule.do h3{color:var(--teal)} .rule.dont h3{color:#ff6b6b}
+  .rule ul{margin:0;padding-left:18px;color:#cfcfcf;font-size:14px} .rule li{margin:4px 0}
+  .type-demo{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:30px}
+  .type-demo img{height:44px}
+  .files{font-size:13px;color:var(--muted)} .files code{background:#1c1c1c;padding:2px 6px;border-radius:5px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#cfcfcf}
+  footer{border-top:1px solid var(--line);padding-top:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Brand Kit</h1>
+    <p class="name">chris hornak<span class="dot"></span></p>
+    <p>Wordmark, mark, avatars, and social banners for chrishornak.com. Generated from the live brand assets — the teal dot is the signature (the "i" in chris, the point after "ch"). Marketing strategist: get found, stay found, convert.</p>
+  </header>
+
+  <section>
+    <h2>Wordmark</h2>
+    <div class="row">
+      <div class="plate dark wm"><img src="wordmark/wordmark-dark.svg" alt="chris hornak wordmark on dark"></div>
+      <div class="plate light wm"><img src="wordmark/wordmark-light.svg" alt="chris hornak wordmark on light"></div>
+    </div>
+    <p class="files">Dark background uses off-white ink; light background uses near-black. The teal dot never changes. Files: <code>wordmark/wordmark-{dark,light}.svg</code> + PNG @400 / 800 / 1600 px.</p>
+  </section>
+
+  <section>
+    <h2>Mark — "ch" + teal dot</h2>
+    <div class="row">
+      <div class="plate dark mk"><img src="mark/mark-dark-512.png" alt="ch mark on dark"></div>
+      <div class="plate light mk"><img src="mark/mark-light-512.png" alt="ch mark on light"></div>
+    </div>
+    <p class="files">Files: <code>mark/mark-{dark,light}.svg</code> + PNG @128 / 256 / 512 / 1024 px.</p>
+  </section>
+
+  <section>
+    <h2>Social Avatars — 1024×1024</h2>
+    <div class="grid cards4">
+      <div class="card"><div class="sw"><img src="avatar/avatar-dark-1024.png" alt=""></div><div class="meta"><b>Dark</b><span>#0a0a0a · primary</span></div></div>
+      <div class="card"><div class="sw"><img src="avatar/avatar-light-1024.png" alt=""></div><div class="meta"><b>Light</b><span>#ffffff</span></div></div>
+      <div class="card"><div class="sw" style="background:#cfcfcf"><img src="avatar/avatar-transparent-onlight-1024.png" alt=""></div><div class="meta"><b>Transparent</b><span>dark mark, on-light</span></div></div>
+      <div class="card"><div class="sw" style="background:#333"><img src="avatar/avatar-transparent-ondark-1024.png" alt=""></div><div class="meta"><b>Transparent</b><span>light mark, on-dark</span></div></div>
+    </div>
+    <p class="files">Square masters — platforms crop to a circle. Suggested: <b>dark</b> for the primary profile presence. Files: <code>avatar/avatar-{dark,light,transparent-onlight,transparent-ondark}-1024.png</code>.</p>
+  </section>
+
+  <section>
+    <h2>Cover Banners</h2>
+    <div class="bannerbox"><img src="banner/banner-linkedin-1128x191.png" alt="LinkedIn banner"></div>
+    <div class="bannerbox"><img src="banner/banner-x-1500x500.png" alt="X banner"></div>
+    <div class="bannerbox"><img src="banner/banner-facebook-820x312.png" alt="Facebook banner"></div>
+    <p class="files">LinkedIn 1128×191 · X 1500×500 · Facebook 820×312. Dark editorial — "Get found. Stay found. Convert." + the approach checklist; directs to "Visit chrishornak.com". LinkedIn uses its own layout for legibility.</p>
+  </section>
+
+  <section>
+    <h2>Palette</h2>
+    <div class="pal">
+      <div class="chip"><div class="fill" style="background:#0a0a0a;border-bottom:1px solid #242424"></div><div class="lab"><b>Background · Near-black</b><code>#0a0a0a</code></div></div>
+      <div class="chip"><div class="fill" style="background:#f0f0f0"></div><div class="lab"><b>Ink · Off-white</b><code>#f0f0f0</code></div></div>
+      <div class="chip"><div class="fill" style="background:#2dd4a8"></div><div class="lab"><b>Accent · Teal</b><code>#2dd4a8</code></div></div>
+    </div>
+    <p class="files">Dark-first. Teal is the signal accent — the dot, links, key emphasis. Never pure black (#000), never a teal background (the dot would disappear).</p>
+  </section>
+
+  <section>
+    <h2>Typography</h2>
+    <div class="type-demo"><img src="wordmark/wordmark-dark.svg" alt="chris hornak wordmark"></div>
+    <p class="files" style="margin-top:12px">The <b>wordmark is custom lettering</b> — always use the provided vector, don't retype it in a system font. On-site typography: <b>Sora</b> (headings) + <b>Inter</b> (body).</p>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <div class="rules">
+      <div class="rule do"><h3>Do</h3><ul>
+        <li>Keep the teal dot on every use — it's the signature.</li>
+        <li>Dark-first: off-white on near-black is the default.</li>
+        <li>Use teal for the dot, links, and single points of emphasis.</li>
+        <li>Give the mark clear space of at least half its height.</li>
+      </ul></div>
+      <div class="rule dont"><h3>Don't</h3><ul>
+        <li>Don't put the mark on a teal background — the dot vanishes.</li>
+        <li>Don't recolor or drop the teal dot.</li>
+        <li>Don't use pure black (#000) or generic startup blue.</li>
+        <li>Don't set the wordmark in any face but Sora 700.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <footer>chris hornak · generated from the live brand assets · dark-first, teal signal.</footer>
+</div>
+</body>
+</html>
