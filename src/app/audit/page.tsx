@@ -8,12 +8,12 @@ import { PlatformBar } from '@/components/ui/PlatformBar'
 import { siteConfig, auditFaqs } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Free Findability Check — SEO & AI Search Audit',
+  title: 'Free Findability Audit: Website SEO/AEO/GEO Grader',
   alternates: {
     canonical: '/audit',
   },
   description:
-    'Your business puts out a signal — to search engines, to AI, to every person looking for what you do. This measures how strong that signal is. Free, instant, no signup.',
+    'A free findability audit that grades how easily search engines, AI answer engines (AEO/GEO), and customers can find your website. Get your findability score instantly — no signup, no email.',
   openGraph: {
     title: 'See if your website is ready to be found.',
     description:
@@ -46,7 +46,7 @@ export default function AuditPage() {
         <div className="relative mx-auto w-full max-w-5xl">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-medium uppercase tracking-widest text-primary">
-              Findability Check
+              Free Findability Audit
             </p>
             <h1 className="mt-4 font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl">
               See if your website

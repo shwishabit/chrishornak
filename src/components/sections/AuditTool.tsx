@@ -343,7 +343,7 @@ const methodologyCategories = [
   {
     name: 'AI',
     weight: 27,
-    why: 'Does AI know you exist? AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses. We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, whether AI crawlers can access your site, and whether you have an llms.txt file. This is where most sites have the biggest gap today.',
+    why: 'Does AI know you exist? AI-powered search (Google AI Overviews, ChatGPT, Perplexity) is the fastest-growing way people find businesses — the discipline now called Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO). We check structured data (including schema depth validation), Q&A content, trust signals, citability, entity clarity, business description, whether AI crawlers can access your site, and whether you have an llms.txt file. This is where most sites have the biggest gap today.',
     sources: 'Authoritas GEO Study (2024), Princeton LLM Citation Research, Schema.org',
   },
   {
@@ -948,7 +948,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="font-heading text-xl font-bold">
-                        Findability Score
+                        Your Findability Score
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground break-all">
                         {result.url}

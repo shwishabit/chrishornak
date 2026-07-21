@@ -233,6 +233,10 @@ export const auditFaqs = [
     answer: 'Most tools spit out a list of technical errors. This checks what a strategist actually looks at first — whether your site can be found, trusted, and shared by the people and platforms that matter to your business.',
   },
   {
+    question: 'How is the findability score calculated?',
+    answer: 'Your findability score is a weighted average across the 7 categories — Search visibility, AI readiness (AEO/GEO), Social sharing, Mobile experience, Site structure, Accessibility, and Security. Each category is graded on the signals inside it, then weighted by how much it actually affects whether you get found, so a high-weight category moves your score more than a minor one. You get the number instantly, along with the specific items to fix.',
+  },
+  {
     question: 'What should I do after I get my score?',
     answer: 'Start with the red items — those are the things actively hurting your findability. If you want help prioritizing or need a deeper look at what\'s behind the numbers, that\'s what the conversation is for.',
   },
