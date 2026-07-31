@@ -579,12 +579,19 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   // Tap-outside-to-dismiss when drawer is open. Listener is keyed to this
   // row's task.id via data-row-drawer so taps on the drawer's buttons fall
   // through to their own onClick.
+  // v=46 fix: the listener must ALSO ignore taps anywhere inside this row
+  // (data-task-row) — closing on the tap's pointerdown made React re-render
+  // before the same tap's pointerup ran the row's toggle, which then read
+  // open=false and REOPENED the drawer ("still buggy when I click the white
+  // space"). In-row taps are the row toggle's job; this listener only
+  // handles genuinely-outside taps (other rows, header, tabs).
   useEffect(() => {
     if (!open) return;
     const taskId = task.id;
     function handlePointerDown(e) {
-      const insideDrawer = e.target.closest && e.target.closest(`[data-row-drawer="${taskId}"]`);
-      if (insideDrawer) return;
+      if (!e.target.closest) { setOpen(false); return; }
+      if (e.target.closest(`[data-row-drawer="${taskId}"]`)) return;
+      if (e.target.closest(`[data-task-row="${taskId}"]`)) return;
       setOpen(false);
     }
     document.addEventListener("pointerdown", handlePointerDown);
@@ -675,6 +682,7 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   return (
     <div
       className={`task-row fade-in ${task.done ? "done-row" : ""} ${isCarried ? "carried" : ""}`}
+      data-task-row={task.id}
       style={{
         position: "relative",
         borderBottom: "1px solid var(--rule)",
