@@ -308,6 +308,54 @@ function SkipToToday({ onClick }) {
   );
 }
 
+// v=48: one-time contextual hint card. Each surface teaches itself the
+// first time the user lands on it (the tutorial stays short — in-context
+// beats front-loaded for ADHD; hidden/forgotten affordances are lost
+// things). Dismiss = tap; persists per hintKey in localStorage. No
+// auto-dismiss — a teaching card that vanishes mid-read teaches nothing.
+function FirstVisitHint({ hintKey, kicker, children }) {
+  const storageKey = `${STORAGE_NS}:hint.${hintKey}`;
+  const [seen, setSeen] = useState(() => {
+    try { return localStorage.getItem(storageKey) === "true"; }
+    catch (e) { return true; }
+  });
+  if (seen) return null;
+  function dismiss() {
+    try { localStorage.setItem(storageKey, "true"); } catch (e) {}
+    setSeen(true);
+  }
+  return (
+    <div
+      onClick={dismiss}
+      className="fade-soft"
+      style={{
+        position: "absolute", bottom: 96, left: 24, right: 24,
+        padding: "14px 16px",
+        background: "var(--paper-deep)",
+        border: "1px solid var(--rule-strong)",
+        borderRadius: 12,
+        cursor: "pointer",
+        zIndex: 5,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+      }}
+    >
+      {kicker && (
+        <div className="kicker" style={{marginBottom: 6, fontSize: 9, color: "var(--ink-faint)"}}>{kicker}</div>
+      )}
+      <div className="serif" style={{
+        fontSize: 13, color: "var(--ink-soft)", fontStyle: "italic",
+        lineHeight: 1.5,
+      }}>
+        {children}
+      </div>
+      <div className="serif" style={{
+        fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+        marginTop: 8, textAlign: "right",
+      }}>tap to dismiss</div>
+    </div>
+  );
+}
+
 // Tiny placeholder shown while a deferred-screen module is still loading.
 // Almost never visible in practice: deferred fetch + Babel transform completes
 // in ~100–300ms, faster than the user can navigate from Anchor to anywhere
@@ -357,7 +405,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=47"),
+        loadBabelScript("screens-flows.jsx?v=48"),
       ]);
     }
     loadAll()
@@ -835,6 +883,12 @@ function App() {
     && screen === "now"
     && tasks.filter(t => !t.done).length >= 3
     && !tasks.some(t => t.priority);
+  // v=48: the Notebook's first-visit hint and the swipe hint share the same
+  // slot — the swipe hint waits until the first-visit card is dismissed.
+  const nowHintSeen = (() => {
+    try { return localStorage.getItem(`${STORAGE_NS}:hint.now`) === "true"; }
+    catch (e) { return true; }
+  })();
   function bringShelfBack(item) {
     const fresh = {
       id: nextId(), text: item.text,
@@ -1272,6 +1326,11 @@ function App() {
           {deferredReady ? (
             <CarryForward leftovers={leftovers} prevDateStr={prevDateStr} onComplete={finishCarry}/>
           ) : <DeferredFallback label="carry forward"/>}
+          <FirstVisitHint hintKey="carry" kicker="first carry-over">
+            One thing at a time. Keep it moving, bring it back fresh, or let
+            it go — nothing here is overdue. The marks just count the mornings
+            it has traveled with you.
+          </FirstVisitHint>
         </div>
       )}
 
@@ -1340,7 +1399,12 @@ function App() {
               onReOfferLater={(item) => dismissReOffer(item.id)}
               onReOfferRest={(item) => dismissReOffer(item.id)}
             />
-            {showHighlightHint && (
+            <FirstVisitHint hintKey="now" kicker="today's page">
+              This is the day's whole world. <strong>+</strong> adds a task —
+              or a win. Tap the box to finish something. Tap a task to open
+              its little drawer. The <em>?</em> up top keeps the full key.
+            </FirstVisitHint>
+            {showHighlightHint && nowHintSeen && (
               <HighlightHint onDismiss={dismissHighlightHint}/>
             )}
           </div>
@@ -1367,6 +1431,12 @@ function App() {
                 onOpenTrash={() => setScreen("trash")}
               />
             ) : <DeferredFallback label="desk"/>}
+            <FirstVisitHint hintKey="desk" kicker="the desk">
+              Not for today, not thrown away. The top of the desk holds what's
+              worth considering; the drawer below holds the less vital. Bring
+              anything back to the page when its moment comes — a task gets
+              here through its drawer's <em>decide</em>.
+            </FirstVisitHint>
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
@@ -1378,6 +1448,11 @@ function App() {
             {deferredReady ? (
               <PagesView pages={pages} todayIso={todayIso}/>
             ) : <DeferredFallback label="pages"/>}
+            <FirstVisitHint hintKey="pages" kicker="pages">
+              When a day ends, its page rests here — what you finished, what
+              carried, your wins. Flip back with the arrows. Momentum is
+              evidence.
+            </FirstVisitHint>
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
@@ -1394,6 +1469,10 @@ function App() {
                 onClose={() => setScreen("desk")}
               />
             ) : <DeferredFallback label="trash"/>}
+            <FirstVisitHint hintKey="trash" kicker="the trash">
+              Thrown away, not erased. Things rest here thirty days and can be
+              welcomed back any time. Letting go is a decision — it counts.
+            </FirstVisitHint>
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
