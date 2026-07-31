@@ -2300,10 +2300,13 @@ function SettingsSheet({ settings, onChange, onReplayTutorial, onResetHints, onC
           { value: "dark", label: "dark" },
         ], settings.theme, "theme")}
 
+        {/* v=54: real accessibility steps — the old ±8% was imperceptible.
+            Large/larger are sized for aging eyes, not aesthetic taste. */}
         {pillRow("text size", [
-          { value: 0.92, label: "small" },
+          { value: 0.9, label: "small" },
           { value: 1, label: "regular" },
-          { value: 1.08, label: "large" },
+          { value: 1.2, label: "large" },
+          { value: 1.4, label: "larger" },
         ], settings.fontScale, "fontScale")}
 
         {pillRow("daily quote", [
