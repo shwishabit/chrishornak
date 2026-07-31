@@ -448,6 +448,17 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   const overSoft = remaining < 0;
   const taRef = useRef(null);
 
+  // v=47: the drawer's Comment button is the edit entry point for existing
+  // notes too — when the parent flips autoEdit on, enter edit mode (the
+  // component stays mounted for existing notes, so initial state alone
+  // isn't enough).
+  useEffect(() => {
+    if (autoEdit) {
+      setText(task.note || "");
+      setEditing(true);
+    }
+  }, [autoEdit]);
+
   useEffect(() => {
     if (editing && taRef.current) {
       taRef.current.focus();
@@ -463,19 +474,21 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   function cancel() {
     setText(task.note || "");
     setEditing(false);
-    if (!task.note) onCancel();
+    onCancel();
   }
 
-  // Read-only display
+  // Read-only display.
+  // v=47: no longer tap-to-edit — a saved comment sits right under the task
+  // text, and its click hijack swallowed row taps ("clicking the task only
+  // gives me editing the comment"). The row tap = drawer, always; editing
+  // an existing comment goes through the drawer's Comment button.
   if (!editing && task.note) {
     return (
       <div
-        onClick={(e) => { e.stopPropagation(); setEditing(true); }}
         style={{
           marginTop: 8,
           paddingLeft: 10,
           borderLeft: "2px solid var(--rule-strong)",
-          cursor: "text",
         }}
       >
         <div className="serif" style={{
@@ -488,10 +501,13 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
     );
   }
 
-  // Editor
+  // Editor — stop pointer events so typing/tapping inside doesn't run the
+  // row's tap-toggle underneath (v=47).
   return (
     <div
       onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
       style={{
         marginTop: 10,
         background: "var(--paper-deep)",
@@ -721,60 +737,33 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
           alignItems: "stretch",
           zIndex: 1,
         }}>
+        {/* v=47: each drawer button gets a small text label under its icon —
+            the bare fork glyph for Decide read as a mystery (Chris). One
+            shared style, icon over 9px label. */}
         {!task.done && (
           <button
             onClick={() => { setOpen(false); setEditOpen(true); }}
             aria-label="edit"
             title="edit"
-            style={{
-              background: "var(--paper-deep)",
-              border: "none",
-              padding: "0 10px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              borderLeft: "1px solid var(--rule)",
-              minWidth: drawerBtnWidth,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          ><Icon name="pencil" size={20}/></button>
+            className="drawer-btn"
+            style={{ minWidth: drawerBtnWidth }}
+          ><Icon name="pencil" size={18}/><span className="drawer-btn__label">edit</span></button>
         )}
         <button
           onClick={() => { setOpen(false); setNoteOpen(true); }}
           aria-label="add comment"
           title="comment"
-          style={{
-            background: "var(--paper-deep)",
-            border: "none",
-            padding: "0 10px",
-            color: "var(--ink)",
-            cursor: "pointer",
-            borderLeft: "1px solid var(--rule)",
-            minWidth: drawerBtnWidth,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        ><Icon name="comment" size={20}/></button>
+          className="drawer-btn"
+          style={{ minWidth: drawerBtnWidth }}
+        ><Icon name="comment" size={18}/><span className="drawer-btn__label">comment</span></button>
         {!task.done && (
           <button
             onClick={() => { setOpen(false); onDivide(); }}
             aria-label="decide"
             title="decide"
-            style={{
-              background: "var(--paper-deep)",
-              border: "none",
-              padding: "0 10px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              borderLeft: "1px solid var(--rule)",
-              minWidth: drawerBtnWidth,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          ><Icon name="fork" size={20}/></button>
+            className="drawer-btn"
+            style={{ minWidth: drawerBtnWidth }}
+          ><Icon name="fork" size={18}/><span className="drawer-btn__label">decide</span></button>
         )}
       </div>
 

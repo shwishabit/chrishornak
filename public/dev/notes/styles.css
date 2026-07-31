@@ -715,6 +715,31 @@ body {
   user-select: none;
 }
 
+/* v=47: drawer action buttons — icon over a small label. The bare glyphs
+   (especially Decide's fork) read as mysteries in field-test. */
+.drawer-btn {
+  background: var(--paper-deep);
+  border: none;
+  padding: 0 8px;
+  color: var(--ink);
+  cursor: pointer;
+  border-left: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  -webkit-tap-highlight-color: transparent;
+}
+.drawer-btn__label {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  line-height: 1;
+}
+
 /* v=45: top-right help trigger — quiet ? pill in the chrome layer (the
    zone freed when the wins/goals pills were cut). Opens KeyReference. */
 .help-trigger {
