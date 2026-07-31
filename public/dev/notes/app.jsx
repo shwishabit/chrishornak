@@ -444,7 +444,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=52"),
+        loadBabelScript("screens-flows.jsx?v=53"),
       ]);
     }
     loadAll()
@@ -1360,7 +1360,7 @@ function App() {
   // Tutorial supersedes everything else on first run
   if (showTutorial) {
     return (
-      <div className="phone-frame" data-screen-label="Phone" style={{ fontSize: `${settings.fontScale || t.fontScale}rem` }}>
+      <div className="phone-frame" data-screen-label="Phone" style={{ zoom: settings.fontScale || t.fontScale || 1 }}>
         {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
         <StatusBar/>
         <div data-screen-label="00 Tutorial" style={{position: "absolute", inset: 0}}>
@@ -1374,7 +1374,7 @@ function App() {
     <div
       className="phone-frame"
       data-screen-label="Phone"
-      style={{ fontSize: `${settings.fontScale || t.fontScale}rem` }}
+      style={{ zoom: settings.fontScale || t.fontScale || 1 }}
     >
       {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
 

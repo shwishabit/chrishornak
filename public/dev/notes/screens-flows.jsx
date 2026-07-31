@@ -2026,7 +2026,8 @@ function PagesView({ pages, todayIso, onBackToToday }) {
           textAlign: "center",
         }}>
           No pages yet.<br/>
-          When today ends, it will rest here.
+          When today ends, it will rest here — and your week's takeaways
+          (finished · wins · days opened) will gather at the top.
         </div>
         {onBackToToday && (
           <button className="today-return" onClick={onBackToToday} aria-label="back to today">
@@ -2063,56 +2064,42 @@ function PagesView({ pages, todayIso, onBackToToday }) {
             {day.dateStr}
           </button>
           <div className="serif" style={{fontSize: 12, color: "var(--ink-faint)", marginTop: 4, fontStyle: "italic"}}>
-            {idx === 0 ? "the last page" : `${idx + 1} pages back`} · tap the date to jump
+            {idx === 0 ? "the last page" : `${idx + 1} pages back`}
           </div>
-        </div>
-        <div style={{display: "flex", gap: 6, paddingTop: 6}}>
+          {/* v=53: explicit calendar affordance — the tappable date alone
+              wasn't discoverable. Both open the same month view. */}
           <button
-            onClick={() => setIdx(Math.min(isos.length - 1, idx + 1))}
-            disabled={idx >= isos.length - 1}
-            aria-label="older page"
+            onClick={() => setCalOpen(true)}
+            aria-label="open calendar"
             style={{
+              marginTop: 8,
               background: "transparent",
               border: "1px solid var(--rule-strong)",
               borderRadius: 999,
-              width: 36, height: 36,
-              fontFamily: "var(--serif)", fontSize: 16,
-              color: idx >= isos.length - 1 ? "var(--ink-faint)" : "var(--ink)",
-              cursor: idx >= isos.length - 1 ? "default" : "pointer",
-              opacity: idx >= isos.length - 1 ? 0.4 : 1,
-            }}
-          >‹</button>
-          <button
-            onClick={() => {
-              // v=52: flipping forward past the newest page returns to today.
-              if (idx <= 0) { if (onBackToToday) onBackToToday(); return; }
-              setIdx(idx - 1);
-            }}
-            aria-label={idx <= 0 ? "back to today" : "newer page"}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--rule-strong)",
-              borderRadius: 999,
-              width: 36, height: 36,
-              fontFamily: "var(--serif)", fontSize: 16,
-              color: "var(--ink)",
+              padding: "5px 14px",
+              fontFamily: "var(--serif)", fontStyle: "italic",
+              fontSize: 12, color: "var(--ink-soft)",
               cursor: "pointer",
             }}
-          >›</button>
+          >calendar — jump to a day</button>
         </div>
+        {/* v=53: header arrows removed — they collided with the ⚙/? chrome.
+            Paging lives bottom-left (‹ ›), mirroring the Now page's flip. */}
       </div>
 
-      {/* v=52: takeaways — one quiet line of evidence, no dashboard. */}
-      {takeaways && (
-        <div className="serif" style={{
-          margin: "0 28px 10px",
-          fontSize: 12, fontStyle: "italic",
-          color: "var(--ink-soft)",
-          letterSpacing: "0.01em",
-        }}>
-          this week — {takeaways}
-        </div>
-      )}
+      {/* v=52: takeaways — one quiet line of evidence, no dashboard.
+          v=53: visible placeholder while history is thin (a surface that
+          hides until it has data is a surface nobody learns exists). */}
+      <div className="serif" style={{
+        margin: "0 28px 10px",
+        fontSize: 12, fontStyle: "italic",
+        color: takeaways ? "var(--ink-soft)" : "var(--ink-faint)",
+        letterSpacing: "0.01em",
+      }}>
+        {takeaways
+          ? <>this week — {takeaways}</>
+          : "your week's takeaways will gather here as pages collect."}
+      </div>
 
       <div style={{height: 1, background: "var(--rule-strong)", margin: "0 28px"}}/>
 
@@ -2136,6 +2123,25 @@ function PagesView({ pages, todayIso, onBackToToday }) {
           today →
         </button>
       )}
+
+      {/* v=53: bottom-left paging cluster — same ‹ as the Now page, with ›
+          beside it while you're in the past. › at the newest page = today. */}
+      <button
+        className="flip-back"
+        onClick={() => setIdx(Math.min(isos.length - 1, idx + 1))}
+        disabled={idx >= isos.length - 1}
+        aria-label="older page"
+        style={idx >= isos.length - 1 ? { opacity: 0.35, cursor: "default" } : {}}
+      >‹</button>
+      <button
+        className="flip-back"
+        style={{ left: 76 }}
+        onClick={() => {
+          if (idx <= 0) { if (onBackToToday) onBackToToday(); return; }
+          setIdx(idx - 1);
+        }}
+        aria-label={idx <= 0 ? "back to today" : "newer page"}
+      >›</button>
 
       <div className="scroll-y" style={{flex: 1, overflowY: "auto", padding: "8px 0 90px"}}>
         {entries.length === 0 && (
