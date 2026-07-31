@@ -405,7 +405,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=48"),
+        loadBabelScript("screens-flows.jsx?v=49"),
       ]);
     }
     loadAll()
@@ -1621,23 +1621,14 @@ function App() {
 }
 
 function TabBar({ screen, setScreen, onNewDay }) {
-  // Layout: [begin | notebook · desk · trash | pages]
-  //   begin = Anchor (the morning-landing / day-start screen)
+  // Layout: [notebook · desk · trash | pages]
   //   spectrum trio = Notebook → Desk → Trash
   //   pages = flip-back history (v=43 — replaces the cut Journal tab)
-  // Two thin dividers split the three groups so the spectrum reads as a
-  // single mental model and Anchor / Pages sit cleanly outside it.
+  // v=49: the begin/Anchor tab is gone — with the ritual ladder cut, the
+  // Anchor has exactly one action, so a standing tab was a detour. The
+  // Anchor still opens the app and fronts every day turn.
   return (
     <div className="tabbar tabbar-icons">
-      <button
-        className={`tab-btn ${screen === "anchor" ? "active" : ""}`}
-        onClick={() => setScreen("anchor")}
-        aria-label="begin"
-      >
-        <Icon name="anchor" size={22}/>
-        <span className="tab-label">begin</span>
-      </button>
-      <span className="tab-divider" aria-hidden="true"/>
       <button
         className={`tab-btn ${screen === "now" ? "active" : ""}`}
         onClick={() => setScreen("now")}
