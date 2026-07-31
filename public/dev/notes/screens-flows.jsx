@@ -1962,9 +1962,10 @@ function TrashBin({ trash, onRestore, onPurge, onClose }) {
 // task with its mark and done state, wins included. The manual's own canon:
 // "Momentum is evidence. Flip back through your pages to see the [X] marks."
 // History accumulates from the day v=43 shipped — nothing earlier exists.
-function PagesView({ pages, todayIso }) {
+function PagesView({ pages, todayIso, onBackToToday }) {
   const isos = Object.keys(pages || {}).sort().reverse();
   const [idx, setIdx] = useState(0);
+  const [calOpen, setCalOpen] = useState(false);
   const iso = isos[idx] || null;
   const page = iso ? pages[iso] : null;
 
@@ -1976,6 +1977,34 @@ function PagesView({ pages, todayIso }) {
       dateStr: dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }),
     };
   }
+
+  // v=52: takeaways — evidence in one line, never a dashboard. Counts from
+  // the last 7 calendar days' snapshots (today counts as an opened day —
+  // you're here). Sparse history gets gentle copy, ghost days aren't named.
+  const takeaways = (() => {
+    const weekIsos = [];
+    const [ty, tm, td] = (todayIso || "").split("-").map(Number);
+    if (!ty) return null;
+    for (let i = 1; i <= 7; i++) {
+      const dt = new Date(ty, tm - 1, td - i);
+      const isoStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+      if (pages[isoStr]) weekIsos.push(isoStr);
+    }
+    if (weekIsos.length === 0) return null;
+    let finished = 0, wins = 0;
+    for (const w of weekIsos) {
+      for (const e of (pages[w].tasks || [])) {
+        if (e.done && e.isWin) wins++;
+        else if (e.done) finished++;
+      }
+    }
+    const opened = weekIsos.length + 1; // + today, live
+    const parts = [];
+    parts.push(`${finished} finished`);
+    if (wins > 0) parts.push(`${wins} ${wins === 1 ? "win" : "wins"}`);
+    parts.push(`opened ${Math.min(opened, 7)} of the last 7 days`);
+    return parts.join(" · ");
+  })();
 
   if (isos.length === 0) {
     return (
@@ -1999,6 +2028,11 @@ function PagesView({ pages, todayIso }) {
           No pages yet.<br/>
           When today ends, it will rest here.
         </div>
+        {onBackToToday && (
+          <button className="today-return" onClick={onBackToToday} aria-label="back to today">
+            today →
+          </button>
+        )}
       </div>
     );
   }
@@ -2014,11 +2048,22 @@ function PagesView({ pages, todayIso }) {
       <div style={{padding: "12px 28px 14px", display: "flex", justifyContent: "space-between", alignItems: "flex-start"}}>
         <div>
           <div className="kicker" style={{marginBottom: 4}}>{day.weekday.toLowerCase()}</div>
-          <div className="serif" style={{fontSize: 24, fontWeight: 400, letterSpacing: "-0.01em", color: "var(--ink)"}}>
+          {/* v=52: the date is tappable — opens the month calendar to jump. */}
+          <button
+            onClick={() => setCalOpen(true)}
+            aria-label="jump by calendar"
+            style={{
+              background: "transparent", border: "none", padding: 0,
+              fontFamily: "var(--serif)", fontSize: 24, fontWeight: 400,
+              letterSpacing: "-0.01em", color: "var(--ink)",
+              cursor: "pointer", textAlign: "left",
+              borderBottom: "1px dashed var(--rule-strong)",
+            }}
+          >
             {day.dateStr}
-          </div>
-          <div className="serif" style={{fontSize: 12, color: "var(--ink-faint)", marginTop: 2, fontStyle: "italic"}}>
-            {idx === 0 ? "the last page" : `${idx + 1} pages back`}
+          </button>
+          <div className="serif" style={{fontSize: 12, color: "var(--ink-faint)", marginTop: 4, fontStyle: "italic"}}>
+            {idx === 0 ? "the last page" : `${idx + 1} pages back`} · tap the date to jump
           </div>
         </div>
         <div style={{display: "flex", gap: 6, paddingTop: 6}}>
@@ -2038,24 +2083,59 @@ function PagesView({ pages, todayIso }) {
             }}
           >‹</button>
           <button
-            onClick={() => setIdx(Math.max(0, idx - 1))}
-            disabled={idx <= 0}
-            aria-label="newer page"
+            onClick={() => {
+              // v=52: flipping forward past the newest page returns to today.
+              if (idx <= 0) { if (onBackToToday) onBackToToday(); return; }
+              setIdx(idx - 1);
+            }}
+            aria-label={idx <= 0 ? "back to today" : "newer page"}
             style={{
               background: "transparent",
               border: "1px solid var(--rule-strong)",
               borderRadius: 999,
               width: 36, height: 36,
               fontFamily: "var(--serif)", fontSize: 16,
-              color: idx <= 0 ? "var(--ink-faint)" : "var(--ink)",
-              cursor: idx <= 0 ? "default" : "pointer",
-              opacity: idx <= 0 ? 0.4 : 1,
+              color: "var(--ink)",
+              cursor: "pointer",
             }}
           >›</button>
         </div>
       </div>
 
+      {/* v=52: takeaways — one quiet line of evidence, no dashboard. */}
+      {takeaways && (
+        <div className="serif" style={{
+          margin: "0 28px 10px",
+          fontSize: 12, fontStyle: "italic",
+          color: "var(--ink-soft)",
+          letterSpacing: "0.01em",
+        }}>
+          this week — {takeaways}
+        </div>
+      )}
+
       <div style={{height: 1, background: "var(--rule-strong)", margin: "0 28px"}}/>
+
+      {calOpen && (
+        <PagesCalendar
+          pages={pages}
+          currentIso={iso}
+          todayIso={todayIso}
+          onPick={(pickedIso) => {
+            const i = isos.indexOf(pickedIso);
+            if (i !== -1) setIdx(i);
+            setCalOpen(false);
+          }}
+          onPickToday={() => { setCalOpen(false); if (onBackToToday) onBackToToday(); }}
+          onClose={() => setCalOpen(false)}
+        />
+      )}
+
+      {onBackToToday && (
+        <button className="today-return" onClick={onBackToToday} aria-label="back to today">
+          today →
+        </button>
+      )}
 
       <div className="scroll-y" style={{flex: 1, overflowY: "auto", padding: "8px 0 90px"}}>
         {entries.length === 0 && (
@@ -2251,6 +2331,113 @@ function SettingsSheet({ settings, onChange, onReplayTutorial, onResetHints, onC
         </div>
 
         <div style={{display: "flex", justifyContent: "flex-end", marginTop: 16}}>
+          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------- Pages calendar (v=52) ----------
+// Month grid for jumping through past pages. Days WITH a page carry a small
+// ink dot and are tappable; today is outlined. Days without a page — ghost
+// days — stay plain faint numbers: ordinary paper, not a miss. No streaks,
+// no gaps-shaming; the Infinite Return means absence is neutral by design.
+function PagesCalendar({ pages, currentIso, todayIso, onPick, onPickToday, onClose }) {
+  const start = (currentIso || todayIso || "").split("-").map(Number);
+  const [view, setView] = useState({ y: start[0], m: start[1] }); // m = 1-12
+
+  const monthLabel = new Date(view.y, view.m - 1, 1)
+    .toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const firstDow = new Date(view.y, view.m - 1, 1).getDay();
+  const daysInMonth = new Date(view.y, view.m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  function isoOf(d) {
+    return `${view.y}-${String(view.m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+  function shiftMonth(delta) {
+    setView(v => {
+      let m = v.m + delta, y = v.y;
+      if (m < 1) { m = 12; y--; }
+      if (m > 12) { m = 1; y++; }
+      return { y, m };
+    });
+  }
+
+  return (
+    <>
+      <div className="sheet-backdrop" onClick={onClose}/>
+      <div className="sheet">
+        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14}}>
+          <button onClick={() => shiftMonth(-1)} aria-label="earlier month" className="ghost-btn" style={{
+            fontFamily: "var(--serif)", fontSize: 16, color: "var(--ink-soft)", padding: "4px 10px",
+          }}>‹</button>
+          <div className="serif" style={{fontSize: 16, color: "var(--ink)"}}>{monthLabel}</div>
+          <button onClick={() => shiftMonth(1)} aria-label="later month" className="ghost-btn" style={{
+            fontFamily: "var(--serif)", fontSize: 16, color: "var(--ink-soft)", padding: "4px 10px",
+          }}>›</button>
+        </div>
+
+        <div style={{display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4}}>
+          {["S","M","T","W","T","F","S"].map((d, i) => (
+            <div key={i} className="kicker" style={{textAlign: "center", fontSize: 8, color: "var(--ink-faint)"}}>{d}</div>
+          ))}
+        </div>
+        <div style={{display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2}}>
+          {cells.map((d, i) => {
+            if (d === null) return <div key={`e${i}`}/>;
+            const dayIso = isoOf(d);
+            const hasPage = !!pages[dayIso];
+            const isToday = dayIso === todayIso;
+            const isCurrent = dayIso === currentIso;
+            const tappable = hasPage || isToday;
+            return (
+              <button
+                key={dayIso}
+                onClick={() => {
+                  if (isToday) { onPickToday(); return; }
+                  if (hasPage) onPick(dayIso);
+                }}
+                disabled={!tappable}
+                aria-label={isToday ? "today" : hasPage ? `page for ${dayIso}` : dayIso}
+                style={{
+                  aspectRatio: "1",
+                  background: isCurrent ? "var(--paper-deep)" : "transparent",
+                  border: isToday ? "1px solid var(--ink-soft)" : "1px solid transparent",
+                  borderRadius: 8,
+                  padding: 0,
+                  fontFamily: "var(--serif)",
+                  fontSize: 13,
+                  color: tappable ? "var(--ink)" : "var(--ink-faint)",
+                  cursor: tappable ? "pointer" : "default",
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center",
+                  gap: 2,
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                <span>{d}</span>
+                <span style={{
+                  width: 4, height: 4, borderRadius: "50%",
+                  background: hasPage ? "var(--ink)" : "transparent",
+                }}/>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="serif" style={{
+          marginTop: 12, fontSize: 11, fontStyle: "italic",
+          color: "var(--ink-faint)", lineHeight: 1.5,
+        }}>
+          A dot marks a written page. Blank days are just blank paper — the
+          page is always fresh when you return.
+        </div>
+
+        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 12}}>
           <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
         </div>
       </div>

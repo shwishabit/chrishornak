@@ -717,6 +717,59 @@ body {
   user-select: none;
 }
 
+/* v=52: flip-back affordance — bottom-left mirror of the FAB. Quiet ghost
+   circle; flipping into past pages is a stroll, not a primary action. */
+.flip-back {
+  position: absolute;
+  left: 24px;
+  bottom: 88px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 4;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.flip-back:hover, .flip-back:focus {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  outline: none;
+}
+.flip-back:active { transform: scale(0.94); background: var(--paper-deep); }
+
+/* v=52: return-to-today from past pages — ghost pill, bottom-right where
+   the FAB lives on the live page (same thumb spot, opposite meaning). */
+.today-return {
+  position: absolute;
+  right: 24px;
+  bottom: 88px;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.today-return:hover, .today-return:focus {
+  border-color: var(--ink-soft);
+  outline: none;
+}
+.today-return:active { transform: scale(0.96); }
+
 /* v=47: drawer action buttons — icon over a small label. The bare glyphs
    (especially Decide's fork) read as mysteries in field-test. */
 .drawer-btn {

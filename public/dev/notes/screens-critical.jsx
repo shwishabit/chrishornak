@@ -130,7 +130,7 @@ function MorningAnchor({ onEnter, dateStr, weekday, momentum, showQuote }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, onNextStep, regulars, onAddRegular, activeCap, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, onNextStep, regulars, onAddRegular, activeCap, onFlipBack, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   // v=43: passive next-step pill. Completion is INSTANT (the v=42 2.5s hold
   // is gone). After a task flips to done, a small "↳ next step?" pill shows
   // on its row in the done block for a few seconds; tapping opens a one-line
@@ -427,6 +427,17 @@ function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCom
           </React.Fragment>
         ))}
       </div>
+
+      {/* v=52: flip back into past pages — the notebook metaphor's own
+          navigation (a paper notebook has no "history tab"; you turn pages).
+          Mirrors the FAB position on the left. */}
+      {onFlipBack && (
+        <button
+          className="flip-back"
+          onClick={onFlipBack}
+          aria-label="flip to past pages"
+        >‹</button>
+      )}
 
       <button
         className="fab"

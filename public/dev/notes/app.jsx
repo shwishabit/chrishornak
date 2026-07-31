@@ -444,7 +444,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=51"),
+        loadBabelScript("screens-flows.jsx?v=52"),
       ]);
     }
     loadAll()
@@ -1461,6 +1461,7 @@ function App() {
               regulars={todaysRegulars}
               onAddRegular={addRegularToToday}
               activeCap={settings.activeCap}
+              onFlipBack={() => setScreen("pages")}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {
@@ -1527,12 +1528,12 @@ function App() {
         <div data-screen-label="09 Pages" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             {deferredReady ? (
-              <PagesView pages={pages} todayIso={todayIso}/>
+              <PagesView pages={pages} todayIso={todayIso} onBackToToday={() => setScreen("now")}/>
             ) : <DeferredFallback label="pages"/>}
-            <FirstVisitHint hintKey="pages" epoch={hintsEpoch} kicker="pages">
+            <FirstVisitHint hintKey="pages" epoch={hintsEpoch} kicker="past pages">
               When a day ends, its page rests here — what you finished, what
-              carried, your wins. Flip back with the arrows. Momentum is
-              evidence.
+              carried, your wins. Flip with ‹ ›, or tap the date to jump by
+              calendar. <em>today →</em> brings you back. Momentum is evidence.
             </FirstVisitHint>
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
@@ -1720,16 +1721,14 @@ function App() {
 }
 
 function TabBar({ screen, setScreen, onNewDay }) {
-  // Layout: [notebook · desk · trash | pages]
-  //   spectrum trio = Notebook → Desk → Trash
-  //   pages = flip-back history (v=43 — replaces the cut Journal tab)
-  // v=49: the begin/Anchor tab is gone — with the ritual ladder cut, the
-  // Anchor has exactly one action, so a standing tab was a detour. The
-  // Anchor still opens the app and fronts every day turn.
+  // Layout: [notebook · desk · trash] — the pure spectrum, nothing else.
+  // v=49 dropped begin; v=52 dropped the Pages tab (history is reached by
+  // flipping back from the Notebook itself — ‹ at the page's bottom-left —
+  // so the "pages" screen reads as the notebook, flipped: its tab stays lit.
   return (
     <div className="tabbar tabbar-icons">
       <button
-        className={`tab-btn ${screen === "now" ? "active" : ""}`}
+        className={`tab-btn ${(screen === "now" || screen === "pages") ? "active" : ""}`}
         onClick={() => setScreen("now")}
         aria-label="notebook"
       >
@@ -1751,15 +1750,6 @@ function TabBar({ screen, setScreen, onNewDay }) {
       >
         <Icon name="trash" size={22}/>
         <span className="tab-label">trash</span>
-      </button>
-      <span className="tab-divider" aria-hidden="true"/>
-      <button
-        className={`tab-btn ${screen === "pages" ? "active" : ""}`}
-        onClick={() => setScreen("pages")}
-        aria-label="pages"
-      >
-        <Icon name="journal" size={22}/>
-        <span className="tab-label">pages</span>
       </button>
     </div>
   );
