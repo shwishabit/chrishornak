@@ -10,9 +10,10 @@ const { useState, useEffect, useRef } = React;
 // ritual ladder (mood / meditate / reflect) was cut in the simplification;
 // meditation happens off-app, per the manual ("start after 5 mins of
 // meditation" describes the practice, not an app feature).
-function MorningAnchor({ onEnter, dateStr, weekday, momentum }) {
+function MorningAnchor({ onEnter, dateStr, weekday, momentum, showQuote }) {
   // Daily quote — same for everyone on the same calendar day.
-  const quote = (window.quoteForDate ? window.quoteForDate() : null);
+  // v=51: silenceable via settings ("daily quote" toggle).
+  const quote = (showQuote !== false && window.quoteForDate) ? window.quoteForDate() : null;
   return (
     <div className="screen fade-soft" style={{justifyContent: "space-between", padding: "56px 32px 32px", position: "relative"}}>
       <div style={{textAlign: "left"}} className="ascend">
@@ -129,7 +130,7 @@ function MorningAnchor({ onEnter, dateStr, weekday, momentum }) {
 }
 
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, onNextStep, regulars, onAddRegular, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, onNextStep, regulars, onAddRegular, activeCap, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
   // v=43: passive next-step pill. Completion is INSTANT (the v=42 2.5s hold
   // is gone). After a task flips to done, a small "↳ next step?" pill shows
   // on its row in the done block for a few seconds; tapping opens a one-line
@@ -182,9 +183,11 @@ function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCom
   // the next thing. Field-test friction: 7 done + 3 active hit the old
   // tasks.length cap and felt arbitrary. Same threshold of 10 still keeps the
   // page from sprawling, but it now scales with throughput.
+  // v=51: the cap is a user setting (default 10; can tighten to 5/7).
+  const cap = activeCap || 10;
   const activeCount = active.length;
-  const nearLimit = activeCount >= 8 && activeCount < 10;
-  const atLimit = activeCount >= 10;
+  const nearLimit = activeCount >= Math.max(1, cap - 2) && activeCount < cap;
+  const atLimit = activeCount >= cap;
 
   // Drag-to-reorder via SortableJS (loaded from CDN in The Daily Now.html).
   // Long-press (500ms) on a row enters drag mode; faster movement falls
@@ -345,8 +348,8 @@ function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCom
             lineHeight: 1.5,
           }}>
             {atLimit
-              ? "Ten active is the limit — finish, decide, or release one before adding."
-              : "Approaching ten active. Consider what could wait."}
+              ? `${cap} active is the limit — finish, decide, or release one before adding.`
+              : `Approaching ${cap} active. Consider what could wait.`}
           </div>
         )}
 

@@ -633,9 +633,9 @@ body {
 .admin-trigger {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 10px);
-  /* v=50: one slot left of the ? help trigger — they shared the exact
-     corner and the admin dot (z 9999) sat on top of the help button. */
-  right: calc(env(safe-area-inset-right, 0px) + 48px);
+  /* v=50: moved off the ? help trigger's corner; v=51: one further slot
+     left, past the new settings gear. Chrome order: [admin] [⚙] [?]. */
+  right: calc(env(safe-area-inset-right, 0px) + 82px);
   width: 22px;
   height: 22px;
   background: transparent;

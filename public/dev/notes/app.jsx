@@ -45,10 +45,13 @@ const SEED_SHELF = [
 // Daily Now habit and ADHD-friendly day pacing. Single source of truth: any
 // "now" that drives day-of-the-week display, ISO key, or rollover passes
 // through effectiveNow() instead of `new Date()`.
-const DAY_BOUNDARY_HOUR = 3;
+// v=51: the hour is now a user setting ("day starts at…", default 3am).
+// Module-level `let` read at call time; initialized from the settings slice
+// below and updated live by the settings sheet.
+let _dayStartHour = 3;
 function effectiveNow() {
   const d = new Date();
-  d.setHours(d.getHours() - DAY_BOUNDARY_HOUR);
+  d.setHours(d.getHours() - _dayStartHour);
   return d;
 }
 
@@ -210,6 +213,35 @@ function saveRecurrences(arr) {
   try { localStorage.setItem(RECURRENCES_KEY, JSON.stringify(arr)); } catch (e) {}
 }
 
+// v=51: user settings — the first user-facing configuration surface (the
+// tweaks panel stays dev-only). Independent slice so it survives schema
+// migrations of the main blob. Shape: { dayStartHour, theme, fontScale,
+// showQuote, activeCap }.
+const SETTINGS_KEY = `${STORAGE_NS}:settings.v1`;
+const DEFAULT_SETTINGS = {
+  dayStartHour: 3,
+  theme: "paper",
+  fontScale: 1,
+  showQuote: true,
+  activeCap: 10,
+};
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === "object")
+      ? { ...DEFAULT_SETTINGS, ...parsed }
+      : { ...DEFAULT_SETTINGS };
+  } catch (e) { return { ...DEFAULT_SETTINGS }; }
+}
+function saveSettings(s) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
+}
+// Initialize the day boundary from persisted settings before first render —
+// effectiveNow() reads the module var at call time.
+_dayStartHour = loadSettings().dayStartHour;
+
 function wipeAllDailyNow() {
   // Clears the main state blob AND any per-day journal entries within the
   // active namespace only. Other instances (e.g. /dev/notes vs /dev/notes-test
@@ -313,12 +345,19 @@ function SkipToToday({ onClick }) {
 // beats front-loaded for ADHD; hidden/forgotten affordances are lost
 // things). Dismiss = tap; persists per hintKey in localStorage. No
 // auto-dismiss — a teaching card that vanishes mid-read teaches nothing.
-function FirstVisitHint({ hintKey, kicker, children }) {
+function FirstVisitHint({ hintKey, kicker, epoch, children }) {
   const storageKey = `${STORAGE_NS}:hint.${hintKey}`;
   const [seen, setSeen] = useState(() => {
     try { return localStorage.getItem(storageKey) === "true"; }
     catch (e) { return true; }
   });
+  // v=51: settings "show the hints again" clears the flags and bumps epoch —
+  // re-check so already-mounted hints reappear.
+  useEffect(() => {
+    if (!epoch) return;
+    try { setSeen(localStorage.getItem(storageKey) === "true"); }
+    catch (e) {}
+  }, [epoch, storageKey]);
   if (seen) return null;
   function dismiss() {
     try { localStorage.setItem(storageKey, "true"); } catch (e) {}
@@ -405,7 +444,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=50"),
+        loadBabelScript("screens-flows.jsx?v=51"),
       ]);
     }
     loadAll()
@@ -507,6 +546,43 @@ function App() {
   const [sheet, setSheet] = useState(null);
   // v=45: top-right ? opens the key/help sheet (KeyReference, revived).
   const [showKey, setShowKey] = useState(false);
+  // v=51: user settings + the gear sheet. hintsEpoch remounts hint checks
+  // after "show the hints again."
+  const [settings, setSettings] = useState(() => loadSettings());
+  const [showSettings, setShowSettings] = useState(false);
+  const [hintsEpoch, setHintsEpoch] = useState(0);
+  useEffect(() => { saveSettings(settings); }, [settings]);
+  function updateSetting(key, value) {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    if (key === "dayStartHour") {
+      _dayStartHour = value;
+      // Recompute the effective day immediately — moving the boundary can
+      // legitimately flip "today" (the rollover effect handles the rest).
+      setTodayIso(isoFromOffset(dayOffset));
+    }
+  }
+  function resetHints() {
+    try {
+      const prefix = `${STORAGE_NS}:hint.`;
+      const doomed = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) doomed.push(k);
+      }
+      doomed.forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem(STORAGE_NS + ":highlightHintShown");
+    } catch (e) {}
+    setHighlightHintDismissed(false);
+    setHintsEpoch(n => n + 1);
+    setShowSettings(false);
+    showToast("the hints will greet you again.", 2400);
+  }
+  function replayTutorialFromSettings() {
+    setShowSettings(false);
+    setTutorialDone(false);
+    setShowTutorial(true);
+    setTweak("showTutorial", true);
+  }
   const [toast, setToast] = useState(null);
   const [dayOffset, setDayOffset] = useState(boot.dayOffset || 0);
   const [lastOpenedDay, setLastOpenedDay] = useState(boot.lastOpenedDay || null);
@@ -678,9 +754,12 @@ function App() {
   const today = dateInfo(dayOffset);
   const { weekday, dateStr } = today;
 
+  // v=51: theme + text size are user settings now (the tweaks panel's dials
+  // remain for dev but settings win).
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", t.theme === "paper" ? "" : t.theme);
-  }, [t.theme]);
+    const theme = settings.theme || t.theme;
+    document.documentElement.setAttribute("data-theme", theme === "paper" ? "" : theme);
+  }, [settings.theme, t.theme]);
 
   // Skip first-mount fire — the useState init for `screen` already applies
   // t.openOn. Re-firing on mount would clobber the day-rollover Recap path.
@@ -1281,7 +1360,7 @@ function App() {
   // Tutorial supersedes everything else on first run
   if (showTutorial) {
     return (
-      <div className="phone-frame" data-screen-label="Phone" style={{ fontSize: `${t.fontScale}rem` }}>
+      <div className="phone-frame" data-screen-label="Phone" style={{ fontSize: `${settings.fontScale || t.fontScale}rem` }}>
         {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
         <StatusBar/>
         <div data-screen-label="00 Tutorial" style={{position: "absolute", inset: 0}}>
@@ -1295,7 +1374,7 @@ function App() {
     <div
       className="phone-frame"
       data-screen-label="Phone"
-      style={{ fontSize: `${t.fontScale}rem` }}
+      style={{ fontSize: `${settings.fontScale || t.fontScale}rem` }}
     >
       {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
 
@@ -1308,6 +1387,7 @@ function App() {
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
+            showQuote={settings.showQuote !== false}
           />
         </div>
       )}
@@ -1326,7 +1406,7 @@ function App() {
           {deferredReady ? (
             <CarryForward leftovers={leftovers} prevDateStr={prevDateStr} onComplete={finishCarry}/>
           ) : <DeferredFallback label="carry forward"/>}
-          <FirstVisitHint hintKey="carry" kicker="first carry-over">
+          <FirstVisitHint hintKey="carry" epoch={hintsEpoch} kicker="first carry-over">
             One thing at a time. Keep it moving, bring it back fresh, or let
             it go — nothing here is overdue. The marks just count the mornings
             it has traveled with you.
@@ -1380,6 +1460,7 @@ function App() {
               onNextStep={addNextStep}
               regulars={todaysRegulars}
               onAddRegular={addRegularToToday}
+              activeCap={settings.activeCap}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {
@@ -1399,7 +1480,7 @@ function App() {
               onReOfferLater={(item) => dismissReOffer(item.id)}
               onReOfferRest={(item) => dismissReOffer(item.id)}
             />
-            <FirstVisitHint hintKey="now" kicker="today's page">
+            <FirstVisitHint hintKey="now" epoch={hintsEpoch} kicker="today's page">
               This is the day's whole world. <strong>+</strong> adds a task —
               or a win. Tap the box to finish something. Tap a task to open
               its little drawer. The <em>?</em> up top keeps the full key.
@@ -1431,7 +1512,7 @@ function App() {
                 onOpenTrash={() => setScreen("trash")}
               />
             ) : <DeferredFallback label="desk"/>}
-            <FirstVisitHint hintKey="desk" kicker="the desk">
+            <FirstVisitHint hintKey="desk" epoch={hintsEpoch} kicker="the desk">
               Not for today, not thrown away. The top of the desk holds what's
               worth considering; the drawer below holds the less vital. Bring
               anything back to the page when its moment comes — a task gets
@@ -1448,7 +1529,7 @@ function App() {
             {deferredReady ? (
               <PagesView pages={pages} todayIso={todayIso}/>
             ) : <DeferredFallback label="pages"/>}
-            <FirstVisitHint hintKey="pages" kicker="pages">
+            <FirstVisitHint hintKey="pages" epoch={hintsEpoch} kicker="pages">
               When a day ends, its page rests here — what you finished, what
               carried, your wins. Flip back with the arrows. Momentum is
               evidence.
@@ -1469,7 +1550,7 @@ function App() {
                 onClose={() => setScreen("desk")}
               />
             ) : <DeferredFallback label="trash"/>}
-            <FirstVisitHint hintKey="trash" kicker="the trash">
+            <FirstVisitHint hintKey="trash" epoch={hintsEpoch} kicker="the trash">
               Thrown away, not erased. Things rest here thirty days and can be
               welcomed back any time. Letting go is a decision — it counts.
             </FirstVisitHint>
@@ -1512,13 +1593,31 @@ function App() {
           wins/goals pills were cut). Hidden during morning-flow rituals so
           they can't be interrupted mid-arc. */}
       {!["return", "carry", "desk-review-prompt", "desk-review", "recap"].includes(screen) && (
-        <button
-          className="help-trigger"
-          onClick={() => setShowKey(true)}
-          aria-label="help — the key"
-        >?</button>
+        <>
+          <button
+            className="help-trigger"
+            onClick={() => setShowKey(true)}
+            aria-label="help — the key"
+          >?</button>
+          {/* v=51: settings gear — one slot left of the ?. */}
+          <button
+            className="help-trigger"
+            style={{ right: "calc(env(safe-area-inset-right, 0px) + 46px)", fontStyle: "normal" }}
+            onClick={() => setShowSettings(true)}
+            aria-label="settings"
+          >⚙</button>
+        </>
       )}
       {showKey && deferredReady && <KeyReference onClose={() => setShowKey(false)}/>}
+      {showSettings && deferredReady && (
+        <SettingsSheet
+          settings={settings}
+          onChange={updateSetting}
+          onReplayTutorial={replayTutorialFromSettings}
+          onResetHints={resetHints}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       {toast && <WinToast text={toast.text} action={toast.action}/>}
 

@@ -2143,7 +2143,123 @@ function PagesView({ pages, todayIso }) {
   );
 }
 
+// ---------- Settings (v=51) ----------
+// The first user-facing configuration surface — gear in the top-right
+// chrome. Lean by design: day boundary, theme, text size, quote, page cap,
+// plus the two teaching-recovery actions. Anything more belongs in the
+// dev tweaks panel, not here.
+function SettingsSheet({ settings, onChange, onReplayTutorial, onResetHints, onClose }) {
+  function pillRow(label, options, currentValue, key) {
+    return (
+      <div style={{paddingTop: 18}}>
+        <div className="kicker" style={{marginBottom: 8, fontSize: 10}}>{label}</div>
+        <div style={{display: "flex", gap: 6}}>
+          {options.map(opt => {
+            const active = currentValue === opt.value;
+            return (
+              <button
+                key={String(opt.value)}
+                onClick={() => onChange(key, opt.value)}
+                style={{
+                  flex: 1,
+                  background: active ? "var(--ink)" : "transparent",
+                  color: active ? "var(--paper)" : "var(--ink-soft)",
+                  border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
+                  borderRadius: 999,
+                  padding: "8px 6px",
+                  fontFamily: "var(--serif)",
+                  fontStyle: active ? "normal" : "italic",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  transition: "all 160ms ease",
+                  whiteSpace: "nowrap",
+                }}
+              >{opt.label}</button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="sheet-backdrop" onClick={onClose}/>
+      <div className="sheet" style={{maxHeight: "85%", overflowY: "auto"}}>
+        <div className="kicker" style={{marginBottom: 6}}>settings</div>
+        <div className="serif" style={{fontSize: 20, color: "var(--ink)", marginBottom: 2}}>
+          Make it yours.
+        </div>
+        <div className="serif" style={{fontSize: 12, color: "var(--ink-faint)", fontStyle: "italic"}}>
+          Changes apply immediately.
+        </div>
+
+        {pillRow("day starts at", [
+          { value: 0, label: "midnight" },
+          { value: 3, label: "3 am" },
+          { value: 4, label: "4 am" },
+          { value: 5, label: "5 am" },
+          { value: 6, label: "6 am" },
+        ], settings.dayStartHour, "dayStartHour")}
+        <div className="serif" style={{
+          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+          marginTop: 6, lineHeight: 1.5,
+        }}>
+          Work past midnight still counts as tonight — the page turns at this hour.
+        </div>
+
+        {pillRow("theme", [
+          { value: "paper", label: "paper" },
+          { value: "sepia", label: "sepia" },
+          { value: "dark", label: "dark" },
+        ], settings.theme, "theme")}
+
+        {pillRow("text size", [
+          { value: 0.92, label: "small" },
+          { value: 1, label: "regular" },
+          { value: 1.08, label: "large" },
+        ], settings.fontScale, "fontScale")}
+
+        {pillRow("daily quote", [
+          { value: true, label: "on" },
+          { value: false, label: "off" },
+        ], settings.showQuote, "showQuote")}
+
+        {pillRow("page limit", [
+          { value: 5, label: "5" },
+          { value: 7, label: "7" },
+          { value: 10, label: "10" },
+        ], settings.activeCap, "activeCap")}
+        <div className="serif" style={{
+          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+          marginTop: 6, lineHeight: 1.5,
+        }}>
+          How many open things one page can hold. Less is kinder.
+        </div>
+
+        <div style={{marginTop: 24, paddingTop: 14, borderTop: "1px solid var(--rule)"}}>
+          <button onClick={onReplayTutorial} className="ghost-btn" style={{
+            display: "block", padding: "8px 0",
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 14, color: "var(--ink-soft)",
+          }}>replay the tutorial →</button>
+          <button onClick={onResetHints} className="ghost-btn" style={{
+            display: "block", padding: "8px 0",
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 14, color: "var(--ink-soft)",
+          }}>show the hints again →</button>
+        </div>
+
+        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 16}}>
+          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 Object.assign(window, {
+  SettingsSheet,
   TurnThePage,
   REASON_TAGS, reasonLabelFor,
   DecisionPointSheet, DecisionHub, StartOnePanel, BreakDownPanel, SharePanel,
