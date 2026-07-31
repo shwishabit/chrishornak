@@ -405,7 +405,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=49"),
+        loadBabelScript("screens-flows.jsx?v=50"),
       ]);
     }
     loadAll()
