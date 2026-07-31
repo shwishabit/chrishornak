@@ -444,7 +444,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=54"),
+        loadBabelScript("screens-flows.jsx?v=55"),
       ]);
     }
     loadAll()
@@ -756,9 +756,14 @@ function App() {
 
   // v=51: theme + text size are user settings now (the tweaks panel's dials
   // remain for dev but settings win).
+  // v=55: also repaint the browser/status-bar chrome — the theme-color meta
+  // was frozen at paper cream, so the very top stayed default on theme change.
   useEffect(() => {
     const theme = settings.theme || t.theme;
     document.documentElement.setAttribute("data-theme", theme === "paper" ? "" : theme);
+    const THEME_CHROME = { paper: "#F4EDE0", sepia: "#E8DCC4", dark: "#14110D" };
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", THEME_CHROME[theme] || THEME_CHROME.paper);
   }, [settings.theme, t.theme]);
 
   // Skip first-mount fire — the useState init for `screen` already applies
@@ -1360,7 +1365,7 @@ function App() {
   // Tutorial supersedes everything else on first run
   if (showTutorial) {
     return (
-      <div className="phone-frame" data-screen-label="Phone" style={{ zoom: settings.fontScale || t.fontScale || 1 }}>
+      <div className="phone-frame" data-screen-label="Phone" style={{ zoom: settings.fontScale || t.fontScale || 1, "--app-zoom": settings.fontScale || t.fontScale || 1 }}>
         {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
         <StatusBar/>
         <div data-screen-label="00 Tutorial" style={{position: "absolute", inset: 0}}>
@@ -1374,7 +1379,7 @@ function App() {
     <div
       className="phone-frame"
       data-screen-label="Phone"
-      style={{ zoom: settings.fontScale || t.fontScale || 1 }}
+      style={{ zoom: settings.fontScale || t.fontScale || 1, "--app-zoom": settings.fontScale || t.fontScale || 1 }}
     >
       {!t.showGrain && <style>{`.phone-frame::before { display: none !important; }`}</style>}
 

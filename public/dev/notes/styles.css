@@ -88,8 +88,12 @@ body {
     overscroll-behavior: none;
     -webkit-overflow-scrolling: auto;
   }
-  body {
+  html, body {
+    /* v=55: both html AND body — the top safe-area strip paints from the
+       root background and was staying the default cream on theme change. */
     background: var(--paper);
+  }
+  body {
     padding: 0;
     align-items: stretch;
     justify-content: stretch;
@@ -102,10 +106,12 @@ body {
     display: flex;
   }
   .phone-frame {
-    width: 100%;
-    height: 100vh;
-    height: -webkit-fill-available;
-    height: 100dvh;
+    /* v=55: divide by the text-size zoom factor — a zoomed element sized to
+       100% of the viewport renders PAST it (tab bar + FAB fell off at 1.2×+).
+       zoom × (100% / zoom) = exactly one screen. */
+    width: calc(100% / var(--app-zoom, 1));
+    height: calc(100vh / var(--app-zoom, 1));
+    height: calc(100dvh / var(--app-zoom, 1));
     border-radius: 0;
     box-shadow: none;
     flex: 1;
