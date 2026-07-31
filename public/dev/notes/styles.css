@@ -104,20 +104,29 @@ body {
     height: -webkit-fill-available;
     height: 100dvh;
     display: flex;
+    /* v=56: translucent status bar — the app starts below the notch and the
+       strip above paints from the (theme-following) html/body background. */
+    padding-top: env(safe-area-inset-top, 0px);
+    box-sizing: border-box;
   }
   .phone-frame {
     /* v=55: divide by the text-size zoom factor — a zoomed element sized to
        100% of the viewport renders PAST it (tab bar + FAB fell off at 1.2×+).
-       zoom × (100% / zoom) = exactly one screen. */
+       zoom × (100% / zoom) = exactly one screen.
+       v=56: minus the status-bar inset the root now reserves. */
     width: calc(100% / var(--app-zoom, 1));
-    height: calc(100vh / var(--app-zoom, 1));
-    height: calc(100dvh / var(--app-zoom, 1));
+    height: calc((100vh - env(safe-area-inset-top, 0px)) / var(--app-zoom, 1));
+    height: calc((100dvh - env(safe-area-inset-top, 0px)) / var(--app-zoom, 1));
     border-radius: 0;
     box-shadow: none;
     flex: 1;
   }
   /* Hide the simulated iOS status bar — the real one is right above it. */
   .status-bar { display: none; }
+  /* v=56: the frame already sits below the notch — chrome triggers don't
+     need their own safe-area top offset anymore (admin stays viewport-fixed
+     and keeps its env()). */
+  .help-trigger { top: 10px; }
   /* Respect the home-indicator / notch insets on real devices. */
   .tabbar { padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
   .fab {

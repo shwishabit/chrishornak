@@ -444,7 +444,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=55"),
+        loadBabelScript("screens-flows.jsx?v=56"),
       ]);
     }
     loadAll()
@@ -497,18 +497,20 @@ function App() {
         height: -webkit-fill-available !important;
         height: 100dvh !important;
         display: block !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        box-sizing: border-box !important;
       }
       .phone-frame {
-        width: 100% !important;
-        height: 100vh !important;
-        height: -webkit-fill-available !important;
-        height: 100dvh !important;
+        width: calc(100% / var(--app-zoom, 1)) !important;
+        height: calc((100vh - env(safe-area-inset-top, 0px)) / var(--app-zoom, 1)) !important;
+        height: calc((100dvh - env(safe-area-inset-top, 0px)) / var(--app-zoom, 1)) !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         margin: 0 !important;
       }
       .phone-frame::before { border-radius: 0 !important; }
       .status-bar { display: none !important; }
+      .help-trigger { top: 10px !important; }
       .tabbar { padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important; }
       .fab {
         right: calc(24px + env(safe-area-inset-right, 0px)) !important;
