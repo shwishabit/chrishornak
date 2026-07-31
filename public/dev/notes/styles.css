@@ -69,13 +69,20 @@ body {
   padding: 24px;
 }
 
-/* Standalone PWA (launched from home screen) — lock to the viewport,
-   drop the desktop phone-frame chrome, no rubber-band scroll. */
-@media (display-mode: standalone) {
+/* Standalone PWA (launched from home screen) OR any small touch device —
+   lock to the viewport, drop the desktop phone-frame chrome, no rubber-band
+   scroll. v=44: (a) added the coarse-pointer query so real phones never see
+   the desktop mockup even outside standalone; (b) height gets vh →
+   -webkit-fill-available → dvh fallbacks (dvh is unsupported before
+   iOS 15.4 — without a fallback the frame stayed at the mockup's fixed
+   844px and the bottom/right were cut off on device). */
+@media (display-mode: standalone), (pointer: coarse) and (max-width: 480px) {
   html, body {
     position: fixed;
     inset: 0;
     width: 100%;
+    height: 100vh;
+    height: -webkit-fill-available;
     height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
@@ -89,11 +96,15 @@ body {
   }
   #root {
     width: 100%;
+    height: 100vh;
+    height: -webkit-fill-available;
     height: 100dvh;
     display: flex;
   }
   .phone-frame {
     width: 100%;
+    height: 100vh;
+    height: -webkit-fill-available;
     height: 100dvh;
     border-radius: 0;
     box-shadow: none;
@@ -101,6 +112,12 @@ body {
   }
   /* Hide the simulated iOS status bar — the real one is right above it. */
   .status-bar { display: none; }
+  /* Respect the home-indicator / notch insets on real devices. */
+  .tabbar { padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .fab {
+    right: calc(24px + env(safe-area-inset-right, 0px));
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Phone frame (web-app shown phone-sized for design review) */

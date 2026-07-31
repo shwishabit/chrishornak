@@ -357,7 +357,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=43"),
+        loadBabelScript("screens-flows.jsx?v=44"),
       ]);
     }
     loadAll()
@@ -386,11 +386,16 @@ function App() {
     if (!isPhoneApp) return;
     const el = document.createElement("style");
     el.setAttribute("data-app-chrome-strip", "");
+    // v=44: every height gets vh → -webkit-fill-available → dvh fallbacks;
+    // dvh alone is dropped on iOS < 15.4, which left the mockup's fixed
+    // 844px frame active on device (bottom + FAB cut off, pannable).
     el.textContent = `
       html, body {
         position: fixed !important;
         inset: 0 !important;
         width: 100% !important;
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
         height: 100dvh !important;
         overflow: hidden !important;
         overscroll-behavior: none !important;
@@ -399,9 +404,17 @@ function App() {
         margin: 0 !important;
       }
       body { display: block !important; }
-      #root { width: 100% !important; height: 100dvh !important; display: block !important; }
+      #root {
+        width: 100% !important;
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+        height: 100dvh !important;
+        display: block !important;
+      }
       .phone-frame {
         width: 100% !important;
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
         height: 100dvh !important;
         border-radius: 0 !important;
         box-shadow: none !important;
@@ -409,6 +422,11 @@ function App() {
       }
       .phone-frame::before { border-radius: 0 !important; }
       .status-bar { display: none !important; }
+      .tabbar { padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important; }
+      .fab {
+        right: calc(24px + env(safe-area-inset-right, 0px)) !important;
+        bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+      }
     `;
     document.head.appendChild(el);
     return () => { el.remove(); };
@@ -638,6 +656,18 @@ function App() {
         days: recurrenceSpec.type === "weekly" ? (recurrenceSpec.days || []) : null,
         createdAt: Date.now(),
       }, ...prev]);
+      // v=44 fix: a weekly regular created on a non-matching day should NOT
+      // land on today's page — save the spec only; it surfaces via "today's
+      // regulars" when its day arrives. (Field-test: Mon/Thu task created on
+      // a Friday appeared in today's Notebook.)
+      if (recurrenceSpec.type === "weekly" &&
+          Array.isArray(recurrenceSpec.days) &&
+          !recurrenceSpec.days.includes(todayDow)) {
+        const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const names = recurrenceSpec.days.map(d => DAY_NAMES[d] || "").filter(Boolean);
+        showToast(`saved — it'll appear on ${names.join(" · ")}.`, 3200);
+        return;
+      }
     }
     const newTask = { createdAt: Date.now(), ...task };
     if (recurrenceId) newTask.recurrenceId = recurrenceId;

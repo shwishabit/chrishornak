@@ -200,7 +200,11 @@ function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCom
     const sortable = new window.Sortable(reorderListRef.current, {
       animation: 150,
       delay: 500,
-      delayOnTouchOnly: true,
+      // v=44 fix: delay must apply to MOUSE too — with delayOnTouchOnly,
+      // any desktop mousedown-drag started a Sortable drag instantly and
+      // hijacked the swipe-right highlight gesture. Now every input holds
+      // ~500ms to drag; quicker horizontal pulls read as the highlighter.
+      delayOnTouchOnly: false,
       touchStartThreshold: 5,
       ghostClass: "task-row--ghost",
       chosenClass: "task-row--chosen",
@@ -614,7 +618,9 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
     if (!s) return;
     const dx = e.clientX - s.startX;
     const dy = e.clientY - s.startY;
-    if (Math.abs(dy) > 30) {
+    // v=44: vertical abort loosened 30 → 48px — real thumbs drift; aborting
+    // at 30px was a big source of "I keep swiping and nothing happens."
+    if (Math.abs(dy) > 48) {
       swipeStateRef.current = null;
       setSwipeProgress(0);
       return;
@@ -637,18 +643,18 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       return;
     }
     // v=29: lowered swipe distance 60 → 40px and raised elapsed cap 800 → 1200ms.
-    // v=30: left-swipe (dx < -40) un-highlights; right-swipe (dx > 40) highlights.
-    // Each direction is a no-op when the task is already in the desired state,
-    // so the gesture is safe to repeat. The visual paint always reflects the
-    // direction (right = yellow highlighter, left = paper erase) regardless of
-    // current priority state.
-    if (dx > 40 && Math.abs(dy) < 30 && elapsed < 1200 && onTogglePriority) {
+    // v=30: left-swipe un-highlights; right-swipe highlights. Each direction
+    // is a no-op when the task is already in the desired state.
+    // v=44: loosened again from field-test ("highlighting is not consistent"):
+    // distance 40 → 36px, vertical tolerance 30 → 44px, elapsed cap
+    // 1200 → 2200ms (a deliberate slow swipe should still count).
+    if (dx > 36 && Math.abs(dy) < 44 && elapsed < 2200 && onTogglePriority) {
       if (!isPriority) onTogglePriority();
       setSwipeProgress(1);
       setTimeout(() => setSwipeProgress(0), 240);
       return;
     }
-    if (dx < -40 && Math.abs(dy) < 30 && elapsed < 1200 && onTogglePriority) {
+    if (dx < -36 && Math.abs(dy) < 44 && elapsed < 2200 && onTogglePriority) {
       if (isPriority) onTogglePriority();
       setSwipeProgress(-1);
       setTimeout(() => setSwipeProgress(0), 240);
@@ -792,22 +798,13 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
             onClick={onCheckboxClick}
           />
         </div>
-        <div
-          style={{flex: 1, minWidth: 0}}
-          onClick={(e) => {
-            // v=33: explicit close-on-tap. The row's pointerup handler also
-            // toggles `open` on a tap, so this is belt-and-suspenders — but
-            // taps on the visible task-name fragment (after the row slides
-            // left to reveal the drawer) didn't always feel responsive on
-            // phone. Click events fire reliably across iOS PWA / Safari
-            // edge cases the pointer handler can miss. Idempotent: when
-            // already false, setOpen(false) is a no-op.
-            if (open && !editOpen) {
-              e.stopPropagation();
-              setOpen(false);
-            }
-          }}
-        >
+        {/* v=44 fix: the v=33 click-close handler here was the drawer-flicker
+            bug. A single tap fires pointerup (toggles open=true) and THEN its
+            trailing click event — which this handler read as "drawer is open,
+            close it." Open-then-instant-close = the flash. Tap-to-toggle now
+            has ONE source of truth: the row's pointerup classifier. Outside
+            taps still close via the document-level pointerdown listener. */}
+        <div style={{flex: 1, minWidth: 0}}>
           {task.parentText && !task.done && (
             <div style={{
               fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
