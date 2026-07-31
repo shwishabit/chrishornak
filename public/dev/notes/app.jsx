@@ -9,10 +9,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "fontScale": 1.0,
   "showGrain": true,
   "showTutorial": true,
-  "momentumPreview": "auto",
-  "defaultMeditateMin": 5,
-  "breathPace": "normal",
-  "showRitualMenu": true
+  "momentumPreview": "auto"
 }/*EDITMODE-END*/;
 
 const SEED_TASKS = [
@@ -103,15 +100,83 @@ if (typeof window !== "undefined") {
 const STORAGE_KEY = `${STORAGE_NS}:state.v1`;
 // Bump SCHEMA_VERSION when the persisted shape changes, and add a case to
 // migrate() so older saves are upgraded in place rather than silently zeroed.
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 function migrate(state, fromVersion) {
   if (fromVersion === SCHEMA_VERSION) return state;
   // A save from a future version we don't recognize — refuse rather than load
   // partial garbage. wipeAllDailyNow() is the user-facing recovery path.
   if (fromVersion > SCHEMA_VERSION) return null;
-  // No migrations defined yet. When v2 lands, add: if (fromVersion === 1) { ... }
+  if (fromVersion === 1) {
+    // v=43 simplification: chains, goals, progress, and mood were cut. Strip
+    // their fields from every stored task so the pruned app loads a clean
+    // shape. isWin stays — wins-on-the-page is the kept win mechanism.
+    const strip = (t) => {
+      const { prevTaskId, groupName, progress, goalRef, winId, completedAt, ...rest } = t || {};
+      return rest;
+    };
+    return {
+      ...state,
+      tasks: Array.isArray(state.tasks) ? state.tasks.map(strip) : [],
+    };
+  }
   return state;
+}
+
+// v=43 one-time storage purge. The simplification cut journal, sketchbook,
+// mood logs, goals, and the wins timeline — their orphaned keys are removed
+// on first boot of the pruned app (Chris's explicit call, 2026-07-31: purge,
+// not preserve). Guarded by a marker key so it runs exactly once per
+// namespace. Irreversible by design.
+(function purgeCutFeatureStorage() {
+  const marker = `${STORAGE_NS}:v43-purge-done`;
+  try {
+    if (localStorage.getItem(marker)) return;
+    const doomedExact = new Set([
+      `${STORAGE_NS}:logs.v1`,
+      `${STORAGE_NS}:goals.v1`,
+      `${STORAGE_NS}:wins-timeline.v1`,
+    ]);
+    const doomedPrefixes = [
+      `${STORAGE_NS}:journal.`,
+      `${STORAGE_NS}:sketch.`,
+    ];
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+      if (doomedExact.has(k) || doomedPrefixes.some(p => k.startsWith(p))) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(marker, String(Date.now()));
+  } catch (e) {}
+})();
+
+// v=43: Pages — the flip-back history. One blob keyed by ISO; each entry is
+// a read-only snapshot of a day's page as it ended (tasks + wins, done and
+// not). Written at every day boundary (natural rollover + admin force).
+// History accumulates from the day v=43 ships — earlier days were never
+// snapshotted. Reverses the original "yesterday is gone" §8 rule per the
+// manual's own canon: "Flip back through your pages to see the [X] marks."
+const PAGES_KEY = `${STORAGE_NS}:pages.v1`;
+function loadPages() {
+  try {
+    const raw = localStorage.getItem(PAGES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === "object") ? parsed : {};
+  } catch (e) { return {}; }
+}
+function savePages(obj) {
+  try { localStorage.setItem(PAGES_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+function pageSnapshotOf(taskList) {
+  return (taskList || []).map(t => ({
+    text: t.text,
+    done: !!t.done,
+    mark: t.mark || null,
+    isWin: !!t.isWin,
+  }));
 }
 
 function loadPersisted() {
@@ -143,69 +208,6 @@ function loadRecurrences() {
 }
 function saveRecurrences(arr) {
   try { localStorage.setItem(RECURRENCES_KEY, JSON.stringify(arr)); } catch (e) {}
-}
-
-// v=28: dailyLogs — per-day record holding mood-checkin payload + meditate
-// completion timestamp. Keyed by effective ISO. Independent state slice so a
-// future Stats dashboard can read mood trends without unpacking the main
-// state blob. Each log: { moodScore: 1-5, noiseText: string, filterText:
-// string|null, meditateDoneAt: number|null }. Journal completion is NOT
-// tracked here — derived from the existing per-day journal localStorage key
-// to avoid double-bookkeeping. Mood label words (slider): 1=low / 2=quiet /
-// 3=steady / 4=bright / 5=clear. Reframe gate fires at score ≤ 2.
-const LOGS_KEY = `${STORAGE_NS}:logs.v1`;
-// v=31: mood scale words — final form per Chris. v=30 used Daylio's exact
-// awful/bad/okay/good/great. Chris swapped "awful" → "bad" and "bad" →
-// "poor" — softer negative end, still cleanly distinct gradient. Updated
-// in three lockstep places: this constant (journal seed), MoodCheckin
-// slider label, LadderRow completed-row hint.
-const MOOD_WORDS = ["bad", "poor", "okay", "good", "great"];
-function loadLogs() {
-  try {
-    const raw = localStorage.getItem(LOGS_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return (parsed && typeof parsed === "object") ? parsed : {};
-  } catch (e) { return {}; }
-}
-function saveLogs(obj) {
-  try { localStorage.setItem(LOGS_KEY, JSON.stringify(obj)); } catch (e) {}
-}
-
-// v=34: horizon — Goals slice persists independently from the main state
-// blob. Spec survives any single Daily Now session and is timeless from the
-// 3am day-flip perspective. Each goal: { id, text, context (str|null), tier
-// ("active"|"desk-top"|"desk-back"|"trash"), createdAt }. Soft-cap at 3
-// active enforced in the UI (color-shift, no hard block).
-const GOALS_KEY = `${STORAGE_NS}:goals.v1`;
-function loadGoals() {
-  try {
-    const raw = localStorage.getItem(GOALS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) { return []; }
-}
-function saveGoals(arr) {
-  try { localStorage.setItem(GOALS_KEY, JSON.stringify(arr)); } catch (e) {}
-}
-
-// v=34: horizon — Wins timeline slice. Persists across day flips, unlike
-// the existing daily `wins` slot (which is ephemeral and feeds Recap+Carry).
-// On UnseenWin add, we append to BOTH so Recap behavior is unchanged AND
-// the horizon Wins screen has a permanent timeline. Each entry: { id, text,
-// loggedAt (ms), day (ISO), goalRef (id|null) }. Reverse-chronological.
-const WINS_TIMELINE_KEY = `${STORAGE_NS}:wins-timeline.v1`;
-function loadWinsTimeline() {
-  try {
-    const raw = localStorage.getItem(WINS_TIMELINE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) { return []; }
-}
-function saveWinsTimeline(arr) {
-  try { localStorage.setItem(WINS_TIMELINE_KEY, JSON.stringify(arr)); } catch (e) {}
 }
 
 function wipeAllDailyNow() {
@@ -267,65 +269,6 @@ function walkMarker(mark, n) {
   let m = mark;
   for (let i = 0; i < n; i++) m = advanceMarker(m);
   return m;
-}
-
-// === Chains (v=42) ===
-// Tasks can chain into each other: a completed task A becomes the predecessor
-// of a new task B (B.prevTaskId = A.id). A stays in storage but is HIDDEN
-// from standalone active/done lists — A reads only as B's chain history
-// (drawer "previous steps") and inside Recap chain context. groupName is a
-// chain-wide label that propagates forward; first-chain naming back-fills
-// every ancestor so the whole chain reads under one label.
-function walkChainBack(taskId, allTasks) {
-  // Returns ancestors oldest-first. Stops at the first task with no
-  // prevTaskId or at depth 50 (defensive).
-  const ancestors = [];
-  let cur = allTasks.find(t => t.id === taskId);
-  if (!cur) return ancestors;
-  while (cur.prevTaskId) {
-    const prev = allTasks.find(t => t.id === cur.prevTaskId);
-    if (!prev || ancestors.length > 50) break;
-    ancestors.unshift(prev);
-    cur = prev;
-  }
-  return ancestors;
-}
-function getChainAncestorIds(allTasks) {
-  // Set of task ids that are pointed to by another task's prevTaskId. These
-  // are HIDDEN from standalone active/done renders — visible only inside
-  // their successor's chain history.
-  const set = new Set();
-  for (const t of allTasks) if (t.prevTaskId) set.add(t.prevTaskId);
-  return set;
-}
-function chainHasProgressInWindow(task, allTasks, windowMsAgo) {
-  // True if any ancestor's completedAt is more recent than `windowMsAgo` ago.
-  // Used by carry-forward to freeze marker advance when chain progress was
-  // made within the just-elapsed day(s).
-  const cutoff = Date.now() - windowMsAgo;
-  const ancestors = walkChainBack(task.id, allTasks);
-  return ancestors.some(a =>
-    typeof a.completedAt === "number" && a.completedAt >= cutoff
-  );
-}
-function collectChainAncestorRecords(taskList, allTasks) {
-  // Walks every task in taskList back through prevTaskId and returns the
-  // ancestor task records (deduped). Used by finishCarry / skipMorningFlow
-  // to preserve chain history across the day-flip carry — without this,
-  // setTasks([...carried]) drops the predecessor records and the head's
-  // drawer "previous steps" goes empty after the first day.
-  const result = new Map();
-  function walk(id) {
-    if (result.has(id)) return;
-    const t = allTasks.find(x => x.id === id);
-    if (!t) return;
-    result.set(id, t);
-    if (t.prevTaskId) walk(t.prevTaskId);
-  }
-  for (const t of taskList) {
-    if (t && t.prevTaskId) walk(t.prevTaskId);
-  }
-  return Array.from(result.values());
 }
 
 // === Importance score (v1) ===
@@ -394,13 +337,11 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [deferredReady, setDeferredReady] = useState(false);
 
-  // Fetch + Babel-transform the deferred screen bundles after first paint.
-  // screens-flows.jsx (decision/desk/trash/recap/setdown/key) and
-  // screens-rituals.jsx (meditate/breaths/journal) live off the critical
-  // path — sync-loading them was the dominant ~700ms cold-parse cost on phone.
-  // Now they fetch in parallel + Babel runs on each, then we inject the
-  // transpiled code as <script textContent> so the browser executes them.
-  // Total deferred budget: ~100–300ms on phone.
+  // Fetch + Babel-transform the deferred screen bundle after first paint.
+  // screens-flows.jsx (decision/desk/trash/recap/carry/pages) lives off the
+  // critical path — sync-loading it was the dominant cold-parse cost on
+  // phone. It fetches + Babel-transforms at mount, then injects as
+  // <script textContent> so the browser executes it.
   useEffect(() => {
     let cancelled = false;
     async function loadBabelScript(src) {
@@ -416,9 +357,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=42"),
-        loadBabelScript("screens-rituals.jsx?v=42"),
-        loadBabelScript("screens-sketch.jsx?v=42"),
+        loadBabelScript("screens-flows.jsx?v=43"),
       ]);
     }
     loadAll()
@@ -488,37 +427,18 @@ function App() {
   const [completionsSinceShelf, setCompletionsSinceShelf] = useState(0);
   const [reOfferDismissed, setReOfferDismissed] = useState({}); // { [shelfId]: true }
   const [shelfSheet, setShelfSheet] = useState(null); // { kind, item }
-  const [wins, setWins] = useState(boot.wins || []);
   // v=26: recurring task specs (daily + weekly). Persists to its own
   // localStorage key so spec survives release/complete/trash of any single
   // instance.
   const [recurrences, setRecurrences] = useState(() => loadRecurrences());
-  // v=28: per-day mood-checkin + meditate completion log.
-  const [dailyLogs, setDailyLogs] = useState(() => loadLogs());
-  // v=34/35: goals + persistent wins timeline. Both persist independently of
-  // the main state blob — timeless from the 3am day-flip perspective.
-  // v=35 reframe: removed horizonMode flag. Wins + goals share a top-right
-  // bottom-sheet (.space-sheet); no parallel-environment mode. Open-state
-  // tracked locally as `spaceOpen` below.
-  const [goals, setGoals] = useState(() => loadGoals());
-  const [winsTimeline, setWinsTimeline] = useState(() => loadWinsTimeline());
-  // v=36: bottom-sheet kind ("wins" | "goals" | null). Two distinct top-right
-  // buttons → two distinct sheets → two distinct experiences with consistent
-  // visual chrome. v=35's combined SpaceSheet was Chris-flagged: wins and
-  // goals are functionally distinct, two buttons two experiences. Local UI
-  // state only — never persisted (no reopen-into-sheet after reload).
-  const [spaceSheet, setSpaceSheet] = useState(null);
-  // v=28: phase state for in-flight Mood Check-in. Set when user enters
-  // mood-checkin screen, read by MoodCheckin component, cleared on completion
-  // or skip. Lives in App so refresh-during-checkin doesn't lose progress.
-  const [moodDraft, setMoodDraft] = useState(null);
+  // v=43: Pages — per-day page snapshots for the flip-back history view.
+  const [pages, setPages] = useState(() => loadPages());
   const [recap, setRecap] = useState(null); // { wins, completed, prevDateStr }
   // Set true by the day-rollover effect when there were flagged-priority tasks
   // carrying into the new day. MorningAnchor reads this and surfaces the
   // carry-sheet ("yesterday's priorities — keep / clear"). Clearing happens
   // via the sheet itself, not auto.
   const [sheet, setSheet] = useState(null);
-  const [showKey, setShowKey] = useState(false);
   const [toast, setToast] = useState(null);
   const [dayOffset, setDayOffset] = useState(boot.dayOffset || 0);
   const [lastOpenedDay, setLastOpenedDay] = useState(boot.lastOpenedDay || null);
@@ -547,7 +467,6 @@ function App() {
 
   const [leftovers, setLeftovers] = useState(null);
   const [prevDateStr, setPrevDateStr] = useState(null);
-  const [meditateSession, setMeditateSession] = useState(null); // {minutes, sound, guided}
   // Trash bin — released items are kept here for 30 days, then auto-removed.
   // Each entry: { id, kind: 'task'|'shelf'|'note', payload, releasedAt }
   const [trash, setTrash] = useState(boot.trash || []);
@@ -571,29 +490,24 @@ function App() {
     }
     const gap = daysBetweenIso(lastOpenedDay, todayIso);
     if (gap <= 0) return;
-    const recapWins = wins;
-    // v=39: filter isWin tasks out — they're already represented in recapWins
-    // (logWin writes both). Without this they'd render twice in Recap (once on
-    // the wins phase, once on the done phase).
+    // v=43: wins live on the page as isWin tasks — recap derives them.
+    const recapWins = tasks.filter(t => t.done && t.isWin).map(t => t.text);
     const recapCompleted = tasks.filter(t => t.done && !t.isWin);
-    // v=42: chain progress in the rollover window freezes the marker on the
-    // current head. Walking back via prevTaskId; if any ancestor was
-    // completed within the just-elapsed day(s), the head doesn't advance.
-    const freezeWindowMs = Math.max(1, gap) * 86400000 + 6 * 3600000;
     const recapLeftovers = tasks
       .filter(t => !t.done)
-      .map(task => {
-        const frozen = chainHasProgressInWindow(task, tasks, freezeWindowMs);
-        return frozen ? task : { ...task, mark: walkMarker(task.mark, gap) };
-      });
+      .map(task => ({ ...task, mark: walkMarker(task.mark, gap) }));
     const recapPrevDateStr = dateStrFromIso(lastOpenedDay).dateStr;
-    setTasks(prev => prev.map(task => {
-      if (task.done) return task;
-      const frozen = chainHasProgressInWindow(task, prev, freezeWindowMs);
-      return frozen ? task : { ...task, mark: walkMarker(task.mark, gap) };
-    }));
+    // v=43: snapshot the ending day's page (as it ended, pre-advance) into
+    // Pages before anything is cleared or migrated.
+    setPages(prev => {
+      const next = { ...prev, [lastOpenedDay]: { tasks: pageSnapshotOf(tasks), savedAt: Date.now() } };
+      savePages(next);
+      return next;
+    });
+    setTasks(prev => prev.map(task =>
+      task.done ? task : { ...task, mark: walkMarker(task.mark, gap) }
+    ));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + gap })));
-    setWins([]);
     setCompletionsSinceShelf(0);
     setReOfferDismissed({});
     setLastOpenedDay(todayIso);
@@ -608,17 +522,11 @@ function App() {
 
   // === Persist on every change ===
   useEffect(() => {
-    savePersisted({ tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset });
-  }, [tasks, notes, shelf, wins, trash, tutorialDone, lastOpenedDay, dayOffset]);
+    savePersisted({ tasks, notes, shelf, trash, tutorialDone, lastOpenedDay, dayOffset });
+  }, [tasks, notes, shelf, trash, tutorialDone, lastOpenedDay, dayOffset]);
   // v=26: recurrences persist independently (separate key) so spec survives
   // any single instance's release/complete/trash.
   useEffect(() => { saveRecurrences(recurrences); }, [recurrences]);
-  // v=28: dailyLogs persist independently — same separation rationale.
-  useEffect(() => { saveLogs(dailyLogs); }, [dailyLogs]);
-  // v=34: goals + wins timeline persist independently — timeless from the
-  // 3am day-flip perspective.
-  useEffect(() => { saveGoals(goals); }, [goals]);
-  useEffect(() => { saveWinsTimeline(winsTimeline); }, [winsTimeline]);
 
   // Sweep trash on mount: remove anything older than 30 days.
   useEffect(() => {
@@ -790,55 +698,6 @@ function App() {
     setRecurrences(prev => prev.filter(r => r.id !== recurrenceId));
     showToast("won't repeat after today.", 2400);
   }
-  // v=28: write today's mood-checkin payload to dailyLogs[todayIso]. Called by
-  // MoodCheckin on completion. filterText is null when score > 2 (Reframe was
-  // gated off). savedAt timestamps the write so a future Stats dashboard can
-  // sort by entry-time within a day.
-  function setMoodEntry(score, noise, filter) {
-    setDailyLogs(prev => ({
-      ...prev,
-      [todayIso]: {
-        ...(prev[todayIso] || {}),
-        moodScore: score,
-        noiseText: noise || "",
-        filterText: filter || null,
-        moodSavedAt: Date.now(),
-      },
-    }));
-  }
-  // v=28: stamp meditation completion. Called when MeditateActive (or
-  // SquareBreath) finishes its timer naturally. Cancel paths do NOT stamp.
-  function setMeditateComplete() {
-    setDailyLogs(prev => ({
-      ...prev,
-      [todayIso]: {
-        ...(prev[todayIso] || {}),
-        meditateDoneAt: Date.now(),
-      },
-    }));
-  }
-  // v=28: morning ritual completion derivation for the Anchor ladder. Three
-  // ritual circles (mood / meditate / journal) reset every effective day
-  // because dailyLogs is keyed by ISO and journal storage is key-per-day.
-  // Tasks isn't a ritual — it's the destination, no circle.
-  // Mood completion: noiseText present AND (score > 2 OR filterText present).
-  // I.e., the user finished the input phase. A high-mood day skips the
-  // Reframe phase, so filterText is legitimately empty.
-  // Meditate completion: meditateDoneAt timestamp present.
-  // Journal completion: today's journal localStorage entry has non-empty text.
-  // Read at render time — fast, and Anchor re-renders on screen flip back
-  // from Journal.
-  const todayLog = dailyLogs[todayIso] || {};
-  const morningCompletion = {
-    mood: !!todayLog.noiseText && (todayLog.moodScore > 2 || !!todayLog.filterText),
-    meditate: !!todayLog.meditateDoneAt,
-    journal: (() => {
-      try {
-        const txt = localStorage.getItem(`${STORAGE_NS}:journal.${todayIso}`);
-        return !!(txt && txt.trim());
-      } catch (e) { return false; }
-    })(),
-  };
   function togglePriority(id) {
     // v=29: when a task gets newly highlighted, move it to the top of the
     // active list so priority is visually obvious without manual drag-reorder.
@@ -884,105 +743,31 @@ function App() {
     if (shelf.length > 0) {
       setCompletionsSinceShelf(c => c + 1);
     }
-    // v=34: if this task pointed at a horizon goal, pulse a quiet "log as
-    // today's win?" prompt via the existing toast/action affordance. Decline
-    // is silent (toast times out). Accept routes through logWin with goalRef
-    // preserved so the timeline records the linkage. Per V2 design: brings
-    // completion BACK to the now without forcing it.
-    if (task.goalRef) {
-      const goal = goals.find(g => g.id === task.goalRef);
-      const goalText = goal ? `toward "${goal.text}"` : "today's win";
-      showToast(
-        `done — ${goalText}`,
-        4500,
-        { label: "log as win", onClick: () => logWin(task.text, task.goalRef) },
-      );
-    }
   }
   function renameTask(id, text) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t));
   }
-  // v=42: chain a completed task into a new (or existing) next-step task.
-  // The parent is marked done with completedAt stamped so day-flip can detect
-  // chain progress; the new task carries prevTaskId pointing at parent and
-  // inherits parent's groupName. If a name is provided for the first time on
-  // this chain, back-fill every ancestor so the whole chain reads under one
-  // label. If linking to an existing task, refuse the link when the target
-  // is already part of another chain — keeps v1 chain semantics non-lossy.
-  function chainTo(parentId, opts) {
-    const { nextText, nextTaskId, groupName: providedName } = opts || {};
+  // v=43: next-step handoff — the one surviving idea from v=42's chain
+  // system. When a task completes, a passive pill offers "next step?"; saving
+  // creates a completely independent fresh task inserted after the completed
+  // one. No linkage, no history absorption, no groups, no marker freeze.
+  function addNextStep(afterTaskId, text) {
+    const cleaned = (text || "").trim();
+    if (!cleaned) return;
     setTasks(prev => {
-      const parent = prev.find(t => t.id === parentId);
-      if (!parent) return prev;
-      const completedAt = Date.now();
-      const resolvedName = (providedName && providedName.trim())
-        || parent.groupName
-        || null;
-      let updated = prev.map(t =>
-        t.id === parentId
-          ? { ...t, done: true, completedAt, groupName: resolvedName }
-          : t
-      );
-      if (providedName && providedName.trim()) {
-        const ancestors = walkChainBack(parentId, updated);
-        const ids = new Set(ancestors.map(a => a.id));
-        updated = updated.map(t =>
-          ids.has(t.id) ? { ...t, groupName: resolvedName } : t
-        );
-      }
-      if (nextTaskId) {
-        const target = updated.find(t => t.id === nextTaskId);
-        if (!target) return updated;
-        if (target.prevTaskId) {
-          // Don't overwrite an existing chain link — v1 keeps it simple.
-          showToast("can't link — already part of another chain.", 2400);
-          return updated;
-        }
-        return updated.map(t =>
-          t.id === nextTaskId
-            ? { ...t, prevTaskId: parentId, groupName: resolvedName }
-            : t
-        );
-      }
-      // New next-step task. Insert directly after the parent so the chain
-      // reads in place visually (the row appears to "transform" into the next
-      // step rather than jumping elsewhere).
       const fresh = {
         id: nextId(),
-        text: (nextText || "").trim(),
+        text: cleaned,
         mark: null,
         tenMin: null,
         done: false,
         createdAt: Date.now(),
-        prevTaskId: parentId,
-        groupName: resolvedName,
       };
-      const idx = updated.findIndex(t => t.id === parentId);
-      if (idx === -1) return [fresh, ...updated];
-      return [
-        ...updated.slice(0, idx + 1),
-        fresh,
-        ...updated.slice(idx + 1),
-      ];
+      const idx = prev.findIndex(t => t.id === afterTaskId);
+      if (idx === -1) return [fresh, ...prev];
+      return [...prev.slice(0, idx + 1), fresh, ...prev.slice(idx + 1)];
     });
-  }
-  // v=42: rename / set / clear the chain's group label across every member.
-  // Walks the chain from the head and writes the new name on each ancestor
-  // and the head itself, so all rows show the same label. Empty string clears.
-  function setChainGroupName(headId, name) {
-    const cleaned = (name || "").trim() || null;
-    setTasks(prev => {
-      const ancestors = walkChainBack(headId, prev);
-      const ids = new Set([headId, ...ancestors.map(a => a.id)]);
-      return prev.map(t => ids.has(t.id) ? { ...t, groupName: cleaned } : t);
-    });
-  }
-  // v=27: per-task progress (0-100). Stored as `progress` field; null/undefined
-  // = no fill rendered. 100 leaves the field set so the row reads as "fully
-  // progressed" until completed via the checkbox. Rounds + clamps defensively.
-  function setProgress(id, n) {
-    const clean = Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, progress: clean } : t));
+    showToast("next step — on the page.", 2200);
   }
   function reorderTasks(oldActiveIdx, newActiveIdx) {
     if (oldActiveIdx === newActiveIdx) return;
@@ -1049,25 +834,10 @@ function App() {
     setReOfferDismissed(prev => ({ ...prev, [itemId]: true }));
     setCompletionsSinceShelf(0); // reset; re-offer again after more wins
   }
-  function logWin(text, goalRef = null) {
-    setWins([text, ...wins]);
-    // v=34: also append to the persistent horizon timeline. Daily slot stays
-    // ephemeral (resets on rollover, feeds Recap+Carry); timeline persists.
-    // v=39: ALSO write a completed task into today's notebook with isWin:true
-    // and winId pointing at the timeline entry. The done block now records
-    // accomplishments-not-on-the-list alongside checked-off tasks, with a
-    // "· win" identifier on the row. Retire pulls both. Recap filters isWin
-    // tasks out of the "completed" phase so wins aren't double-counted
-    // against the wins phase.
-    const winId = nextId();
-    const entry = {
-      id: winId,
-      text,
-      loggedAt: Date.now(),
-      day: todayIso,
-      goalRef: goalRef || null,
-    };
-    setWinsTimeline(prev => [entry, ...prev]);
+  // v=43: a win is simply a completed entry on today's page with isWin:true,
+  // rendered with a quiet italic "win" tag. Captured via the + sheet's
+  // task/win toggle. No separate timeline — Pages is the flip-back history.
+  function logWin(text) {
     const winTask = {
       id: nextId(),
       text,
@@ -1075,8 +845,6 @@ function App() {
       tenMin: null,
       done: true,
       isWin: true,
-      winId,
-      goalRef: goalRef || null,
       createdAt: Date.now(),
     };
     setTasks(prev => {
@@ -1085,66 +853,6 @@ function App() {
       return [...active, winTask, ...done];
     });
     showToast(text, 3200);
-  }
-  // v=34: retire a win from the timeline. Manual only — wins don't auto-fade.
-  // v=39: also pulls the linked done-task entry from today's notebook so the
-  // timeline and the done block stay in sync.
-  function retireWin(id) {
-    setWinsTimeline(prev => prev.filter(w => w.id !== id));
-    setTasks(prev => prev.filter(t => t.winId !== id));
-  }
-
-  // v=34: goal CRUD. Tier transitions are unrestricted by design (the
-  // spectrum is permissive — drag back from trash, push to drawer, promote
-  // anything anywhere). Soft-cap on active is enforced by UI color shift,
-  // not state.
-  function addGoal(text, context, timeframe) {
-    // v=37: timeframe field — "week" | "month" | "year". Reflects the
-    // expected horizon for accomplishment. Lifecycle-aware: a "week" goal
-    // can later be pushed to "month" (re-evaluation) or pulled into a
-    // tighter horizon. Default to "week" so the user lands in the most
-    // immediate panel — they can re-park to "month" or "year" if needed.
-    const goal = {
-      id: nextId(),
-      text,
-      context: context || null,
-      tier: "active",
-      timeframe: timeframe || "week",
-      createdAt: Date.now(),
-    };
-    setGoals(prev => [goal, ...prev]);
-    showToast("placed.", 1800);
-  }
-  // v=37: change a goal's timeframe (push back / pull in). Tier unchanged.
-  function setGoalTimeframe(id, timeframe) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, timeframe } : g));
-    const label = timeframe === "week" ? "this week."
-      : timeframe === "month" ? "this month."
-      : "this year.";
-    showToast(label, 1600);
-  }
-  function renameGoal(id, text) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g));
-  }
-  function setGoalContext(id, context) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, context: context || null } : g));
-  }
-  function moveGoal(id, tier) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier } : g));
-    const label = tier === "active" ? "active." : tier === "desk-top" ? "on the desk." : tier === "desk-back" ? "in the drawer." : "released.";
-    showToast(label, 1800);
-  }
-  function releaseGoal(id) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier: "trash" } : g));
-    showToast("released.", 2000);
-  }
-  function restoreGoal(id) {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, tier: "active" } : g));
-    showToast("welcomed back.", 2200);
-  }
-  function purgeGoal(id) {
-    if (!window.confirm("Delete this goal forever? This can't be undone.")) return;
-    setGoals(prev => prev.filter(g => g.id !== id));
   }
   function divideTask(originalTask, parts, options = {}) {
     const { mode = "all", firstIdx = 0 } = options;
@@ -1253,11 +961,16 @@ function App() {
 
   function startNewDay() {
     const unfinished = tasks.filter(t => !t.done);
-    // v=39: same isWin filter as the natural-rollover recap path — wins are
-    // shown on the wins phase, not the done phase, so they don't render twice.
     const completed = tasks.filter(t => t.done && !t.isWin);
+    const recapWins = tasks.filter(t => t.done && t.isWin).map(t => t.text);
     const prev = dateInfo(dayOffset).dateStr;
-    setRecap({ wins, completed, leftovers: unfinished, prevDateStr: prev, recapSource: "admin" });
+    // v=43: snapshot the ending day into Pages (admin force-next-day path).
+    setPages(p => {
+      const next = { ...p, [todayIso]: { tasks: pageSnapshotOf(tasks), savedAt: Date.now() } };
+      savePages(next);
+      return next;
+    });
+    setRecap({ wins: recapWins, completed, leftovers: unfinished, prevDateStr: prev, recapSource: "admin" });
     setScreen("recap");
   }
   function continueAfterRecap() {
@@ -1268,7 +981,6 @@ function App() {
       setDayOffset(dayOffset + 1);
     }
     setPrevDateStr(recap.prevDateStr);
-    setWins([]); // wins are celebrated; new day starts clean
     if (recap.leftovers.length === 0) {
       setTasks([]);
       setRecap(null);
@@ -1307,14 +1019,9 @@ function App() {
             autoShelved: true,
           });
         } else {
-          // v=42: freeze marker advance if chain progress was made within
-          // the last ~36h. The day-flip useEffect already froze in the
-          // walkMarker pass; this catches the second-pass advance via
-          // nextMarkAfterCarry on the user's "keep" decision.
-          const frozen = chainHasProgressInWindow(d.task, tasks, 36 * 3600000);
           carried.push({
             ...d.task, id: nextId(),
-            mark: frozen ? d.task.mark : nextMarkAfterCarry(d.task.mark),
+            mark: nextMarkAfterCarry(d.task.mark),
             done: false,
           });
         }
@@ -1337,22 +1044,15 @@ function App() {
         });
       } else if (d.action === "complete") {
         // v=39: user marked the carried task as already done during the
-        // carry-over phase. Lands in today's done block as a completed task,
-        // mark cleared, completedAt stamped.
+        // carry-over phase. Lands in today's done block, mark cleared.
         carried.push({
           ...d.task, id: nextId(),
           mark: null, done: true,
-          completedAt: Date.now(),
         });
       }
       // "release" intentionally falls through (silent drop = trash).
     }
-    // v=42: preserve chain ancestor records of every carried task. Without
-    // this the predecessor task records get dropped, breaking each chain
-    // head's drawer "previous steps" history. Ancestors stay hidden from
-    // standalone active/done lists via the `getChainAncestorIds` filter.
-    const preservedAncestors = collectChainAncestorRecords(carried, tasks);
-    setTasks(ensureDailyRecurringTasks([...preservedAncestors, ...carried]));
+    setTasks(ensureDailyRecurringTasks(carried));
     const nextShelf = autoShelved.length > 0 ? [...autoShelved, ...shelf] : shelf;
     if (autoShelved.length > 0) {
       setShelf(nextShelf);
@@ -1376,18 +1076,12 @@ function App() {
     const source = (recap?.leftovers && recap.leftovers.length > 0)
       ? recap.leftovers
       : (leftovers || []);
-    const carried = source.map(task => {
-      // v=42: freeze marker advance if chain progress was made recently.
-      const frozen = chainHasProgressInWindow(task, tasks, 36 * 3600000);
-      return {
-        ...task, id: nextId(),
-        mark: frozen ? task.mark : nextMarkAfterCarry(task.mark),
-        done: false,
-      };
-    });
-    // v=42: preserve chain ancestor records (see finishCarry comment).
-    const preservedAncestors = collectChainAncestorRecords(carried, tasks);
-    setTasks(ensureDailyRecurringTasks([...preservedAncestors, ...carried]));
+    const carried = source.map(task => ({
+      ...task, id: nextId(),
+      mark: nextMarkAfterCarry(task.mark),
+      done: false,
+    }));
+    setTasks(ensureDailyRecurringTasks(carried));
     setLeftovers(null);
     setRecap(null);
     setScreen("anchor");
@@ -1395,8 +1089,8 @@ function App() {
 
   // v=32: Anchor's "Open today" button. If a natural day-flip captured a
   // pending recap, route to that ritual first; otherwise straight to Tasks.
-  // Lets the morning-arousal arc (quote → mood → meditate → journal) finish
-  // before yesterday's leftovers preempt focus.
+  // Lets the calm morning entry (quote → begin) land before yesterday's
+  // leftovers preempt focus.
   function openTodayWithRecap() {
     if (recap) {
       setScreen("recap");
@@ -1434,17 +1128,19 @@ function App() {
   // === Admin actions ===
   function adminForceNextDaySilent() {
     const next = dayOffset + 1;
+    // v=43: snapshot the ending day into Pages before the silent advance.
+    setPages(p => {
+      const snap = { ...p, [todayIso]: { tasks: pageSnapshotOf(tasks), savedAt: Date.now() } };
+      savePages(snap);
+      return snap;
+    });
     setDayOffset(next);
     setTasks(prev => ensureDailyRecurringTasks(
-      // v=42: chain progress in the last ~36h freezes marker advance.
-      prev.map(task => {
-        if (task.done) return task;
-        const frozen = chainHasProgressInWindow(task, prev, 36 * 3600000);
-        return frozen ? task : { ...task, mark: advanceMarker(task.mark) };
-      })
+      prev.map(task =>
+        task.done ? task : { ...task, mark: advanceMarker(task.mark) }
+      )
     ));
     setShelf(prev => prev.map(s => ({ ...s, daysOnShelf: (s.daysOnShelf || 0) + 1 })));
-    setWins([]);
     setCompletionsSinceShelf(0);
     setReOfferDismissed({});
     setLastOpenedDay(isoFromOffset(next));
@@ -1471,7 +1167,7 @@ function App() {
     showToast("sample data loaded.", 2200);
   }
   function adminWipe() {
-    if (!window.confirm("Wipe everything (tasks, desk, trash, journal) and start fresh? This can't be undone.")) return;
+    if (!window.confirm("Wipe everything (tasks, desk, trash, pages) and start fresh? This can't be undone.")) return;
     wipeAllDailyNow();
     window.location.reload();
   }
@@ -1509,17 +1205,6 @@ function App() {
     );
   }
 
-  // v=35: SpaceTrigger suppression list. Modal / ritual flows hide the
-  // top-right glyph so they can't be interrupted mid-arc; the spectrum
-  // (Anchor / Now / Desk / Trash / Journal) shows it. Same gate semantics
-  // as v=34's horizon-strip — different affordance.
-  const SPACE_HIDDEN_SCREENS = new Set([
-    "mood-checkin", "mood-meditate-prompt", "meditate-journal-prompt",
-    "breaths", "meditate-setup", "square-breath", "meditate-active",
-    "return", "carry", "desk-review-prompt", "desk-review", "recap",
-  ]);
-  const showSpaceTrigger = !SPACE_HIDDEN_SCREENS.has(screen);
-
   return (
     <div
       className="phone-frame"
@@ -1534,142 +1219,10 @@ function App() {
         <div data-screen-label="01 Morning Anchor" style={{position: "absolute", inset: 0}}>
           <MorningAnchor
             onEnter={openTodayWithRecap}
-            onMood={() => { setMoodDraft({ phase: "slider", score: 3, noise: "", filter: "" }); setScreen("mood-checkin"); }}
-            onMeditate={() => setScreen("meditate-setup")}
-            onReflect={() => setScreen("journal")}
             dateStr={dateStr}
             weekday={weekday.toLowerCase()}
             momentum={momentum}
-            regulars={todaysRegulars}
-            onAddRegular={addRegularToToday}
-            completion={morningCompletion}
-            todayLog={todayLog}
           />
-        </div>
-      )}
-
-      {screen === "mood-checkin" && (
-        <div data-screen-label="01a Mood Check-in" style={{position: "absolute", inset: 0}}>
-          <SkipToToday onClick={() => { setMoodDraft(null); setScreen("anchor"); }}/>
-          {deferredReady ? (
-            <MoodCheckin
-              draft={moodDraft}
-              onUpdate={(patch) => setMoodDraft(prev => ({...prev, ...patch}))}
-              onComplete={(score, noise, filter) => {
-                setMoodEntry(score, noise, filter);
-                setMoodDraft(null);
-                // Skip the prompt if meditate is already done today (re-tap on a
-                // filled mood row → just save updates and bounce back to Anchor).
-                if (!todayLog.meditateDoneAt) setScreen("mood-meditate-prompt");
-                else setScreen("anchor");
-              }}
-            />
-          ) : <DeferredFallback label="check-in"/>}
-        </div>
-      )}
-
-      {screen === "mood-meditate-prompt" && (
-        <div data-screen-label="01a· prompt → meditate" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <RitualPrompt
-              kicker="set down."
-              primaryLabel="sit a while"
-              onPrimary={() => setScreen("meditate-setup")}
-              onSkip={() => setScreen("now")}
-            />
-          ) : <DeferredFallback label="onward"/>}
-        </div>
-      )}
-
-      {screen === "meditate-journal-prompt" && (
-        <div data-screen-label="01c· prompt → journal" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <RitualPrompt
-              kicker="settled."
-              primaryLabel="write a while"
-              onPrimary={() => setScreen("journal")}
-              onSkip={() => setScreen("now")}
-            />
-          ) : <DeferredFallback label="onward"/>}
-        </div>
-      )}
-
-      {screen === "breaths" && (
-        <div data-screen-label="01b Three Breaths" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <ThreeBreaths
-              pacing={t.breathPace}
-              onComplete={(focusText) => {
-                if (focusText) {
-                  setTasks([{
-                    id: nextId(), text: focusText, mark: null, tenMin: null, done: false,
-                  }, ...tasks]);
-                  showToast("one small thing — start here.", 2400);
-                }
-                setScreen("now");
-              }}
-            />
-          ) : <DeferredFallback label="breathing"/>}
-        </div>
-      )}
-
-      {screen === "meditate-setup" && (
-        <div data-screen-label="01c Meditate · setup" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <MeditateSetup
-              defaultMinutes={t.defaultMeditateMin}
-              onCancel={() => setScreen("anchor")}
-              onStart={(session) => {
-                setMeditateSession(session);
-                setScreen(session.kind === "square" ? "square-breath" : "meditate-active");
-              }}
-            />
-          ) : <DeferredFallback label="meditation"/>}
-        </div>
-      )}
-
-      {screen === "square-breath" && meditateSession && (
-        <div data-screen-label="01e Square breathing" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <SquareBreath
-              totalSec={meditateSession.lengthSec}
-              onCancel={() => { setMeditateSession(null); setScreen("anchor"); }}
-              onComplete={() => {
-                setMeditateSession(null);
-                setMeditateComplete();
-                if (!morningCompletion.journal) {
-                  setScreen("meditate-journal-prompt");
-                } else {
-                  showToast("welcome back. begin where you are.", 2400);
-                  setScreen("now");
-                }
-              }}
-            />
-          ) : <DeferredFallback label="breathing"/>}
-        </div>
-      )}
-
-      {screen === "meditate-active" && meditateSession && (
-        <div data-screen-label="01d Meditate · active" style={{position: "absolute", inset: 0}}>
-          {deferredReady ? (
-            <MeditateActive
-              minutes={meditateSession.lengthSec / 60}
-              sound={meditateSession.sound}
-              guided={meditateSession.guided}
-              mantra={todayLog.filterText || null}
-              onCancel={() => { setMeditateSession(null); setScreen("anchor"); }}
-              onComplete={() => {
-                setMeditateSession(null);
-                setMeditateComplete();
-                if (!morningCompletion.journal) {
-                  setScreen("meditate-journal-prompt");
-                } else {
-                  showToast("welcome back. begin where you are.", 2400);
-                  setScreen("now");
-                }
-              }}
-            />
-          ) : <DeferredFallback label="meditation"/>}
         </div>
       )}
 
@@ -1727,17 +1280,15 @@ function App() {
               tasks={tasks}
               setTasks={setTasks}
               onAddOpen={() => setSheet("add")}
-              onWinOpen={() => setSheet("win")}
               onDivideOpen={(task) => setSheet({ kind: "decision", task })}
               onDelete={deleteTask}
-              onKeyOpen={() => setShowKey(true)}
               onTaskCompleted={onTaskCompleted}
               onTogglePriority={togglePriority}
               onRename={renameTask}
-              onSetProgress={setProgress}
               onReorderTasks={reorderTasks}
-              onChain={chainTo}
-              onSetGroupName={setChainGroupName}
+              onNextStep={addNextStep}
+              regulars={todaysRegulars}
+              onAddRegular={addRegularToToday}
               dateStr={dateStr}
               weekday={weekday.toLowerCase()}
               reOffer={(() => {
@@ -1789,30 +1340,12 @@ function App() {
         </div>
       )}
 
-      {screen === "journal" && (
-        <div data-screen-label="01f Journal" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
+      {screen === "pages" && (
+        <div data-screen-label="09 Pages" style={{position: "absolute", inset: 0, display: "flex", flexDirection: "column"}}>
           <div style={{flex: 1, minHeight: 0, position: "relative"}}>
             {deferredReady ? (
-              <Journal
-                onClose={() => setScreen("anchor")}
-                dateStr={dateStr}
-                weekday={weekday.toLowerCase()}
-                todayIso={todayIso}
-                seedText={(() => {
-                  // v=28: pre-fill the journal entry with today's mood-checkin
-                  // payload as a starting seed — only when today's entry is
-                  // currently empty AND today has a mood log. Once the user
-                  // types anything and autosaves, the seed never re-appears
-                  // for that day. Past-date views never seed (Journal handles
-                  // this internally — seedText only applies to today).
-                  if (!todayLog.noiseText) return "";
-                  const word = MOOD_WORDS[(todayLog.moodScore || 3) - 1] || "steady";
-                  let s = `mood: ${todayLog.moodScore} — ${word}\nloudest: ${todayLog.noiseText}`;
-                  if (todayLog.filterText) s += `\nclearer: ${todayLog.filterText}`;
-                  return s + "\n\n";
-                })()}
-              />
-            ) : <DeferredFallback label="journal"/>}
+              <PagesView pages={pages} todayIso={todayIso}/>
+            ) : <DeferredFallback label="pages"/>}
           </div>
           <TabBar screen={screen} setScreen={setScreen} onNewDay={startNewDay}/>
         </div>
@@ -1834,52 +1367,8 @@ function App() {
         </div>
       )}
 
-      {/* v=36: top-right TWO-button affordance. Wins and goals are functionally
-          distinct (recognition vs forward intent) — two buttons, two sheets,
-          consistent visual language. Each pill names what it opens; tapping
-          reveals only that surface. Suppressed on modal/ritual flows. The
-          --has-content modifier subtly emphasizes a button when its surface
-          has something to see (active goals / any wins) — soft hint without
-          a number badge. */}
-      {showSpaceTrigger && (
-        <SpaceTriggers
-          onOpenWins={() => setSpaceSheet("wins")}
-          onOpenGoals={() => setSpaceSheet("goals")}
-          hasWins={winsTimeline.length > 0}
-          hasGoals={goals.some(g => g.tier === "active")}
-        />
-      )}
-
-      {spaceSheet === "wins" && (
-        <SpaceSheetWins
-          wins={winsTimeline}
-          goals={goals}
-          onClose={() => setSpaceSheet(null)}
-          onLogWin={(text) => logWin(text)}
-          onRetireWin={retireWin}
-        />
-      )}
-
-      {spaceSheet === "goals" && (
-        <SpaceSheetGoals
-          goals={goals}
-          tasks={tasks}
-          onClose={() => setSpaceSheet(null)}
-          onAddGoalOpen={() => setSheet("addGoal")}
-          onRenameGoal={renameGoal}
-          onSetGoalContext={setGoalContext}
-          onMoveGoal={moveGoal}
-          onSetGoalTimeframe={setGoalTimeframe}
-          onReleaseGoal={releaseGoal}
-          onRestoreGoal={restoreGoal}
-          onPurgeGoal={purgeGoal}
-        />
-      )}
-
-      {sheet === "add" && <AddSheet onClose={() => setSheet(null)} onAdd={addTask} goals={goals}/>}
+      {sheet === "add" && <AddSheet onClose={() => setSheet(null)} onAdd={addTask} onLogWin={logWin}/>}
       {sheet === "addDesk" && <AddDeskSheet onClose={() => setSheet(null)} onAdd={addToDesk}/>}
-      {sheet === "addGoal" && <AddGoalSheet onClose={() => setSheet(null)} onAdd={addGoal}/>}
-      {sheet === "win" && <WinSheet onClose={() => setSheet(null)} onLog={logWin}/>}
       {sheet && sheet.kind === "decision" && deferredReady && (
         <DecisionPointSheet
           task={sheet.task}
@@ -1893,8 +1382,6 @@ function App() {
           onStopRecurring={sheet.task.recurrenceId ? () => { stopRecurring(sheet.task.recurrenceId); setSheet(null); } : null}
         />
       )}
-      {showKey && deferredReady && <KeyReference onClose={() => setShowKey(false)}/>}
-
       {shelfSheet && shelfSheet.kind === "reframe" && deferredReady && (
         <ReframeSheet
           item={shelfSheet.item}
@@ -1982,26 +1469,7 @@ function App() {
             ]}
           />
         </TweakSection>
-        <TweakSection label="Morning ritual">
-          <TweakSelect
-            label="Default meditation"
-            value={t.defaultMeditateMin}
-            onChange={(v) => setTweak("defaultMeditateMin", Number(v))}
-            options={[
-              { value: 2, label: "2 min" },
-              { value: 5, label: "5 min" },
-              { value: 10, label: "10 min" },
-            ]}
-          />
-          <TweakRadio
-            label="Breath pace" value={t.breathPace}
-            onChange={(v) => setTweak("breathPace", v)}
-            options={[
-              { value: "fast", label: "Fast" },
-              { value: "normal", label: "Normal" },
-              { value: "slow", label: "Slow" },
-            ]}
-          />
+        <TweakSection label="Anchor">
           <TweakSelect
             label="Momentum line"
             value={t.momentumPreview}
@@ -2030,16 +1498,12 @@ function App() {
 }
 
 function TabBar({ screen, setScreen, onNewDay }) {
-  // Layout: [begin | notebook · desk · trash | journal]
+  // Layout: [begin | notebook · desk · trash | pages]
   //   begin = Anchor (the morning-landing / day-start screen)
   //   spectrum trio = Notebook → Desk → Trash
-  //   journal = reflective writing surface
+  //   pages = flip-back history (v=43 — replaces the cut Journal tab)
   // Two thin dividers split the three groups so the spectrum reads as a
-  // single mental model and Anchor / Journal sit cleanly outside it.
-  // v=31: added Anchor tab so users can get back to the Home screen.
-  // v=35: TabBar reverted to single-mode (the v=34 horizon-mode swap is gone).
-  //       Wins + goals now live in a top-right SpaceTrigger / SpaceSheet,
-  //       not in TabBar slots. Journal stays Daily-Now-only.
+  // single mental model and Anchor / Pages sit cleanly outside it.
   return (
     <div className="tabbar tabbar-icons">
       <button
@@ -2077,12 +1541,12 @@ function TabBar({ screen, setScreen, onNewDay }) {
       </button>
       <span className="tab-divider" aria-hidden="true"/>
       <button
-        className={`tab-btn ${screen === "journal" ? "active" : ""}`}
-        onClick={() => setScreen("journal")}
-        aria-label="journal"
+        className={`tab-btn ${screen === "pages" ? "active" : ""}`}
+        onClick={() => setScreen("pages")}
+        aria-label="pages"
       >
         <Icon name="journal" size={22}/>
-        <span className="tab-label">journal</span>
+        <span className="tab-label">pages</span>
       </button>
     </div>
   );

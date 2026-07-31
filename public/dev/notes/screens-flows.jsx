@@ -1953,215 +1953,188 @@ function TrashBin({ trash, onRestore, onPurge, onClose }) {
   );
 }
 
-// ---------- Mood Check-in (v=28) ----------
-// Step 1 of the morning ritual ladder. Single screen with internal phase state:
-// 'slider' (1–5 mood) → 'noise' (what's loudest) → 'reframe' (only if mood ≤ 2).
-// Phase + draft values live in app.jsx (`moodDraft`) so a SkipToToday tap or
-// accidental navigation away preserves work-in-progress within the session.
-// On completion, app.jsx writes to dailyLogs[todayIso] and routes to the
-// mood-meditate-prompt (or back to anchor if meditate already done today).
-//
-// Design rationale (locked via grill):
-//   - Horizontal slider, snap-to-integer, four hairline rule marks at the
-//     steps. Mirrors v=27 progress slider — vertical has no precedent.
-//   - Single italic word below the slider. Mood-symmetric: low/quiet/steady/
-//     bright/clear. No emoji, no faces, no color gradient.
-//   - Borderless inputs. Just blinking cursor + center-aligned text. The
-//     "no text box borders" constraint is the meditative-input feel.
-//   - "next" button appears (fade-in) once typing starts — never visible
-//     when the field is empty.
-//   - Reframe phase is gated at score ≤ 2. Score 3–5 skips Reframe and
-//     completes after Noise.
-//   - Vanishing Text effect: as user types in Reframe, the Noise text above
-//     blurs + drifts up + fades to ~0.15 opacity. CSS transitions only, no
-//     JS animation library. Reinforces CBT distancing without using a single
-//     word of clinical jargon (per the original spec's "Key Strategy").
-function MoodCheckin({ draft, onUpdate, onComplete }) {
-  if (!draft) return null;
-  const { phase, score, noise, filter } = draft;
-  const noiseRef = useRef(null);
-  const filterRef = useRef(null);
+// ---------- Pages (v=43 — flip-back history) ----------
+// Read-only pager over past day snapshots. Each snapshot is written at the
+// day boundary (app.jsx → Pages blob) and holds the page as it ended: every
+// task with its mark and done state, wins included. The manual's own canon:
+// "Momentum is evidence. Flip back through your pages to see the [X] marks."
+// History accumulates from the day v=43 shipped — nothing earlier exists.
+function PagesView({ pages, todayIso }) {
+  const isos = Object.keys(pages || {}).sort().reverse();
+  const [idx, setIdx] = useState(0);
+  const iso = isos[idx] || null;
+  const page = iso ? pages[iso] : null;
 
-  useEffect(() => {
-    if (phase === "noise") setTimeout(() => noiseRef.current?.focus(), 320);
-    if (phase === "reframe") setTimeout(() => filterRef.current?.focus(), 320);
-  }, [phase]);
-
-  // v=31: must match app.jsx's MOOD_WORDS exactly — they appear together
-  // (slider label + journal seed + Anchor ladder hint).
-  const MOOD_WORDS = ["bad", "poor", "okay", "good", "great"];
-  const moodWord = MOOD_WORDS[(score || 3) - 1] || "okay";
-
-  function nextFromSlider() { onUpdate({ phase: "noise" }); }
-  function nextFromNoise() {
-    const cleanNoise = (noise || "").trim();
-    if (!cleanNoise) return;
-    if ((score || 3) <= 2) onUpdate({ phase: "reframe" });
-    else onComplete(score, cleanNoise, null);
-  }
-  function nextFromReframe() {
-    const cleanNoise = (noise || "").trim();
-    const cleanFilter = (filter || "").trim();
-    if (!cleanFilter) return;
-    onComplete(score, cleanNoise, cleanFilter);
+  function fmtDay(isoStr) {
+    const [y, m, d] = isoStr.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    return {
+      weekday: dt.toLocaleDateString(undefined, { weekday: "long" }),
+      dateStr: dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }),
+    };
   }
 
-  // Vanishing-text intensity. 0 chars → full opacity / no blur / no drift.
-  // 30+ chars → ~0.15 opacity / ~3px blur / 18px drift up.
-  const filterLen = (filter || "").length;
-  const fadeT = Math.min(filterLen / 30, 1);
-  const noiseOpacity = 1 - fadeT * 0.85;
-  const noiseBlur = fadeT * 3;
-  const noiseDrift = -fadeT * 18;
-
-  return (
-    <div className="screen fade-soft" style={{
-      padding: "0 36px",
-      display: "flex", flexDirection: "column",
-      justifyContent: "center", alignItems: "center",
-      gap: 32, textAlign: "center",
-    }}>
-      {phase === "slider" && (
-        <div className="ascend" style={{
-          width: "100%", maxWidth: 320,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 28,
-        }}>
-          <div className="kicker">how are you</div>
-          <input
-            type="range"
-            min="1" max="5" step="1"
-            value={score}
-            onChange={(e) => onUpdate({ score: Number(e.target.value) })}
-            className="mood-slider"
-            aria-label="mood"
-            style={{width: "100%"}}
-          />
-          <div className="serif" style={{
-            fontSize: 24, fontStyle: "italic",
-            color: "var(--ink)",
-            letterSpacing: "0.01em",
-            minHeight: 30,
-          }}>
-            {moodWord}
+  if (isos.length === 0) {
+    return (
+      <div className="screen surface-notebook" style={{padding: "12px 0 0"}}>
+        <div className="surface-mark" aria-hidden="true"/>
+        <div style={{padding: "12px 28px 18px"}}>
+          <div className="kicker" style={{marginBottom: 4}}>pages</div>
+          <div className="serif" style={{fontSize: 28, fontWeight: 400, letterSpacing: "-0.01em", color: "var(--ink)"}}>
+            Flip back.
           </div>
-          <button onClick={nextFromSlider} style={{
-            marginTop: 12,
-            background: "var(--ink)", color: "var(--paper)",
-            border: "none", borderRadius: 999, padding: "12px 32px",
-            fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
-          }}>next</button>
         </div>
-      )}
-
-      {phase === "noise" && (
-        <div className="ascend" key="noise-phase" style={{
-          width: "100%", maxWidth: 320,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 24,
+        <div style={{height: 1, background: "var(--rule-strong)", margin: "0 28px"}}/>
+        <div className="serif" style={{
+          padding: "60px 32px",
+          color: "var(--ink-faint)",
+          fontStyle: "italic",
+          fontSize: 16,
+          lineHeight: 1.6,
+          textAlign: "center",
         }}>
-          <div className="serif" style={{
-            fontSize: 22, fontStyle: "italic",
-            color: "var(--ink-soft)", lineHeight: 1.4,
-          }}>
-            What's loudest right now?
-          </div>
-          <textarea
-            ref={noiseRef}
-            value={noise || ""}
-            onChange={(e) => onUpdate({ noise: e.target.value })}
-            className="mood-input"
-            rows={3}
-            aria-label="loudest"
-          />
-          {(noise || "").trim() && (
-            <button onClick={nextFromNoise} className="fade-in" style={{
-              background: "var(--ink)", color: "var(--paper)",
-              border: "none", borderRadius: 999, padding: "12px 32px",
-              fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
-            }}>next</button>
-          )}
+          No pages yet.<br/>
+          When today ends, it will rest here.
         </div>
-      )}
-
-      {phase === "reframe" && (
-        <div className="ascend" key="reframe-phase" style={{
-          width: "100%", maxWidth: 320,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 22,
-        }}>
-          {/* Vanishing Text — the noise blurs + drifts up + fades as the
-              filter is typed. Inline transitions read 480ms; the change
-              triggers any time filterLen mutates the derived values. */}
-          <div style={{
-            fontFamily: "var(--serif)", fontStyle: "italic",
-            fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.5,
-            opacity: noiseOpacity,
-            filter: `blur(${noiseBlur}px)`,
-            transform: `translateY(${noiseDrift}px)`,
-            transition: "opacity 480ms ease, filter 480ms ease, transform 480ms ease",
-            pointerEvents: "none",
-            maxWidth: 320,
-          }}>
-            {noise}
-          </div>
-
-          <div className="serif" style={{
-            fontSize: 22, fontStyle: "italic",
-            color: "var(--ink-soft)", lineHeight: 1.4,
-          }}>
-            What's another way to see this?
-          </div>
-          <textarea
-            ref={filterRef}
-            value={filter || ""}
-            onChange={(e) => onUpdate({ filter: e.target.value })}
-            className="mood-input"
-            rows={3}
-            aria-label="clearer"
-          />
-          {(filter || "").trim() && (
-            <button onClick={nextFromReframe} className="fade-in" style={{
-              background: "var(--ink)", color: "var(--paper)",
-              border: "none", borderRadius: 999, padding: "12px 32px",
-              fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
-            }}>next</button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---------- Ritual Prompt (v=28) ----------
-// Lightweight handoff sheet used between morning ritual steps. Modeled on
-// DeskReviewPrompt — terse kicker, primary continue, secondary skip-to-Tasks.
-// Each ritual step routes to one of these on completion if the next ritual
-// in the ladder isn't yet done; otherwise it returns straight to anchor.
-function RitualPrompt({ kicker, primaryLabel, onPrimary, onSkip }) {
-  return (
-    <div className="screen fade-soft" style={{
-      justifyContent: "center", padding: "0 36px", textAlign: "center",
-      display: "flex", flexDirection: "column", gap: 36,
-    }}>
-      <div className="ascend serif" style={{
-        fontSize: 32, color: "var(--ink)",
-        fontStyle: "italic", letterSpacing: "0.01em",
-      }}>
-        {kicker}
       </div>
-      <div className="ascend" style={{
-        display: "flex", flexDirection: "column", gap: 10,
-        animationDelay: "200ms", padding: "0 24px",
-      }}>
-        <button onClick={onPrimary} style={{
-          background: "var(--ink)", color: "var(--paper)", border: "none",
-          borderRadius: 14, padding: "14px 18px",
-          fontFamily: "var(--serif)", fontSize: 15, cursor: "pointer",
-        }}>{primaryLabel}</button>
-        <button onClick={onSkip} style={{
-          background: "transparent", color: "var(--ink-soft)",
-          border: "1px solid var(--rule-strong)", borderRadius: 14,
-          padding: "13px 14px",
-          fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14, cursor: "pointer",
-        }}>skip — onto today</button>
+    );
+  }
+
+  const day = fmtDay(iso);
+  const entries = (page && Array.isArray(page.tasks)) ? page.tasks : [];
+  const doneEntries = entries.filter(e => e.done);
+  const openEntries = entries.filter(e => !e.done);
+
+  return (
+    <div className="screen surface-notebook" style={{padding: "12px 0 0"}}>
+      <div className="surface-mark" aria-hidden="true"/>
+      <div style={{padding: "12px 28px 14px", display: "flex", justifyContent: "space-between", alignItems: "flex-start"}}>
+        <div>
+          <div className="kicker" style={{marginBottom: 4}}>{day.weekday.toLowerCase()}</div>
+          <div className="serif" style={{fontSize: 24, fontWeight: 400, letterSpacing: "-0.01em", color: "var(--ink)"}}>
+            {day.dateStr}
+          </div>
+          <div className="serif" style={{fontSize: 12, color: "var(--ink-faint)", marginTop: 2, fontStyle: "italic"}}>
+            {idx === 0 ? "the last page" : `${idx + 1} pages back`}
+          </div>
+        </div>
+        <div style={{display: "flex", gap: 6, paddingTop: 6}}>
+          <button
+            onClick={() => setIdx(Math.min(isos.length - 1, idx + 1))}
+            disabled={idx >= isos.length - 1}
+            aria-label="older page"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--rule-strong)",
+              borderRadius: 999,
+              width: 36, height: 36,
+              fontFamily: "var(--serif)", fontSize: 16,
+              color: idx >= isos.length - 1 ? "var(--ink-faint)" : "var(--ink)",
+              cursor: idx >= isos.length - 1 ? "default" : "pointer",
+              opacity: idx >= isos.length - 1 ? 0.4 : 1,
+            }}
+          >‹</button>
+          <button
+            onClick={() => setIdx(Math.max(0, idx - 1))}
+            disabled={idx <= 0}
+            aria-label="newer page"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--rule-strong)",
+              borderRadius: 999,
+              width: 36, height: 36,
+              fontFamily: "var(--serif)", fontSize: 16,
+              color: idx <= 0 ? "var(--ink-faint)" : "var(--ink)",
+              cursor: idx <= 0 ? "default" : "pointer",
+              opacity: idx <= 0 ? 0.4 : 1,
+            }}
+          >›</button>
+        </div>
+      </div>
+
+      <div style={{height: 1, background: "var(--rule-strong)", margin: "0 28px"}}/>
+
+      <div className="scroll-y" style={{flex: 1, overflowY: "auto", padding: "8px 0 90px"}}>
+        {entries.length === 0 && (
+          <div className="serif" style={{
+            padding: "48px 32px",
+            color: "var(--ink-faint)",
+            fontStyle: "italic",
+            fontSize: 15,
+            textAlign: "center",
+          }}>
+            A quiet page. That counts too.
+          </div>
+        )}
+
+        {doneEntries.length > 0 && (
+          <div style={{marginTop: 12, padding: "0 28px"}}>
+            <div className="kicker" style={{marginBottom: 4, color: "var(--ink-faint)"}}>done</div>
+          </div>
+        )}
+        {doneEntries.map((e, i) => (
+          <div key={`d-${i}`} style={{
+            display: "flex", gap: 10, padding: "10px 28px",
+            alignItems: "flex-start",
+            borderBottom: "1px solid var(--rule)",
+          }}>
+            <span style={{
+              width: 15, height: 15, marginTop: 3,
+              background: "var(--ink)", borderRadius: 2,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <span style={{
+                width: 5, height: 9, marginTop: -2,
+                borderRight: "1.5px solid var(--paper)",
+                borderBottom: "1.5px solid var(--paper)",
+                transform: "rotate(45deg)",
+              }}/>
+            </span>
+            <span className="sans" style={{
+              fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.4,
+              textDecoration: "line-through",
+              textDecorationColor: "var(--ink-faint)",
+            }}>
+              {e.text}
+              {e.isWin && (
+                <span className="serif" style={{
+                  marginLeft: 8, fontSize: 11, fontStyle: "italic",
+                  color: "var(--ink-faint)", textDecoration: "none",
+                  display: "inline-block",
+                }}>· win</span>
+              )}
+            </span>
+          </div>
+        ))}
+
+        {openEntries.length > 0 && (
+          <div style={{marginTop: 18, padding: "0 28px"}}>
+            <div className="kicker" style={{marginBottom: 4, color: "var(--ink-faint)"}}>still open, then</div>
+          </div>
+        )}
+        {openEntries.map((e, i) => (
+          <div key={`o-${i}`} style={{
+            display: "flex", gap: 10, padding: "10px 28px",
+            alignItems: "flex-start",
+            borderBottom: "1px solid var(--rule)",
+          }}>
+            <span style={{
+              width: 18, flexShrink: 0,
+              fontFamily: "var(--serif)", fontStyle: "italic",
+              fontSize: 15, color: "var(--ink-faint)",
+              textAlign: "center",
+            }}>{e.mark === ">" ? "›" : e.mark === ">>" ? "››" : e.mark === "?" ? "?" : ""}</span>
+            <span style={{
+              width: 15, height: 15, marginTop: 3,
+              border: "1.5px solid var(--ink-faint)", borderRadius: 2,
+              flexShrink: 0,
+            }}/>
+            <span className="sans" style={{fontSize: 15, color: "var(--ink-soft)", lineHeight: 1.4}}>
+              {e.text}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -2180,5 +2153,5 @@ Object.assign(window, {
   Recap,
   DeskShelfPostit, DeskNotePostit, DeskPage,
   TrashBin,
-  MoodCheckin, RitualPrompt,
+  PagesView,
 });

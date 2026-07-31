@@ -5,15 +5,12 @@
 const { useState, useEffect, useRef } = React;
 
 // ---------- Morning Anchor ----------
-// v=28: CTA cluster restructured as a 4-row ritual ladder (mood / sit a while
-// / reflect a moment / open today). The first three are rituals with circles
-// that fill on per-day completion (state in app.jsx → dailyLogs[todayIso] +
-// today's journal entry). The fourth row is the destination CTA (no circle,
-// no completion gate — Tasks is the day's work, not a ritual). Each ritual
-// step ends with a recommendation prompt routing to the next; skip from any
-// prompt goes direct to Tasks per v=25 home-escape pattern.
-function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, dateStr, weekday, momentum, regulars, onAddRegular, completion, todayLog }) {
-  const c = completion || { mood: false, meditate: false, journal: false };
+// v=43: back to the canon shape — a calm landing, nothing demanded. Weekday
+// + date, the daily quote, an optional momentum line, and one CTA. The v=28
+// ritual ladder (mood / meditate / reflect) was cut in the simplification;
+// meditation happens off-app, per the manual ("start after 5 mins of
+// meditation" describes the practice, not an app feature).
+function MorningAnchor({ onEnter, dateStr, weekday, momentum }) {
   // Daily quote — same for everyone on the same calendar day.
   const quote = (window.quoteForDate ? window.quoteForDate() : null);
   return (
@@ -102,85 +99,9 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
           </div>
         )}
 
-        {/* v=32: today's nominees removed. Surfacing tasks on Anchor short-
-            circuited the morning-arousal arc — the page is meant to walk you
-            from quote → mood → meditate → journal before any task thinking
-            begins. Nominees still drive priorityScore-based ordering inside
-            Tasks; they just don't preempt the ritual on the way in. */}
-
-        {regulars && regulars.length > 0 && (
-          <div
-            className="serif ascend"
-            style={{
-              fontSize: 14,
-              color: "var(--ink-soft)",
-              marginTop: 22,
-              lineHeight: 1.55,
-              animationDelay: "520ms",
-              padding: "12px 14px",
-              background: "var(--paper-deep)",
-              borderLeft: "2px solid var(--rule-strong)",
-              maxWidth: 320,
-            }}
-          >
-            <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>today's regulars</div>
-            {regulars.map((r, i) => (
-              <button
-                key={r.id}
-                onClick={() => onAddRegular && onAddRegular(r)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  background: "transparent",
-                  border: "none",
-                  padding: i === 0 ? "0" : "0",
-                  marginTop: i === 0 ? 0 : 6,
-                  fontFamily: "var(--serif)",
-                  fontSize: 14,
-                  color: "var(--ink-soft)",
-                  textAlign: "left",
-                  cursor: "pointer",
-                }}
-              >
-                <span>{r.text}</span>
-                <span style={{
-                  marginLeft: 8,
-                  color: "var(--ink-faint)",
-                  fontStyle: "italic",
-                  fontSize: 13,
-                }}>+ add</span>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="ascend" style={{animationDelay: "560ms", display: "flex", flexDirection: "column", gap: 0}}>
-        <div className="kicker" style={{marginBottom: 14, color: "var(--ink-faint)"}}>today's path —</div>
-
-        <LadderRow
-          filled={c.mood}
-          label="mood"
-          hint={c.mood && todayLog && todayLog.moodScore
-            ? (["bad", "poor", "okay", "good", "great"][todayLog.moodScore - 1] || "checked in")
-            : "what's loudest right now?"}
-          onClick={onMood}
-        />
-        <LadderRow
-          filled={c.meditate}
-          label="sit a while"
-          hint={c.meditate ? "settled" : "30 seconds, or longer"}
-          onClick={onMeditate}
-        />
-        <LadderRow
-          filled={c.journal}
-          label="reflect a moment"
-          hint={c.journal ? "on paper" : "a few lines"}
-          onClick={onReflect}
-        />
-
         <button
           onClick={onEnter}
           style={{
@@ -207,147 +128,56 @@ function MorningAnchor({ onMood, onMeditate, onBreaths, onReflect, onEnter, date
   );
 }
 
-// v=28: ritual ladder row. Replaces SecondaryAnchor at the bottom of Anchor.
-// The circle is informational (filled = today's ritual is done), not a gate —
-// every row remains tappable so re-entry, edit, or "I'd like to redo this"
-// is always available. Border-top hairline preserves the "list of options"
-// reading; the circle sits in a dedicated 22px gutter so the row text aligns
-// with the existing AnchorMenuItem / SecondaryAnchor patterns.
-function LadderRow({ filled, label, hint, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="ladder-row"
-      style={{
-        background: "transparent",
-        border: "none",
-        borderTop: "1px solid var(--rule)",
-        padding: "14px 0",
-        width: "100%",
-        textAlign: "left",
-        cursor: "pointer",
-        color: "var(--ink-soft)",
-        fontFamily: "var(--serif)",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-      }}
-    >
-      <span
-        aria-hidden="true"
-        className={`ladder-circle ${filled ? "ladder-circle--filled" : ""}`}
-      />
-      <div style={{flex: 1, minWidth: 0}}>
-        <div style={{fontSize: 16, fontWeight: 400, color: "var(--ink)"}}>{label}</div>
-        <div style={{
-          fontSize: 11, color: "var(--ink-faint)",
-          fontStyle: "italic", marginTop: 2,
-          letterSpacing: "0.02em",
-        }}>{hint}</div>
-      </div>
-      <span style={{fontSize: 16, color: "var(--ink-faint)", marginLeft: 8}}>→</span>
-    </button>
-  );
-}
-
-function SecondaryAnchor({ label, hint, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "transparent",
-        border: "none",
-        borderTop: "1px solid var(--rule)",
-        padding: "14px 0",
-        width: "100%",
-        textAlign: "left",
-        cursor: "pointer",
-        color: "var(--ink-soft)",
-        fontFamily: "var(--serif)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
-      }}
-    >
-      <div>
-        <div style={{fontSize: 16, fontWeight: 400}}>{label}</div>
-        <div style={{
-          fontSize: 11, color: "var(--ink-faint)",
-          fontStyle: "italic", marginTop: 2,
-          letterSpacing: "0.02em",
-        }}>{hint}</div>
-      </div>
-      <span style={{fontSize: 16, color: "var(--ink-faint)", marginLeft: 12}}>→</span>
-    </button>
-  );
-}
-
-function AnchorMenuItem({ label, hint, onClick, primary }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "transparent",
-        border: "none",
-        borderTop: "1px solid var(--rule)",
-        padding: "18px 0",
-        width: "100%",
-        textAlign: "left",
-        cursor: "pointer",
-        color: "var(--ink)",
-        fontFamily: "var(--serif)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
-      }}
-    >
-      <div>
-        <div style={{fontSize: primary ? 22 : 19, fontWeight: 400}}>{label}</div>
-        <div style={{
-          fontSize: 12, color: "var(--ink-faint)",
-          fontStyle: "italic", marginTop: 3,
-          letterSpacing: "0.02em",
-        }}>{hint}</div>
-      </div>
-      <span style={{fontSize: 22, color: "var(--ink-soft)", marginLeft: 12}}>→</span>
-    </button>
-  );
-}
-
 // ---------- Now Page (today's list) ----------
-function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete, onKeyOpen, onTaskCompleted, onTogglePriority, onRename, onSetProgress, onReorderTasks, onChain, onSetGroupName, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+function NowPage({ tasks, setTasks, onAddOpen, onDivideOpen, onDelete, onTaskCompleted, onTogglePriority, onRename, onReorderTasks, onNextStep, regulars, onAddRegular, dateStr, weekday, reOffer, onReOfferAccept, onReOfferLater, onReOfferRest }) {
+  // v=43: passive next-step pill. Completion is INSTANT (the v=42 2.5s hold
+  // is gone). After a task flips to done, a small "↳ next step?" pill shows
+  // on its row in the done block for a few seconds; tapping opens a one-line
+  // input that creates a fresh, fully independent task. Ignoring it costs
+  // nothing. State lives here (not in TaskRow) because the row remounts when
+  // it moves from the active list to the done block.
+  const [pillTaskId, setPillTaskId] = useState(null);
+  const [nextStepFor, setNextStepFor] = useState(null);
+  const [nextStepText, setNextStepText] = useState("");
+  const pillTimerRef = useRef(null);
+  useEffect(() => () => {
+    if (pillTimerRef.current) clearTimeout(pillTimerRef.current);
+  }, []);
+  function showNextStepPill(id) {
+    if (pillTimerRef.current) clearTimeout(pillTimerRef.current);
+    setPillTaskId(id);
+    pillTimerRef.current = setTimeout(() => {
+      pillTimerRef.current = null;
+      setPillTaskId(prev => prev === id ? null : prev);
+    }, 6000);
+  }
+  function openNextStepInput(id) {
+    if (pillTimerRef.current) { clearTimeout(pillTimerRef.current); pillTimerRef.current = null; }
+    setPillTaskId(null);
+    setNextStepFor(id);
+    setNextStepText("");
+  }
+  function saveNextStep() {
+    const text = nextStepText.trim();
+    if (text && onNextStep) onNextStep(nextStepFor, text);
+    setNextStepFor(null);
+    setNextStepText("");
+  }
   function toggle(id) {
     const target = tasks.find(t => t.id === id);
-    // v=42: stamp completedAt when transitioning to done; clear when un-done.
-    // Carry-forward chain freeze and chain history rendering both rely on
-    // completedAt being present on every completed task.
-    setTasks(tasks.map(t => {
-      if (t.id !== id) return t;
-      const goingDone = !t.done;
-      return {
-        ...t,
-        done: goingDone,
-        completedAt: goingDone ? Date.now() : null,
-      };
-    }));
-    if (target && !target.done && onTaskCompleted) {
-      onTaskCompleted(target);
+    setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    if (target && !target.done) {
+      if (onTaskCompleted) onTaskCompleted(target);
+      if (!target.isWin && onNextStep) showNextStepPill(id);
     }
+    if (target && target.done && pillTaskId === id) setPillTaskId(null);
   }
   function setNote(id, noteText) {
     setTasks(tasks.map(t => t.id === id ? {...t, note: noteText.trim() || null} : t));
   }
 
-  // v=42: chain ancestors are HIDDEN from standalone active + done lists.
-  // They live only inside their successor's drawer "previous steps" history.
-  // A task is consumed when another task points at it via prevTaskId.
-  const consumedIds = (() => {
-    const s = new Set();
-    for (const t of tasks) if (t.prevTaskId) s.add(t.prevTaskId);
-    return s;
-  })();
-  const active = tasks.filter(t => !t.done && !consumedIds.has(t.id));
-  const done = tasks.filter(t => t.done && !consumedIds.has(t.id));
+  const active = tasks.filter(t => !t.done);
+  const done = tasks.filter(t => t.done);
   // v=32: cap is on ACTIVE tasks only — completed work shouldn't block adding
   // the next thing. Field-test friction: 7 done + 3 active hit the old
   // tasks.length cap and felt arbitrary. Same threshold of 10 still keeps the
@@ -423,6 +253,53 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
         />
       )}
 
+      {/* v=43: today's regulars — relocated here from the cut Anchor ritual
+          surface. Weekly recurrences matching today that aren't on the page
+          yet; tap to add. Renders above the task list, disappears once all
+          are added. */}
+      {regulars && regulars.length > 0 && (
+        <div className="serif fade-in" style={{
+          margin: "10px 28px 0",
+          padding: "10px 14px",
+          background: "var(--paper-deep)",
+          borderLeft: "2px solid var(--rule-strong)",
+          fontSize: 14,
+          color: "var(--ink-soft)",
+          lineHeight: 1.55,
+        }}>
+          <div className="kicker" style={{marginBottom: 6, fontSize: 9}}>today's regulars</div>
+          {regulars.map((r, i) => (
+            <button
+              key={r.id}
+              onClick={() => onAddRegular && onAddRegular(r)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                marginTop: i === 0 ? 0 : 6,
+                fontFamily: "var(--serif)",
+                fontSize: 14,
+                color: "var(--ink-soft)",
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+              <span>{r.text}</span>
+              <span style={{
+                marginLeft: 8,
+                color: "var(--ink-faint)",
+                fontStyle: "italic",
+                fontSize: 13,
+              }}>+ add</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Tasks */}
       <div className="scroll-y" style={{flex: 1, overflowY: "auto", padding: "8px 0 90px"}}>
         {active.length === 0 && done.length === 0 && (
@@ -444,16 +321,12 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
             <TaskRow
               key={t.id}
               task={t}
-              allTasks={tasks}
               onToggle={() => toggle(t.id)}
               onDivide={() => onDivideOpen(t)}
               onDelete={() => onDelete(t.id)}
               onAddNote={(noteText) => setNote(t.id, noteText)}
               onTogglePriority={onTogglePriority ? () => onTogglePriority(t.id) : null}
               onRename={onRename}
-              onSetProgress={onSetProgress}
-              onChain={onChain}
-              onSetGroupName={onSetGroupName}
               index={i}
             />
           ))}
@@ -479,14 +352,72 @@ function NowPage({ tasks, setTasks, onAddOpen, onWinOpen, onDivideOpen, onDelete
           </div>
         )}
         {done.map((t) => (
-          <TaskRow
-            key={t.id}
-            task={t}
-            allTasks={tasks}
-            onToggle={() => toggle(t.id)}
-            onDivide={() => {}}
-            onDelete={() => onDelete(t.id)}
-          />
+          <React.Fragment key={t.id}>
+            <TaskRow
+              task={t}
+              onToggle={() => toggle(t.id)}
+              onDivide={() => {}}
+              onDelete={() => onDelete(t.id)}
+              nextStepPill={pillTaskId === t.id}
+              onNextStepTap={() => openNextStepInput(t.id)}
+            />
+            {nextStepFor === t.id && (
+              <div
+                className="fade-in"
+                style={{
+                  margin: "0 28px 10px",
+                  padding: "10px 12px",
+                  background: "var(--paper-deep)",
+                  border: "1px solid var(--rule)",
+                  borderRadius: 4,
+                }}
+              >
+                <div className="kicker" style={{marginBottom: 6, fontSize: 9, color: "var(--ink-faint)"}}>and then…</div>
+                <input
+                  autoFocus
+                  type="text"
+                  value={nextStepText}
+                  onChange={(e) => setNextStepText(e.target.value)}
+                  placeholder="the next step"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveNextStep();
+                    if (e.key === "Escape") { setNextStepFor(null); setNextStepText(""); }
+                  }}
+                  style={{
+                    width: "100%",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: "1px solid var(--rule-strong)",
+                    outline: "none",
+                    padding: "2px 0 4px",
+                    fontFamily: "var(--serif)",
+                    fontSize: 15,
+                    fontStyle: nextStepText ? "normal" : "italic",
+                    color: "var(--ink)",
+                  }}
+                />
+                <div style={{display: "flex", gap: 12, marginTop: 8, justifyContent: "flex-end"}}>
+                  <button
+                    onClick={() => { setNextStepFor(null); setNextStepText(""); }}
+                    className="ghost-btn"
+                    style={{fontSize: 12, fontStyle: "italic", color: "var(--ink-faint)"}}
+                  >cancel</button>
+                  <button
+                    onClick={saveNextStep}
+                    disabled={!nextStepText.trim()}
+                    style={{
+                      background: nextStepText.trim() ? "var(--ink)" : "transparent",
+                      color: nextStepText.trim() ? "var(--paper)" : "var(--ink-faint)",
+                      border: nextStepText.trim() ? "none" : "1px solid var(--rule-strong)",
+                      borderRadius: 999, padding: "5px 14px",
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                      fontSize: 12, cursor: nextStepText.trim() ? "pointer" : "default",
+                    }}
+                  >add it →</button>
+                </div>
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
 
@@ -620,122 +551,22 @@ function TaskNote({ task, autoEdit, onSave, onCancel }) {
   );
 }
 
-function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, onSetProgress, onChain, onSetGroupName, index }) {
+function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriority, onRename, nextStepPill, onNextStepTap, index }) {
   const isDecision = task.mark === "?";
   const isCarriedTwice = task.mark === ">>";
   const isCarriedOnce = task.mark === ">";
   const isCarried = isCarriedOnce || isCarriedTwice;
   const isPriority = task.priority === true;
-  const hasProgress = typeof task.progress === "number" && task.progress > 0 && task.progress < 100;
   const [open, setOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  // v=42: chain pre-completion overlay state. When the user taps the
-  // checkbox on an active task, we hold for 2.5s instead of committing
-  // immediately — long enough to ask "next step?" without making the user
-  // wait if they just want to check it off. Tap the pill → chain input;
-  // ignore → timer commits the toggle normally.
-  const [chainPending, setChainPending] = useState(false);
-  const [chainInputOpen, setChainInputOpen] = useState(false);
-  const [chainText, setChainText] = useState("");
-  const [chainGroupName, setChainGroupName] = useState("");
-  const [chainGroupOpen, setChainGroupOpen] = useState(false);
-  const [chainLinkOpen, setChainLinkOpen] = useState(false);
-  const [groupRenameOpen, setGroupRenameOpen] = useState(false);
-  const [groupRenameText, setGroupRenameText] = useState("");
-  const chainTimerRef = useRef(null);
-
-  // v=42: walk chain history. Only a task with prevTaskId has ancestors.
-  // walkChainBack is defined at module-top in app.jsx and resolved at
-  // runtime via the babel global scope (app.jsx loads after this file in
-  // the HTML, but the call happens during render after both have evaluated).
-  const chainAncestors = (task.prevTaskId && allTasks && typeof walkChainBack === "function")
-    ? walkChainBack(task.id, allTasks)
-    : [];
-  // First chain on this task = no existing chain history AND no group name.
-  const isFirstChainCreation = !task.prevTaskId && !task.groupName;
-
-  function clearChainPending() {
-    if (chainTimerRef.current) {
-      clearTimeout(chainTimerRef.current);
-      chainTimerRef.current = null;
-    }
-    setChainPending(false);
-  }
-  function commitDoneNoChain() {
-    clearChainPending();
-    if (onToggle) onToggle();
-  }
+  // v=43: completion is instant — tap the checkbox, it commits. The passive
+  // next-step pill is driven by NowPage state (nextStepPill prop) since the
+  // row remounts when it moves to the done block.
   function onCheckboxClick(e) {
     e.stopPropagation();
-    // Already-done tasks un-check immediately (no chain prompt on un-done).
-    if (task.done) { if (onToggle) onToggle(); return; }
-    // Chain input already open — ignore re-taps so we don't race two
-    // commit paths against the open panel.
-    if (chainInputOpen) return;
-    // No chain support (done-block render, deferred load) → fall back to
-    // immediate toggle so the checkbox always works.
-    if (!onChain) { if (onToggle) onToggle(); return; }
-    // Already in chain-pending → second tap = commit done now (skip wait).
-    if (chainPending) { commitDoneNoChain(); return; }
-    setChainPending(true);
-    chainTimerRef.current = setTimeout(() => {
-      chainTimerRef.current = null;
-      setChainPending(false);
-      if (onToggle) onToggle();
-    }, 2500);
+    if (onToggle) onToggle();
   }
-  function openChainInput() {
-    if (chainTimerRef.current) {
-      clearTimeout(chainTimerRef.current);
-      chainTimerRef.current = null;
-    }
-    setChainPending(true); // keep visual checked while editing
-    setChainInputOpen(true);
-    setChainText("");
-    setChainGroupName("");
-    setChainGroupOpen(false);
-    setChainLinkOpen(false);
-  }
-  function cancelChainInput() {
-    // User backed out — commit done normally (no chain).
-    setChainInputOpen(false);
-    setChainGroupOpen(false);
-    setChainLinkOpen(false);
-    setChainText("");
-    setChainGroupName("");
-    commitDoneNoChain();
-  }
-  function saveChainNew() {
-    const text = chainText.trim();
-    if (!text) return;
-    const name = chainGroupName.trim() || null;
-    setChainInputOpen(false);
-    setChainPending(false);
-    setChainText("");
-    setChainGroupName("");
-    setChainGroupOpen(false);
-    if (onChain) onChain(task.id, { nextText: text, groupName: name });
-  }
-  function saveChainLink(targetId) {
-    const name = chainGroupName.trim() || null;
-    setChainInputOpen(false);
-    setChainPending(false);
-    setChainLinkOpen(false);
-    setChainGroupOpen(false);
-    setChainText("");
-    setChainGroupName("");
-    if (onChain) onChain(task.id, { nextTaskId: targetId, groupName: name });
-  }
-  // Cleanup pending timer if the row unmounts mid-wait.
-  useEffect(() => () => {
-    if (chainTimerRef.current) clearTimeout(chainTimerRef.current);
-  }, []);
-  // v=27: inline progress slider state. Local buffer mirrors row's progress;
-  // committed via setOnSlider's onChange (live update for visual feedback)
-  // and final commit on slider release / done tap.
-  const [progressOpen, setProgressOpen] = useState(false);
-  const [localProgress, setLocalProgress] = useState(0);
   // Swipe-right gesture progress (0–1). Drives the painted highlighter sweep.
   // Tap vs swipe classification happens in onPointerUp based on Δx/Δy/elapsed.
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -755,49 +586,16 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open, task.id]);
-  // v=27: tap-outside-to-commit when progress slider is open. Slider's own
-  // container stops pointerdown propagation, so this only fires on outside
-  // taps. setTimeout(0) defers registration past the click that opened the
-  // slider so the same gesture can't dismiss what it just opened.
-  // v=30 fix: ref-stabilized localProgress so the effect doesn't tear down +
-  // rebuild its listener on every slider tick. The previous deps array
-  // included `localProgress`, which made the listener registration race with
-  // every drag pixel — under iOS PWA timing that left the slider feeling
-  // stuck (no listener attached when user tapped outside). Stable listener
-  // now reads the latest value via ref.
-  const localProgressRef = useRef(localProgress);
-  localProgressRef.current = localProgress;
-  useEffect(() => {
-    if (!progressOpen) return;
-    function handlePointerDown() {
-      if (onSetProgress) onSetProgress(task.id, localProgressRef.current);
-      setProgressOpen(false);
-    }
-    const id = setTimeout(() => document.addEventListener("pointerdown", handlePointerDown), 0);
-    return () => {
-      clearTimeout(id);
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [progressOpen, task.id, onSetProgress]);
-
   let markGlyph = null;
   let markColor = "var(--ink-faint)";
   if (isCarriedOnce) { markGlyph = "›"; }
   else if (isCarriedTwice) { markGlyph = "››"; markColor = "var(--mark)"; }
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
 
-  // v=32: drawer = Edit + Comment + Progress + Decide. Four buttons at 64px =
-  // 256px max. The leftmost × close button was redundant — tap-outside-
-  // to-close has shipped since v=16 (document-level pointerdown listener),
-  // and tapping the visible row body also re-toggles the drawer. Field-test
-  // friction: the v=27 5-button drawer (320px) overflowed on smaller iPhones
-  // and required a horizontal pan to reach Decide.
-  //
-  // Drawer width is dynamic — done tasks render only the Comment button, so
-  // the row only slides 64px instead of 256px (was a pre-existing mismatch
-  // before v=32; the row used to over-slide and reveal empty drawer space).
+  // v=43: drawer = Edit + Comment + Decide (Progress cut). Done tasks render
+  // only the Comment button, so the row slides 64px instead of 192px.
   const drawerBtnWidth = 64;
-  const visibleDrawerBtns = task.done ? 1 : (onSetProgress ? 4 : 3);
+  const visibleDrawerBtns = task.done ? 1 : 3;
   const drawerWidth = visibleDrawerBtns * drawerBtnWidth;
 
   // Pointer-event handlers on the row content. Tap = open drawer.
@@ -873,49 +671,12 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
         overflow: "hidden",
       }}
     >
-      {/* v=29: progress indicator. Replaces v=27's faint ghost-fill (paper-
-          deep at 0.6 opacity behind row content — too subtle on a paper-cream
-          background) with a strong-but-quiet 2px bottom ribbon plus a soft
-          paper-edge tint behind the row content. Read-at-a-glance from the
-          Notebook screen. Hidden at 0% and 100%. */}
-      {hasProgress && (
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              top: 0, left: 0, bottom: 0,
-              width: `${task.progress}%`,
-              background: "var(--paper-edge)",
-              opacity: 0.55,
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              left: 0, bottom: 0,
-              height: 2,
-              width: `${task.progress}%`,
-              background: "var(--ink-soft)",
-              opacity: 0.7,
-              pointerEvents: "none",
-              zIndex: 3,
-            }}
-          />
-        </>
-      )}
-
-      {/* v=42: pre-completion next-step pill. Renders for 2.5s after the
-          user taps the checkbox on an active task. Sits over the (hidden)
-          drawer area at the row's right edge; tap = open chain input,
-          ignore = wait timer expires and the toggle commits. zIndex above
-          row content so it isn't masked when drawer is closed. */}
-      {chainPending && !chainInputOpen && !task.done && (
+      {/* v=43: passive next-step pill. Shows on the just-completed row in
+          the done block for a few seconds (NowPage drives it). Tap = open
+          the next-step input; ignore = it fades away, nothing owed. */}
+      {nextStepPill && (
         <button
-          onClick={(e) => { e.stopPropagation(); openChainInput(); }}
+          onClick={(e) => { e.stopPropagation(); if (onNextStepTap) onNextStepTap(); }}
           className="chain-pill fade-in"
           aria-label="add next step"
         >
@@ -969,29 +730,6 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
             justifyContent: "center",
           }}
         ><Icon name="comment" size={20}/></button>
-        {!task.done && onSetProgress && (
-          <button
-            onClick={() => {
-              setOpen(false);
-              setLocalProgress(typeof task.progress === "number" ? task.progress : 0);
-              setProgressOpen(true);
-            }}
-            aria-label="progress"
-            title="progress"
-            style={{
-              background: "var(--paper-deep)",
-              border: "none",
-              padding: "0 10px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              borderLeft: "1px solid var(--rule)",
-              minWidth: drawerBtnWidth,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          ><Icon name="progress" size={20}/></button>
-        )}
         {!task.done && (
           <button
             onClick={() => { setOpen(false); onDivide(); }}
@@ -1050,7 +788,7 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
 
         <div style={{paddingTop: 2}}>
           <div
-            className={`check ${task.done || chainPending ? "done" : ""} ${chainPending ? "check--pending" : ""}`}
+            className={`check ${task.done ? "done" : ""}`}
             onClick={onCheckboxClick}
           />
         </div>
@@ -1064,7 +802,7 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
             // phone. Click events fire reliably across iOS PWA / Safari
             // edge cases the pointer handler can miss. Idempotent: when
             // already false, setOpen(false) is a no-op.
-            if (open && !editOpen && !progressOpen) {
+            if (open && !editOpen) {
               e.stopPropagation();
               setOpen(false);
             }
@@ -1079,138 +817,8 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
               from “{task.parentText}”
             </div>
           )}
-          {/* v=42: group-name kicker / rename input. The input renders when
-              groupRenameOpen, regardless of whether the chain currently has
-              a name (covers both first-naming a chain via the inline "+ name
-              this group" affordance below AND renaming via tapping the
-              existing kicker). Save = setChainGroupName across every member
-              of the chain. */}
-          {groupRenameOpen && !task.done && (
-            <input
-              autoFocus
-              type="text"
-              value={groupRenameText}
-              onChange={(e) => setGroupRenameText(e.target.value)}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-              placeholder="name this group"
-              onBlur={() => {
-                if (onSetGroupName) onSetGroupName(task.id, groupRenameText);
-                setGroupRenameOpen(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.currentTarget.blur();
-                if (e.key === "Escape") {
-                  setGroupRenameText(task.groupName || "");
-                  setGroupRenameOpen(false);
-                }
-              }}
-              style={{
-                display: "block",
-                fontFamily: "var(--serif)", fontStyle: "italic",
-                fontSize: 11, color: "var(--ink-soft)",
-                letterSpacing: "0.04em",
-                border: "none", borderBottom: "1px solid var(--rule-strong)",
-                outline: "none", background: "transparent",
-                padding: "0 0 1px",
-                marginBottom: 4,
-                width: "60%", minWidth: 80,
-              }}
-            />
-          )}
-          {!groupRenameOpen && task.groupName && !task.done && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setGroupRenameText(task.groupName || "");
-                setGroupRenameOpen(true);
-              }}
-              className="group-kicker"
-              style={{
-                background: "transparent", border: "none", padding: 0,
-                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-                color: "var(--ink-soft)", letterSpacing: "0.04em",
-                marginBottom: 4, cursor: "pointer",
-                textAlign: "left", display: "block",
-              }}
-            >
-              ↳ {task.groupName}
-            </button>
-          )}
-          {/* v=42: name-this-group affordance for already-chained tasks that
-              have no group name yet. Inline ghost-italic, easy to ignore. */}
-          {!groupRenameOpen && task.prevTaskId && !task.groupName && !task.done && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setGroupRenameText("");
-                setGroupRenameOpen(true);
-              }}
-              style={{
-                background: "transparent", border: "none", padding: 0,
-                fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-                color: "var(--ink-faint)", letterSpacing: "0.04em",
-                marginBottom: 4, cursor: "pointer",
-                textAlign: "left", display: "block",
-              }}
-            >
-              + name this group
-            </button>
-          )}
           <div style={{display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap"}}>
-            {progressOpen ? (
-              <div
-                style={{display: "flex", alignItems: "center", gap: 10, width: "100%"}}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="range"
-                  min="0" max="100" step="5"
-                  value={localProgress}
-                  onChange={(e) => setLocalProgress(Number(e.target.value))}
-                  style={{flex: 1, minWidth: 80}}
-                  aria-label="progress"
-                />
-                <div className="serif" style={{
-                  minWidth: 36,
-                  fontFamily: "var(--serif)", fontStyle: "italic",
-                  fontSize: 13, color: "var(--ink-soft)",
-                  textAlign: "right",
-                }}>{localProgress}%</div>
-                <button
-                  onClick={() => {
-                    if (onSetProgress) onSetProgress(task.id, localProgress);
-                    setProgressOpen(false);
-                  }}
-                  style={{
-                    background: "var(--ink)", color: "var(--paper)",
-                    border: "none", borderRadius: 999,
-                    padding: "5px 12px",
-                    fontFamily: "var(--serif)", fontStyle: "italic",
-                    fontSize: 12, cursor: "pointer",
-                  }}
-                >done</button>
-                {/* v=30: explicit cancel — closes the slider without writing.
-                    Field-test feedback: slider was felt sticky; small × gives
-                    a clear way out alongside the "done" commit + tap-outside. */}
-                <button
-                  onClick={() => setProgressOpen(false)}
-                  aria-label="cancel"
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--ink-faint)",
-                    fontFamily: "var(--serif)",
-                    fontStyle: "italic",
-                    fontSize: 18,
-                    lineHeight: 1,
-                    padding: "0 6px",
-                    cursor: "pointer",
-                  }}
-                >×</button>
-              </div>
-            ) : editOpen ? (
+            {editOpen ? (
               <input
                 autoFocus
                 type="text"
@@ -1244,17 +852,8 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
                 }}>
                   {task.text}
                 </span>
-                {typeof task.progress === "number" && task.progress > 0 && task.progress < 100 && (
-                  <span className="serif" style={{
-                    marginLeft: 8,
-                    fontSize: 11, fontStyle: "italic",
-                    color: "var(--ink-faint)",
-                  }}>{task.progress}%</span>
-                )}
-                {/* v=39: win identifier on done-block tasks logged through
-                    logWin (not checked off from active). Marks them clearly as
-                    accomplishments-not-on-the-list while still living in the
-                    same done block as completed tasks. */}
+                {/* v=39/v=43: win identifier — entries logged as wins via the
+                    + sheet carry a quiet italic tag on the row. */}
                 {task.isWin && (
                   <span className="serif" style={{
                     marginLeft: 8,
@@ -1277,158 +876,6 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
               </span>
             )}
           </div>
-
-          {/* v=42: chain history. Walks back via prevTaskId and lists the
-              completed predecessors that led to this task. Read-only. */}
-          {chainAncestors.length > 0 && !task.done && (
-            <div style={{
-              marginTop: 8,
-              padding: "8px 0 0",
-              borderTop: "1px dashed var(--rule)",
-            }}>
-              <div className="kicker" style={{
-                fontSize: 9, marginBottom: 6, color: "var(--ink-faint)",
-              }}>previous steps</div>
-              {chainAncestors.map((a, i) => (
-                <div key={a.id} className="serif" style={{
-                  fontSize: 13, color: "var(--ink-faint)",
-                  fontStyle: "italic", lineHeight: 1.5,
-                  paddingLeft: 14, position: "relative",
-                  display: "flex", alignItems: "baseline", gap: 6,
-                }}>
-                  <span style={{
-                    position: "absolute", left: 0, top: "0.5em",
-                    color: "var(--ink-faint)", fontSize: 11,
-                  }}>✓</span>
-                  <span style={{flex: 1}}>{a.text}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* v=42: chain input panel. Replaces the row's "what's next" pill
-              once the user taps it; provides a textarea + optional name + an
-              optional "link to existing" picker. Save = chainTo (parent
-              completes, new task takes its place); cancel = parent slides
-              to done normally without chaining. */}
-          {chainInputOpen && (
-            <div
-              className="chain-panel fade-in"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="kicker" style={{
-                marginBottom: 6, fontSize: 9, color: "var(--ink-faint)",
-              }}>and then…</div>
-              {!chainLinkOpen ? (
-                <textarea
-                  autoFocus
-                  rows={2}
-                  value={chainText}
-                  onChange={(e) => setChainText(e.target.value)}
-                  placeholder="the next step"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      saveChainNew();
-                    }
-                    if (e.key === "Escape") { e.preventDefault(); cancelChainInput(); }
-                  }}
-                  style={{
-                    width: "100%", resize: "none",
-                    background: "var(--paper-deep)",
-                    border: "1px solid var(--rule)", borderRadius: 4,
-                    padding: "8px 10px",
-                    fontFamily: "var(--serif)", fontSize: 14,
-                    fontStyle: chainText ? "normal" : "italic",
-                    color: "var(--ink)", lineHeight: 1.45,
-                    outline: "none",
-                  }}
-                />
-              ) : (
-                <ChainLinkPicker
-                  allTasks={allTasks}
-                  parentId={task.id}
-                  onPick={saveChainLink}
-                  onCancel={() => setChainLinkOpen(false)}
-                />
-              )}
-              {/* group-name input — first chain only (no existing groupName).
-                  Renames-after-creation happen via the kicker tap above. */}
-              {chainGroupOpen && isFirstChainCreation && (
-                <input
-                  type="text"
-                  value={chainGroupName}
-                  onChange={(e) => setChainGroupName(e.target.value)}
-                  placeholder="name this group (e.g., launch)"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
-                  }}
-                  style={{
-                    width: "100%",
-                    marginTop: 8,
-                    background: "transparent",
-                    border: "none",
-                    borderBottom: "1px solid var(--rule-strong)",
-                    padding: "4px 0",
-                    fontFamily: "var(--serif)", fontStyle: "italic",
-                    fontSize: 12, color: "var(--ink-soft)",
-                    letterSpacing: "0.04em",
-                    outline: "none",
-                  }}
-                />
-              )}
-              {/* affordances row */}
-              <div style={{
-                display: "flex", gap: 10, alignItems: "center",
-                marginTop: 8, flexWrap: "wrap",
-              }}>
-                {!chainLinkOpen && (
-                  <button
-                    onClick={saveChainNew}
-                    disabled={!chainText.trim()}
-                    style={{
-                      background: chainText.trim() ? "var(--ink)" : "transparent",
-                      color: chainText.trim() ? "var(--paper)" : "var(--ink-faint)",
-                      border: chainText.trim() ? "none" : "1px solid var(--rule-strong)",
-                      borderRadius: 999, padding: "5px 14px",
-                      fontFamily: "var(--serif)", fontStyle: "italic",
-                      fontSize: 12, cursor: chainText.trim() ? "pointer" : "default",
-                    }}
-                  >chain →</button>
-                )}
-                {!chainLinkOpen && allTasks && allTasks.some(t => !t.done && t.id !== task.id && !t.prevTaskId) && (
-                  <button
-                    onClick={() => setChainLinkOpen(true)}
-                    className="ghost-btn"
-                    style={{
-                      fontSize: 12, fontStyle: "italic", padding: "2px 0",
-                      color: "var(--ink-faint)",
-                    }}
-                  >link to existing</button>
-                )}
-                {!chainLinkOpen && isFirstChainCreation && !chainGroupOpen && (
-                  <button
-                    onClick={() => setChainGroupOpen(true)}
-                    className="ghost-btn"
-                    style={{
-                      fontSize: 12, fontStyle: "italic", padding: "2px 0",
-                      color: "var(--ink-faint)",
-                    }}
-                  >name this group</button>
-                )}
-                <button
-                  onClick={cancelChainInput}
-                  className="ghost-btn"
-                  style={{
-                    fontSize: 12, fontStyle: "italic", padding: "2px 0",
-                    color: "var(--ink-faint)", marginLeft: "auto",
-                  }}
-                >cancel</button>
-              </div>
-            </div>
-          )}
 
           {task.parked && task.parkedSteps && task.parkedSteps.length > 0 && !task.done && (
             <div style={{
@@ -1523,78 +970,14 @@ function TaskRow({ task, allTasks, onToggle, onDivide, onDelete, onAddNote, onTo
   );
 }
 
-// ---------- Chain Link Picker (v=42) ----------
-// Inline picker invoked from inside the chain panel when the user taps
-// "link to existing." Lists active tasks in the notebook that haven't yet
-// been linked into another chain (no prevTaskId) and aren't the parent
-// being completed. Tap = chain to that target. Empty list = friendly hint
-// instead of dead silence.
-function ChainLinkPicker({ allTasks, parentId, onPick, onCancel }) {
-  const candidates = (allTasks || []).filter(t =>
-    !t.done && t.id !== parentId && !t.prevTaskId
-  );
-  if (candidates.length === 0) {
-    return (
-      <div style={{
-        padding: "10px 0",
-        fontFamily: "var(--serif)", fontStyle: "italic",
-        fontSize: 13, color: "var(--ink-faint)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 10,
-      }}>
-        <span>nothing else linkable yet.</span>
-        <button
-          onClick={onCancel}
-          className="ghost-btn"
-          style={{
-            fontSize: 12, fontStyle: "italic", padding: "2px 0",
-            color: "var(--ink-faint)",
-          }}
-        >back</button>
-      </div>
-    );
-  }
-  return (
-    <div style={{
-      maxHeight: 220, overflowY: "auto",
-      background: "var(--paper-deep)",
-      border: "1px solid var(--rule)", borderRadius: 4,
-      padding: "4px 0",
-    }}>
-      {candidates.map(c => (
-        <button
-          key={c.id}
-          onClick={() => onPick(c.id)}
-          style={{
-            display: "block", width: "100%", textAlign: "left",
-            background: "transparent", border: "none",
-            padding: "8px 12px",
-            fontFamily: "var(--sans)", fontSize: 14,
-            color: "var(--ink)", lineHeight: 1.4,
-            cursor: "pointer",
-            borderBottom: "1px solid var(--rule)",
-          }}
-        >{c.text}</button>
-      ))}
-      <div style={{
-        display: "flex", justifyContent: "flex-end",
-        padding: "6px 8px",
-      }}>
-        <button
-          onClick={onCancel}
-          className="ghost-btn"
-          style={{
-            fontSize: 12, fontStyle: "italic", padding: "2px 6px",
-            color: "var(--ink-faint)",
-          }}
-        >back</button>
-      </div>
-    </div>
-  );
-}
-
-// ---------- Add Task Sheet ----------
-function AddSheet({ onClose, onAdd, goals }) {
+// ---------- Add Sheet (task or win) ----------
+// v=43: one capture surface for both. The sheet opens in task mode; a small
+// two-pill toggle switches to win mode (the manual's "unseen win" — logged
+// as a completed entry on today's page with a quiet italic tag). Cutting the
+// separate top-right wins pill + timeline put capture where the thumb
+// already is: the + button.
+function AddSheet({ onClose, onAdd, onLogWin }) {
+  const [mode, setMode] = useState("task"); // "task" | "win"
   const [text, setText] = useState("");
   const [tenMin, setTenMin] = useState("");
   const [showTenMin, setShowTenMin] = useState(false);
@@ -1602,13 +985,14 @@ function AddSheet({ onClose, onAdd, goals }) {
   // is a Set of weekday indices (Sun=0..Sat=6).
   const [repeats, setRepeats] = useState("none");
   const [weeklyDays, setWeeklyDays] = useState(() => new Set());
-  // v=34: optional goalRef picker. Default skip. Lives behind a ghost-italic
-  // "(toward…)" affordance so it never crowds the primary capture flow —
-  // only surfaces when the user reaches for it. Active goals only; a goal
-  // that's been parked on the desk isn't a daily-task anchor.
-  const [showGoalPicker, setShowGoalPicker] = useState(false);
-  const [goalRef, setGoalRef] = useState(null);
-  const activeGoals = (goals || []).filter(g => g.tier === "active");
+  const WIN_PRESETS = [
+    "I started.",
+    "I stayed calm.",
+    "I asked for help.",
+    "I noticed.",
+    "I rested.",
+    "I came back.",
+  ];
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -1625,6 +1009,11 @@ function AddSheet({ onClose, onAdd, goals }) {
 
   function submit() {
     if (!text.trim()) return;
+    if (mode === "win") {
+      if (onLogWin) onLogWin(text.trim());
+      onClose();
+      return;
+    }
     const parsed = parseMarks(text.trim());
     let recurrenceSpec = null;
     if (repeats === "daily") {
@@ -1638,7 +1027,6 @@ function AddSheet({ onClose, onAdd, goals }) {
       mark: parsed.mark,
       tenMin: tenMin.trim() || null,
       done: false,
-      goalRef: goalRef || null,
     }, recurrenceSpec);
     onClose();
   }
@@ -1647,24 +1035,68 @@ function AddSheet({ onClose, onAdd, goals }) {
     <>
       <div className="sheet-backdrop" onClick={onClose}/>
       <div className="sheet">
-        <div className="kicker" style={{marginBottom: 14}}>add to now</div>
+        <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14}}>
+          <div className="kicker">{mode === "task" ? "add to now" : "unseen win"}</div>
+          <div style={{display: "flex", gap: 6}}>
+            {[
+              { key: "task", label: "task" },
+              { key: "win", label: "a win" },
+            ].map(opt => {
+              const active = mode === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setMode(opt.key)}
+                  style={{
+                    background: active ? "var(--ink)" : "transparent",
+                    color: active ? "var(--paper)" : "var(--ink-soft)",
+                    border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
+                    borderRadius: 999,
+                    padding: "5px 12px",
+                    fontFamily: "var(--serif)",
+                    fontStyle: active ? "normal" : "italic",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    transition: "all 160ms ease",
+                  }}
+                >{opt.label}</button>
+              );
+            })}
+          </div>
+        </div>
         <input
           ref={inputRef}
           className="paper-input serif"
-          style={{fontSize: 20, fontFamily: "var(--serif)"}}
-          placeholder="One small thing…"
+          style={{fontSize: 20, fontFamily: "var(--serif)", fontStyle: mode === "win" ? "italic" : "normal"}}
+          placeholder={mode === "task" ? "One small thing…" : "Something quiet happened…"}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !showTenMin) submit(); }}
         />
-        <div className="serif" style={{
-          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
-          marginTop: 6, letterSpacing: "0.02em",
-        }}>
-          keep it short — add a comment for detail.
-        </div>
+        {mode === "task" && (
+          <div className="serif" style={{
+            fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
+            marginTop: 6, letterSpacing: "0.02em",
+          }}>
+            keep it short — add a comment for detail.
+          </div>
+        )}
 
-        {!showTenMin ? (
+        {mode === "win" && (
+          <div style={{display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14}}>
+            {WIN_PRESETS.map((p) => (
+              <button
+                key={p}
+                onClick={() => { if (onLogWin) onLogWin(p); onClose(); }}
+                className="win-pill"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {mode === "win" ? null : !showTenMin ? (
           <button
             onClick={() => setShowTenMin(true)}
             style={{
@@ -1696,6 +1128,7 @@ function AddSheet({ onClose, onAdd, goals }) {
         )}
 
         {/* v=26: repeats picker — None / Daily / Weekly + day chips */}
+        {mode === "task" && (
         <div style={{paddingTop: 18}}>
           <div className="kicker" style={{marginBottom: 8, fontSize: 10}}>repeats</div>
           <div style={{display: "flex", gap: 6}}>
@@ -1753,94 +1186,26 @@ function AddSheet({ onClose, onAdd, goals }) {
             </div>
           )}
         </div>
-
-        {/* v=34: optional "(toward…)" affordance. Hidden until tapped, default
-            skip — never crowds the primary capture. Goes away if no active
-            goals exist (linking with nothing is meaningless). */}
-        {activeGoals.length > 0 && (
-          <div style={{paddingTop: 14}}>
-            {!showGoalPicker && !goalRef ? (
-              <button
-                onClick={() => setShowGoalPicker(true)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  color: "var(--ink-faint)",
-                  fontFamily: "var(--serif)",
-                  fontStyle: "italic",
-                  fontSize: 13,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  letterSpacing: "0.01em",
-                }}
-              >(toward…)</button>
-            ) : (
-              <div className="fade-in">
-                <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>toward a goal</div>
-                <div style={{display: "flex", flexWrap: "wrap", gap: 6}}>
-                  <button
-                    onClick={() => { setGoalRef(null); setShowGoalPicker(false); }}
-                    style={{
-                      background: !goalRef ? "var(--ink)" : "transparent",
-                      color: !goalRef ? "var(--paper)" : "var(--ink-soft)",
-                      border: `1px solid ${!goalRef ? "var(--ink)" : "var(--rule-strong)"}`,
-                      borderRadius: 999,
-                      padding: "6px 12px",
-                      fontFamily: "var(--serif)",
-                      fontStyle: "italic",
-                      fontSize: 12,
-                      cursor: "pointer",
-                    }}
-                  >none</button>
-                  {activeGoals.map(g => {
-                    const sel = goalRef === g.id;
-                    return (
-                      <button
-                        key={g.id}
-                        onClick={() => setGoalRef(g.id)}
-                        style={{
-                          background: sel ? "var(--ink)" : "transparent",
-                          color: sel ? "var(--paper)" : "var(--ink-soft)",
-                          border: `1px solid ${sel ? "var(--ink)" : "var(--rule-strong)"}`,
-                          borderRadius: 999,
-                          padding: "6px 12px",
-                          fontFamily: "var(--serif)",
-                          fontStyle: sel ? "normal" : "italic",
-                          fontSize: 12,
-                          cursor: "pointer",
-                          maxWidth: 180,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >{g.text}</button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
         )}
 
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
           <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
           <button
             onClick={submit}
-            disabled={!text.trim() || (repeats === "weekly" && weeklyDays.size === 0)}
+            disabled={!text.trim() || (mode === "task" && repeats === "weekly" && weeklyDays.size === 0)}
             style={{
-              background: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--ink)" : "var(--paper-deep)",
-              color: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--paper)" : "var(--ink-faint)",
+              background: (text.trim() && (mode === "win" || repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--ink)" : "var(--paper-deep)",
+              color: (text.trim() && (mode === "win" || repeats !== "weekly" || weeklyDays.size > 0)) ? "var(--paper)" : "var(--ink-faint)",
               border: "none",
               borderRadius: 999,
               padding: "12px 24px",
               fontFamily: "var(--serif)",
               fontSize: 15,
-              cursor: (text.trim() && (repeats !== "weekly" || weeklyDays.size > 0)) ? "pointer" : "default",
+              cursor: (text.trim() && (mode === "win" || repeats !== "weekly" || weeklyDays.size > 0)) ? "pointer" : "default",
               transition: "all 200ms ease",
             }}
           >
-            Place on the page
+            {mode === "task" ? "Place on the page" : "Mark the win"}
           </button>
         </div>
       </div>
@@ -1904,65 +1269,6 @@ function AddDeskSheet({ onClose, onAdd }) {
             fontFamily: "var(--serif)", fontSize: 14,
             cursor: ready ? "pointer" : "default",
           }}>Place on desk</button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ---------- Win Sheet ----------
-function WinSheet({ onClose, onLog }) {
-  const [text, setText] = useState("");
-  const presets = [
-    "I started.",
-    "I stayed calm.",
-    "I asked for help.",
-    "I noticed.",
-    "I rested.",
-    "I came back.",
-  ];
-
-  return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet">
-        <div className="kicker" style={{marginBottom: 6}}>unseen wins</div>
-        <div className="serif" style={{
-          fontSize: 19,
-          color: "var(--ink)",
-          fontStyle: "italic",
-          marginBottom: 18,
-          lineHeight: 1.4,
-        }}>
-          Something quiet happened.
-        </div>
-
-        <div style={{display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18}}>
-          {presets.map((p) => (
-            <button
-              key={p}
-              onClick={() => { onLog(p); onClose(); }}
-              className="win-pill"
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-
-        <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>or in your own words</div>
-        <input
-          className="paper-input serif"
-          style={{fontSize: 16, fontStyle: "italic", fontFamily: "var(--serif)"}}
-          placeholder="I…"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && text.trim()) { onLog(text.trim()); onClose(); }
-          }}
-        />
-
-        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 22}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
         </div>
       </div>
     </>
@@ -2105,7 +1411,7 @@ function Tutorial({ onDone }) {
     {
       kicker: "unseen wins",
       title: "Some wins don't have a checkbox.",
-      body: "I started. I stayed calm. I came back. Tap + a win to mark them.",
+      body: "I started. I stayed calm. I came back. Tap + and choose “a win” to mark one.",
       foot: "Nothing is owed. Begin where you are.",
     },
   ];
@@ -2160,743 +1466,9 @@ function Tutorial({ onDone }) {
   );
 }
 
-// ===== v=35: wins + goals shared space (top-right, on-demand) =====
-//
-// Reframe of v=34's horizon-mode merger. Wins (present-tense recognition)
-// and goals (forward intent) are functionally distinct but share an
-// architectural concern — both are non-daily, both need a permanent home
-// that doesn't crowd the day's work. v=35 solution: a small top-right
-// .space-trigger glyph opens a single bottom-sheet (.space-sheet) with
-// two clearly-labeled sections — wins on top (lighter, reflective, glance-
-// friendly), goals below (workspace, action, lifecycle-aware). No mode-
-// flip, no paper-dusk, no merged TabBar. Discreet, on-demand.
-//
-// Tier semantics for goals (per 2026-04-27 spectrum decision):
-//   active     — in the active list
-//   desk-top   — on the desk, "worth considering"
-//   desk-back  — back of desk (the drawer), "less vital but not killed"
-//   trash      — released. Resurface band v2 deferred.
-//
-// Critical-path placement: the trigger should feel instant — sync-loaded
-// alongside the rest of screens-critical.jsx.
-
-// ---------- Goal row + drawer ----------
-// Tap-to-toggle drawer. Drawer offers: rename / context / move (4 buttons:
-// active / desk / drawer / release). Lighter than TaskRow's full Decide
-// flow because goals don't have markers, progress, recurrences, or D&D —
-// the Decide hub's complexity isn't earned here.
-function GoalRow({ goal, isOpen, onOpen, onClose, onRename, onSetContext, onMove, onSetTimeframe, onRelease, onRestore, onPurge }) {
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState(goal.text);
-  const [editingContext, setEditingContext] = useState(false);
-  const [contextDraft, setContextDraft] = useState(goal.context || "");
-
-  useEffect(() => {
-    setNameDraft(goal.text);
-    setContextDraft(goal.context || "");
-  }, [goal.id, goal.text, goal.context]);
-
-  function commitName() {
-    const trimmed = nameDraft.trim();
-    if (trimmed && trimmed !== goal.text) onRename(goal.id, trimmed);
-    setEditingName(false);
-  }
-  function commitContext() {
-    onSetContext(goal.id, contextDraft.trim());
-    setEditingContext(false);
-  }
-
-  const zoneLabel = (() => {
-    if (goal.tier === "active") {
-      // v=37: zone label reflects active-tier timeframe sub-axis.
-      const tf = goal.timeframe || "week";
-      return tf === "week" ? "this week" : tf === "month" ? "this month" : "this year";
-    }
-    if (goal.tier === "desk-top") return "on desk";
-    if (goal.tier === "desk-back") return "drawer";
-    if (goal.tier === "trash") return "released";
-    return "";
-  })();
-
-  return (
-    <div data-goal-row={goal.id}>
-      <div
-        className="goal-row"
-        onClick={() => isOpen ? onClose() : onOpen(goal.id)}
-        role="button"
-        tabIndex={0}
-      >
-        <div style={{flex: 1, minWidth: 0}}>
-          {editingName ? (
-            <input
-              autoFocus
-              value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
-              onBlur={commitName}
-              onKeyDown={(e) => { if (e.key === "Enter") commitName(); if (e.key === "Escape") { setNameDraft(goal.text); setEditingName(false); } }}
-              onClick={(e) => e.stopPropagation()}
-              className="paper-input serif"
-              style={{
-                fontSize: 17, fontFamily: "var(--serif)",
-                width: "100%", padding: 0, margin: 0,
-                background: "transparent", border: "none", outline: "none",
-                color: "var(--ink)",
-              }}
-            />
-          ) : (
-            <div className="goal-row__text">{goal.text}</div>
-          )}
-          {(goal.context || editingContext) && (
-            editingContext ? (
-              <textarea
-                autoFocus
-                value={contextDraft}
-                onChange={(e) => setContextDraft(e.target.value)}
-                onBlur={commitContext}
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commitContext(); }
-                  if (e.key === "Escape") { setContextDraft(goal.context || ""); setEditingContext(false); }
-                }}
-                rows={3}
-                placeholder="why this matters, in your own words…"
-                style={{
-                  width: "100%", marginTop: 6,
-                  background: "transparent", border: "none", outline: "none", resize: "none",
-                  fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 13,
-                  color: "var(--ink-soft)", lineHeight: 1.5, padding: 0,
-                }}
-              />
-            ) : (
-              <div className="goal-row__context">{goal.context}</div>
-            )
-          )}
-        </div>
-        <div className="goal-row__zone">{zoneLabel}</div>
-      </div>
-
-      {isOpen && (
-        <div
-          className="fade-in"
-          data-row-drawer={goal.id}
-          style={{
-            display: "flex",
-            justifyContent: "space-around",
-            padding: "8px 24px 14px",
-            gap: 8,
-            background: "var(--paper-deep)",
-            borderBottom: "1px solid var(--rule)",
-          }}
-        >
-          {goal.tier !== "trash" ? (
-            <>
-              <GoalDrawerBtn
-                label="rename"
-                onClick={() => setEditingName(true)}
-              />
-              <GoalDrawerBtn
-                label={goal.context ? "context" : "+ context"}
-                onClick={() => setEditingContext(true)}
-              />
-              {goal.tier === "active" && onSetTimeframe ? (
-                <GoalTimeframeBtn
-                  currentTimeframe={goal.timeframe || "week"}
-                  onSetTimeframe={(tf) => { onSetTimeframe(goal.id, tf); onClose(); }}
-                />
-              ) : null}
-              <GoalMoveBtn currentTier={goal.tier} onMove={(tier) => { onMove(goal.id, tier); onClose(); }}/>
-              <GoalDrawerBtn
-                label="release"
-                onClick={() => { onRelease(goal.id); onClose(); }}
-                tone="release"
-              />
-            </>
-          ) : (
-            <>
-              <GoalDrawerBtn label="restore" onClick={() => { onRestore(goal.id); onClose(); }}/>
-              <GoalDrawerBtn label="delete" onClick={() => { onPurge(goal.id); onClose(); }} tone="release"/>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function GoalDrawerBtn({ label, onClick, tone }) {
-  const color = tone === "release" ? "#A05A2C" : "var(--ink)";
-  return (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      style={{
-        flex: 1,
-        background: "transparent",
-        border: "1px solid var(--rule-strong)",
-        borderRadius: 999,
-        padding: "8px 0",
-        fontFamily: "var(--serif)",
-        fontStyle: "italic",
-        fontSize: 12,
-        color,
-        cursor: "pointer",
-        whiteSpace: "nowrap",
-      }}
-    >{label}</button>
-  );
-}
-
-// v=37: inline mini-picker for changing a goal's timeframe (week / month /
-// year). Same expand-on-tap pattern as GoalMoveBtn, scoped to the active
-// tier (timeframe doesn't apply to desk / drawer / trash goals). "Push
-// back" (week → month → year) and "pull in" (year → month → week) both
-// happen via this picker; the labels are absolute (this week / this month
-// / this year) rather than relative (push back / pull in) since the
-// destination is the meaningful state.
-function GoalTimeframeBtn({ currentTimeframe, onSetTimeframe }) {
-  const [open, setOpen] = useState(false);
-  const targets = [
-    { tf: "week", label: "week" },
-    { tf: "month", label: "month" },
-    { tf: "year", label: "year" },
-  ].filter(t => t.tf !== currentTimeframe);
-  if (open) {
-    return (
-      <div style={{display: "flex", flex: 2, gap: 6}}>
-        {targets.map(t => (
-          <button
-            key={t.tf}
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onSetTimeframe(t.tf); }}
-            style={{
-              flex: 1,
-              background: "var(--ink)",
-              color: "var(--paper)",
-              border: "none",
-              borderRadius: 999,
-              padding: "8px 0",
-              fontFamily: "var(--serif)",
-              fontStyle: "italic",
-              fontSize: 11,
-              cursor: "pointer",
-            }}
-          >{t.label}</button>
-        ))}
-      </div>
-    );
-  }
-  return <GoalDrawerBtn label="when" onClick={() => setOpen(true)}/>;
-}
-
-// Inline mini-picker for the move action: a small expandable cluster
-// showing the three destinations. Tap one → execute. Tap "move" → toggle
-// the cluster open. Avoids a separate sheet for what should be a 1-tap.
-function GoalMoveBtn({ currentTier, onMove }) {
-  const [open, setOpen] = useState(false);
-  const targets = [
-    { tier: "active", label: "active" },
-    { tier: "desk-top", label: "desk" },
-    { tier: "desk-back", label: "drawer" },
-  ].filter(t => t.tier !== currentTier);
-  if (open) {
-    return (
-      <div style={{display: "flex", flex: 2, gap: 6}}>
-        {targets.map(t => (
-          <button
-            key={t.tier}
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onMove(t.tier); }}
-            style={{
-              flex: 1,
-              background: "var(--ink)",
-              color: "var(--paper)",
-              border: "none",
-              borderRadius: 999,
-              padding: "8px 0",
-              fontFamily: "var(--serif)",
-              fontStyle: "italic",
-              fontSize: 11,
-              cursor: "pointer",
-            }}
-          >{t.label}</button>
-        ))}
-      </div>
-    );
-  }
-  return <GoalDrawerBtn label="move" onClick={() => setOpen(true)}/>;
-}
-
-// ---------- Add goal sheet ----------
-function AddGoalSheet({ onClose, onAdd, defaultTimeframe }) {
-  const [text, setText] = useState("");
-  const [context, setContext] = useState("");
-  const [showContext, setShowContext] = useState(false);
-  // v=37: timeframe picker — week / month / year. Default to whatever panel
-  // the user opened from (so adding from the "month" sub-panel pre-selects
-  // "month"); falls back to "week" when invoked without context.
-  const [timeframe, setTimeframe] = useState(defaultTimeframe || "week");
-  const inputRef = useRef(null);
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
-
-  function submit() {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    onAdd(trimmed, context.trim() || null, timeframe);
-    onClose();
-  }
-
-  return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet">
-        <div className="kicker" style={{marginBottom: 14}}>name a goal</div>
-        <input
-          ref={inputRef}
-          className="paper-input serif"
-          style={{fontSize: 20, fontFamily: "var(--serif)"}}
-          placeholder="what would matter, eventually…"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !showContext) submit(); }}
-        />
-        <div className="serif" style={{
-          fontSize: 11, color: "var(--ink-faint)", fontStyle: "italic",
-          marginTop: 6, letterSpacing: "0.02em",
-        }}>
-          one line. context goes below if you want it.
-        </div>
-
-        {!showContext ? (
-          <button
-            onClick={() => setShowContext(true)}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: "14px 0 0",
-              color: "var(--ink-soft)",
-              fontFamily: "var(--serif)",
-              fontStyle: "italic",
-              fontSize: 14,
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-          >+ context</button>
-        ) : (
-          <div style={{paddingTop: 14}} className="fade-in">
-            <div className="kicker" style={{marginBottom: 6, fontSize: 10}}>context</div>
-            <textarea
-              className="paper-input"
-              style={{fontSize: 14, fontFamily: "var(--serif)", fontStyle: "italic", resize: "none"}}
-              rows={3}
-              placeholder="why this matters, in your own words…"
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-            />
-          </div>
-        )}
-
-        {/* v=37: timeframe picker — week / month / year segmented control.
-            Determines which active sub-panel the goal lands in. */}
-        <div style={{paddingTop: 18}}>
-          <div className="kicker" style={{marginBottom: 8, fontSize: 10}}>timeframe</div>
-          <div style={{display: "flex", gap: 6}}>
-            {[
-              { key: "week", label: "this week" },
-              { key: "month", label: "this month" },
-              { key: "year", label: "this year" },
-            ].map(opt => {
-              const active = timeframe === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setTimeframe(opt.key)}
-                  style={{
-                    flex: 1,
-                    background: active ? "var(--ink)" : "transparent",
-                    color: active ? "var(--paper)" : "var(--ink-soft)",
-                    border: `1px solid ${active ? "var(--ink)" : "var(--rule-strong)"}`,
-                    borderRadius: 999,
-                    padding: "8px 12px",
-                    fontFamily: "var(--serif)",
-                    fontStyle: active ? "normal" : "italic",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    transition: "all 160ms ease",
-                  }}
-                >{opt.label}</button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 28}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>cancel</button>
-          <button
-            onClick={submit}
-            disabled={!text.trim()}
-            style={{
-              background: text.trim() ? "var(--ink)" : "var(--paper-deep)",
-              color: text.trim() ? "var(--paper)" : "var(--ink-faint)",
-              border: "none",
-              borderRadius: 999,
-              padding: "12px 24px",
-              fontFamily: "var(--serif)",
-              fontSize: 15,
-              cursor: text.trim() ? "pointer" : "default",
-              transition: "all 200ms ease",
-            }}
-          >Place a goal</button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ---------- Space triggers (TWO buttons) ----------
-// v=36: replaces v=35's single-icon SpaceTrigger. Two pill buttons side-by-
-// side in the top-right corner — one for wins, one for goals. Each names
-// what it opens; tapping reveals only that surface. No combined-room
-// merger, no icon-implied bias. Honest about two distinct functions.
-//
-// Suppressed on modal/ritual flows by App.return's render gate, not here.
-function SpaceTriggers({ onOpenWins, onOpenGoals, hasWins, hasGoals }) {
-  return (
-    <div className="space-triggers">
-      <button
-        type="button"
-        onClick={onOpenWins}
-        className={`space-trigger ${hasWins ? "space-trigger--has-content" : ""}`}
-        aria-label="wins"
-      >wins</button>
-      <button
-        type="button"
-        onClick={onOpenGoals}
-        className={`space-trigger ${hasGoals ? "space-trigger--has-content" : ""}`}
-        aria-label="goals"
-      >goals</button>
-    </div>
-  );
-}
-
-// ---------- Wins sheet (timeline + capture + retire) ----------
-// Distinct from the existing v=20-era WinSheet (the in-the-moment quick-
-// capture from the "+ a win" pill on the Now page). This is the see-and-
-// manage surface — opens from the top-right "wins" trigger, holds the
-// permanent timeline. Inline capture at the top so logging from here is
-// possible too; reverse-chronological day-grouped list with × retire.
-function SpaceSheetWins({ wins, goals, onClose, onLogWin, onRetireWin }) {
-  const [winText, setWinText] = useState("");
-
-  function submitWin() {
-    const trimmed = winText.trim();
-    if (!trimmed) return;
-    onLogWin(trimmed);
-    setWinText("");
-  }
-
-  function formatDay(iso) {
-    if (!iso || iso === "—") return "—";
-    const [y, m, d] = iso.split("-").map(Number);
-    const dt = new Date(y, m - 1, d);
-    return dt.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
-  }
-
-  // Group wins by day for visual rhythm. Same shape as v=35.
-  const winGroups = (() => {
-    const out = [];
-    let lastDay = null;
-    for (const w of wins) {
-      const day = w.day || (() => {
-        if (!w.loggedAt) return "—";
-        const d = new Date(w.loggedAt);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${dd}`;
-      })();
-      if (day !== lastDay) {
-        out.push({ kind: "day", day });
-        lastDay = day;
-      }
-      out.push({ kind: "win", win: w });
-    }
-    return out;
-  })();
-
-  return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet space-sheet">
-        <div className="space-sheet__scroll">
-          <div className="space-sheet__section-kicker">
-            <span>wins</span>
-            <span style={{
-              fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-              textTransform: "none", letterSpacing: "0.01em",
-              color: "var(--ink-faint)",
-            }}>
-              what you noticed
-            </span>
-          </div>
-
-          <div style={{display: "flex", gap: 8, alignItems: "center", marginBottom: 14}}>
-            <input
-              className="paper-input serif"
-              style={{
-                flex: 1,
-                fontSize: 15, fontFamily: "var(--serif)", fontStyle: "italic",
-                padding: "10px 0",
-              }}
-              placeholder="something quiet happened…"
-              value={winText}
-              onChange={(e) => setWinText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && winText.trim()) submitWin(); }}
-            />
-            <button
-              type="button"
-              onClick={submitWin}
-              disabled={!winText.trim()}
-              style={{
-                background: winText.trim() ? "var(--ink)" : "var(--paper-deep)",
-                color: winText.trim() ? "var(--paper)" : "var(--ink-faint)",
-                border: "none", borderRadius: 999,
-                padding: "8px 14px",
-                fontFamily: "var(--serif)", fontSize: 13,
-                cursor: winText.trim() ? "pointer" : "default",
-                flexShrink: 0,
-              }}
-            >log it</button>
-          </div>
-
-          {wins.length === 0 ? (
-            <div className="quiet-empty">
-              something quiet will happen.<br/>
-              you'll notice when it does.
-            </div>
-          ) : winGroups.map((entry, idx) => {
-            if (entry.kind === "day") {
-              return (
-                <div
-                  key={`day-${entry.day}-${idx}`}
-                  className="kicker"
-                  style={{
-                    padding: "12px 0 4px",
-                    color: "var(--ink-faint)",
-                  }}
-                >{formatDay(entry.day)}</div>
-              );
-            }
-            const w = entry.win;
-            const fromGoal = w.goalRef ? goals.find(g => g.id === w.goalRef) : null;
-            return (
-              <div key={w.id} className="win-row" style={{display: "flex", alignItems: "flex-start", gap: 8}}>
-                <div style={{flex: 1, minWidth: 0}}>
-                  <div className="win-row__text">
-                    {w.text}
-                    {fromGoal && (
-                      <span className="win-row__from-goal">— toward "{fromGoal.text}"</span>
-                    )}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onRetireWin(w.id)}
-                  aria-label="retire this win"
-                  style={{
-                    background: "transparent", border: "none",
-                    color: "var(--ink-faint)", cursor: "pointer",
-                    fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 12,
-                    padding: "2px 6px", flexShrink: 0,
-                  }}
-                >×</button>
-              </div>
-            );
-          })}
-        </div>
-
-        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 14, paddingTop: 8, borderTop: "1px solid var(--rule)"}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ---------- Goals sheet (active + desk + drawer + released + add) ----------
-// Workspace surface for forward intent with a flexible lifecycle. Distinct
-// from the wins sheet's reflective timeline shape — same visual chrome
-// (sheet pattern, kicker, scroll), different inner mechanics. Goal CRUD
-// inline via GoalRow drawer (rename / context / move / release / restore /
-// purge); add via dashed `+ a goal` button into AddGoalSheet.
-function SpaceSheetGoals({
-  goals, tasks, onClose,
-  onAddGoalOpen, onRenameGoal, onSetGoalContext, onMoveGoal,
-  onSetGoalTimeframe, onReleaseGoal, onRestoreGoal, onPurgeGoal,
-}) {
-  const [openGoalId, setOpenGoalId] = useState(null);
-
-  // v=37: active goals split by timeframe (week / month / year). Goals
-  // without a timeframe field (pre-v=37 data) default to "week" so existing
-  // entries land in the most immediate panel — Chris can re-park them via
-  // the row drawer. Tier still drives the four zone groups; timeframe is
-  // a sub-axis inside the active zone only (desk / drawer / released don't
-  // care about horizon — they're parked or gone).
-  const tf = (g) => g.timeframe || "week";
-  const activeWeek  = goals.filter(g => g.tier === "active" && tf(g) === "week");
-  const activeMonth = goals.filter(g => g.tier === "active" && tf(g) === "month");
-  const activeYear  = goals.filter(g => g.tier === "active" && tf(g) === "year");
-  const onDesk = goals.filter(g => g.tier === "desk-top");
-  const inDrawer = goals.filter(g => g.tier === "desk-back");
-  const released = goals.filter(g => g.tier === "trash");
-  const totalActive = activeWeek.length + activeMonth.length + activeYear.length;
-
-  // Active-task ref count per active goal — read-only descriptive line.
-  const refCounts = (() => {
-    const counts = {};
-    for (const t of tasks || []) {
-      if (!t.done && t.goalRef) counts[t.goalRef] = (counts[t.goalRef] || 0) + 1;
-    }
-    return counts;
-  })();
-
-  function renderGoalRow(g) {
-    return (
-      <GoalRow
-        key={g.id}
-        goal={g}
-        isOpen={openGoalId === g.id}
-        onOpen={(id) => setOpenGoalId(id)}
-        onClose={() => setOpenGoalId(null)}
-        onRename={onRenameGoal}
-        onSetContext={onSetGoalContext}
-        onMove={onMoveGoal}
-        onSetTimeframe={onSetGoalTimeframe}
-        onRelease={onReleaseGoal}
-        onRestore={onRestoreGoal}
-        onPurge={onPurgeGoal}
-      />
-    );
-  }
-
-  function renderActivePanel(label, list, emptyCopy) {
-    return (
-      <>
-        <div className="space-sheet__zone-label">{label}</div>
-        {list.length === 0 ? (
-          <div className="serif" style={{
-            padding: "4px 4px 12px",
-            fontSize: 12, fontStyle: "italic",
-            color: "var(--ink-faint)",
-            letterSpacing: "0.005em",
-          }}>
-            {emptyCopy}
-          </div>
-        ) : list.map(g => (
-          <div key={g.id}>
-            {renderGoalRow(g)}
-            {refCounts[g.id] > 0 && (
-              <div className="serif" style={{
-                padding: "4px 4px 10px",
-                fontSize: 11, fontStyle: "italic",
-                color: "var(--ink-faint)",
-                letterSpacing: "0.005em",
-              }}>
-                in your notebook today: {refCounts[g.id]} {refCounts[g.id] === 1 ? "thing" : "things"} that point here.
-              </div>
-            )}
-          </div>
-        ))}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div className="sheet-backdrop" onClick={onClose}/>
-      <div className="sheet space-sheet">
-        <div className="space-sheet__scroll">
-          <div className="space-sheet__section-kicker">
-            <span>goals</span>
-            <span style={{
-              fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 11,
-              textTransform: "none", letterSpacing: "0.01em",
-              color: "var(--ink-faint)",
-            }}>
-              what you're working toward
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={onAddGoalOpen}
-            style={{
-              background: "transparent",
-              border: "1px dashed var(--rule-strong)",
-              borderRadius: 14,
-              padding: "10px 14px",
-              fontFamily: "var(--serif)", fontStyle: "italic",
-              fontSize: 13, color: "var(--ink-soft)",
-              cursor: "pointer", width: "100%",
-              textAlign: "left",
-              marginBottom: 14,
-              letterSpacing: "0.01em",
-            }}
-          >+ a goal</button>
-
-          {/* v=37: active goals split by timeframe — week / month / year.
-              Always render all 3 panels so the structure is visible from
-              the first open (empty panels read as invitation, not absence). */}
-          {renderActivePanel("this week", activeWeek, "nothing this week.")}
-          {renderActivePanel("this month", activeMonth, "nothing this month.")}
-          {renderActivePanel("this year", activeYear, "nothing this year.")}
-
-          {totalActive > 3 && (
-            <div className="serif" style={{
-              padding: "8px 4px 0",
-              fontSize: 11, fontStyle: "italic",
-              color: "#A05A2C",
-              letterSpacing: "0.01em",
-            }}>
-              {totalActive} active. three is a soft cap — consider parking one on the desk or pushing it back a horizon.
-            </div>
-          )}
-
-          {onDesk.length > 0 && (
-            <>
-              <div className="space-sheet__zone-label">on the desk</div>
-              {onDesk.map(renderGoalRow)}
-            </>
-          )}
-
-          {inDrawer.length > 0 && (
-            <>
-              <div className="space-sheet__zone-label">drawer</div>
-              {inDrawer.map(renderGoalRow)}
-            </>
-          )}
-
-          {released.length > 0 && (
-            <>
-              <div className="space-sheet__zone-label">released</div>
-              {released.map(renderGoalRow)}
-            </>
-          )}
-        </div>
-
-        <div style={{display: "flex", justifyContent: "flex-end", marginTop: 14, paddingTop: 8, borderTop: "1px solid var(--rule)"}}>
-          <button onClick={onClose} className="ghost-btn" style={{color: "var(--ink-faint)"}}>close</button>
-        </div>
-      </div>
-    </>
-  );
-}
-
 Object.assign(window, {
-  MorningAnchor, SecondaryAnchor, AnchorMenuItem, LadderRow,
+  MorningAnchor,
   NowPage, TaskNote, TaskRow,
-  AddSheet, AddDeskSheet, WinSheet, WinToast,
+  AddSheet, AddDeskSheet, WinToast,
   HighlightHint, Tutorial,
-  // v=36: top-right two-button affordance — wins + goals as siblings
-  GoalRow, AddGoalSheet,
-  SpaceTriggers, SpaceSheetWins, SpaceSheetGoals,
 });
