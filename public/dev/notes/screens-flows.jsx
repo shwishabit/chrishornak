@@ -2300,14 +2300,9 @@ function SettingsSheet({ settings, onChange, onReplayTutorial, onResetHints, onC
           { value: "dark", label: "dark" },
         ], settings.theme, "theme")}
 
-        {/* v=54: real accessibility steps — the old ±8% was imperceptible.
-            Large/larger are sized for aging eyes, not aesthetic taste. */}
-        {pillRow("text size", [
-          { value: 0.9, label: "small" },
-          { value: 1, label: "regular" },
-          { value: 1.2, label: "large" },
-          { value: 1.4, label: "larger" },
-        ], settings.fontScale, "fontScale")}
+        {/* v=57: text-size setting PULLED (Chris's call) — the zoom approach
+            broke layout at larger steps faster than it helped. Re-approach
+            later with proper relative type sizing if the need returns. */}
 
         {pillRow("daily quote", [
           { value: true, label: "on" },
