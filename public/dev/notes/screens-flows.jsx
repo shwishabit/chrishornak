@@ -1257,20 +1257,23 @@ function ReOfferCard({ item, recentDone, onAccept, onLater, onRest }) {
 
 // ---------- Key / Reference ----------
 function KeyReference({ onClose }) {
+  // v=45: revived (unreachable since v=38 removed its opener) + extended
+  // with a gestures section — opened from the top-right ? trigger.
   const items = [
-    { glyph: "□", label: "An open task", note: "Tap to mark done." },
+    { glyph: "□", label: "An open task", note: "Tap the box to mark done." },
+    { glyph: "*", label: "Priority", note: "Your essential move. Swipe right across a task to mark it." },
     { glyph: "›", label: "Carried once", note: "Left from yesterday." },
     { glyph: "››", label: "Carried twice", note: "Friction is gathering. There is a 10-min version waiting.", strong: true },
     { glyph: "?", label: "Decision point", note: "Three days. Time to divide it or move it off the page.", strong: true },
-    { glyph: "◦", label: "On the desk", note: "Resting until you're ready to come back." },
-    { glyph: "✓", label: "Done", note: "Quietly noted." },
+    { glyph: "✓", label: "Done", note: "Quietly noted. A ↳ pill offers the next step." },
   ];
   const actions = [
-    { name: "Tap a row", note: "Reveals note / desk / trash." },
-    { name: "Drawer", note: "Tuck a note away. Out of sight, kept for later." },
-    { name: "Divide", note: "Break a task into 2–5 small steps." },
-    { name: "+ a win", note: "Log an unseen win — \"I started\", \"I stayed calm\"." },
-    { name: "next day", note: "Carry forward unfinished things, one at a time." },
+    { name: "Swipe right on a task", note: "Highlight it — your priority. It floats to the top. Swipe left to unmark." },
+    { name: "Tap a task", note: "Opens its drawer: edit · comment · decide." },
+    { name: "Decide (⑂)", note: "Divide into small steps, place on the desk or in the drawer, share, or let it go." },
+    { name: "Hold, then drag", note: "Reorder the page. Hold about half a second first." },
+    { name: "+ → \"a win\"", note: "Log an unseen win — \"I started\", \"I stayed calm\". It lands on today's page." },
+    { name: "Pages tab", note: "Flip back through past days. Momentum is evidence." },
   ];
   return (
     <>

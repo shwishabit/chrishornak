@@ -595,6 +595,11 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
   if (isCarriedOnce) { markGlyph = "›"; }
   else if (isCarriedTwice) { markGlyph = "››"; markColor = "var(--mark)"; }
   else if (isDecision) { markGlyph = "?"; markColor = "var(--mark)"; }
+  // v=45: the manual's * priority mark, back in the gutter. Priority is
+  // still set by the swipe-right highlighter; the * renders alongside the
+  // yellow so the page reads like the paper system's key. Friction marks
+  // win the gutter slot when a task is both carried AND priority.
+  else if (isPriority && !task.done) { markGlyph = "*"; markColor = "var(--ink)"; }
 
   // v=43: drawer = Edit + Comment + Decide (Progress cut). Done tasks render
   // only the Comment button, so the row slides 64px instead of 192px.
@@ -693,13 +698,21 @@ function TaskRow({ task, onToggle, onDivide, onDelete, onAddNote, onTogglePriori
       {/* Action drawer (revealed when row is "open") — Edit · Comment · Progress · Decide.
           Close = tap outside (document-level pointerdown listener, v=16) or
           tap the visible row body (re-toggles drawer). */}
-      <div data-row-drawer={task.id} style={{
-        position: "absolute",
-        top: 0, right: 0, bottom: 0,
-        display: "flex",
-        alignItems: "stretch",
-        zIndex: 1,
-      }}>
+      <div
+        data-row-drawer={task.id}
+        onClick={(e) => {
+          // v=45: tapping the drawer's own whitespace (not a button) closes
+          // it cleanly — previously it was dead space, and on phone a stray
+          // second tap there triggered double-tap zoom instead.
+          if (e.target === e.currentTarget) setOpen(false);
+        }}
+        style={{
+          position: "absolute",
+          top: 0, right: 0, bottom: 0,
+          display: "flex",
+          alignItems: "stretch",
+          zIndex: 1,
+        }}>
         {!task.done && (
           <button
             onClick={() => { setOpen(false); setEditOpen(true); }}
@@ -1398,6 +1411,12 @@ function Tutorial({ onDone }) {
       body: "When something carries forward, it earns a small mark. After three days, it asks to be decided — or divided into smaller steps.",
       foot: "Friction is information, not failure.",
       isMark: true,
+    },
+    {
+      kicker: "the gestures",
+      title: "Swipe. Tap. Hold.",
+      body: "Swipe right across a task to highlight your essential move — it earns a * and floats to the top. Tap a task to open its drawer. Hold, then drag to reorder.",
+      foot: "The ? in the corner keeps the whole key.",
     },
     {
       kicker: "ten-minute version",

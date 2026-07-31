@@ -357,7 +357,7 @@ function App() {
     }
     function loadAll() {
       return Promise.all([
-        loadBabelScript("screens-flows.jsx?v=44"),
+        loadBabelScript("screens-flows.jsx?v=45"),
       ]);
     }
     loadAll()
@@ -457,6 +457,8 @@ function App() {
   // carry-sheet ("yesterday's priorities — keep / clear"). Clearing happens
   // via the sheet itself, not auto.
   const [sheet, setSheet] = useState(null);
+  // v=45: top-right ? opens the key/help sheet (KeyReference, revived).
+  const [showKey, setShowKey] = useState(false);
   const [toast, setToast] = useState(null);
   const [dayOffset, setDayOffset] = useState(boot.dayOffset || 0);
   const [lastOpenedDay, setLastOpenedDay] = useState(boot.lastOpenedDay || null);
@@ -1426,6 +1428,18 @@ function App() {
           onConfirm={(text) => { setShelfWaitingOn(shelfSheet.item, text); setShelfSheet(null); }}
         />
       )}
+
+      {/* v=45: quiet help trigger — top-right chrome layer (free since the
+          wins/goals pills were cut). Hidden during morning-flow rituals so
+          they can't be interrupted mid-arc. */}
+      {!["return", "carry", "desk-review-prompt", "desk-review", "recap"].includes(screen) && (
+        <button
+          className="help-trigger"
+          onClick={() => setShowKey(true)}
+          aria-label="help — the key"
+        >?</button>
+      )}
+      {showKey && deferredReady && <KeyReference onClose={() => setShowKey(false)}/>}
 
       {toast && <WinToast text={toast.text} action={toast.action}/>}
 
