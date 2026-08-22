@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Product page audit for Morning Water — five recommendations ranked by ROI, plus a $1,000 priority split. Prepared by Chris Hornak.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Morning Water — Product Page Audit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --teal: #2dd4a8;
+            --dark: #0a0a0a;
+            --light-bg: #f7f7f8;
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.5; color: var(--dark); }
+        .font-display { font-family: 'Sora', sans-serif; }
+        @page { size: letter; margin: 0; }
+
+        .rank {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 26px;
+            line-height: 0.8;
+            letter-spacing: -0.04em;
+            color: var(--teal);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* wireframe mock */
+        .wf { border-radius: 5px; overflow: hidden; position: relative; }
+        .wf-strip {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 16px; background: rgba(45,212,168,.16);
+            font-family: 'Sora', sans-serif; font-size: 6px; font-weight: 700;
+            letter-spacing: .16em; text-transform: uppercase; color: #0d6b53;
+        }
+        .wf-strip em { font-style: normal; color: #5a9c88; letter-spacing: .12em; }
+        .wf-split { display: grid; grid-template-columns: 1fr 1fr; }
+        .wf-col { padding: 20px 20px 21px; }
+        .wf-col.dark { background: #2b3230; }
+        .wf-col.light { background: #fff; border-left: 1px solid #e6ecea; }
+
+        .wf-label {
+            font-family: 'Sora', sans-serif; font-size: 6px; font-weight: 700;
+            letter-spacing: .18em; text-transform: uppercase; font-size: 7px;
+        }
+        .wf-col.dark .wf-label { color: #7f8a87; }
+        .wf-col.light .wf-label { color: #6fbfa5; }
+
+        .wf-col h4 {
+            font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 800;
+            line-height: 1.12; letter-spacing: -.015em; margin: 4px 0 12px; color: var(--dark);
+        }
+        .wf-col.dark h4 { color: #fff; }
+
+        /* ---- the gauge: a glass whose gradations are the ingredients ---- */
+        .gauge { display: grid; grid-template-columns: 46px 1fr; column-gap: 14px; align-items: stretch; }
+        .glass {
+            grid-row: 1 / span 3;
+            border: 1px solid #c9d2cf; border-radius: 2px 2px 6px 6px;
+            position: relative; overflow: hidden; background: #fff;
+        }
+        .glass .fill { position: absolute; left: 0; right: 0; bottom: 0; }
+        .glass .ticks {
+            position: absolute; inset: 0; z-index: 2;
+            background-image: repeating-linear-gradient(to bottom, transparent 0 25px, currentColor 25px 25.9px);
+        }
+        .wf-col.dark .glass { border-color: #4d5a55; background: #232927; color: rgba(255,255,255,.16); }
+        .wf-col.dark .glass .fill { height: 30%; background: linear-gradient(#7d8d88, #5c6b66); }
+        .wf-col.light .glass { border-color: rgba(45,212,168,.6); box-shadow: 0 0 0 3px rgba(45,212,168,.1); color: rgba(13,107,83,.16); }
+        .wf-col.light .glass .fill { height: 95%; background: linear-gradient(#9fe8d4, #2dd4a8); }
+
+        .gauge-row { display: flex; align-items: center; gap: 7px; height: 25px; font-size: 9.5px; line-height: 1.1; }
+        .gauge-row .mark { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 11px; width: 8px; flex-shrink: 0; }
+        .wf-col.dark .gauge-row { color: #a3aeaa; }
+        .wf-col.dark .gauge-row .mark { color: #e5a869; }
+        .wf-col.light .gauge-row { color: #35403d; font-weight: 600; }
+        .wf-col.light .gauge-row .mark { color: var(--teal); }
+
+        .gauge-row em { font-style: normal; font-size: 7px; letter-spacing: .1em; text-transform: uppercase; color: #9ab5ac; margin-left: auto; padding-left: 6px; }
+        .gauge-row .mark.restore { color: #7a8683; }
+        .wf-col.light .glass .base { position: absolute; left: 0; right: 0; bottom: 66%; border-top: 1px dashed rgba(255,255,255,.85); z-index: 3; }
+        .gauge-cap { font-size: 9px; line-height: 1.45; margin-top: 13px; }
+        .wf-col.dark .gauge-cap { color: #8a9591; }
+        .wf-col.light .gauge-cap { color: #7a8683; }
+        .gauge-cap b { font-family: 'Sora', sans-serif; font-weight: 800; }
+        .wf-col.dark .gauge-cap b { color: #e5a869; }
+        .wf-col.light .gauge-cap b { color: #0d6b53; }
+
+        /* annotation notes */
+        .pin {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 11px; height: 11px; border-radius: 999px; background: var(--teal); color: #fff;
+            font-family: 'Sora', sans-serif; font-size: 6.5px; font-weight: 800; line-height: 1; flex-shrink: 0;
+        }
+        .notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 11px; }
+        .note { display: flex; gap: 6px; align-items: flex-start; font-size: 8px; color: #6b7674; line-height: 1.35; }
+        .note b { color: var(--dark); font-weight: 700; }
+
+        /* budget bar */
+        .bar { display: flex; height: 16px; border-radius: 3px; overflow: hidden; }
+        .bar i { display: block; height: 100%; }
+        .tick { border-left: 1px solid #d8dcda; padding-left: 5px; }
+
+        /* PRINT */
+        @media print {
+            body { background: white !important; margin: 0 !important; padding: 0 !important; zoom: 1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .document-wrapper { display: block !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; }
+            .page-container {
+                transform: none !important; zoom: 1 !important; box-shadow: none !important; margin: 0 !important;
+                width: 8.5in !important; height: 11in !important; padding: 0 !important;
+                overflow: hidden !important; display: flex; flex-direction: column;
+                page-break-after: avoid; page-break-inside: avoid;
+            }
+        }
+
+        .print-only { display: none; }
+
+        /* DESKTOP SCREEN */
+        @media screen and (min-width: 769px) {
+            .document-wrapper { width: 100%; display: flex; justify-content: center; padding-bottom: 50px; overflow-x: auto; }
+            .page-container {
+                zoom: 1.5;
+                -moz-transform: scale(1.5);
+                -moz-transform-origin: top center;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 20px 60px rgba(0,0,0,0.06);
+                margin: 0 auto; background: white;
+                width: 8.5in; height: 11in;
+                display: flex; flex-direction: column; flex-shrink: 0;
+            }
+            @supports (-moz-appearance:none) { .page-container { margin-bottom: 50% !important; } }
+        }
+
+        /* MOBILE SCREEN */
+        @media screen and (max-width: 768px) {
+            .document-wrapper { padding: 0; }
+            .page-container {
+                background: white; width: 100%; height: auto !important;
+                display: flex; flex-direction: column; overflow: visible !important; padding: 0 !important;
+            }
+            .page-container h1 { font-size: clamp(24px, 6.5vw, 30px) !important; }
+            .page-container [class*="text-[7"] { font-size: 12px !important; }
+            .page-container [class*="text-[8"] { font-size: 13px !important; }
+            .page-container [class*="text-[9"] { font-size: 14px !important; }
+            .page-container [class*="text-[10"] { font-size: 15px !important; }
+            .page-container [class*="text-[11"] { font-size: 16px !important; }
+            .page-container [class*="text-[12"] { font-size: 17px !important; }
+            .rank { font-size: 30px !important; }
+            .wf-label, .wf-tag, .wf-newtag { font-size: 8.5px !important; }
+            .wf-col h4 { font-size: 12px !important; }
+            .wf-li { font-size: 10px !important; }
+            .wf-chip, .wf-btn { font-size: 9.5px !important; }
+            .vessel { width: 30px !important; height: 44px !important; }
+            .fig-note b { font-size: 13px !important; }
+            .fig-note em { font-size: 9px !important; }
+            .note { font-size: 10px !important; }
+            .notes { grid-template-columns: 1fr !important; gap: 0.6rem !important; }
+            .fix-row { padding-top: 0.9rem !important; padding-bottom: 0.9rem !important; }
+            .wf-split { grid-template-columns: 1fr !important; }
+            .wf-col + .wf-col { border-left: 0 !important; border-top: 1px solid #eceeed !important; }
+            .budget-legend { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+            .no-print { padding-left: 1rem !important; padding-right: 1rem !important; width: 100% !important; }
+            .no-print > div:first-child { flex-direction: column; gap: 1rem; }
+            .no-print > div:first-child > div:last-child { width: 100%; }
+            .no-print a, .no-print button { flex: 1; justify-content: center; }
+        }
+
+        /* ===== VIDEO MODAL ===== */
+        .vm {
+            position: fixed; inset: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity .28s ease, visibility .28s ease;
+        }
+        .vm.open { opacity: 1; visibility: visible; }
+        .vm-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(6, 10, 9, 0.86);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .vm-panel {
+            position: relative; z-index: 1;
+            width: min(1040px, 92vw);
+            transform: translateY(14px) scale(0.985);
+            transition: transform .34s cubic-bezier(.16,1,.3,1);
+        }
+        .vm.open .vm-panel { transform: none; }
+        .vm-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: .9rem; }
+        .vm-eyebrow {
+            font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .22em; color: var(--teal); margin-bottom: .3rem;
+        }
+        .vm-title { font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -.02em; line-height: 1.15; }
+        .vm-close {
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.04);
+            color: #fff; font-size: 19px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .2s ease, border-color .2s ease;
+        }
+        .vm-close:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.36); }
+        .vm-close:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+        .vm-frame {
+            position: relative; padding-bottom: 54.6875%; height: 0;
+            border-radius: 12px; overflow: hidden;
+            background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.55);
+        }
+        .vm-frame iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        .vm-foot { margin-top: .8rem; font-size: 11px; color: rgba(255,255,255,.42); display: flex; justify-content: space-between; gap: 1rem; }
+        .vm-foot a { color: rgba(255,255,255,.7); text-decoration: underline; text-underline-offset: 2px; }
+        body.vm-locked { overflow: hidden; }
+
+        @media (max-width: 768px) {
+            .vm-panel { width: 94vw; }
+            .vm-title { font-size: 15px; }
+            .vm-foot { flex-direction: column; gap: .25rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .vm, .vm-panel { transition: none; }
+        }
+    </style>
+</head>
+<body class="bg-neutral-100 text-black font-sans">
+
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-bold">Skip to content</a>
+
+    <!-- CONTROL BAR -->
+    <nav aria-label="Document controls" class="no-print mx-auto py-6 px-4 flex flex-col gap-3" style="width: calc(8.5in * 1.5); max-width: 100%;">
+        <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-neutral-200/60">
+            <span class="text-xs text-neutral-400 font-medium tracking-wide uppercase">Product Page Audit</span>
+            <div class="flex gap-3">
+                <button type="button" onclick="openVideo()"
+                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2.5 text-white hover:opacity-90 cursor-pointer"
+                    style="background: var(--dark);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+                    <span>Walkthrough</span>
+                </button>
+                <a href="/docs/resume/chris-hornak-resume.pdf" target="_blank" rel="noopener"
+                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                    Resume
+                </a>
+                <button onclick="window.print()" class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm text-white hover:opacity-90" style="background: var(--teal);">
+                    Print / Save PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DOCUMENT -->
+    <main id="main-content" class="document-wrapper">
+        <article class="page-container bg-white relative overflow-hidden">
+
+            <!-- ===== DARK BAND ===== -->
+            <div class="flex items-center justify-between px-[0.5in] py-4 shrink-0" style="background: var(--dark);">
+                <img src="wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="eager" decoding="async">
+                <div class="text-right">
+                    <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Product page audit</p>
+                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">Prepared for Morning Water</p>
+                </div>
+            </div>
+
+            <!-- ===== TITLE ===== -->
+            <div class="px-[0.5in] pt-6 pb-4 shrink-0">
+                <h1 class="font-display font-800 text-[29px] leading-[1.05] tracking-[-0.03em] text-neutral-900 max-w-[80%]" style="text-wrap: balance;">
+                    Five fixes for the Morning&nbsp;Water product page.
+                </h1>
+                <div class="flex items-end justify-between gap-6 mt-3">
+                    <p class="text-[10px] text-neutral-500 leading-snug max-w-[64%]">
+                        You sell one product, so the homepage <em>is</em> the product page. That is what I audited, against Cure Hydration and IM8 Health. Everything below was seen on the live pages.
+                    </p>
+                    <p class="print-only text-[8px] text-neutral-400 text-right leading-snug shrink-0">
+                        3-minute walkthrough<br>loom.com/share/d807822d4eff4441a5dfad1e21051654<br>Resume: chrishornak.com/docs/resume/
+                    </p>
+                    <button type="button" onclick="openVideo()"
+                       class="no-print shrink-0 inline-flex items-center gap-1.5 text-[9px] font-display font-700 uppercase tracking-[0.14em] px-3 py-2 rounded-md text-white cursor-pointer hover:opacity-90 transition-opacity" style="background: var(--dark);">
+                        <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
+                        Walkthrough
+                    </button>
+                    <a href="/docs/resume/chris-hornak-resume.pdf" target="_blank" rel="noopener"
+                       class="no-print shrink-0 inline-flex items-center gap-1.5 text-[9px] font-display font-700 uppercase tracking-[0.14em] px-3 py-2 rounded-md text-neutral-600 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900 transition-colors">
+                        Resume
+                    </a>
+                </div>
+            </div>
+
+            <!-- ===== THE FIVE ===== -->
+            <div class="px-[0.5in] shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-1.5 pb-1">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Ranked by return</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Highest impact first</span>
+                </div>
+
+                <div class="fix-row grid grid-cols-[26px_1fr] gap-x-3 py-2 border-b border-neutral-200/80">
+                    <span class="rank pt-[3px]">1</span>
+                    <div>
+                        <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">The page says two opposite things</h3>
+                        <p class="text-[9px] text-neutral-500 leading-snug mt-[3px]">The banner says <em>“We're sold out.”</em> The hero says <em>“Ships same day.”</em> Both on the first screen — and every button lands on the one dead option.</p>
+                        <p class="text-[9px] text-neutral-900 leading-snug mt-[3px]"><strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em]" style="color: var(--teal);">Fix</strong> &nbsp;Pull the shipping line while stock is out. Put an email field in the banner with a real return date.</p>
+                    </div>
+                </div>
+
+                <div class="fix-row grid grid-cols-[26px_1fr] gap-x-3 py-2 border-b border-neutral-200/80">
+                    <span class="rank pt-[3px]">2</span>
+                    <div>
+                        <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">Your strongest number is hidden</h3>
+                        <p class="text-[9px] text-neutral-500 leading-snug mt-[3px]">“97% keep going after 30 days” sits in a small subheading. A retention figure is rarer and more convincing than any star rating.</p>
+                        <p class="text-[9px] text-neutral-900 leading-snug mt-[3px]"><strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em]" style="color: var(--teal);">Fix</strong> &nbsp;Move it into the hero, where every visitor sees it before they decide.</p>
+                    </div>
+                </div>
+
+                <div class="fix-row grid grid-cols-[26px_1fr] gap-x-3 py-2 border-b border-neutral-200/80">
+                    <span class="rank pt-[3px]">3</span>
+                    <div>
+                        <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">Three things look broken</h3>
+                        <p class="text-[9px] text-neutral-500 leading-snug mt-[3px]">Clipped customer portraits, a cut-off header photo, and text running over the image in the 30-Day Challenge. That reads as a company not checking its own work.</p>
+                        <p class="text-[9px] text-neutral-900 leading-snug mt-[3px]"><strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em]" style="color: var(--teal);">Fix</strong> &nbsp;One QA pass. Three corrections — and give the Challenge a customer quote while you are in there.</p>
+                    </div>
+                </div>
+
+                <div class="fix-row grid grid-cols-[26px_1fr] gap-x-3 py-2 border-b border-neutral-200/80">
+                    <span class="rank pt-[3px]">4</span>
+                    <div>
+                        <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">Your best idea arrives too late<span class="font-display font-700 text-[7px] uppercase tracking-[0.16em] ml-2 px-1.5 py-[2px] rounded" style="background: rgba(45,212,168,0.18); color: #0d6b53;">Wireframe below</span></h3>
+                        <p class="text-[9px] text-neutral-500 leading-snug mt-[3px]">“You lose 1.5 litres every night” is the reason the product exists — and it appears fourth, as the smallest graphic on the page, with its answer stacked beneath it.</p>
+                        <p class="text-[9px] text-neutral-900 leading-snug mt-[3px]"><strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em]" style="color: var(--teal);">Fix</strong> &nbsp;Merge the loss and the answer into one section under the hero, and fold the benefits into that second half.</p>
+                    </div>
+                </div>
+
+                <div class="fix-row grid grid-cols-[26px_1fr] gap-x-3 py-2 border-b border-neutral-200/80">
+                    <span class="rank pt-[3px]">5</span>
+                    <div>
+                        <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">The smallest yes is a whole month</h3>
+                        <p class="text-[9px] text-neutral-500 leading-snug mt-[3px]">Trying once costs $89.99 — <strong class="text-neutral-800">$18 more than subscribing</strong>. So the smallest commitment you offer is 30 sticks of a flavour nobody has tasted, and every hand-raiser leaves with no relationship at all.</p>
+                        <p class="text-[9px] text-neutral-900 leading-snug mt-[3px]"><strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em]" style="color: var(--teal);">Fix</strong> &nbsp;A 5-stick trial at $9.99, preordered with an honest ship date, plus a “Day Zero” download while they wait.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== THE DIAGRAM ===== -->
+            <div class="px-[0.5in] pt-4 shrink-0">
+                <div class="rounded-lg p-4" style="background: var(--light-bg);">
+                    <div class="flex items-baseline justify-between mb-2">
+                        <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Fix 4, wireframed</h2>
+                        <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Concept — not final art</span>
+                    </div>
+
+                    <div class="wf">
+                        <div class="wf-strip">
+                            <span>One section replaces three</span>
+                            <em>Under the hero · above the reviews</em>
+                        </div>
+                        <div class="wf-split">
+                            <div class="wf-col dark">
+                                <p class="wf-label">The problem</p>
+                                <h4>What the night takes</h4>
+                                <div class="gauge">
+                                    <div class="glass"><div class="fill"></div><div class="ticks"></div></div>
+                                    <div class="gauge-row"><span class="mark">&minus;</span>1.5 litres of water</div>
+                                    <div class="gauge-row"><span class="mark">&minus;</span>Sodium and potassium</div>
+                                    <div class="gauge-row"><span class="mark">&minus;</span>Magnesium</div>
+                                </div>
+                                <p class="gauge-cap"><b>Empty by 7am.</b> That is the fog, the drag, and the second coffee.</p>
+                            </div>
+
+                            <div class="wf-col light">
+                                <p class="wf-label">The answer</p>
+                                <h4>What one stick puts back &mdash; and more</h4>
+                                <div class="gauge">
+                                    <div class="glass"><div class="fill"></div><div class="base"></div><div class="ticks"></div></div>
+                                    <div class="gauge-row"><span class="mark restore">&#8635;</span>Water and premium electrolytes<em>replaced</em></div>
+                                    <div class="gauge-row"><span class="mark">+</span>5g creatine<em>added</em></div>
+                                    <div class="gauge-row"><span class="mark">+</span>200mg L-Theanine<em>added</em></div>
+                                </div>
+                                <p class="gauge-cap"><b>Past where you started.</b> It replaces the water and salts, then adds what was never there.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BUDGET ===== -->
+            <div class="px-[0.5in] pt-5 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-3">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">If the budget were $1,000</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Priority split</span>
+                </div>
+
+                <div class="bar">
+                    <i style="width:30%; background:#2dd4a8;"></i>
+                    <i style="width:30%; background:#4fddb9;"></i>
+                    <i style="width:25%; background:#7fe7cd;"></i>
+                    <i style="width:10%; background:#aeeee0;"></i>
+                    <i style="width:5%;  background:#d6f7ef;"></i>
+                </div>
+
+                <div class="budget-legend grid grid-cols-5 gap-x-4 mt-3">
+                    <div class="tick">
+                        <p class="font-display font-800 text-[14px] text-neutral-900 leading-none tabular-nums">$300</p>
+                        <p class="font-display font-700 text-[8.5px] text-neutral-900 mt-1.5 leading-tight">4 · Top of page</p>
+                        <p class="text-[8px] text-neutral-500 leading-tight mt-1">The merge above, plus artwork worth the claim</p>
+                    </div>
+                    <div class="tick">
+                        <p class="font-display font-800 text-[14px] text-neutral-900 leading-none tabular-nums">$300</p>
+                        <p class="font-display font-700 text-[8.5px] text-neutral-900 mt-1.5 leading-tight">5 · Trial + nurture</p>
+                        <p class="text-[8px] text-neutral-500 leading-tight mt-1">SKU, preorder toggle, Day Zero, email flow</p>
+                    </div>
+                    <div class="tick">
+                        <p class="font-display font-800 text-[14px] text-neutral-900 leading-none tabular-nums">$250</p>
+                        <p class="font-display font-700 text-[8.5px] text-neutral-900 mt-1.5 leading-tight">1 · One-story hero</p>
+                        <p class="text-[8px] text-neutral-500 leading-tight mt-1">Banner copy, inline email form, tooling</p>
+                    </div>
+                    <div class="tick">
+                        <p class="font-display font-800 text-[14px] text-neutral-900 leading-none tabular-nums">$100</p>
+                        <p class="font-display font-700 text-[8.5px] text-neutral-900 mt-1.5 leading-tight">2 · Proof</p>
+                        <p class="text-[8px] text-neutral-500 leading-tight mt-1">Rework the hero to carry the 97%</p>
+                    </div>
+                    <div class="tick">
+                        <p class="font-display font-800 text-[14px] text-neutral-900 leading-none tabular-nums">$50</p>
+                        <p class="font-display font-700 text-[8.5px] text-neutral-900 mt-1.5 leading-tight">3 · QA</p>
+                        <p class="text-[8px] text-neutral-500 leading-tight mt-1">Three corrections across breakpoints</p>
+                    </div>
+                </div>
+
+                <p class="text-[9.5px] text-neutral-600 leading-snug mt-3.5">
+                    <strong class="text-neutral-900">Two of these need building.</strong> The other three are corrections and moving things you already own — and the cost comparison stays exactly as it is.
+                </p>
+            </div>
+
+            <!-- ===== FOOTER ===== -->
+            <div class="mt-auto px-[0.5in] pt-3 pb-4 shrink-0">
+                <div class="flex items-baseline justify-between border-t border-neutral-200 pt-2">
+                    <p class="font-display font-700 text-[8px] uppercase tracking-[0.16em] text-neutral-500">Chris Hornak · chrishornak.com</p>
+                    <p class="text-[8px] text-neutral-400">All findings verified on the live pages</p>
+                </div>
+            </div>
+
+        </article>
+    </main>
+
+    <!-- ===== VIDEO MODAL ===== -->
+    <div id="vm" class="vm no-print" role="dialog" aria-modal="true" aria-labelledby="vm-title" hidden>
+        <div class="vm-backdrop" onclick="closeVideo()"></div>
+        <div class="vm-panel">
+            <div class="vm-head">
+                <div>
+                    <p class="vm-eyebrow">Morning Water · Product page audit</p>
+                    <p id="vm-title" class="vm-title">Five fixes, walked through in three minutes</p>
+                </div>
+                <button type="button" class="vm-close" onclick="closeVideo()" aria-label="Close video">&times;</button>
+            </div>
+            <div class="vm-frame">
+                <iframe id="vm-iframe" title="Morning Water product page audit — walkthrough by Chris Hornak"
+                        src="" allowfullscreen allow="fullscreen; picture-in-picture"></iframe>
+            </div>
+            <div class="vm-foot">
+                <span>Press Esc to close.</span>
+                <a href="https://www.loom.com/share/d807822d4eff4441a5dfad1e21051654" target="_blank" rel="noopener">Open on Loom</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var SRC = 'https://www.loom.com/embed/d807822d4eff4441a5dfad1e21051654';
+            var vm = document.getElementById('vm');
+            var frame = document.getElementById('vm-iframe');
+            var lastFocus = null;
+
+            window.openVideo = function () {
+                lastFocus = document.activeElement;
+                vm.hidden = false;
+                frame.src = SRC;
+                document.body.classList.add('vm-locked');
+                requestAnimationFrame(function () { vm.classList.add('open'); });
+                vm.querySelector('.vm-close').focus();
+            };
+
+            window.closeVideo = function () {
+                vm.classList.remove('open');
+                document.body.classList.remove('vm-locked');
+                window.setTimeout(function () {
+                    vm.hidden = true;
+                    frame.src = '';
+                }, 280);
+                if (lastFocus && lastFocus.focus) lastFocus.focus();
+            };
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !vm.hidden) closeVideo();
+            });
+        })();
+    </script>
+
+</body>
+</html>

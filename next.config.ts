@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://cdn.tailwindcss.com",
-              "frame-src 'none'",
+              "frame-src https://www.loom.com",
             ].join('; '),
           },
         ],
