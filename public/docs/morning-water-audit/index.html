@@ -141,36 +141,86 @@
 
         /* MOBILE SCREEN */
         @media screen and (max-width: 768px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+
             .document-wrapper { padding: 0; }
             .page-container {
-                background: white; width: 100%; height: auto !important;
-                display: flex; flex-direction: column; overflow: visible !important; padding: 0 !important;
+                background: white; width: 100%; max-width: 100%;
+                height: auto !important;
+                display: flex; flex-direction: column;
+                overflow: visible !important; padding: 0 !important;
             }
-            .page-container h1 { font-size: clamp(24px, 6.5vw, 30px) !important; }
+
+            /* page gutters: 0.5in is half the screen on a phone */
+            .page-container [class*="px-[0.5in]"] {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+            }
+
+            /* control bar */
+            .no-print.mx-auto { width: 100% !important; max-width: 100% !important; padding: 1rem !important; }
+            .no-print.mx-auto > div:first-child { flex-direction: column !important; align-items: stretch !important; gap: 0.85rem !important; padding: 1.1rem !important; }
+            .no-print.mx-auto > div:first-child > div:last-child { width: 100%; }
+            .no-print.mx-auto a, .no-print.mx-auto button { flex: 1 1 0; justify-content: center; }
+
+            /* masthead */
+            .page-container h1 { font-size: clamp(26px, 8vw, 34px) !important; max-width: 100% !important; }
+            .masthead-row { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+            .masthead-row > p { max-width: 100% !important; }
+            .masthead-actions { display: flex; gap: 0.6rem; width: 100%; }
+            .masthead-actions a, .masthead-actions button { flex: 1 1 0; justify-content: center; }
+
+            /* type scale */
             .page-container [class*="text-[7"] { font-size: 12px !important; }
             .page-container [class*="text-[8"] { font-size: 13px !important; }
-            .page-container [class*="text-[9"] { font-size: 14px !important; }
-            .page-container [class*="text-[10"] { font-size: 15px !important; }
-            .page-container [class*="text-[11"] { font-size: 16px !important; }
-            .page-container [class*="text-[12"] { font-size: 17px !important; }
-            .rank { font-size: 30px !important; }
-            .wf-label, .wf-tag, .wf-newtag { font-size: 8.5px !important; }
-            .wf-col h4 { font-size: 12px !important; }
-            .wf-li { font-size: 10px !important; }
-            .wf-chip, .wf-btn { font-size: 9.5px !important; }
-            .vessel { width: 30px !important; height: 44px !important; }
-            .fig-note b { font-size: 13px !important; }
-            .fig-note em { font-size: 9px !important; }
-            .note { font-size: 10px !important; }
-            .notes { grid-template-columns: 1fr !important; gap: 0.6rem !important; }
-            .fix-row { padding-top: 0.9rem !important; padding-bottom: 0.9rem !important; }
+            .page-container [class*="text-[9"] { font-size: 15px !important; }
+            .page-container [class*="text-[10"] { font-size: 16px !important; }
+            .page-container [class*="text-[11"] { font-size: 17px !important; }
+            .page-container [class*="text-[12"] { font-size: 18px !important; }
+            .page-container [class*="text-[14"] { font-size: 22px !important; }
+            .rank { font-size: 28px !important; }
+            .fix-row { grid-template-columns: 22px 1fr !important; padding-top: 1.1rem !important; padding-bottom: 1.1rem !important; }
+
+            /* wireframe */
+            .wf-strip { flex-direction: column; align-items: flex-start; gap: 2px; font-size: 8.5px !important; padding: 8px 14px !important; }
             .wf-split { grid-template-columns: 1fr !important; }
-            .wf-col + .wf-col { border-left: 0 !important; border-top: 1px solid #eceeed !important; }
-            .budget-legend { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
-            .no-print { padding-left: 1rem !important; padding-right: 1rem !important; width: 100% !important; }
-            .no-print > div:first-child { flex-direction: column; gap: 1rem; }
-            .no-print > div:first-child > div:last-child { width: 100%; }
-            .no-print a, .no-print button { flex: 1; justify-content: center; }
+            .wf-col { padding: 16px 16px 18px !important; }
+            .wf-col.light { border-left: 0 !important; border-top: 1px solid #e6ecea !important; }
+            .wf-label { font-size: 9px !important; }
+            .wf-col h4 { font-size: 17px !important; margin-bottom: 14px !important; }
+            .gauge { grid-template-columns: 42px 1fr !important; column-gap: 14px !important; }
+            .gauge-row { height: 30px !important; font-size: 12.5px !important; }
+            .gauge-row .mark { font-size: 14px !important; width: 11px !important; }
+            .gauge-row em { font-size: 9px !important; }
+            .glass .ticks { background-image: repeating-linear-gradient(to bottom, transparent 0 30px, currentColor 30px 31px) !important; }
+            .gauge-cap { font-size: 12px !important; margin-top: 14px !important; }
+
+            /* keep the small tracked labels small — scaling them up overflows their rows */
+            .page-container [class*="tracking-[0.1"],
+            .page-container [class*="tracking-[0.2"] {
+                font-size: 10px !important;
+                letter-spacing: 0.1em !important;
+            }
+            .page-container h1[class*="tracking-"] { font-size: clamp(26px, 8vw, 34px) !important; letter-spacing: -0.03em !important; }
+
+            /* any label-beside-heading row may wrap instead of overflowing */
+            .page-container .flex.items-baseline.justify-between { flex-wrap: wrap; gap: 2px 10px; }
+            .page-container > div:first-child { flex-wrap: wrap; gap: 10px; }
+            .wf-strip { flex-wrap: wrap; }
+
+            /* control-bar buttons wrap onto two rows rather than running off screen */
+            .no-print.mx-auto > div:first-child > div:last-child { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+            .no-print.mx-auto a, .no-print.mx-auto button {
+                flex: 1 1 45%;
+                padding-left: 0.9rem !important; padding-right: 0.9rem !important;
+                font-size: 13px !important;
+            }
+            .masthead-actions { flex-wrap: wrap; }
+
+            /* budget */
+            .bar { height: 20px !important; }
+            .budget-legend { grid-template-columns: 1fr 1fr !important; gap: 1rem 0.9rem !important; }
+            .tick { padding-left: 8px !important; }
         }
 
         /* ===== VIDEO MODAL ===== */
@@ -275,14 +325,14 @@
                 <h1 class="font-display font-800 text-[29px] leading-[1.05] tracking-[-0.03em] text-neutral-900 max-w-[80%]" style="text-wrap: balance;">
                     Five fixes for the Morning&nbsp;Water product page.
                 </h1>
-                <div class="flex items-end justify-between gap-6 mt-3">
+                <div class="masthead-row flex items-end justify-between gap-6 mt-3">
                     <p class="text-[10px] text-neutral-500 leading-snug max-w-[64%]">
                         You sell one product, so the homepage <em>is</em> the product page. That is what I audited, against Cure Hydration and IM8 Health. Everything below was seen on the live pages.
                     </p>
                     <p class="print-only text-[8px] text-neutral-400 text-right leading-snug shrink-0">
                         3-minute walkthrough<br>loom.com/share/d807822d4eff4441a5dfad1e21051654<br>Resume: chrishornak.com/docs/resume/
                     </p>
-                    <button type="button" onclick="openVideo()"
+                    <span class="masthead-actions no-print"><button type="button" onclick="openVideo()"
                        class="no-print shrink-0 inline-flex items-center gap-1.5 text-[9px] font-display font-700 uppercase tracking-[0.14em] px-3 py-2 rounded-md text-white cursor-pointer hover:opacity-90 transition-opacity" style="background: var(--dark);">
                         <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
                         Walkthrough
@@ -290,7 +340,7 @@
                     <a href="/docs/resume/chris-hornak-resume.pdf" target="_blank" rel="noopener"
                        class="no-print shrink-0 inline-flex items-center gap-1.5 text-[9px] font-display font-700 uppercase tracking-[0.14em] px-3 py-2 rounded-md text-neutral-600 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900 transition-colors">
                         Resume
-                    </a>
+                    </a></span>
                 </div>
             </div>
 
