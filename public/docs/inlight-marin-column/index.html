@@ -42,10 +42,25 @@
 </head>
 <body>
 
+<!-- icon sprite: inline so it survives the docs CSP (img-src 'self' data: blob:) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-gdoc" viewBox="0 0 24 24">
+    <path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#4285F4"/>
+    <path d="M14 2l5 5h-5V2z" fill="#A1C2FA"/>
+    <path d="M8 12h8M8 15h8M8 18h5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-word" viewBox="0 0 24 24">
+    <path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#2B579A"/>
+    <path d="M14 2l5 5h-5V2z" fill="#8FAEDC"/>
+    <path d="M7.4 12l1.3 5.2 1.4-5.2 1.4 5.2L12.8 12" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14.2 12l1.3 5.2 1.3-5.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
 <!-- brand chrome: this wrapper is Chris's, the article below is not -->
 <header class="noprint" style="background:var(--night)">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-    <span style="color:#f0f0f0" class="text-sm font-bold tracking-tight">chris hornak<span style="color:var(--brand)">.</span></span>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+    <img src="/images/wordmark-dark.svg" alt="Chris Hornak" class="h-5 sm:h-[22px] w-auto" loading="eager" decoding="async">
     <span style="color:#8a8a8a" class="text-[11px] font-medium uppercase tracking-[.14em]">Client preview</span>
   </div>
 </header>
@@ -64,14 +79,16 @@
 <div class="noprint" style="background:var(--paper);border-bottom:1px solid var(--rule)">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-5">
     <div class="flex flex-col sm:flex-row gap-2.5">
-      <a class="btn text-center rounded-md px-4 py-3 text-sm font-semibold"
+      <a class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold"
          style="background:var(--night);color:#fff"
-         href="https://docs.google.com/document/d/1iJGyHbXg4KQh7tpQLKPERG0wESzngGx_83RvqQel3bs/edit"
+         href="https://docs.google.com/document/d/12hYo5l3k-73QL85GoH4jKGYzTncWTHM67P2nPHnQm8I/edit"
          target="_blank" rel="noopener noreferrer">
+        <svg class="w-[18px] h-[18px] shrink-0" aria-hidden="true"><use href="#i-gdoc"/></svg>
         Open in Google Docs to edit
       </a>
-      <button id="dl" class="btn text-center rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
+      <button id="dl" class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
               style="background:#fff;color:var(--ink);border:1px solid var(--rule)">
+        <svg class="w-[18px] h-[18px] shrink-0" aria-hidden="true"><use href="#i-word"/></svg>
         Download as a Word file
       </button>
     </div>
@@ -112,43 +129,43 @@
     </div>
 
     <div class="art">
-      <p>There was a man in a story I read this month who'd been messaging a woman on a dating app, and he was using a chatbot to write his side of it, and she seemed to be doing the very same thing back at him. He gave up and typed the actual question: &ldquo;How long are we gonna ChatGPT each other?&rdquo;</p>
+      <p>There was a man in a story I read this month who'd been messaging a woman on a dating app, and he was using a chatbot to write his side, and she seemed to be doing the same back at him. He gave up and typed the actual question: &ldquo;How long are we gonna ChatGPT each other?&rdquo;</p>
 
       <p>She never responded. Which is an answer, I suppose.</p>
 
-      <p>The story ran in The New York Times Magazine on August 14, and the reporter, Callie Holtermann, calls this a bot loop. Both people hand their half of the conversation to software and then stand around supervising the result.</p>
+      <p>The story ran in The New York Times Magazine on August 14, and the reporter, Callie Holtermann, calls this a bot loop. Both people hand their half of the conversation to software, then stand around supervising the result.</p>
 
-      <p>Soheil Feizi, an associate professor of computer science at the University of Maryland, makes a point I haven't stopped thinking about. Two AI systems built on the same underlying technology don't catch each other's mistakes. &ldquo;They are just sharing the same blind spots,&rdquo; he says. They agree, is the problem. They agree very fluently.</p>
+      <p>Soheil Feizi, an associate professor of computer science at the University of Maryland, says two AI systems built on the same technology don't catch each other's mistakes. &ldquo;They are just sharing the same blind spots.&rdquo; They agree, is the problem. They agree very fluently.</p>
 
       <p>I've been coaching executives in Marin for <span class="fill">how many years?</span> years, and my first thought reading this had nothing to do with technology. It was about a different loop, one with no software in it anywhere.</p>
 
-      <p>Someone sits down across from me, still wearing the jacket from whatever meeting they came out of, and walks me through a conversation that went badly. Partway through they stop, and they say the thing they should have said in the room. They knew it then, too. They knew it in the parking garage afterward. And a week later I'm hearing about that same conversation happening again with that same person, going the same way.</p>
+      <p>Someone sits down across from me, still wearing the jacket from whatever meeting they came out of, and walks me through a conversation that went badly. Partway through they stop and say the thing they should have said. They knew it then, too. They knew it in the parking garage afterward. And a week later I'm hearing about that same conversation going the same way again.</p>
 
       <p>The insight was there and it was real, and it still didn't survive the drive home.</p>
 
-      <p>That distance is the whole problem in my line of work, and it has never been an information problem.</p>
+      <p>That distance is my whole line of work. It has never been an information problem.</p>
 
-      <p>The part of the piece that unsettled me most wasn't about errors at all. Sarah Davis, a cultural anthropologist who is dean of St. John's College in Santa Fe, wonders whether people might get so used to how smooth a machine conversation feels that they lose their tolerance for the other kind, the unpredictable kind, the kind with a person in it. What she names as the thing at risk is friction.</p>
+      <p>The part that unsettled me most wasn't about errors. Sarah Davis, a cultural anthropologist who is dean of St. John's College in Santa Fe, wonders whether people might get so used to how smooth a machine conversation feels that they lose their tolerance for the other kind, the unpredictable kind, the kind with a person in it. What she names as the risk is friction.</p>
 
       <p>That sounds an awful lot like my job description.</p>
 
-      <p>Coaching is friction, first and last. Somebody tells me what they've decided and I don't agree and we sit in that a while, and it's uncomfortable, and it is supposed to be uncomfortable. Smooth that over and you haven't built a coaching tool, you've built an anesthetic. Of course people will use it. It feels better.</p>
+      <p>Coaching is friction. Somebody tells me what they've decided and I don't agree and we sit in that a while, and it's uncomfortable, and it is supposed to be uncomfortable. Smooth that over and you haven't built a coaching tool, you've built an anesthetic. Of course people will use it. It feels better.</p>
 
-      <p>That's what I had in front of me while I was building a tool for my own practice <span class="fill">when?</span>. It's called the InLight Companion, my clients use it between sessions, and it notices when somebody says &ldquo;I should&rdquo; instead of &ldquo;I want to,&rdquo; which sounds like a small distinction and isn't one.</p>
+      <p>That's what I had in front of me while I built a tool for my own practice <span class="fill">when?</span>. It's called the InLight Companion, and it notices when somebody says &ldquo;I should&rdquo; instead of &ldquo;I want to,&rdquo; which sounds like a small distinction and isn't one.</p>
 
-      <p>It also knows when to stop. When a conversation goes somewhere a reflection tool has no business going, it ends, tells the person where to find real help, and tells me they need me. That wasn't a feature I bolted on at the end. The rest of it is built around that.</p>
+      <p>It also knows when to stop. When a conversation goes somewhere a reflection tool has no business going, it ends, points the person toward real help, and tells me they need me. That wasn't a feature I bolted on at the end. The rest is built around it.</p>
 
-      <p>Holtermann ends somewhere I didn't see coming, and it's the part this county ought to sit with. If bot loops keep spreading, getting an actual human being on the other end of the line stops being ordinary and turns into a rare privilege, priced accordingly. And the people best positioned to afford it are the same people the AI boom is making rich.</p>
+      <p>Holtermann ends somewhere I didn't see coming. If bot loops keep spreading, getting an actual human being on the other end of the line stops being ordinary and turns into a rare privilege, priced accordingly. The people best able to afford it are the ones the AI boom is making rich.</p>
 
       <p>Look around. That's us, or it's our neighbors, or it's whoever's ahead of us in line at <span class="fill">which Marin spot?</span>.</p>
 
-      <p>So it isn't whether we'll still get to talk to people. We will. We can pay for it. It's whether a real conversation becomes a thing we quietly buy for ourselves and let everybody else go without.</p>
+      <p>So it isn't whether we'll still get to talk to people. We will. We can pay for it. It's whether that becomes a thing we quietly buy for ourselves and let everybody else go without.</p>
 
-      <p>I don't have a tidy answer to that one and I won't pretend otherwise. What I have is a test I run before I let any of these tools near my practice, and it has nothing to do with whether the thing sounds human. They all sound human now. Holtermann calls that output text &ldquo;dazzling in their phoniness, like costume jewelry.&rdquo;</p>
+      <p>I don't have a tidy answer to that one. What I have is a test I run before I let any of these tools near my practice, and it has nothing to do with whether the thing sounds human. They all sound human now. Holtermann calls that output &ldquo;dazzling in their phoniness, like costume jewelry.&rdquo;</p>
 
       <p>The test is just this. When it gets something wrong, who finds out?</p>
 
-      <p>If the answer is another machine, you've built a loop, and the mistake keeps going around inside it until somebody outside happens to notice. If the answer is a person, somebody who knows the human being involved and has to answer for what happens to them, you've built a different thing. Same technology underneath. Not remotely the same tool.</p>
+      <p>If the answer is another machine, you've built a loop, and the mistake keeps going around inside it until somebody outside notices. If the answer is a person who knows the human involved and has to answer for what happens to them, you've built a different thing. Same technology underneath. Not the same tool.</p>
     </div>
 
     <div class="drop pt-5 mt-2 mb-10">
@@ -191,18 +208,22 @@
       <h2 class="kicker text-[11px] m-0 mb-4" style="color:var(--ink-3)">Still open</h2>
       <ol class="list-decimal pl-5 m-0 space-y-3 text-sm leading-relaxed note-list" style="color:var(--ink-2)">
         <li><span style="color:var(--ink)" class="font-semibold">The three blanks.</span> Highlighted in the column above.</li>
-        <li><span style="color:var(--ink)" class="font-semibold">The word count.</span> This draft runs 807 words. Marin Voice columns typically run 600 to 700, but their site blocks automated reading so the cap is unconfirmed. Someone should email <a style="color:#0a5f8a" href="mailto:opinion@marinij.com?subject=Marin%20Voice%20submission%20guidelines">opinion@marinij.com</a> and ask.</li>
+        <li><span style="color:var(--ink)" class="font-semibold">The word count.</span> This draft runs 726 words once the three blanks are filled, which lands in the 600 to 700 range a Marin Voice column usually runs. Their site blocks automated reading, so the exact cap is still unconfirmed. Someone should email <a style="color:#0a5f8a" href="mailto:opinion@marinij.com?subject=Marin%20Voice%20submission%20guidelines">opinion@marinij.com</a> and ask.</li>
         <li><span style="color:var(--ink)" class="font-semibold">A read-aloud pass.</span> Read it out loud and change anything that doesn't sound like your voice. Your byline is on it, so it should be your sentences.</li>
       </ol>
     </div>
 
     <div class="noprint flex flex-col sm:flex-row gap-2.5 mt-9">
-      <a class="btn text-center rounded-md px-4 py-3 text-sm font-semibold"
+      <a class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold"
          style="background:var(--night);color:#fff"
-         href="https://docs.google.com/document/d/1iJGyHbXg4KQh7tpQLKPERG0wESzngGx_83RvqQel3bs/edit"
-         target="_blank" rel="noopener noreferrer">Open in Google Docs to edit</a>
-      <button id="dl2" class="btn text-center rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
-              style="background:#fff;color:var(--ink);border:1px solid var(--rule)">Download as a Word file</button>
+         href="https://docs.google.com/document/d/12hYo5l3k-73QL85GoH4jKGYzTncWTHM67P2nPHnQm8I/edit"
+         target="_blank" rel="noopener noreferrer">
+        <svg class="w-[18px] h-[18px] shrink-0" aria-hidden="true"><use href="#i-gdoc"/></svg>
+        Open in Google Docs to edit</a>
+      <button id="dl2" class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
+              style="background:#fff;color:var(--ink);border:1px solid var(--rule)">
+        <svg class="w-[18px] h-[18px] shrink-0" aria-hidden="true"><use href="#i-word"/></svg>
+        Download as a Word file</button>
     </div>
 
   </div>
