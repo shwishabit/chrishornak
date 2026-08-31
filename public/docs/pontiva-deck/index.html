@@ -60,8 +60,12 @@
   }
   .slide.active{display:flex;}
   .slide.cream{background:var(--cream);color:var(--cream-fg);}
-  .wrap{max-width:82%;width:100%;}
+  .wrap{max-width:82%;width:100%;min-width:0;}
   .wrap.wide{max-width:92%;}
+  .slide{min-width:0;}
+  .stat-split .stat-num, .stat-split .stat-text,
+  .split .col-left, .split .col-right,
+  .trackrecord .content-col{min-width:0;}
 
   /* Cover */
   .cover img.logo{height:15%;max-height:96px;width:auto;margin-bottom:2.2rem;}
@@ -193,22 +197,30 @@
   .dot.active{background:var(--gold);}
 
   @media (max-width:820px){
-    .stage{padding:2.5vh 0 13vh;}
-    .frame{width:100vw;aspect-ratio:auto;border-radius:0;border:none;}
-    .slide{position:relative;min-height:calc(100vh - 15vh);padding:8vh 6vw;}
+    html,body{height:auto;width:100%;overflow-y:auto;overflow-x:hidden;}
+    .stage{width:100%;height:auto;min-height:100vh;padding:0;display:block;}
+    .frame{position:relative;width:100%;aspect-ratio:auto;min-height:100vh;
+      border-radius:0;border:none;box-shadow:none;overflow:visible;}
+    .slide{position:relative;min-height:100vh;padding:9vh 6vw 16vh;box-sizing:border-box;}
     .wrap{max-width:100%;}
-    .triad, .steps, .icon-cards{grid-template-columns:1fr;gap:1.1rem;}
+    .triad, .steps, .icon-cards{grid-template-columns:1fr;gap:1.4rem;}
     .steps::before{display:none;}
     .proof-grid{grid-template-columns:1fr;}
     .proof-grid img.photo{height:200px;}
     .navbtn{width:42px;height:42px;font-size:1.1rem;}
-    .controls{gap:.8rem;}
-    .slide.stat-split, .slide.split, .slide.trackrecord{flex-direction:column;padding:9vh 6vw;gap:1.6rem;}
+    .controls{
+      position:fixed;bottom:2.2vh;left:50%;transform:translateX(-50%);
+      gap:.8rem;background:hsl(220 25% 4% / .7);backdrop-filter:blur(6px);
+      padding:.5rem .8rem;border-radius:999px;
+    }
+    .slide.stat-split, .slide.split{flex-direction:column;padding:9vh 6vw 16vh;gap:1.6rem;min-height:100vh;}
     .stat-split .stat-num, .stat-split .stat-text,
     .split .col-left, .split .col-right{width:100%;}
-    .trackrecord{padding:0 !important;}
-    .trackrecord .photo-col{width:100%;height:32vh;}
-    .trackrecord .content-col{padding:6vh 6vw;}
+    .slide.trackrecord{flex-direction:column;padding:0;min-height:100vh;}
+    .trackrecord .photo-col{width:100%;height:34vh;flex-shrink:0;}
+    .trackrecord .content-col{padding:6vh 6vw 16vh;flex:none;}
+    .numlist .list-item{grid-template-columns:56px 1fr;gap:1rem;}
+    .numlist .idx{font-size:2.4rem;}
   }
 </style>
 </head>
