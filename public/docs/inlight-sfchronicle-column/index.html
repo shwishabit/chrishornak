@@ -13,6 +13,20 @@
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-gdoc" viewBox="0 0 24 24">
+    <path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#4285F4"/>
+    <path d="M14 2l5 5h-5V2z" fill="#A1C2FA"/>
+    <path d="M8 12h8M8 15h8M8 18h5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-word" viewBox="0 0 24 24">
+    <path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#2B579A"/>
+    <path d="M14 2l5 5h-5V2z" fill="#8FAEDC"/>
+    <path d="M7.4 12l1.3 5.2 1.4-5.2 1.4 5.2L12.8 12" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14.2 12l1.3 5.2 1.3-5.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
 <header class="noprint" style="background:var(--night)">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
     <img src="/images/wordmark-dark.svg" alt="Chris Hornak" class="h-[30px] sm:h-[33px] w-auto" loading="eager" decoding="async">
@@ -30,7 +44,24 @@
     </p>
   </div>
 
-  <article class="rounded-xl px-5 sm:px-10 py-8 sm:py-12" style="background:var(--paper);border:1px solid var(--rule)">
+  
+    <div class="noprint grid sm:grid-cols-2 gap-3">
+      <a class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold"
+         style="background:var(--night);color:#fff" href="https://docs.google.com/document/d/1GEoOEfN-Q1-O2povTdtEaEWveYgdWocMGWxp1A-1TLc/edit" target="_blank" rel="noopener noreferrer">
+        <svg class="w-[27px] h-[27px] shrink-0" aria-hidden="true"><use href="#i-gdoc"/></svg>
+        Open in Google Docs to edit
+      </a>
+      <button id="dl" class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
+              style="background:#fff;color:var(--ink);border:1px solid var(--rule)">
+        <svg class="w-[27px] h-[27px] shrink-0" aria-hidden="true"><use href="#i-word"/></svg>
+        Download as a Word file
+      </button>
+    </div>
+  <p class="noprint text-[12px] mt-3 mb-8" style="color:var(--ink-3)">
+    Google Docs is the easier one &mdash; edits save on their own and I can see them. That document holds the column and nothing else, so its word count is the number the editor will care about. It reads <strong>866 of 800&ndash;900</strong> right now, counting the headline, the column and the bio together. Edit it freely at any stage; I will keep this page and the document in step.
+  </p>
+
+  <article id="article" class="rounded-xl px-5 sm:px-10 py-8 sm:py-12" style="background:var(--paper);border:1px solid var(--rule)">
     <p class="kicker text-[11px] m-0" style="color:var(--section)">Open Forum &middot; Draft</p>
     <h1 class="hed text-[2rem] sm:text-[2.7rem] mt-3 mb-5">The gold is not only in the session. It is in everything after you leave.</h1>
     <p class="text-[13px] m-0 mb-8 pb-6" style="color:var(--ink-3);border-bottom:1px solid var(--rule)">By Svetlana Whitener</p>
@@ -95,10 +126,62 @@
     </p>
   </section>
 
+  <div class="mt-8">
+    <div class="noprint grid sm:grid-cols-2 gap-3">
+      <a class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold"
+         style="background:var(--night);color:#fff" href="https://docs.google.com/document/d/1GEoOEfN-Q1-O2povTdtEaEWveYgdWocMGWxp1A-1TLc/edit" target="_blank" rel="noopener noreferrer">
+        <svg class="w-[27px] h-[27px] shrink-0" aria-hidden="true"><use href="#i-gdoc"/></svg>
+        Open in Google Docs to edit
+      </a>
+      <button id="dl2" class="btn inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold cursor-pointer"
+              style="background:#fff;color:var(--ink);border:1px solid var(--rule)">
+        <svg class="w-[27px] h-[27px] shrink-0" aria-hidden="true"><use href="#i-word"/></svg>
+        Download as a Word file
+      </button>
+    </div></div>
+
   <p class="noprint text-[12px] mt-8 mb-0" style="color:var(--ink-3)">
     Prepared for Svetlana Whitener &middot; InLight Coaching &middot; draft of 1 September 2026. This page is not indexed and is not public.
   </p>
 
 </main>
+
+<script>
+(function(){
+  function buildDoc(){
+    var art = document.getElementById('article').cloneNode(true);
+    art.querySelectorAll('.blanknote').forEach(function(el){
+      var i = document.createElement('i');
+      i.textContent = ' ' + el.textContent.trim();
+      el.replaceWith(i);
+    });
+    art.querySelectorAll('.fill').forEach(function(el){
+      var s = document.createElement('span');
+      s.setAttribute('style','background:#ffe9a8;font-weight:bold');
+      s.textContent = '[TO COME - ONE REAL CLIENT STORY. Do not submit with this paragraph unfilled.]';
+      el.replaceWith(s);
+    });
+    return '<html xmlns:o="urn:schemas-microsoft-com:office:office" '
+      + 'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
+      + '<head><meta charset="utf-8"><title>SF Chronicle Open Forum draft</title>'
+      + '<style>body{font-family:Georgia,serif;font-size:12pt;line-height:1.6}'
+      + 'h1{font-size:20pt}p{margin:0 0 12pt}</style></head><body>'
+      + art.innerHTML + '</body></html>';
+  }
+  function download(){
+    var blob = new Blob(['\ufeff' + buildDoc()], {type:'application/msword'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'SF-Chronicle-Open-Forum-draft-Svetlana-Whitener.doc';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+  ['dl','dl2'].forEach(function(id){
+    var b = document.getElementById(id);
+    if (b) b.addEventListener('click', download);
+  });
+})();
+</script>
 </body>
 </html>
