@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Podcast — Tosh Show (proposed page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#162131;
+    --navy-deep:#121A27;
+    --rust:#B74B06;
+    --grey:#7C828B;
+    --grad-top:#C2C0C0;
+    --white:#FFFFFF;
+    --line:#D5D7DA;
+    --shell:1210px;
+    --stage:1007px;     /* same container width their page uses today */
+    --slant:132px;
+    --hero-h:760px;     /* diagonal crosses the featured video, as it does today */
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--white);color:var(--white);
+    font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px;line-height:1.6;
+  }
+  h1,h2,h3,.display{font-family:"Josefin Sans",system-ui,sans-serif;margin:0}
+  a{color:inherit}
+  img,svg{max-width:100%;display:block}
+  .shell{max-width:var(--shell);margin:0 auto;padding:0 20px}
+  .stage{max-width:calc(var(--stage) + 40px);margin:0 auto;padding:0 20px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* ---------- prototype marker ---------- */
+  .proto{
+    background:var(--rust);color:#fff;text-align:center;
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:7px 16px;line-height:1.45;
+  }
+  .proto span{opacity:.82;font-weight:500;letter-spacing:.06em;text-transform:none}
+  .proto a{
+    color:#fff;font-weight:700;letter-spacing:.06em;text-transform:none;
+    text-decoration:underline;text-underline-offset:3px;white-space:nowrap;margin-left:5px;
+  }
+  .proto a:hover{color:#FFD9C2}
+
+  /* ---------- header ---------- */
+  .site-head{background:var(--white);position:relative;z-index:5}
+  .head-row{display:flex;align-items:center;justify-content:flex-start;height:67px}
+  .logo{width:177px;flex:0 0 auto}
+  .nav{display:flex;align-items:center;margin-left:129px}
+  .nav a{
+    display:block;padding:0 18px;color:var(--navy);text-decoration:none;
+    font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.25px;
+    line-height:67px;position:relative;
+  }
+  .nav a::after{
+    content:"";position:absolute;left:0;right:0;bottom:3px;height:3px;
+    background:var(--rust);transform:scaleX(0);transition:transform .2s ease;
+  }
+  .nav a:hover::after,.nav a[aria-current="page"]::after{transform:scaleX(1)}
+  .socials{display:flex;align-items:center;gap:19px;flex:0 0 auto;margin-left:18px}
+  .socials a{color:var(--navy);line-height:0}
+  .socials a:hover{color:var(--rust)}
+  .socials svg{width:20px;height:20px;fill:currentColor}
+  .burger{display:none;background:none;border:0;padding:8px;margin-right:-8px;color:var(--navy);cursor:pointer}
+  .burger svg{width:24px;height:24px;fill:currentColor}
+
+  /* ---------- hero: the latest episode, full container width ---------- */
+  .hero{position:relative;background:var(--navy);padding:80px 0 0}
+  .hero::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:var(--hero-h);
+    background:linear-gradient(to top,var(--white) 0%,var(--grad-top) 100%);
+    clip-path:polygon(0 0, 100% 0, 100% calc(100% - var(--slant)), 0 100%);
+  }
+  .hero .stage{position:relative;z-index:1}
+  .eyebrow{
+    display:flex;align-items:center;gap:9px;
+    color:var(--rust);font-size:13px;font-weight:700;
+    letter-spacing:.22em;text-transform:uppercase;margin:0 0 10px;
+  }
+  .eyebrow::before{content:"";width:7px;height:7px;background:var(--rust);border-radius:50%;flex:0 0 auto}
+  .lede h2{font-size:64px;font-weight:700;line-height:1;color:var(--navy);margin-bottom:34px}
+
+  .feature{display:block;text-decoration:none;color:inherit}
+  .feature .ep-thumb{box-shadow:0 26px 60px rgba(9,13,20,.36)}
+  .feature .ep-play{width:88px;height:62px;border-radius:13px}
+  .feature .ep-play svg{width:30px;height:30px}
+  .feature .ep-dur{font-size:14px;padding:5px 9px;right:12px;bottom:12px}
+  .feature-title{
+    display:block;font-family:"Josefin Sans",sans-serif;
+    font-size:32px;font-weight:600;line-height:1.22;color:var(--white);margin:26px 0 8px;
+  }
+  .feature:hover .feature-title{color:var(--rust)}
+  .feature-meta{display:block;font-size:14px;color:var(--grey)}
+  .feature-meta i{font-style:normal;padding:0 6px}
+
+  /* listen-elsewhere row, keeping the Apple Podcasts link their page already has */
+  .also{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:28px}
+  .also-label{
+    font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--grey);margin:0 4px 0 0;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:11px 16px;border:1px solid rgba(255,255,255,.32);
+    color:var(--white);text-decoration:none;font-size:13px;font-weight:600;
+    transition:border-color .2s ease,background .2s ease;
+  }
+  .pill:hover{background:var(--rust);border-color:var(--rust)}
+  .pill svg{width:16px;height:16px;fill:currentColor;flex:0 0 auto}
+
+  /* ---------- guest invitation: pitch stays visible, fields live in a modal ---------- */
+  .cta-wrap{background:var(--navy);padding:70px 0 84px}
+  .cta{
+    display:flex;align-items:center;justify-content:space-between;gap:32px;
+    background:var(--navy-deep);border-left:4px solid var(--rust);padding:34px 38px;
+  }
+  .cta h2{font-size:34px;font-weight:700;line-height:1.05;margin-bottom:8px}
+  .cta p{margin:0;color:#B9BEC6;font-size:15px;max-width:620px}
+  .cta .btn{flex:0 0 auto}
+
+  /* ---------- Smash Balloon "Grid" layout ---------- */
+  .more{background:var(--navy);padding:0 0 96px}
+  .more-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin-bottom:34px}
+  .more-head h2{font-size:34px;font-weight:600;color:var(--white)}
+  .more-head a{color:var(--grey);font-size:14px;font-weight:600;text-decoration:none}
+  .more-head a:hover{color:var(--rust)}
+
+  .feed{display:grid;grid-template-columns:repeat(3,1fr);gap:44px 24px}
+  .ep{display:block;text-align:center;text-decoration:none;color:inherit}
+  .ep-thumb{display:block;position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+  .ep-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+  .ep:hover .ep-thumb img,.feature:hover .ep-thumb img{transform:scale(1.04)}
+  .ep-play{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:58px;height:41px;border-radius:9px;background:rgba(19,19,19,.78);
+    display:flex;align-items:center;justify-content:center;transition:background .2s ease;
+  }
+  .ep:hover .ep-play,.feature:hover .ep-play{background:#FF0000}
+  .ep-play svg{width:20px;height:20px;fill:#fff}
+  /* Smash Balloon Pro: Videos > Edit Individual Elements > Video Duration */
+  .ep-dur{
+    position:absolute;right:8px;bottom:8px;
+    background:rgba(0,0,0,.8);color:#fff;border-radius:3px;
+    font-size:12px;font-weight:600;line-height:1;padding:4px 6px;letter-spacing:.02em;
+  }
+  .ep-title{
+    display:block;font-size:15px;font-weight:700;line-height:1.35;
+    color:var(--white);margin:14px 0 6px;
+  }
+  .ep:hover .ep-title{color:var(--rust)}
+  .ep-meta{display:block;font-size:13px;color:var(--grey);margin:0}
+  .ep-meta i{font-style:normal;padding:0 5px}
+
+  .feed-btns{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:56px}
+  .feed-btns .btn{min-width:290px}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    padding:18px 26px;border:2px solid var(--white);background:transparent;color:var(--white);
+    font-family:"Josefin Sans",sans-serif;font-size:18px;font-weight:600;line-height:1;
+    text-decoration:none;cursor:pointer;
+    transition:background .25s ease,border-color .25s ease,color .25s ease;
+  }
+  .btn:hover{background:var(--white);color:var(--navy)}
+  .btn--rust{background:var(--rust);border-color:var(--rust);color:var(--white)}
+  .btn--rust:hover{background:#8F3A04;border-color:#8F3A04;color:var(--white)}
+  .btn--block{width:100%}
+  .btn svg{width:20px;height:20px;fill:currentColor;flex:0 0 auto}
+  .btn[hidden]{display:none}
+
+  /* ---------- overlays ---------- */
+  .ov[hidden]{display:none}
+  .ov{
+    position:fixed;inset:0;z-index:100;background:rgba(9,13,20,.94);
+    display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;
+  }
+  .ov-btn{
+    position:absolute;background:rgba(255,255,255,.10);border:0;color:#fff;
+    width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background .2s ease;
+  }
+  .ov-btn:hover{background:var(--rust)}
+  .ov-btn svg{width:22px;height:22px;fill:currentColor}
+  .ov-close{top:20px;right:20px}
+  .ov-prev{left:20px;top:50%;transform:translateY(-50%)}
+  .ov-next{right:20px;top:50%;transform:translateY(-50%)}
+
+  .lb-box{width:100%;max-width:1100px}
+  .lb-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+  .lb-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .lb-cap{color:var(--white);font-size:15px;font-weight:600;margin-top:14px;text-align:center}
+  .lb-cap span{display:block;color:var(--grey);font-weight:400;font-size:13px;margin-top:4px}
+
+  /* ---------- the guest form, inside its modal ---------- */
+  .card{
+    background:var(--white);color:var(--navy);padding:44px 42px 36px;
+    width:100%;max-width:600px;margin:auto;
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+  }
+  .card h2{font-size:38px;font-weight:700;line-height:1.05;margin-bottom:12px}
+  .card .intro{font-size:15px;line-height:1.6;color:#4A5361;margin:0 0 26px}
+  .field{margin-bottom:18px}
+  .field label{
+    display:block;font-size:11px;font-weight:700;letter-spacing:.13em;
+    text-transform:uppercase;color:#5C6572;margin-bottom:7px;
+  }
+  .field .req{color:var(--rust)}
+  input,textarea{
+    width:100%;background:var(--white);color:var(--navy);
+    border:2px solid var(--line);padding:13px 14px;border-radius:0;
+    font-family:inherit;font-size:15px;line-height:1.4;
+  }
+  textarea{min-height:110px;resize:vertical}
+  input::placeholder,textarea::placeholder{color:#9AA1AB}
+  input:focus,textarea:focus{outline:none;border-color:var(--rust)}
+  .note{font-size:12px;line-height:1.6;color:#7C828B;margin:14px 0 0;text-align:center}
+
+  /* ---------- footer ---------- */
+  .site-foot{background:var(--navy);text-align:center;padding:0 0 36px}
+  .foot-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:0 23px;margin-bottom:49px}
+  .foot-nav a{color:var(--white);text-decoration:none;font-size:14px;font-weight:600}
+  .foot-nav a:hover,.foot-nav a[aria-current="page"]{color:var(--rust)}
+  .rule{height:1px;background:rgba(255,255,255,.28);max-width:726px;margin:0 auto 34px}
+  .fine{font-size:12px;line-height:1.9;color:var(--white);margin:0}
+  .fine a{color:var(--white);text-decoration:underline;text-underline-offset:2px}
+  .fine a:hover{color:var(--rust)}
+
+  a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--rust);outline-offset:3px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1240px){ .nav{margin-left:auto} .socials{margin-left:auto} }
+  @media (max-width:1180px){ .nav a{padding:0 12px;font-size:15px} .socials{gap:15px} }
+  @media (max-width:1000px){
+    :root{--slant:84px;--hero-h:560px}
+    .hero{padding-top:60px}
+    .lede h2{font-size:46px;margin-bottom:26px}
+    .feature-title{font-size:25px}
+    .cta{flex-direction:column;align-items:flex-start;gap:22px}
+    .cta-wrap{padding:56px 0 66px}
+    .feed{grid-template-columns:repeat(2,1fr);gap:34px 20px}
+    .more{padding-bottom:74px}
+  }
+  @media (max-width:860px){
+    .head-row{flex-wrap:wrap;height:auto;padding:14px 0}
+    .burger{display:block;order:2}
+    .socials{order:3;margin-left:auto}
+    .nav{display:none;order:4;width:100%;flex-direction:column;align-items:stretch;padding-top:10px;margin-left:0}
+    .nav.open{display:flex}
+    .nav a{line-height:1;padding:14px 0;border-bottom:1px solid rgba(22,33,49,.10)}
+    .nav a::after{display:none}
+    .nav a[aria-current="page"]{color:var(--rust)}
+    .logo{width:150px}
+  }
+  @media (max-width:640px){
+    :root{--slant:52px;--hero-h:300px}
+    .proto{font-size:10px;letter-spacing:.08em;padding:7px 12px}
+    .logo{width:132px}
+    .socials{gap:14px}
+    .socials svg{width:18px;height:18px}
+    .hero{padding-top:44px}
+    .lede h2{font-size:34px;margin-bottom:20px}
+    .feature-title{font-size:21px}
+    .feature .ep-play{width:64px;height:45px}
+    .feature .ep-play svg{width:22px;height:22px}
+    .also{gap:9px}
+    .also-label{width:100%;margin-bottom:2px}
+    .pill{padding:10px 13px;font-size:12px}
+    .cta{padding:26px 22px}
+    .cta h2{font-size:27px}
+    .cta .btn{width:100%}
+    .card{padding:32px 22px 26px}
+    .card h2{font-size:29px}
+    .ov{padding:14px}
+    .feed{grid-template-columns:1fr;gap:30px}
+    .more-head{flex-direction:column;gap:6px}
+    .more-head h2{font-size:26px}
+    .feed-btns .btn{min-width:0;width:100%}
+    .ov-prev,.ov-next{display:none}
+    .foot-nav{gap:0 18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="proto">
+  Prototype &middot; proposed podcast page
+  <span>&middot; built by Chris Hornak, not a live Daniel Tosh page &middot;</span>
+  <a href="/docs/tosh-2026">Read the proposal &rarr;</a>
+</div>
+
+<header class="site-head">
+  <div class="shell head-row">
+    <a class="logo" href="https://danieltosh.com" aria-label="Daniel Tosh home">
+      <svg viewBox="0 0 1383.9 169" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Daniel Tosh">
+        <g fill="#162131">
+          <path d="M96.2,31.8h43.5c7.7,0,14.9,1.6,21.7,4.6c6.7,3.1,12.6,7.2,17.7,12.4c5,5.1,9,11.1,11.9,18c2.9,6.8,4.3,14,4.3,21.5c0,7.4-1.4,14.5-4.3,21.4c-2.8,6.8-6.8,12.9-11.8,18.1c-5,5.2-10.9,9.3-17.7,12.4c-6.7,3.1-14,4.6-21.8,4.6H96.2V31.8z M125.6,119.9h6.7c5.1,0,9.6-0.8,13.6-2.4c4-1.6,7.4-3.8,10.1-6.6c2.7-2.8,4.8-6.1,6.3-10c1.4-3.8,2.2-8.1,2.2-12.7c0-4.5-0.8-8.7-2.2-12.6c-1.5-3.9-3.6-7.2-6.4-10c-2.8-2.8-6.1-5-10.1-6.6c-4-1.6-8.5-2.4-13.5-2.4h-6.7V119.9z"/>
+          <path d="M290.5,125.2h-42l-6.7,19.6h-31.3l43-113h32.1l43,113h-31.3L290.5,125.2z M282.7,102.9l-13.2-37.6l-13.2,37.6H282.7z"/>
+          <path d="M353.4,144.8v-113h29.4l54.3,69.1V31.8h29.2v113h-29.2l-54.3-69.1v69.1H353.4z"/>
+          <path d="M531.4,31.8v113H502v-113H531.4z"/>
+          <path d="M631.3,56.7h-34.9v18.9h33v24.9h-33v19.5h34.9v24.9H567v-113h64.3V56.7z"/>
+          <path d="M693.8,31.8v88.1h35.2v24.9h-64.6v-113H693.8z"/>
+        </g>
+        <g fill="#B74B06">
+          <path d="M862,56.7v88.1h-29.4V56.7h-24.1V31.8h77.6v24.9H862z"/>
+          <path d="M905,88.3c0-8.4,1.5-16.2,4.6-23.5c3.1-7.2,7.4-13.6,12.9-19c5.5-5.4,12.1-9.6,19.7-12.7c7.6-3,16.1-4.6,25.3-4.6c9.1,0,17.5,1.5,25.2,4.6c7.7,3,14.3,7.3,19.9,12.7c5.5,5.4,9.9,11.7,13,19c3.1,7.2,4.6,15.1,4.6,23.5c0,8.4-1.5,16.2-4.6,23.5c-3.1,7.2-7.4,13.6-13,19s-12.2,9.6-19.9,12.7c-7.7,3-16.1,4.6-25.2,4.6c-9.2,0-17.6-1.5-25.3-4.6s-14.2-7.3-19.7-12.7c-5.5-5.4-9.8-11.7-12.9-19C906.6,104.5,905,96.7,905,88.3z M935.8,88.3c0,4.5,0.8,8.6,2.5,12.4c1.7,3.8,4,7.1,6.9,9.9c2.9,2.8,6.3,5,10.1,6.5c3.8,1.6,7.9,2.3,12.2,2.3c4.3,0,8.4-0.8,12.2-2.3c3.8-1.5,7.2-3.7,10.2-6.5c2.9-2.8,5.3-6.1,7-9.9c1.7-3.8,2.5-7.9,2.5-12.4c0-4.5-0.9-8.6-2.5-12.4c-1.7-3.8-4-7.1-7-9.9c-2.9-2.8-6.3-5-10.2-6.5c-3.8-1.5-7.9-2.3-12.2-2.3c-4.3,0-8.4,0.8-12.2,2.3c-3.8,1.6-7.2,3.7-10.1,6.5c-2.9,2.8-5.2,6.1-6.9,9.9C936.6,79.7,935.8,83.8,935.8,88.3z"/>
+          <path d="M1122.8,60.7c-3.2-2.6-6.4-4.5-9.6-5.8c-3.2-1.2-6.3-1.9-9.3-1.9c-3.8,0-6.9,0.9-9.3,2.7c-2.4,1.8-3.6,4.1-3.6,7c0,2,0.6,3.6,1.8,4.9c1.2,1.3,2.8,2.4,4.7,3.4c1.9,1,4.1,1.8,6.6,2.5c2.4,0.7,4.9,1.4,7.3,2.2c9.6,3.2,16.6,7.5,21.1,12.8c4.4,5.3,6.7,12.3,6.7,20.9c0,5.8-1,11-2.9,15.7c-1.9,4.7-4.8,8.7-8.5,12.1c-3.7,3.3-8.3,5.9-13.8,7.8c-5.4,1.8-11.6,2.8-18.5,2.8c-14.3,0-27.5-4.2-39.7-12.7l12.6-23.7c4.4,3.9,8.7,6.8,13,8.7c4.3,1.9,8.5,2.8,12.7,2.8c4.8,0,8.4-1.1,10.7-3.3c2.3-2.2,3.5-4.7,3.5-7.5c0-1.7-0.3-3.2-0.9-4.4c-0.6-1.2-1.6-2.4-3-3.4c-1.4-1-3.2-2-5.5-2.9c-2.2-0.9-5-1.9-8.2-3c-3.8-1.2-7.5-2.5-11.2-4c-3.6-1.4-6.9-3.4-9.7-5.8c-2.8-2.4-5.1-5.4-6.9-9.1c-1.7-3.6-2.6-8.3-2.6-13.9c0-5.6,0.9-10.7,2.8-15.2c1.8-4.5,4.4-8.4,7.8-11.7c3.3-3.2,7.4-5.8,12.3-7.6c4.8-1.8,10.3-2.7,16.3-2.7c5.6,0,11.4,0.8,17.5,2.3c6.1,1.6,11.9,3.8,17.5,6.8L1122.8,60.7z"/>
+          <path d="M1199,75.4h42.4V31.8h29.4v113h-29.4V98.2H1199v46.6h-29.4v-113h29.4V75.4z"/>
+        </g>
+      </svg>
+    </a>
+
+    <button class="burger" type="button" aria-expanded="false" aria-controls="mainnav" aria-label="Menu">
+      <svg viewBox="0 0 448 512" aria-hidden="true"><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg>
+    </button>
+
+    <nav class="nav" id="mainnav" aria-label="Main">
+      <a href="https://www.toshshowstore.com/">Store</a>
+      <a href="https://www.danieltosh.com/podcast/" aria-current="page">Podcast</a>
+      <a href="https://danieltosh.com/#tour">Tour</a>
+      <a href="https://www.danieltosh.com/stand-up/">Stand Up</a>
+      <a href="https://www.cc.com/shows/tosh-o">Tosh.O</a>
+      <a href="https://www.danieltosh.com/contact/">Contact</a>
+    </nav>
+
+    <div class="socials">
+      <a href="https://twitter.com/danieltosh" aria-label="Twitter"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg></a>
+      <a href="https://www.facebook.com/toshpoint0/" aria-label="Facebook"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg></a>
+      <a href="https://www.youtube.com/@toshshow" aria-label="YouTube"><svg viewBox="0 0 576 512" aria-hidden="true"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg></a>
+      <a href="https://www.instagram.com/danieltosh" aria-label="Instagram"><svg viewBox="0 0 448 512" aria-hidden="true"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg></a>
+      <a href="https://open.spotify.com/show/2zzBL9Oe9bygUGlOban5fW" aria-label="Spotify"><svg viewBox="0 0 496 512" aria-hidden="true"><path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h1 class="sr">Podcast</h1>
+
+  <section class="hero">
+    <div class="stage">
+      <div class="lede">
+        <p class="eyebrow">Latest Episode</p>
+        <h2>Tosh Show</h2>
+      </div>
+
+      <a class="feature" id="feature" href="https://www.youtube.com/@toshshow"><!-- filled by script --></a>
+
+      <div class="also">
+        <p class="also-label">Also on</p>
+        <a class="pill" href="https://podcasts.apple.com/us/podcast/tosh-show/id1715463842" target="_blank" rel="noopener">
+          <svg viewBox="0 0 448 512" aria-hidden="true"><path d="M267.429 488.563C262.286 507.573 242.858 512 224 512c-18.857 0-38.286-4.427-43.428-23.437C172.927 460.134 160 388.898 160 355.75c0-33.144 30.32-42.257 64-42.257s64 9.113 64 42.257c0 33.148-12.928 104.384-20.571 132.813zM156.867 288.554c-18.693-18.308-29.958-44.173-28.784-72.599 2.054-49.724 42.395-89.956 92.124-91.881C274.862 121.958 320 165.807 320 220c0 26.827-11.064 51.116-28.866 68.552-2.675 2.62-2.335 6.986.628 9.256 8.312 6.369 15.34 14.303 20.617 23.371 2.14 3.678 7.08 4.526 10.242 1.694 27.318-24.469 43.867-60.259 43.379-99.409-.867-69.542-57.161-127.117-126.686-129.401C165.31 91.665 104 151.354 104 225c0 37.999 16.34 72.242 42.376 96.024 3.161 2.888 8.144 2.052 10.302-1.647 5.286-9.056 12.312-16.98 20.605-23.34 2.973-2.28 3.31-6.664.584-9.283zM224 0C100.204 0 0 100.185 0 224c0 89.992 52.602 165.647 125.739 201.408 4.333 2.118 9.267-1.83 8.176-6.53-2.679-11.537-5.062-23.567-6.995-35.174-.51-3.063-2.44-5.708-5.147-7.212C64.221 344.795 31.966 283.87 32 224 32.086 130.1 109.117 32 224 32c122.9 0 199.978 100.111 200 192 .026 106.169-99.006 197.977-200 197.977-14.577 0-27.917-1.35-40.169-3.916-8.16-1.708-13.917 8.203-9.71 15.408 5.362 9.18 20.539 13.03 49.879 13.03C347.796 448 448 347.815 448 224 448 100.185 347.796 0 224 0z"/></svg>
+          Apple Podcasts
+        </a>
+        <a class="pill" href="https://open.spotify.com/show/2zzBL9Oe9bygUGlOban5fW" target="_blank" rel="noopener">
+          <svg viewBox="0 0 496 512" aria-hidden="true"><path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z"/></svg>
+          Spotify
+        </a>
+        <a class="pill" href="https://www.youtube.com/@toshshow" target="_blank" rel="noopener">
+          <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg>
+          YouTube
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-wrap">
+    <div class="stage">
+      <div class="cta">
+        <div>
+          <h2>Be on the Show</h2>
+          <p>Tosh talks to the people in his life: his barista, his beekeeper, his pizza dough guy. If that&rsquo;s a job you have, tell us about it.</p>
+        </div>
+        <button class="btn btn--rust" type="button" id="openform">Tell us what you do</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="more">
+    <div class="stage">
+      <div class="more-head">
+        <h2>More Episodes</h2>
+        <a href="https://www.youtube.com/@toshshow" target="_blank" rel="noopener">Every episode on YouTube &rarr;</a>
+      </div>
+
+      <div class="feed" id="feed"><!-- Smash Balloon grid renders here --></div>
+
+      <div class="feed-btns">
+        <button class="btn" type="button" id="loadmore">Load More&hellip;</button>
+        <!-- Smash Balloon Pro renders this Subscribe button beside Load More -->
+        <a class="btn btn--rust" href="https://www.youtube.com/@toshshow?sub_confirmation=1" target="_blank" rel="noopener">
+          <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg>
+          Subscribe on YouTube
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <nav class="foot-nav" aria-label="Footer">
+    <a href="https://www.toshshowstore.com/">Store</a>
+    <a href="https://www.danieltosh.com/podcast/" aria-current="page">Podcast</a>
+    <a href="https://danieltosh.com/#tour">Tour</a>
+    <a href="https://www.danieltosh.com/stand-up/">Stand Up</a>
+    <a href="https://www.cc.com/shows/tosh-o">Tosh.O</a>
+    <a href="https://www.danieltosh.com/contact/">Contact</a>
+  </nav>
+  <div class="rule"></div>
+  <p class="fine">
+    <a href="https://danieltosh.com/privacy-policy/">Privacy Policy</a><br>
+    Copyright &copy; 2026 Daniel Tosh | Site by Buddy Web Design &amp; Development
+  </p>
+</footer>
+
+<!-- episode player -->
+<div class="ov" id="lb" hidden role="dialog" aria-modal="true" aria-label="Episode player">
+  <button class="ov-btn ov-close" type="button" id="lb-close" aria-label="Close">
+    <svg viewBox="0 0 352 512" aria-hidden="true"><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
+  </button>
+  <button class="ov-btn ov-prev" type="button" id="lb-prev" aria-label="Previous episode">
+    <svg viewBox="0 0 256 512" aria-hidden="true"><path d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>
+  </button>
+  <button class="ov-btn ov-next" type="button" id="lb-next" aria-label="Next episode">
+    <svg viewBox="0 0 256 512" aria-hidden="true"><path d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg>
+  </button>
+  <div class="lb-box">
+    <div class="lb-frame" id="lb-frame"></div>
+    <p class="lb-cap" id="lb-cap"></p>
+  </div>
+</div>
+
+<!-- guest form -->
+<div class="ov" id="formov" hidden role="dialog" aria-modal="true" aria-labelledby="formtitle">
+  <button class="ov-btn ov-close" type="button" id="form-close" aria-label="Close">
+    <svg viewBox="0 0 352 512" aria-hidden="true"><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"/></svg>
+  </button>
+  <div class="card">
+    <h2 id="formtitle">Be on the Show</h2>
+    <p class="intro">Tosh talks to the people in his life: his barista, his beekeeper, his pizza dough guy. If that&rsquo;s a job you have, tell us about it.</p>
+
+    <form id="guestform" novalidate>
+      <div class="field">
+        <label for="g-name">Name <span class="req">*</span></label>
+        <input id="g-name" name="name" type="text" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="g-email">Email <span class="req">*</span></label>
+        <input id="g-email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="g-job">What do you do? <span class="req">*</span></label>
+        <input id="g-job" name="job" type="text" placeholder="Beekeeper. Hang glider. Forensic pathologist." required>
+      </div>
+      <div class="field">
+        <label for="g-story">Tell us more</label>
+        <textarea id="g-story" name="story" placeholder="The strangest part of your job. Start there."></textarea>
+      </div>
+      <button class="btn btn--rust btn--block" type="submit">Send it in</button>
+      <p class="note" id="formnote">Prototype only. This form does not send anything yet.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   Real Tosh Show episodes from youtube.com/@toshshow.
+   Titles, runtimes, view counts and ages are exactly as YouTube
+   reports them. In the real build Smash Balloon refreshes this on a
+   schedule, so the newest episode moves into the feature slot itself.
+   Runtime comes from Smash Balloon Pro's "Video Duration" element
+   (Videos > Edit Individual Elements), added in YouTube Feed 2.1.
+----------------------------------------------------------------*/
+var EPISODES = [
+  {id:"FFQ2W8J_2zo", d:"52:33",   t:"My Stylist, Who Is Also A Ceramicist - Carrie Cramer | Tosh Show", v:"26K views",  a:"8 hours ago"},
+  {id:"ITE5rcGBz4I", d:"44:03",   t:"My 2026 College Football Kickoff | Tosh Show",                     v:"146K views", a:"7 days ago"},
+  {id:"ItNOvCum16w", d:"1:03:49", t:"My Favorite Barista From Iran - Amir Anvari | Tosh Show",          v:"103K views", a:"2 weeks ago"},
+  {id:"WsjLfoKL670", d:"59:07",   t:"My Pizza Dough Guy - Sam Cagle | Tosh Show",                       v:"121K views", a:"3 weeks ago"},
+  {id:"ZivdZs6pG7U", d:"1:00:35", t:"My Punk Rock STEM Teacher - Mr. White | Tosh Show",                v:"95K views",  a:"4 weeks ago"},
+  {id:"kGe7TRzkSb8", d:"1:01:31", t:"My Beekeeper - Jeremy Jensen | Tosh Show",                         v:"108K views", a:"1 month ago"},
+  {id:"vzPjrMl6fxQ", d:"38:15",   t:"My Hair Transplant - Emergency Pod | Tosh Show",                   v:"197K views", a:"1 month ago"},
+  {id:"NzT9UYuXTZY", d:"1:02:34", t:"My Vintage Movie Theater Owner - Judy Kim | Tosh Show",            v:"107K views", a:"1 month ago"},
+  {id:"khxTPSSpEqs", d:"51:09",   t:"My Pro Hang Glider - Joe Greblo | ToshShow",                       v:"85K views",  a:"1 month ago"},
+  {id:"phC_fIzyqyw", d:"58:11",   t:"My First Farewell Tour: Northeast Run | Tosh Show",                v:"118K views", a:"2 months ago"},
+  {id:"8G7nkIrvL4g", d:"36:52",   t:"My Health | Tosh Show",                                            v:"128K views", a:"2 months ago"},
+  {id:"EO01QLXsk_k", d:"54:40",   t:"My Sandwich Guy - Sebastien Pourrat",                              v:"126K views", a:"2 months ago"},
+  {id:"4EcuAsNYqfM", d:"1:01:22", t:"My 10 Year Anniversary Trip | Tosh Show",                          v:"307K views", a:"2 months ago"},
+  {id:"JUToXmDKvsw", d:"1:00:32", t:"My Commercial Airline Pilot - Joe | Tosh Show",                    v:"190K views", a:"2 months ago"},
+  {id:"psKbvcYTXBU", d:"59:57",   t:"My Autopsy Performing Forensic Pathologist - Dr. Mario Rascon",    v:"114K views", a:"3 months ago"},
+  {id:"ktlCYe6v7y0", d:"55:51",   t:"My Body Dissolver - Steve Pomerantz | Tosh Show",                  v:"96K views",  a:"3 months ago"},
+  {id:"CLZVx-h-wkM", d:"56:37",   t:"My Guide To Leaving America - Jana Sanchez | Tosh Show",           v:"131K views", a:"3 months ago"},
+  {id:"ro3U7kJ9VEU", d:"58:06",   t:"My Mobile Vet - Dr. Nenn | Tosh Show",                             v:"110K views", a:"3 months ago"}
+];
+
+var IMG  = "/docs/tosh/img/";
+var PAGE = 9;    // Smash Balloon "number of videos" per load
+var shown = 1;   // episode 0 is the feature, so the grid starts at 1
+
+var PLAY = '<svg viewBox="0 0 448 512" aria-hidden="true"><path d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"/></svg>';
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+/* Every episode title ends with "| Tosh Show", which repeats the page it is on.
+   Trim it for display only. YouTube keeps the full title.
+   On the live site this is one line in the feed template, copied into the child
+   theme via Smash Balloon's templating system, so plugin updates cannot undo it. */
+function clean(t){ return t.replace(/\s*\|\s*Tosh\s*Show\s*$/i, ''); }
+function thumb(ep, eager){
+  return '<span class="ep-thumb">' +
+           '<img src="' + IMG + ep.id + '.jpg" alt="" width="480" height="270"' +
+             (eager ? '' : ' loading="lazy"') + '>' +
+           '<span class="ep-play">' + PLAY + '</span>' +
+           '<span class="ep-dur">' + ep.d + '</span>' +
+         '</span>';
+}
+/* Channel name is off: Smash Balloon Pro > Videos > Edit Individual Elements.
+   It repeats in nearly every episode title, so it earns nothing here. */
+function meta(ep){ return ep.v + '<i>&bull;</i>' + ep.a; }
+
+/* ---- the feature ---- */
+var feature = document.getElementById('feature');
+(function(){
+  var ep = EPISODES[0];
+  feature.href = 'https://www.youtube.com/watch?v=' + ep.id;
+  feature.innerHTML = thumb(ep, true) +
+    '<span class="feature-title">' + esc(clean(ep.t)) + '</span>' +
+    '<span class="feature-meta">' + meta(ep) + '</span>';
+  feature.querySelector('img').width = 1280;
+  feature.querySelector('img').height = 720;
+  feature.addEventListener('click', function(e){ e.preventDefault(); openLb(0); });
+})();
+
+/* ---- the grid ---- */
+var feed = document.getElementById('feed');
+var loadmore = document.getElementById('loadmore');
+
+function card(ep, i){
+  var a = document.createElement('a');
+  a.className = 'ep';
+  a.href = 'https://www.youtube.com/watch?v=' + ep.id;
+  a.innerHTML = thumb(ep, false) +
+    '<span class="ep-title">' + esc(clean(ep.t)) + '</span>' +
+    '<span class="ep-meta">' + meta(ep) + '</span>';
+  a.addEventListener('click', function(e){ e.preventDefault(); openLb(i); });
+  return a;
+}
+function render(){
+  var next = Math.min(shown + PAGE, EPISODES.length);
+  for (var i = shown; i < next; i++) feed.appendChild(card(EPISODES[i], i));
+  shown = next;
+  loadmore.hidden = (shown >= EPISODES.length);
+}
+render();
+loadmore.addEventListener('click', render);
+
+/* ---- shared overlay plumbing: focus trap, restore, esc ---- */
+var openOv = null, lastFocus = null;
+var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+function showOv(el, focusEl){
+  lastFocus = document.activeElement;
+  el.hidden = false;
+  openOv = el;
+  document.body.style.overflow = 'hidden';
+  (focusEl || el.querySelector(FOCUSABLE)).focus();
+}
+function hideOv(){
+  if (!openOv) return;
+  openOv.hidden = true;
+  openOv = null;
+  document.body.style.overflow = '';
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+document.addEventListener('keydown', function(e){
+  if (!openOv) return;
+  if (e.key === 'Escape'){ if (openOv === lb) closeLb(); else hideOv(); return; }
+  if (e.key === 'Tab'){
+    var f = Array.prototype.filter.call(openOv.querySelectorAll(FOCUSABLE), function(el){
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    return;
+  }
+  if (openOv === lb){
+    if (e.key === 'ArrowLeft')  step(-1);
+    if (e.key === 'ArrowRight') step(1);
+  }
+});
+
+/* ---- episode player ---- */
+var lb = document.getElementById('lb'), lbFr = document.getElementById('lb-frame'),
+    lbCap = document.getElementById('lb-cap'), cur = 0;
+
+function openLb(i){
+  cur = i;
+  var ep = EPISODES[i];
+  lbFr.innerHTML =
+    '<iframe src="https://www.youtube.com/embed/' + ep.id + '?autoplay=1&rel=0" ' +
+    'title="' + esc(ep.t) + '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  lbCap.innerHTML = esc(clean(ep.t)) +
+    '<span>' + ep.d + ' &bull; ' + ep.v + ' &bull; ' + ep.a + '</span>';
+  if (openOv === lb) return;                       // already open, just swapped the video
+  showOv(lb, document.getElementById('lb-close'));
+}
+function closeLb(){ lbFr.innerHTML = ''; hideOv(); }   // clearing the iframe stops playback
+function step(d){ openLb((cur + d + EPISODES.length) % EPISODES.length); }
+
+document.getElementById('lb-close').addEventListener('click', closeLb);
+document.getElementById('lb-prev').addEventListener('click', function(){ step(-1); });
+document.getElementById('lb-next').addEventListener('click', function(){ step(1); });
+lb.addEventListener('click', function(e){ if (e.target === lb) closeLb(); });
+
+/* ---- guest form modal ---- */
+var formov = document.getElementById('formov');
+document.getElementById('openform').addEventListener('click', function(){
+  showOv(formov, document.getElementById('g-name'));
+});
+document.getElementById('form-close').addEventListener('click', hideOv);
+formov.addEventListener('click', function(e){ if (e.target === formov) hideOv(); });
+
+document.getElementById('guestform').addEventListener('submit', function(e){
+  e.preventDefault();
+  var note = document.getElementById('formnote');
+  note.textContent = 'Prototype only. Nothing was sent. In the build this goes to Fluent Forms and lands in your inbox.';
+  note.style.color = '#B74B06';
+});
+
+/* ---- header ---- */
+var burger = document.querySelector('.burger'), nav = document.getElementById('mainnav');
+burger.addEventListener('click', function(){
+  var open = nav.classList.toggle('open');
+  burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+</script>
+
+</body>
+</html>
