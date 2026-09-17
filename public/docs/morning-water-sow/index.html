@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Statement of work for the Morning Water product page rebuild. What is on the page now, what I would do, two options, and the schedule. Prepared by Chris Hornak.">
+    <meta name="description" content="Statement of work for the Morning Water product page rebuild. Where the page stands, what I would do, two options, and the schedule. Prepared by Chris Hornak.">
     <meta name="robots" content="noindex, nofollow">
     <title>Morning Water Statement of Work</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -295,34 +295,33 @@
 
         /* ---- comparison ---- */
         .cmp { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .cmp th, .cmp td { vertical-align: top; }
-
+        .cmp td { vertical-align: top; }
         .cmp .lab {
-            font-size: 10.5px; color: #3d4644; line-height: 1.35;
-            padding: 4.5px 16px 4.5px 0; border-bottom: 1px solid #edf0f1;
+            font-size: 11px; color: #3d4644; line-height: 1.4;
+            padding: 8px 18px 8px 0; border-bottom: 1px solid #edf0f1;
         }
+        .cmp .lab b { color: #171c1b; font-weight: 600; }
         .cmp .cell {
-            width: 126px; text-align: center; padding: 4.5px 8px;
+            width: 130px; text-align: center; padding: 8px;
             border-bottom: 1px solid #edf0f1;
         }
         .cmp .cell.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
-        .yes { color: var(--teal); font-size: 14px; font-weight: 800; line-height: 1; }
-        .no { color: #d3d8da; font-size: 14px; line-height: 1; }
+        .yes { color: var(--teal); font-size: 15px; font-weight: 800; line-height: 1; }
+        .no { color: #d3d8da; font-size: 15px; line-height: 1; }
 
-        /* header cells */
-        .cmp .hd { padding: 0 0 10px; vertical-align: bottom; }
-        .cmp .hd-cell { width: 126px; padding: 0; vertical-align: bottom; }
-        .hd-box { padding: 11px 12px 12px; border-radius: 7px 7px 0 0; text-align: center; }
+        .cmp .hd { padding: 0 0 12px; vertical-align: bottom; }
+        .cmp .hd-cell { width: 130px; padding: 0; vertical-align: bottom; }
+        .hd-box { padding: 12px 12px 13px; border-radius: 7px 7px 0 0; text-align: center; }
         .hd-box.b { background: #f4f5f6; border: 1px solid #e6e9ea; border-bottom: 0; }
         .hd-box.a { background: var(--dark); border: 1px solid var(--dark); border-bottom: 0; }
         .hd-name {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 8.5px;
-            letter-spacing: 0.2em; text-transform: uppercase;
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 8px;
+            letter-spacing: 0.18em; text-transform: uppercase; line-height: 1.3;
         }
         .hd-box.b .hd-name { color: #9aa2a4; }
         .hd-box.a .hd-name { color: var(--teal); }
         .hd-price {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 29px;
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 30px;
             line-height: 1; letter-spacing: -0.035em; margin-top: 8px;
         }
         .hd-box.b .hd-price { color: #2c3436; }
@@ -332,9 +331,9 @@
         .hd-box.a .hd-line { color: #9fe8d4; }
 
         .grp td {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 7px;
-            letter-spacing: 0.18em; text-transform: uppercase; color: #9aa4a2;
-            padding: 10px 0 4px; border-bottom: 1px solid #dfe4e5;
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 7.5px;
+            letter-spacing: 0.18em; text-transform: uppercase; color: #8e9997;
+            padding: 15px 0 5px; border-bottom: 1px solid #dfe4e5;
         }
         .grp td.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
         .cmp tr.last .cell.hl { border-bottom: 1px solid #d6f2e8; border-radius: 0 0 7px 7px; }
@@ -347,7 +346,7 @@
             .cmp .cell, .cmp .hd-cell { width: 64px !important; }
             .cmp .cell { padding: 8px 3px !important; }
             .hd-box { padding: 9px 4px 10px !important; }
-            .hd-name { font-size: 7px !important; letter-spacing: 0.12em !important; }
+            .hd-name { font-size: 7px !important; letter-spacing: 0.1em !important; }
             .hd-price { font-size: 19px !important; }
             .hd-line { font-size: 8px !important; }
             .grp td { font-size: 9.5px !important; }
@@ -376,7 +375,7 @@
     <main id="main-content" class="document-wrapper" style="display:block;">
       <div style="display:flex; flex-direction:column; align-items:center;">
 
-        <!-- ============ PAGE 1 — THE STORY ============ -->
+        <!-- ============ PAGE 1 ============ -->
         <article class="page-container bg-white relative overflow-hidden">
 
             <div class="flex items-center justify-between px-[0.5in] py-4 shrink-0" style="background: var(--dark);">
@@ -396,20 +395,19 @@
                 </p>
             </div>
 
-            <!-- WHAT IS ON THE PAGE -->
+            <!-- WHERE THINGS STAND -->
             <div class="px-[0.5in] shrink-0">
                 <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What is on the page right now</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Checked today</span>
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Where the page stands today</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Against my August audit</span>
                 </div>
-                <div class="space-y-[8px]">
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug">Your banner says you are sold out. Your hero says it ships in 24 hours. Both sit on the first screen.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug">The kit badge reads <strong>$139 Value</strong>. Your own notes put it at <strong>$85</strong>. It reaches $139 by counting the $89.99 supply as a free gift.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug">The page claims <strong>5.0 stars</strong>. Your review export averages <strong>4.78</strong>. Your new mock already says 4.8, so the mock is right and the live page is not.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug">Your hero image has <strong>$2.31 per day</strong> baked into the picture. The new plan cards say <strong>$2.10 per serving</strong>.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug">Two of your three testimonial cards are still placeholder names and placeholder photos.</p></div>
+                <div class="space-y-[9px]">
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>The page still says two opposite things.</strong> Sold out in the banner, ships in 24 hours in the hero, both on the first screen. That was finding one in August and it is still there.</p></div>
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Your best idea still arrives too late.</strong> <em>You lose 1.5 litres of water every night</em> is the reason the product exists. It sits fourth on the page, as the smallest graphic, with its answer stacked underneath instead of beside it.</p></div>
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Three things still render broken.</strong> Clipped portraits, a cut-off header photo, and text running over an image.</p></div>
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>The numbers still disagree with each other.</strong> The kit badge says $139, your notes say $85. The page claims 5.0 stars, your export averages 4.78. The hero image has $2.31 per day baked in, the new plan cards say $2.10.</p></div>
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Your buy box is redesigned and ready to build.</strong> Two of the three testimonial cards in it are still placeholder names and photos.</p></div>
                 </div>
-                <p class="text-[10.5px] text-neutral-500 leading-snug mt-3">None of this is a design problem. Your design is settled. It is a consistency problem, and that is what two weeks of focused work fixes.</p>
             </div>
 
             <!-- WHAT I WOULD DO -->
@@ -418,7 +416,10 @@
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I would do about it</h2>
                 </div>
                 <p class="text-[12.5px] text-neutral-800 leading-relaxed">
-                    Build the buy box from your 4d mock, desktop and mobile. Reorder the page and cut the ticker. Fix the three rendering faults. Make every number agree. Then turn sold out and in stock into a switch you flip, so the page can never argue with itself again. Test it on real phones, walk checkout end to end, and hand it over written down so your team can run it without me.
+                    Build the new buy box from your 4d mock, desktop and mobile. Reorder the page. Fix what renders broken and make every number agree. Turn sold out and in stock into a switch you flip, so the page can never argue with itself again. Then test it on real phones, walk checkout end to end, and hand it over written down so your team can run it without me.
+                </p>
+                <p class="text-[12.5px] text-neutral-800 leading-relaxed mt-2.5">
+                    <strong>The one I would push you on is the 1.5 litres.</strong> I wireframed it in August: the loss and the replacement merged into a single section under the hero, read as one thought. Every morning you wake up short of all this, and one stick puts it back. That is a design job rather than a build job, so it sits in the larger option, not the base.
                 </p>
             </div>
 
@@ -433,10 +434,7 @@
                             I have already been through your theme. It is custom sectioned, not page built, which is the whole reason this fits.
                         </p>
                         <p class="text-[11px] text-neutral-700 leading-snug mt-2">
-                            Your buy box lives in <span class="font-mono text-[10px]">product-hero</span>, and that section already carries a waitlist state and a try-once label in its settings. The page assembles from <span class="font-mono text-[10px]">kit-products</span>, <span class="font-mono text-[10px]">testimonials-carousel</span>, <span class="font-mono text-[10px]">comparison-table</span> and the rest.
-                        </p>
-                        <p class="text-[11px] text-neutral-700 leading-snug mt-2">
-                            I am working with sections you already own. I am not rebuilding a template.
+                            Your buy box lives in <span class="font-mono text-[10px]">product-hero</span>, and that section already carries a waitlist state and a try-once label in its settings. I am working with sections you already own, not rebuilding a template.
                         </p>
                     </div>
                     <div>
@@ -444,10 +442,7 @@
                             <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I would leave alone</h2>
                         </div>
                         <p class="text-[11px] text-neutral-700 leading-snug">
-                            Your cost comparison table is the best built thing on the page. Comparing against seven supplements bought separately is stronger and more honest than comparing against a rival stick.
-                        </p>
-                        <p class="text-[11px] text-neutral-700 leading-snug mt-2">
-                            <em>The Science of Synergy</em> is the second best. Both stay as they are, apart from the number sweep.
+                            Your cost comparison table is the best built thing on the page. Comparing against seven supplements bought separately is stronger and more honest than comparing against a rival stick. <em>The Science of Synergy</em> is the second best.
                         </p>
                         <p class="text-[11px] text-neutral-700 leading-snug mt-2">
                             Anyone can hand you a list of problems. Knowing what not to touch is the harder half.
@@ -494,12 +489,11 @@
                     </div>
                     <div>
                         <div class="border-t-2 border-neutral-900 pt-2 pb-2">
-                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How I work</h2>
+                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How we work together</h2>
                         </div>
                         <div class="space-y-[5px]">
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat,</strong> plus a short written update each phase.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat</strong> day to day, <strong>email</strong> for anything that needs a record, and <strong>scheduled calls</strong> when a decision needs a conversation. A short written update at the end of each phase.</p>
                             <p class="text-[11px] text-neutral-800 leading-snug"><strong>I use Claude Code</strong> against a copy of your theme. Every change is still mine to test, publish and answer for.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Closest comparable:</strong> gammalighttherapy.com, content and SEO that grew into Liquid and section work.</p>
                         </div>
                     </div>
                 </div>
@@ -511,18 +505,18 @@
             </div>
         </article>
 
-        <!-- ============ PAGE 2 — COST AND SCHEDULE ============ -->
+        <!-- ============ PAGE 2 ============ -->
         <article class="page-container bg-white relative overflow-hidden">
 
             <div class="flex items-center justify-between px-[0.5in] py-4 shrink-0" style="background: var(--dark);">
                 <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="lazy" decoding="async">
                 <div class="text-right">
                     <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Statement of work</p>
-                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">What it costs and when it lands</p>
+                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">What it costs and how we work</p>
                 </div>
             </div>
 
-            <div class="px-[0.5in] pt-5 shrink-0">
+            <div class="px-[0.5in] pt-6 shrink-0">
                 <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-1">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two ways to do this</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Fixed fee &middot; half up front, half on launch</span>
@@ -533,50 +527,42 @@
                         <td class="hd"></td>
                         <td class="hd-cell">
                             <div class="hd-box b">
-                                <p class="hd-name">Build</p>
+                                <p class="hd-name">The page</p>
                                 <p class="hd-price">$2,500</p>
-                                <p class="hd-line">The page, live on the 1st</p>
+                                <p class="hd-line">Everything you asked for</p>
                             </div>
                         </td>
                         <td class="hd-cell">
                             <div class="hd-box a">
-                                <p class="hd-name">Build &amp; prove</p>
+                                <p class="hd-name">The page<br>and a partner</p>
                                 <p class="hd-price">$3,500</p>
-                                <p class="hd-line">Live, complete, and measurable</p>
+                                <p class="hd-line">Plus the work around it</p>
                             </div>
                         </td>
                     </tr>
 
-                    <tr class="grp"><td>The rebuild</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab">Buy box rebuilt to your 4d mock, desktop and mobile</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Gallery and thumbnail strip reordered, kit photo leading</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Section order fixed, duplicate ticker cut</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">The three rendering faults corrected across breakpoints</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Sold out and in stock become a switch you flip</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="grp"><td>The rebuild, in full</td><td></td><td class="hl"></td></tr>
+                    <tr><td class="lab"><b>The new buy box</b> built from your 4d mock, desktop and mobile, against your Skio plans</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Page and gallery reordered,</b> duplicate ticker cut, the three rendering faults fixed</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Every number on the page reconciled,</b> including the kit value, the star rating and the hero claims</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Your two placeholder testimonials replaced</b> with real ones from your own review export</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Sold out and in stock</b> become a switch you flip</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Tested, published and handed over.</b> Real devices, both states, checkout walked, plus two days of fixes after launch</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
 
-                    <tr class="grp"><td>Shipped properly</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab">Tested on real devices, in both stock states</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Subscription flow walked through to checkout</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Written handover so your team can edit it without me</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Two days of fixes after launch, no charge</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-
-                    <tr class="grp"><td>How far the fix reaches</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab">Numbers reconciled in the buy box and kit section</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Numbers reconciled across the whole page, including the comparison table and the hero claims</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">Your two placeholder testimonials replaced with real ones, sourced from your own review export</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab">A written read on everything else I find while I am in there</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-
-                    <tr class="grp"><td>Whether you can tell it worked</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab">Conversion tracking on the buy box and the plan selector</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr class="last"><td class="lab">A baseline recorded before launch, so the after has a before</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="grp"><td>What nobody has picked up yet</td><td></td><td class="hl"></td></tr>
+                    <tr><td class="lab"><b>The 1.5 litre section, designed and built.</b> Loss and replacement merged under the hero, the way I wireframed it in August</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Analytics and conversion tracking configured,</b> with a baseline recorded before launch so the after has a before</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>SEO audit and Search Console review,</b> so a rebuilt page does not quietly cost you rankings</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>AEO and GEO pass.</b> How your page reads to AI assistants when someone asks what to take in the morning</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="last"><td class="lab"><b>Buyer journey consulting</b> wherever you want it, from the ad through to the second month of the subscription</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                 </table>
 
-                <div class="two-col grid grid-cols-2 gap-x-8 mt-3 pt-2.5 border-t border-neutral-200">
-                    <p class="text-[10.5px] text-neutral-500 leading-snug"><strong class="text-neutral-800">Build</strong> fixes the page where it matters most and gets it live on time. Your team carries the rest of the page and the measurement.</p>
-                    <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">Build &amp; prove</strong> finishes the whole page and leaves you able to answer the only question that matters afterwards. <strong class="text-neutral-900">Right now nobody can tell you whether a rebuild worked, because there is nothing recorded to compare it to.</strong></p>
+                <div class="two-col grid grid-cols-2 gap-x-8 mt-3.5 pt-2.5 border-t border-neutral-200">
+                    <p class="text-[10.5px] text-neutral-500 leading-snug"><strong class="text-neutral-800">The page</strong> delivers the whole request, finished and live on the 1st. Nothing in the brief is left out.</p>
+                    <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">The page and a partner</strong> adds the things that usually fall to whoever has time. <strong class="text-neutral-900">You are two founders shipping a restock. That work is real, and right now it has nobody on it.</strong></p>
                 </div>
                 <p class="text-[10px] text-neutral-500 leading-snug mt-2.5">
-                    Both are fixed, and I am reachable the same way on either one. <strong class="text-neutral-800">Neither includes</strong> new photography, new copy from scratch, the 5-stick trial SKU, cart or collection templates, or changes to your Skio plans.
+                    Both are fixed, and I am reachable the same way on either one. <strong class="text-neutral-800">Neither includes</strong> new photography, the 5-stick trial SKU, cart or collection templates, or changes to your Skio plan structure.
                 </p>
             </div>
 
@@ -590,7 +576,7 @@
             </div>
 
             <div class="mt-auto px-[0.5in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
-                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com &middot; Findings verified on the live page 17 Sept 2026</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com &middot; Closest Shopify engagement: gammalighttherapy.com, content and SEO that grew into Liquid and section work</p>
                 <p class="text-[7px] text-neutral-400 tracking-wide">Page 2 of 2 &middot; Valid 30 days</p>
             </div>
         </article>
