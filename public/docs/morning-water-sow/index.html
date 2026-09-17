@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Statement of work for the Morning Water product page rebuild. Where the page stands, what I would do, two options, and the schedule. Prepared by Chris Hornak.">
+    <meta name="description" content="Statement of work for the Morning Water product page rebuild. Quick wins, the rebuild, two options, and the schedule. Prepared by Chris Hornak.">
     <meta name="robots" content="noindex, nofollow">
     <title>Morning Water Statement of Work</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -288,6 +288,15 @@
             width: 5px; height: 5px; border-radius: 999px; background: var(--teal);
             margin-top: 6px; margin-left: 4px;
         }
+        .ds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+        .ds > div { padding: 0 14px; border-left: 1px solid rgba(45,212,168,.35); }
+        .ds > div:first-child { padding-left: 0; border-left: 0; }
+        .ds dt {
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 6.5px;
+            letter-spacing: 0.2em; text-transform: uppercase; color: #0d6b53; margin-bottom: 4px;
+        }
+        .ds dd { font-size: 10.5px; line-height: 1.3; color: #1d2624; margin: 0; }
+        .ds dd b { font-family: 'Sora', sans-serif; font-weight: 800; }
         .when {
             font-family: 'Sora', sans-serif; font-weight: 700; font-size: 8px;
             letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
@@ -298,11 +307,11 @@
         .cmp td { vertical-align: top; }
         .cmp .lab {
             font-size: 11px; color: #3d4644; line-height: 1.4;
-            padding: 8px 18px 8px 0; border-bottom: 1px solid #edf0f1;
+            padding: 5px 18px 5px 0; border-bottom: 1px solid #edf0f1;
         }
         .cmp .lab b { color: #171c1b; font-weight: 600; }
         .cmp .cell {
-            width: 130px; text-align: center; padding: 8px;
+            width: 130px; text-align: center; padding: 5px 8px;
             border-bottom: 1px solid #edf0f1;
         }
         .cmp .cell.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
@@ -333,7 +342,7 @@
         .grp td {
             font-family: 'Sora', sans-serif; font-weight: 800; font-size: 7.5px;
             letter-spacing: 0.18em; text-transform: uppercase; color: #8e9997;
-            padding: 15px 0 5px; border-bottom: 1px solid #dfe4e5;
+            padding: 11px 0 4px; border-bottom: 1px solid #dfe4e5;
         }
         .grp td.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
         .cmp tr.last .cell.hl { border-bottom: 1px solid #d6f2e8; border-radius: 0 0 7px 7px; }
@@ -365,6 +374,10 @@
                     class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900">
                     August audit
                 </a>
+                <a href="/docs/morning-water-brief/" target="_blank" rel="noopener"
+                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900">
+                    Full project brief
+                </a>
                 <button onclick="window.print()" class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm text-white hover:opacity-90" style="background: var(--teal);">
                     Print / Save PDF
                 </button>
@@ -386,13 +399,37 @@
                 </div>
             </div>
 
-            <div class="px-[0.5in] pt-7 pb-5 shrink-0">
+            <div class="px-[0.5in] pt-6 pb-4 shrink-0">
                 <h1 class="font-display font-800 text-[31px] leading-[1.04] tracking-[-0.035em] text-neutral-900 max-w-[92%]" style="text-wrap: balance;">
                     Your new product page, live and tested before the stock lands.
                 </h1>
                 <p class="text-[13px] text-neutral-500 leading-snug mt-3 max-w-[86%]">
                     October&nbsp;1 is not a date someone picked. It is the day your page starts taking money again. So it has to be finished before the inventory arrives, not alongside it.
                 </p>
+            </div>
+
+            <!-- DECISION STRIP -->
+            <div class="px-[0.5in] pb-5 shrink-0">
+                <div class="rounded-[6px] px-4 py-3.5" style="background: rgba(45,212,168,.09); border: 1px solid rgba(45,212,168,.4);">
+                    <dl class="ds">
+                        <div>
+                            <dt>What</dt>
+                            <dd>Your product page rebuilt to the design you have already approved</dd>
+                        </div>
+                        <div>
+                            <dt>When</dt>
+                            <dd><b>Live Thursday 1 October</b></dd>
+                        </div>
+                        <div>
+                            <dt>Cost</dt>
+                            <dd><b>$2,500</b>, or <b>$3,500</b> with the work around it</dd>
+                        </div>
+                        <div>
+                            <dt>From you</dt>
+                            <dd>Theme access and content decisions by <b>Mon 22 Sept</b></dd>
+                        </div>
+                    </dl>
+                </div>
             </div>
 
             <!-- WHERE THINGS STAND -->
@@ -405,21 +442,36 @@
                     <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>The page still says two opposite things.</strong> Sold out in the banner, ships in 24 hours in the hero, both on the first screen. That was finding one in August and it is still there.</p></div>
                     <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Your best idea still arrives too late.</strong> <em>You lose 1.5 litres of water every night</em> is the reason the product exists. It sits fourth on the page, as the smallest graphic, with its answer stacked underneath instead of beside it.</p></div>
                     <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Three things still render broken.</strong> Clipped portraits, a cut-off header photo, and text running over an image.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>The numbers still disagree with each other.</strong> The kit badge says $139, your notes say $85. The page claims 5.0 stars, your export averages 4.78. The hero image has $2.31 per day baked in, the new plan cards say $2.10.</p></div>
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Your buy box is redesigned and ready to build.</strong> Two of the three testimonial cards in it are still placeholder names and photos.</p></div>
+                    
+                    
                 </div>
             </div>
 
             <!-- WHAT I WOULD DO -->
             <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="border-t-2 border-neutral-900 pt-2 pb-2.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I would do about it</h2>
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Quick wins, in the first 48 hours</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Before the rebuild is finished</span>
                 </div>
-                <p class="text-[12.5px] text-neutral-800 leading-relaxed">
-                    Build the new buy box from your 4d mock, desktop and mobile. Reorder the page. Fix what renders broken and make every number agree. Turn sold out and in stock into a switch you flip, so the page can never argue with itself again. Then test it on real phones, walk checkout end to end, and hand it over written down so your team can run it without me.
+                <div class="two-col grid grid-cols-2 gap-x-8 gap-y-[6px]">
+                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Pull the shipping promise</strong> while stock is out. The contradiction on your first screen is gone the same day.</p>
+                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Correct the kit badge</strong> to $85 and drop the tracker you already cut.</p>
+                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Correct the star rating</strong> so the page matches your own review data.</p>
+                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Swap the two placeholder testimonials</strong> for real, verified ones from your export.</p>
+                </div>
+                <p class="text-[10px] text-neutral-500 leading-snug mt-2.5">Four changes, none of which wait on the rebuild. You get value back in the first two days, not the last two.</p>
+            </div>
+
+            <!-- THE REBUILD -->
+            <div class="px-[0.5in] pt-5 shrink-0">
+                <div class="border-t-2 border-neutral-900 pt-2 pb-2.5">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Then the rebuild</h2>
+                </div>
+                <p class="text-[12px] text-neutral-800 leading-relaxed">
+                    Build the new buy box from your 4d mock, desktop and mobile. Reorder the page. Fix what renders broken and make every number agree. Turn sold out and in stock into a switch you flip, so the page can never argue with itself again. Test on real phones, walk checkout end to end, and hand it over written down.
                 </p>
-                <p class="text-[12.5px] text-neutral-800 leading-relaxed mt-2.5">
-                    <strong>The one I would push you on is the 1.5 litres.</strong> I wireframed it in August: the loss and the replacement merged into a single section under the hero, read as one thought. Every morning you wake up short of all this, and one stick puts it back. That is a design job rather than a build job, so it sits in the larger option, not the base.
+                <p class="text-[12px] text-neutral-800 leading-relaxed mt-2.5">
+                    <strong>The one I would push you on is the 1.5 litres.</strong> I wireframed it in August: the loss and the replacement merged into one section under the hero. Every morning you wake up short of all this, and one stick puts it back. That is a design job rather than a build job, so it sits in the larger option.
                 </p>
             </div>
 
@@ -473,35 +525,9 @@
                 </div>
             </div>
 
-            <!-- WHAT I NEED / HOW I WORK -->
-            <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="two-col grid grid-cols-2 gap-x-8">
-                    <div>
-                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
-                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I need from you</h2>
-                        </div>
-                        <div class="space-y-[5px]">
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Collaborator access</strong> with theme permissions, day one.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Your open content items</strong> by Monday 22 Sept.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>A real restock date.</strong> The banner needs one.</p>
-                        </div>
-                        <p class="text-[9.5px] text-neutral-400 leading-snug mt-2">Later than the 22nd and the launch moves day for day. I will tell you the day it is at risk, not the day it slips.</p>
-                    </div>
-                    <div>
-                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
-                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How we work together</h2>
-                        </div>
-                        <div class="space-y-[5px]">
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat</strong> day to day, <strong>email</strong> for anything that needs a record, and <strong>scheduled calls</strong> when a decision needs a conversation. A short written update at the end of each phase.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I use Claude Code</strong> against a copy of your theme. Every change is still mine to test, publish and answer for.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="mt-auto px-[0.5in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
-                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com</p>
-                <p class="text-[7px] text-neutral-400 tracking-wide">Page 1 of 2 &middot; What it costs overleaf</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Also on file &middot; August audit: chrishornak.com/docs/morning-water-audit &middot; Full project brief: chrishornak.com/docs/morning-water-brief</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Page 1 of 2</p>
             </div>
         </article>
 
@@ -561,16 +587,45 @@
                     <p class="text-[10.5px] text-neutral-500 leading-snug"><strong class="text-neutral-800">The page</strong> delivers the whole request, finished and live on the 1st. Nothing in the brief is left out.</p>
                     <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">The page and a partner</strong> adds the things that usually fall to whoever has time. <strong class="text-neutral-900">You are two founders shipping a restock. That work is real, and right now it has nobody on it.</strong></p>
                 </div>
+                <p class="text-[10.5px] text-neutral-600 leading-snug mt-2.5 pt-2.5 border-t border-neutral-200">
+                    <strong class="text-neutral-900">On the search and AI rows:</strong> I built the free findability grader at <span class="font-mono text-[9.5px]">chrishornak.com/audit</span> &middot; seven categories, forty-nine checks, including how a page reads to AI assistants. Same checklist I would run on yours, before and after.
+                </p>
                 <p class="text-[10px] text-neutral-500 leading-snug mt-2.5">
-                    Both are fixed, and I am reachable the same way on either one. <strong class="text-neutral-800">Neither includes</strong> new photography, the 5-stick trial SKU, cart or collection templates, or changes to your Skio plan structure.
+                    Both are fixed, and I am reachable the same way on either one. <strong class="text-neutral-800">Neither includes</strong> new photography, the 5-stick trial SKU, other templates, or Skio plan changes.
                 </p>
             </div>
 
-            <!-- CLOSE -->
+            <!-- WHAT I NEED / HOW I WORK -->
             <div class="px-[0.5in] pt-4 shrink-0">
+                <div class="two-col grid grid-cols-2 gap-x-8">
+                    <div>
+                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
+                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I need from you</h2>
+                        </div>
+                        <div class="space-y-[5px]">
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Collaborator access</strong> with theme permissions, day one.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Your open content items</strong> by Monday 22 Sept.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>A real restock date.</strong> The banner needs one.</p>
+                        </div>
+                        <p class="text-[9.5px] text-neutral-400 leading-snug mt-2">Later than the 22nd and the launch moves day for day. I will tell you the day it is at risk, not the day it slips.</p>
+                    </div>
+                    <div>
+                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
+                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How we work together</h2>
+                        </div>
+                        <div class="space-y-[5px]">
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat</strong> day to day, <strong>email</strong> for anything that needs a record, and <strong>scheduled calls</strong> when a decision needs a conversation. A short written update at the end of each phase.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I use Claude Code</strong> against a copy of your theme. Every change is still mine to test, publish and answer for.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLOSE -->
+            <div class="px-[0.5in] pt-3.5 shrink-0">
                 <div class="rounded-[5px] px-4 py-3.5" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
                     <p class="text-[12.5px] text-neutral-800 leading-snug">
-                        <strong class="text-neutral-900">Reply with the option you want and I will send the agreement and the first invoice the same day.</strong> Say go by Monday and your page is live, tested and handed over before your stock arrives.
+                        <strong class="text-neutral-900">Reply with the option you want and I will send the agreement and the first invoice the same day.</strong> Say go by Monday and the page is live before your stock arrives.
                     </p>
                 </div>
             </div>
