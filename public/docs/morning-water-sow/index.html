@@ -363,9 +363,66 @@
             .hd-line { font-size: 8px !important; }
             .grp td { font-size: 9.5px !important; }
         }
-    </style>
+    
+.stack-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; }
+.stk { text-align: center; padding: 4px 8px; border-left: 1px solid #edf0f1; }
+.stk:first-child { border-left: 0; padding-left: 0; }
+.stk-ico { width: 22px; height: 22px; fill: #6f7a78; filter: grayscale(1); opacity: .85; }
+.stk-img { border-radius: 4px; }
+.stk-word {
+    display: inline-block; height: 22px; line-height: 22px;
+    font-family: 'Sora', sans-serif; font-weight: 800; font-size: 14px;
+    letter-spacing: -.02em; color: #6f7a78;
+}
+.stk-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 8.5px; color: #2c3436; margin-top: 7px; }
+.stk-sub { font-size: 8px; color: #97a09e; line-height: 1.3; margin-top: 2px; }
+@media screen and (max-width: 768px) {
+    .stack-row { grid-template-columns: repeat(3, 1fr) !important; gap: 14px 0 !important; }
+    .stk { border-left: 0 !important; padding-left: 8px !important; }
+    .stk-ico { width: 28px !important; height: 28px !important; }
+    .stk-word { font-size: 18px !important; }
+    .stk-name { font-size: 11px !important; } .stk-sub { font-size: 10px !important; }
+}
+</style>
 </head>
 <body class="bg-neutral-100 text-black font-sans">
+
+<style>
+/* ---- timeline ---- */
+.tl { position: relative; padding-top: 22px; }
+.tl-scale { position: relative; height: 15px; border-bottom: 1px solid #e2e6e7; }
+.tl-tick { position: absolute; top: 0; transform: translateX(-50%); font-family: 'Sora', sans-serif; font-size: 7px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #9aa4a2; }
+.tl-rows { margin-top: 11px; display: flex; flex-direction: column; gap: 9px; }
+.tl-row { position: relative; height: 34px; }
+.tl-bar {
+    position: absolute; top: 0; height: 34px; border-radius: 5px;
+    padding: 6px 11px; box-sizing: border-box; overflow: hidden;
+}
+.tl-bar b { display: block; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 9.5px; line-height: 1.1; }
+.tl-bar span { display: block; font-size: 8px; line-height: 1.25; margin-top: 2px; }
+.tl-1 { background: rgba(45,212,168,.16); border: 1px solid rgba(45,212,168,.4); }
+.tl-1 b { color: #0d6b53; } .tl-1 span { color: #4d6b62; }
+.tl-2 { background: rgba(45,212,168,.28); border: 1px solid rgba(45,212,168,.5); }
+.tl-2 b { color: #0b5b47; } .tl-2 span { color: #3f6459; }
+.tl-3 { background: var(--dark); border: 1px solid var(--dark); }
+.tl-3 b { color: #fff; } .tl-3 span { color: #9fe8d4; }
+.tl-live { position: absolute; top: 15px; bottom: 0; width: 1px; background: var(--teal); }
+.tl-live i {
+    position: absolute; top: -21px; left: 50%; transform: translateX(-50%);
+    font-family: 'Sora', sans-serif; font-style: normal; font-weight: 800; font-size: 7px;
+    letter-spacing: .16em; text-transform: uppercase; color: #fff; background: var(--teal);
+    padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+}
+.tl-note { font-size: 9.5px; color: #8a9391; line-height: 1.4; margin-top: 12px; }
+
+@media screen and (max-width: 768px) {
+    .tl-bar b { font-size: 12px !important; }
+    .tl-bar span { font-size: 10px !important; }
+    .tl-row, .tl-bar { height: 44px !important; }
+    .tl-tick { font-size: 9px !important; }
+    .tl-note { font-size: 12px !important; }
+}
+</style>
 
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-bold">Skip to content</a>
 
@@ -397,7 +454,7 @@
     <main id="main-content" class="document-wrapper" style="display:block;">
       <div style="display:flex; flex-direction:column; align-items:center;">
 
-        <!-- ============ PAGE 1 ============ -->
+        <!-- ================= PAGE 1 ================= -->
         <article class="page-container bg-white relative overflow-hidden">
 
             <div class="flex items-center justify-between px-[0.72in] py-4 shrink-0" style="background: var(--dark);">
@@ -408,42 +465,28 @@
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-6 pb-4 shrink-0">
+            <div class="px-[0.72in] pt-8 pb-6 shrink-0">
                 <h1 class="font-display font-800 text-[31px] leading-[1.04] tracking-[-0.035em] text-neutral-900 max-w-[92%]" style="text-wrap: balance;">
                     Your new product page, live and tested before the stock lands.
                 </h1>
-                <p class="text-[13px] text-neutral-500 leading-snug mt-3 max-w-[86%]">
-                    October&nbsp;1 is the day your page starts taking money again, all at once.
+                <p class="text-[13px] text-neutral-500 leading-snug mt-3.5">
+                    October&nbsp;1 is the day you start taking new orders again, and most of that demand lands at once.
                 </p>
             </div>
 
-            <!-- DECISION STRIP -->
-            <div class="px-[0.72in] pb-5 shrink-0">
-                <div class="rounded-[6px] px-4 py-3.5" style="background: rgba(45,212,168,.09); border: 1px solid rgba(45,212,168,.4);">
+            <div class="px-[0.72in] shrink-0">
+                <div class="rounded-[6px] px-5 py-4" style="background: rgba(45,212,168,.09); border: 1px solid rgba(45,212,168,.4);">
                     <dl class="ds">
-                        <div>
-                            <dt>What</dt>
-                            <dd>Your product page rebuilt to the design you have already approved</dd>
-                        </div>
-                        <div>
-                            <dt>When</dt>
-                            <dd><b>Live Thursday 1 October</b></dd>
-                        </div>
-                        <div>
-                            <dt>Cost</dt>
-                            <dd><b>$2,500</b>, or <b>$3,500</b> with the work around it</dd>
-                        </div>
-                        <div>
-                            <dt>From you</dt>
-                            <dd>Theme access and content decisions by <b>Mon 22 Sept</b></dd>
-                        </div>
+                        <div><dt>What</dt><dd>Your product page rebuilt to the design you have already approved</dd></div>
+                        <div><dt>When</dt><dd><b>Live Thursday 1 October</b></dd></div>
+                        <div><dt>Cost</dt><dd><b>$2,500</b>, or <b>$3,500</b> with the work around it</dd></div>
+                        <div><dt>From you</dt><dd>Theme access and content decisions by <b>Mon 22 Sept</b></dd></div>
                     </dl>
                 </div>
             </div>
 
-            <!-- WHERE THINGS STAND -->
-            <div class="px-[0.72in] shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+            <div class="px-[0.72in] pt-7 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Where the page stands today</h2>
                     <span class="flex items-center gap-2">
                         <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Against my August audit</span>
@@ -453,25 +496,23 @@
                         </button>
                     </span>
                 </div>
-                <div class="space-y-[9px]">
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>The page still says two opposite things.</strong> Sold out in the banner, ships in 24 hours in the hero, both on the first screen. That was finding one in August and it is still there.</p></div>
-                    
-                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-snug"><strong>Three things still render broken.</strong> Clipped portraits, a cut-off header photo, and text running over an image.</p></div>
+                <div class="space-y-[11px]">
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>The page still says two opposite things.</strong> Sold out in the banner, ships in 24 hours in the hero, both on the first screen. That was finding one in August and it is still there.</p></div>
+                    <div class="found"><span class="dot"></span><p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Three things still render broken.</strong> Clipped portraits, a cut-off header photo, and text running over an image.</p></div>
                 </div>
-                <p class="text-[10.5px] text-neutral-500 leading-snug mt-3">Your cost comparison table and <em>The Science of Synergy</em> are the best built things here. Neither gets touched.</p>
+                <p class="text-[10.5px] text-neutral-500 leading-relaxed mt-4">Your cost comparison table and <em>The Science of Synergy</em> read as the strongest sections on the page. Neither gets touched.</p>
             </div>
 
-            <!-- THE BIGGEST MOVE -->
-            <div class="px-[0.72in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+            <div class="px-[0.72in] pt-7 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">The idea I keep coming back to</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Wireframed in August &middot; concept, not final art</span>
                 </div>
-                <div class="rounded-lg p-3" style="background: var(--light-bg);">
+                <div class="rounded-lg p-4" style="background: var(--light-bg);">
                     <div class="wf">
                         <div class="wf-strip">
                             <span>One section replaces three</span>
-                            <em>Under the hero · above the reviews</em>
+                            <em>Under the hero &middot; above the reviews</em>
                         </div>
                         <div class="wf-split">
                             <div class="wf-col dark">
@@ -485,7 +526,6 @@
                                 </div>
                                 <p class="gauge-cap"><b>Empty by 7am.</b> That is the fog, the drag, and the second coffee.</p>
                             </div>
-
                             <div class="wf-col light">
                                 <p class="wf-label">The answer</p>
                                 <h4>What one stick puts back, and more</h4>
@@ -500,64 +540,150 @@
                         </div>
                     </div>
                 </div>
-                <p class="text-[10.5px] text-neutral-600 leading-snug mt-2.5"><em>You lose 1.5 litres every night</em> is your sharpest argument, and it sits fourth on the page as the smallest graphic. Merged under the hero it reads as one thought. <strong class="text-neutral-900">A design job rather than a build job, so it sits in the larger option.</strong></p>
-            </div>
-
-            <div class="px-[0.72in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Quick wins, in the first 48 hours</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Before the rebuild is finished</span>
-                </div>
-                <div class="two-col grid grid-cols-2 gap-x-8 gap-y-[6px]">
-                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Pull the shipping promise</strong> while stock is out. The contradiction on your first screen is gone the same day.</p>
-                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Correct the kit badge</strong> to $85 and drop the tracker you already cut.</p>
-                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Correct the star rating</strong> so the page matches your own review data.</p>
-                    <p class="text-[11px] text-neutral-800 leading-snug"><strong>Swap the two placeholder testimonials</strong> for real, verified ones from your export.</p>
-                </div>
-                <p class="text-[10px] text-neutral-500 leading-snug mt-2.5">None of these wait on the rebuild.</p>
-            </div>
-
-            <!-- SCHEDULE -->
-            <div class="px-[0.72in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two weeks</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Live Thu 1 Oct</span>
-                </div>
-                <div class="space-y-[7px]">
-                    <div class="flex items-baseline gap-4">
-                        <span class="when shrink-0" style="width: 96px;">18&ndash;22 Sept</span>
-                        <p class="text-[11px] text-neutral-800 leading-snug">Buy box, built on a copy of your theme. Preview link on day two. Your live page is not touched.</p>
-                    </div>
-                    <div class="flex items-baseline gap-4">
-                        <span class="when shrink-0" style="width: 96px;">23&ndash;27 Sept</span>
-                        <p class="text-[11px] text-neutral-800 leading-snug">The rest of the page, your content dropped in, one review call at the end.</p>
-                    </div>
-                    <div class="flex items-baseline gap-4">
-                        <span class="when shrink-0" style="width: 96px;">28 Sept&ndash;1 Oct</span>
-                        <p class="text-[11px] text-neutral-800 leading-snug">Test on devices, publish, hand over.</p>
-                    </div>
-                </div>
+                <p class="text-[11px] text-neutral-600 leading-relaxed mt-3.5"><em>You lose 1.5 litres every night</em> is one of your sharpest arguments, and it sits fourth on the page as the smallest graphic. Merged under the hero it reads as one thought. <strong class="text-neutral-900">A design job more than a build job, so it sits in the larger option.</strong></p>
             </div>
 
             <div class="mt-auto px-[0.72in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
-                <p class="text-[7px] text-neutral-400 tracking-wide">Also on file &middot; chrishornak.com/docs/ &rarr; morning-water-audit &middot; morning-water-brief &middot; Walkthrough: loom.com/share/d807822d4eff4441a5dfad1e21051654</p>
-                <p class="text-[7px] text-neutral-400 tracking-wide shrink-0 pl-4">Page 1 of 2</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide shrink-0 pl-4">Page 1 of 3 &middot; The plan overleaf</p>
             </div>
         </article>
 
-        <!-- ============ PAGE 2 ============ -->
+        <!-- ================= PAGE 2 ================= -->
         <article class="page-container bg-white relative overflow-hidden">
 
             <div class="flex items-center justify-between px-[0.72in] py-4 shrink-0" style="background: var(--dark);">
                 <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="lazy" decoding="async">
                 <div class="text-right">
                     <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Statement of work</p>
-                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">What it costs and how we work</p>
+                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">The plan</p>
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-6 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-1">
+            <div class="px-[0.72in] pt-8 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">First 48 hours</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Before the rebuild is finished</span>
+                </div>
+                <div class="two-col grid grid-cols-2 gap-x-10 gap-y-[10px]">
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Pull the shipping promise</strong> while stock is out. The contradiction on your first screen is gone the same day.</p>
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Correct the kit badge</strong> to $85 and drop the tracker you already cut.</p>
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Correct the star rating</strong> so the page matches your own review data.</p>
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Swap the two placeholder testimonials</strong> for real, verified ones from your export.</p>
+                </div>
+                <p class="text-[10.5px] text-neutral-500 leading-relaxed mt-3.5">None of these wait on the rebuild.</p>
+            </div>
+
+            <div class="px-[0.72in] pt-8 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-1">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two weeks</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Thu 18 Sept to Thu 1 Oct</span>
+                </div>
+
+                <div class="tl">
+                    <div class="tl-scale">
+                        <span class="tl-tick" style="left: 3.6%;">Thu 18</span>
+                        <span class="tl-tick" style="left: 35.7%;">Mon 22</span>
+                        <span class="tl-tick" style="left: 71.4%;">Sat 27</span>
+                        <span class="tl-tick" style="left: 96.4%;">Thu 1 Oct</span>
+                    </div>
+                    <div class="tl-rows">
+                        <div class="tl-row">
+                            <div class="tl-bar tl-1" style="left: 0; width: 35.7%;">
+                                <b>1 &middot; Buy box</b>
+                                <span>Built on a copy of your theme. Preview link day two.</span>
+                            </div>
+                        </div>
+                        <div class="tl-row">
+                            <div class="tl-bar tl-2" style="left: 35.7%; width: 35.7%;">
+                                <b>2 &middot; The rest of the page</b>
+                                <span>Your content dropped in. One review call at the end.</span>
+                            </div>
+                        </div>
+                        <div class="tl-row">
+                            <div class="tl-bar tl-3" style="left: 71.4%; width: 28.6%;">
+                                <b>3 &middot; Test and ship</b>
+                                <span>Devices, checkout, publish, hand over.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tl-live" style="left: 100%;"><i>Live</i></div>
+                </div>
+
+                <p class="tl-note">Your live page is not touched until phase three. Everything before that is built on a duplicate, with a preview link from day two so you can watch it come together.</p>
+            </div>
+
+            <div class="px-[0.72in] pt-8 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I need from you</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">By Monday 22 September</span>
+                </div>
+                <div class="two-col grid grid-cols-3 gap-x-9">
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Collaborator access</strong> with theme permissions, on day one. This is the item that can hold up everything behind it.</p>
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>Your open content items.</strong> The bullets, the footnote base, the kit value, and the hero image. All listed in the full brief.</p>
+                    <p class="text-[11.5px] text-neutral-800 leading-relaxed"><strong>A real restock date.</strong> The banner needs one, and the launch should be timed to it.</p>
+                </div>
+                <p class="text-[10.5px] text-neutral-500 leading-relaxed mt-3.5">Later than the 22nd and the launch moves day for day. I will tell you the day it is at risk, not the day it slips.</p>
+            </div>
+
+
+            <div class="px-[0.72in] pt-8 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I will be working in</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Your stack, not a new one</span>
+                </div>
+                <div class="stack-row">
+                    <div class="stk">
+                        <svg class="stk-ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.337 23.979l7.216-1.561s-2.604-17.613-2.625-17.73c-.018-.116-.114-.192-.211-.192s-1.929-.136-1.929-.136-1.275-1.274-1.439-1.411c-.045-.037-.075-.057-.121-.074l-.914 21.104h.023zM11.71 11.305s-.81-.424-1.774-.424c-1.447 0-1.504.906-1.504 1.141 0 1.232 3.24 1.715 3.24 4.629 0 2.295-1.44 3.76-3.406 3.76-2.354 0-3.54-1.465-3.54-1.465l.646-2.086s1.245 1.066 2.28 1.066c.675 0 .975-.545.975-.932 0-1.619-2.654-1.694-2.654-4.359-.034-2.237 1.571-4.416 4.827-4.416 1.257 0 1.875.361 1.875.361l-.945 2.715-.02.01zM11.17.83c.136 0 .271.038.405.135-.984.465-2.064 1.639-2.508 3.992-.656.213-1.293.405-1.889.578C7.697 3.75 8.951.84 11.17.84V.83zm1.235 2.949v.135c-.754.232-1.583.484-2.394.736.466-1.777 1.333-2.645 2.085-2.971.193.501.309 1.176.309 2.1zm.539-2.234c.694.074 1.141.867 1.429 1.755-.349.114-.735.231-1.158.366v-.252c0-.752-.096-1.371-.271-1.871v.002zm2.992 1.289c-.02 0-.06.021-.078.021s-.289.075-.714.21c-.423-1.233-1.176-2.37-2.508-2.37h-.115C12.135.209 11.669 0 11.265 0 8.159 0 6.675 3.877 6.21 5.846c-1.194.365-2.063.636-2.16.674-.675.213-.694.232-.772.87-.075.462-1.83 14.063-1.83 14.063L15.009 24l.927-21.166z"/></svg>
+                        <p class="stk-name">Shopify</p>
+                        <p class="stk-sub">Theme and Liquid</p>
+                    </div>
+                    <div class="stk">
+                        <img class="stk-ico stk-img" src="data:image/png;base64,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" alt="Skio">
+                        <p class="stk-name">Skio</p>
+                        <p class="stk-sub">Subscription plans</p>
+                    </div>
+                    <div class="stk">
+                        <svg class="stk-ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.84 2.9982v17.9987c.0086 1.6473-1.3197 2.9897-2.967 2.9984a2.9808 2.9808 0 01-.3677-.0208c-1.528-.226-2.6477-1.5558-2.6105-3.1V3.1204c-.0369-1.5458 1.0856-2.8762 2.6157-3.1 1.6361-.1915 3.1178.9796 3.3093 2.6158.014.1201.0208.241.0202.3619zM4.1326 18.0548c-1.6417 0-2.9726 1.331-2.9726 2.9726C1.16 22.6691 2.4909 24 4.1326 24s2.9726-1.3309 2.9726-2.9726-1.331-2.9726-2.9726-2.9726zm7.8728-9.0098c-.0171 0-.0342 0-.0513.0003-1.6495.0904-2.9293 1.474-2.891 3.1256v7.9846c0 2.167.9535 3.4825 2.3505 3.763 1.6118.3266 3.1832-.7152 3.5098-2.327.04-.1974.06-.3983.0593-.5998v-8.9585c.003-1.6474-1.33-2.9852-2.9773-2.9882z"/></svg>
+                        <p class="stk-name">Analytics</p>
+                        <p class="stk-sub">Tracking and baseline</p>
+                    </div>
+                    <div class="stk">
+                        <svg class="stk-ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.548 1.156L6.832 2.872v1.682h1.716zm0 3.398v.035H6.832v-.035H3.386L0 7.844v3.577h2.826V8.94c0-.525.429-.954.954-.954h16.476c.525 0 .954.43.954.954v2.48h2.754V7.844l-3.386-3.29H17.3v.035h-1.717v-.035zm7.035 0H17.3V2.872l-1.717-1.716zM8.679 1.188V2.84h6.773V1.188zm11.471 7.07a.834.834 0 00-.132.01l-.543.002c-5.216.014-10.432-.008-15.648.01-.435-.063-.794.436-.716.883v2.264h17.812c-.016-.888.045-1.782-.034-2.666-.104-.342-.427-.502-.739-.502zm-15.422.634a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zm2.134 0a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zM.036 11.645v9.156c0 1.05.858 1.908 1.907 1.908h.883V11.645zm21.174 0v11.064h.882c1.05 0 1.908-.858 1.908-1.908v-9.156zM4.057 13.133v6.85h6.137v-6.85zm13.243.021v3.777l-1.708.977-1.708-.977v-3.758a4.006 4.006 0 000 7.23v2.441h3.457v-2.442a4.006 4.006 0 00-.041-7.248zm-13.243 8.26v1.43h7.925v-1.43z"/></svg>
+                        <p class="stk-name">Search Console</p>
+                        <p class="stk-sub">Rankings after launch</p>
+                    </div>
+                    <div class="stk">
+                        <svg class="stk-ico" aria-hidden="true" focusable="false" fill="none" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"><circle cx="90" cy="90" fill="#14854d" r="90"/><g fill="#fff"><path d="m71.8914 138.64c17.9568 0 28.8396-10.747 28.8396-28.839v-68.6989h-19.7252v67.7459c0 7.754-2.9928 11.427-8.8423 11.427-5.8496 0-9.1145-3.537-9.1145-11.155v-24.7583h-19.7253v25.8473c0 18.365 10.0667 28.431 28.5677 28.431z"/><path d="m140.89 72.9916-1.89 17.0123 17.201-4.8201 1.513 11.6251-15.69 1.1341 10.302 13.704-10.491 5.577-7.183-14.461-6.332 14.366-10.869-5.482 10.208-13.704-15.595-1.2287 1.796-11.5305 16.823 4.8201-1.89-17.0123z"/></g></svg>
+                        <p class="stk-name">Junip</p>
+                        <p class="stk-sub">Reviews and testimonials</p>
+                    </div>
+                    <div class="stk">
+                        <svg class="stk-ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></svg>
+                        <p class="stk-name">Claude Code</p>
+                        <p class="stk-sub">How I work, not who decides</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-auto px-[0.72in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
+                <p class="text-[7px] text-neutral-400 tracking-wide">Also on file &middot; chrishornak.com/docs/ &rarr; morning-water-audit &middot; morning-water-brief &middot; Walkthrough: loom.com/share/d807822d4eff4441a5dfad1e21051654</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide shrink-0 pl-4">Page 2 of 3</p>
+            </div>
+        </article>
+
+        <!-- ================= PAGE 3 ================= -->
+        <article class="page-container bg-white relative overflow-hidden">
+
+            <div class="flex items-center justify-between px-[0.72in] py-4 shrink-0" style="background: var(--dark);">
+                <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="lazy" decoding="async">
+                <div class="text-right">
+                    <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Statement of work</p>
+                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">What it costs</p>
+                </div>
+            </div>
+
+            <div class="px-[0.72in] pt-8 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-1">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two ways to do this</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Fixed fee &middot; half up front, half on launch</span>
                 </div>
@@ -592,56 +718,36 @@
                     <tr><td class="lab"><b>Tested, published and handed over</b> as patterns your team can reuse, plus two days of aftercare</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
 
                     <tr class="grp"><td>What nobody has picked up yet</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab"><b>The 1.5 litre section, designed and built,</b> the way I wireframed it opposite</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>The 1.5 litre section, designed and built,</b> the way I wireframed it on page one</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                     <tr><td class="lab"><b>Analytics and conversion tracking configured,</b> with a baseline taken before launch</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                     <tr><td class="lab"><b>SEO audit and Search Console review,</b> so the rebuild does not cost you rankings</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                     <tr><td class="lab"><b>AEO and GEO pass,</b> so the page reads properly to AI assistants</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                     <tr class="last"><td class="lab"><b>Buyer journey consulting,</b> from the ad through to the second month</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                 </table>
 
-                <div class="two-col grid grid-cols-2 gap-x-8 mt-3.5 pt-2.5 border-t border-neutral-200">
-                    <p class="text-[10.5px] text-neutral-500 leading-snug"><strong class="text-neutral-800">Best for</strong> a team that knows what needs doing and wants it built properly, on time. The whole request, finished and live on the 1st.</p>
-                    <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">Best for</strong> a team that wants someone looking under the hood and owning the parts nobody has picked up. <strong class="text-neutral-900">That work is real, and right now it has no owner. In a restock month it will not get one.</strong></p>
+                <div class="two-col grid grid-cols-2 gap-x-10 mt-5 pt-3.5 border-t border-neutral-200">
+                    <p class="text-[10.5px] text-neutral-500 leading-relaxed"><strong class="text-neutral-800">Best for</strong> a team that knows what needs doing and wants it built properly, on time. The whole request, finished and live on the 1st.</p>
+                    <p class="text-[10.5px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">Best for</strong> a team that wants someone looking under the hood and owning the parts nobody has picked up. <strong class="text-neutral-900">That work is real, and right now it has no owner.</strong></p>
                 </div>
-                <p class="text-[10.5px] text-neutral-600 leading-snug mt-2.5 pt-2.5 border-t border-neutral-200">
-                    I built the free findability grader at <span class="font-mono text-[9.5px]">chrishornak.com/audit</span>. <strong class="text-neutral-900">That is the floor I start from, not the depth I work at.</strong>
-                </p>
-                <p class="text-[10px] text-neutral-500 leading-snug mt-2.5">
-                    <strong class="text-neutral-800">Neither includes</strong> new photography, the 5-stick trial SKU, other templates, or Skio plan changes.
+                <p class="text-[10px] text-neutral-500 leading-relaxed mt-3.5">
+                    I built the free findability grader at <span class="font-mono text-[9.5px]">chrishornak.com/audit</span>. <strong class="text-neutral-800">That is the floor I start from, not the depth I work at.</strong> <strong class="text-neutral-800">Neither option includes</strong> new photography, the 5-stick trial SKU, other templates, or Skio plan changes.
                 </p>
             </div>
 
-            <!-- WHAT I NEED / HOW I WORK -->
-            <div class="px-[0.72in] pt-4 shrink-0">
-                <div class="two-col grid grid-cols-2 gap-x-8">
-                    <div>
-                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
-                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I need from you</h2>
-                        </div>
-                        <div class="space-y-[5px]">
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Collaborator access</strong> with theme permissions, day one.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Your open content items</strong> by Monday 22 Sept.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>A real restock date.</strong> The banner needs one.</p>
-                        </div>
-                        <p class="text-[9.5px] text-neutral-400 leading-snug mt-2">Later than the 22nd and the launch moves day for day.</p>
-                    </div>
-                    <div>
-                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
-                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How we work together</h2>
-                        </div>
-                        <div class="space-y-[5px]">
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat,</strong> email for a record, scheduled calls for decisions. A written update each phase.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I have already read your theme.</strong> Custom sectioned, not page built, which is why two weeks is realistic.</p>
-                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I use Claude Code</strong> against a copy of your theme. Every change is mine to test, publish and answer for.</p>
-                        </div>
-                    </div>
+            <div class="px-[0.72in] pt-7 shrink-0">
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How we work together</h2>
+                </div>
+                <div class="two-col grid grid-cols-3 gap-x-9">
+                    <p class="text-[11px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">Slack or Google Chat</strong> day to day, email for anything that needs a record, scheduled calls for decisions. A written update each phase.</p>
+                    <p class="text-[11px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">I have already read your theme.</strong> Custom sectioned rather than page built, which is a large part of why two weeks is realistic.</p>
+                    <p class="text-[11px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">I use Claude Code</strong> against a copy of your theme. Every change is mine to test, publish and answer for.</p>
                 </div>
             </div>
 
-            <!-- CLOSE -->
-            <div class="px-[0.72in] pt-3 shrink-0">
-                <div class="rounded-[5px] px-4 py-3" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
-                    <p class="text-[12.5px] text-neutral-800 leading-snug">
+            <div class="px-[0.72in] pt-7 shrink-0">
+                <div class="rounded-[5px] px-5 py-4" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
+                    <p class="text-[12.5px] text-neutral-800 leading-relaxed">
                         <strong class="text-neutral-900">Reply with the option you want and I will send the agreement and the first invoice the same day.</strong>
                     </p>
                 </div>
@@ -649,7 +755,7 @@
 
             <div class="mt-auto px-[0.72in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
                 <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com &middot; Closest Shopify engagement: gammalighttherapy.com, content and SEO that grew into Liquid and section work</p>
-                <p class="text-[7px] text-neutral-400 tracking-wide">Page 2 of 2 &middot; Valid 30 days</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide shrink-0 pl-4">Page 3 of 3 &middot; Valid 30 days</p>
             </div>
         </article>
       </div>
