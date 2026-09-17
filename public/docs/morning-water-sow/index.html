@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Statement of work for the Morning Water product page rebuild — deliverables, two options, plan, and terms. Prepared by Chris Hornak.">
+    <meta name="description" content="Statement of work for the Morning Water product page rebuild. What you get, two weeks, two options, and what I need. Prepared by Chris Hornak.">
     <meta name="robots" content="noindex, nofollow">
-    <title>Morning Water — Statement of Work</title>
+    <title>Morning Water Statement of Work</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -278,46 +278,35 @@
         @media (prefers-reduced-motion: reduce) {
             .vm, .vm-panel { transition: none; }
         }
-        /* ===== SOW-SPECIFIC ===== */
-        .page-container + .page-container { margin-top: 40px; }
-        @media print {
-            .page-container + .page-container { page-break-before: always; margin-top: 0 !important; }
-        }
-        .phase-num {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 20px;
-            line-height: 0.85; letter-spacing: -0.04em; color: var(--teal);
-            font-variant-numeric: tabular-nums;
-        }
-        .opt { border: 1px solid #e2e5e7; border-radius: 6px; padding: 14px 15px 15px; }
+        /* ===== SOW ===== */
+        .opt { border: 1px solid #e2e5e7; border-radius: 6px; padding: 15px 16px 16px; }
         .opt.rec { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(45,212,168,.11); }
         .opt-tag {
             display: inline-block; font-family: 'Sora', sans-serif; font-weight: 700;
-            font-size: 6.5px; letter-spacing: 0.16em; text-transform: uppercase;
-            padding: 2px 6px; border-radius: 3px; background: #f1f2f3; color: #8a9190;
+            font-size: 7px; letter-spacing: 0.16em; text-transform: uppercase;
+            padding: 2px 7px; border-radius: 3px; background: #f1f2f3; color: #8a9190;
         }
         .opt.rec .opt-tag { background: rgba(45,212,168,.18); color: #0d6b53; }
         .opt-price {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 25px;
-            line-height: 1; letter-spacing: -0.03em; color: var(--dark); margin-top: 7px;
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 30px;
+            line-height: 1; letter-spacing: -0.03em; color: var(--dark); margin-top: 8px;
         }
-        .opt ul { margin-top: 9px; }
-        .opt li { font-size: 9.9px; color: #55605d; line-height: 1.38; padding-left: 11px; position: relative; margin-bottom: 3px; }
-        .opt li::before { content: "—"; position: absolute; left: 0; color: #c3cbc8; }
-        .opt li.add::before { content: "+"; color: var(--teal); font-weight: 800; }
-        .opt li.add { color: var(--dark); font-weight: 500; }
-        .dl { display: grid; grid-template-columns: 13px 1fr; column-gap: 7px; row-gap: 0; }
-        .dl .n {
-            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 8px;
-            color: var(--teal); padding-top: 1px; font-variant-numeric: tabular-nums;
+        .rowline { display: grid; grid-template-columns: 15px 1fr; column-gap: 8px; align-items: baseline; }
+        .rowline .n {
+            font-family: 'Sora', sans-serif; font-weight: 800; font-size: 9px;
+            color: var(--teal); font-variant-numeric: tabular-nums;
+        }
+        .when {
+            font-family: 'Sora', sans-serif; font-weight: 700; font-size: 8px;
+            letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
         }
         @media screen and (max-width: 768px) {
-            .phase-num { font-size: 24px !important; }
             .opt-tag { font-size: 9px !important; }
-            .opt-price { font-size: 30px !important; }
-            .opt li { font-size: 12.5px !important; padding-left: 15px !important; }
+            .opt-price { font-size: 34px !important; }
             .two-col { grid-template-columns: 1fr !important; gap: 1rem !important; }
-            .dl { grid-template-columns: 17px 1fr !important; }
-            .dl .n { font-size: 11px !important; }
+            .rowline { grid-template-columns: 19px 1fr !important; }
+            .rowline .n { font-size: 12px !important; }
+            .when { font-size: 11px !important; }
         }
     </style>
 </head>
@@ -325,14 +314,13 @@
 
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-bold">Skip to content</a>
 
-    <!-- CONTROL BAR -->
     <nav aria-label="Document controls" class="no-print mx-auto py-6 px-4 flex flex-col gap-3" style="width: calc(8.5in * 1.5); max-width: 100%;">
         <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-neutral-200/60">
             <span class="text-xs text-neutral-400 font-medium tracking-wide uppercase">Statement of Work</span>
             <div class="flex gap-3">
                 <a href="/docs/morning-water-brief/" target="_blank" rel="noopener"
                     class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900">
-                    Project brief
+                    Full brief
                 </a>
                 <a href="/docs/morning-water-audit/" target="_blank" rel="noopener"
                     class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 text-neutral-700 border border-neutral-300 hover:border-neutral-500 hover:text-neutral-900">
@@ -345,262 +333,135 @@
         </div>
     </nav>
 
-    <!-- DOCUMENT -->
     <main id="main-content" class="document-wrapper" style="display:block;">
       <div style="display:flex; flex-direction:column; align-items:center;">
 
-        <!-- ================= PAGE 1 ================= -->
         <article class="page-container bg-white relative overflow-hidden">
 
             <div class="flex items-center justify-between px-[0.5in] py-4 shrink-0" style="background: var(--dark);">
                 <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="eager" decoding="async">
                 <div class="text-right">
                     <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Statement of work</p>
-                    <p class="text-[9px] text-neutral-400 mt-0.5 tracking-wide">Morning Water &middot; product page &middot; 17 September 2026</p>
+                    <p class="text-[8px] text-neutral-400 mt-0.5 tracking-wide">Morning Water &middot; product page &middot; 17 Sept 2026</p>
                 </div>
             </div>
 
-            <!-- ===== TITLE ===== -->
-            <div class="px-[0.5in] pt-6 pb-4 shrink-0">
-                <h1 class="font-display font-800 text-[28px] leading-[1.05] tracking-[-0.03em] text-neutral-900 max-w-[88%]" style="text-wrap: balance;">
-                    The new product page, live and tested before the stock lands.
+            <!-- TITLE -->
+            <div class="px-[0.5in] pt-7 pb-5 shrink-0">
+                <h1 class="font-display font-800 text-[30px] leading-[1.05] tracking-[-0.03em] text-neutral-900 max-w-[90%]" style="text-wrap: balance;">
+                    Your new product page, live and tested before the stock lands.
                 </h1>
-                <p class="text-[11.5px] text-neutral-500 leading-snug max-w-[78%] mt-3">
-                    October&nbsp;1 is not a deadline someone picked. It is the day the page starts taking money again. <strong class="text-neutral-800">So the work has to finish before the inventory arrives, not alongside it</strong> &mdash; every day the page is late is a day of restock demand landing on the old one. This document is what I will build, in what order, what I need, and what it costs.
-                </p>
-                <p class="print-only text-[9px] text-neutral-400 leading-snug mt-2">
-                    Project brief: chrishornak.com/docs/morning-water-brief &middot; August audit: chrishornak.com/docs/morning-water-audit
+                <p class="text-[13px] text-neutral-500 leading-snug mt-3">
+                    October&nbsp;1. Here is exactly what that takes.
                 </p>
             </div>
 
-            <!-- ===== DELIVERABLES ===== -->
+            <!-- WHAT YOU GET -->
             <div class="px-[0.5in] shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-1.5 pb-2">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Deliverables</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Included in both options</span>
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What you get</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Both options</span>
                 </div>
 
-                <div class="two-col grid grid-cols-2 gap-x-7 gap-y-[11px]">
-                    <div class="dl"><span class="n">01</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Buy box rebuilt to your 4d mock</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Eyebrow, title, rating, paragraph, the five bullets, both plan cards, the Ritual Kit panel, Add&nbsp;to&nbsp;Cart, trust row, the try-once line and the study microcopy. Desktop and 390px, built against your existing Skio selling plans.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">02</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Gallery and thumbnail strip</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Reordered to the mock, kit photo leading, thumbnails behaving on touch.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">03</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">The three rendering faults corrected</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Clipped portraits, the cut-off header photo, and text overlapping the image &mdash; fixed across breakpoints, not just on one screen size.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">04</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">A stock switch, not a stock edit</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Sold-out and in-stock as two states you toggle from the theme editor. Today the banner and the hero contradict each other; after this, they cannot.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">05</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Numbers reconciled in the buy box and kit</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Kit value, per-serving price, plan pricing and badges agreeing with each other. Your notes put the kit at $85; the live badge still reads $139 and counts the supply itself as a gift.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">06</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Tested on real devices, in both states</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">iOS and Android, sold-out and in-stock, subscription flow walked through to checkout. Page speed checked against the current page so the rebuild does not cost you load time.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">07</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Written handover</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Short and plain: what changed, which settings control what, and how to flip the stock switch &mdash; so your team can edit the page without me.</p>
-                    </div></div>
-
-                    <div class="dl"><span class="n">08</span><div>
-                        <p class="text-[10.5px] text-neutral-900 font-semibold leading-snug">Two days of aftercare</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug">Anything that surfaces in the 48 hours after launch is mine to fix, at no charge.</p>
-                    </div></div>
+                <div class="two-col grid grid-cols-2 gap-x-8 gap-y-[9px]">
+                    <div class="rowline"><span class="n">01</span><p class="text-[11px] text-neutral-800 leading-snug">Buy box rebuilt to your 4d mock. Desktop and mobile.</p></div>
+                    <div class="rowline"><span class="n">02</span><p class="text-[11px] text-neutral-800 leading-snug">Gallery and thumbnails reordered, kit photo leading.</p></div>
+                    <div class="rowline"><span class="n">03</span><p class="text-[11px] text-neutral-800 leading-snug">The three rendering faults fixed across breakpoints.</p></div>
+                    <div class="rowline"><span class="n">04</span><p class="text-[11px] text-neutral-800 leading-snug">Sold out and in stock become a switch you flip.</p></div>
+                    <div class="rowline"><span class="n">05</span><p class="text-[11px] text-neutral-800 leading-snug">Kit value, per serving price and badges finally agree.</p></div>
+                    <div class="rowline"><span class="n">06</span><p class="text-[11px] text-neutral-800 leading-snug">Tested on real phones. Checkout walked end to end.</p></div>
+                    <div class="rowline"><span class="n">07</span><p class="text-[11px] text-neutral-800 leading-snug">Written handover so your team can edit it without me.</p></div>
+                    <div class="rowline"><span class="n">08</span><p class="text-[11px] text-neutral-800 leading-snug">Two days of fixes after launch. No charge.</p></div>
                 </div>
-            </div>
 
-            <!-- ===== NOT INCLUDED ===== -->
-            <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t border-neutral-300 pt-1.5 pb-1.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-500">Not included</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Said plainly, so nobody assumes</span>
-                </div>
-                <p class="text-[9.9px] text-neutral-500 leading-snug">
-                    New photography or the replacement hero graphic &middot; copywriting from scratch &middot; the 5-stick trial SKU and the nurture flow from the August audit &middot; other templates (cart, collection, account) &middot; changes to your Skio plan structure or pricing &middot; app subscriptions and fulfilment. <strong class="text-neutral-700">I will spec anything here that the build needs, and place whatever you supply.</strong>
+                <p class="text-[10px] text-neutral-500 leading-snug mt-3.5 pt-2.5 border-t border-neutral-200">
+                    <strong class="font-display font-700 text-[7px] uppercase tracking-[0.16em] text-neutral-400">Not included</strong>&nbsp;&nbsp;New photography. New copy. The 5-stick trial SKU. Cart and collection templates. Changes to your Skio plans. I will spec anything here that the build needs.
                 </p>
             </div>
 
-            <!-- ===== PLAN ===== -->
+            <!-- TIMELINE -->
             <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-1.5 pb-1.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">The two weeks</h2>
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two weeks</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Live Thu 1 Oct</span>
                 </div>
-
-                <div class="grid grid-cols-[20px_1fr] gap-x-3 py-[9px] border-b border-neutral-200/80">
-                    <span class="phase-num pt-[2px]">1</span>
-                    <div>
-                        <div class="flex items-baseline justify-between gap-3">
-                            <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">Buy box, on a development theme</h3>
-                            <span class="font-display text-[7px] uppercase tracking-[0.14em] text-neutral-400 shrink-0">Thu 18 &ndash; Mon 22 Sep</span>
-                        </div>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug mt-[2px]">Access, a duplicated theme, then the whole right column. Preview link on day two. <strong class="text-neutral-800">Nothing touches the live page in this phase.</strong></p>
+                <div class="space-y-[7px]">
+                    <div class="flex items-baseline gap-4">
+                        <span class="when shrink-0" style="width: 92px;">18&ndash;22 Sept</span>
+                        <p class="text-[11px] text-neutral-800 leading-snug">Buy box, built on a copy of your theme. Preview link on day two. Your live page is not touched.</p>
+                    </div>
+                    <div class="flex items-baseline gap-4">
+                        <span class="when shrink-0" style="width: 92px;">23&ndash;27 Sept</span>
+                        <p class="text-[11px] text-neutral-800 leading-snug">The rest of the page, your content dropped in, one review call at the end.</p>
+                    </div>
+                    <div class="flex items-baseline gap-4">
+                        <span class="when shrink-0" style="width: 92px;">28 Sept&ndash;1 Oct</span>
+                        <p class="text-[11px] text-neutral-800 leading-snug">Test on devices, publish, hand over.</p>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-[20px_1fr] gap-x-3 py-[9px] border-b border-neutral-200/80">
-                    <span class="phase-num pt-[2px]">2</span>
-                    <div>
-                        <div class="flex items-baseline justify-between gap-3">
-                            <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">The rest of the page</h3>
-                            <span class="font-display text-[7px] uppercase tracking-[0.14em] text-neutral-400 shrink-0">Tue 23 &ndash; Sat 27 Sep</span>
-                        </div>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug mt-[2px]">Gallery, the three corrections, the stock switch, your content answers dropped in. One review call at the end of this phase.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-[20px_1fr] gap-x-3 py-[9px] border-b border-neutral-200/80">
-                    <span class="phase-num pt-[2px]">3</span>
-                    <div>
-                        <div class="flex items-baseline justify-between gap-3">
-                            <h3 class="font-display font-700 text-[12px] text-neutral-900 leading-tight">Test, publish, hand over</h3>
-                            <span class="font-display text-[7px] uppercase tracking-[0.14em] text-neutral-400 shrink-0">Sun 28 Sep &ndash; Thu 1 Oct</span>
-                        </div>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug mt-[2px]">Devices, both states, checkout end to end, speed checked. Publish, then the handover.</p>
-                    </div>
-                </div>
-
-                <p class="text-[9px] text-neutral-400 leading-snug mt-2">These dates hold if I have theme access and the content decisions by <strong class="text-neutral-600">Monday 22 September</strong>. Later than that and the launch moves day for day &mdash; I will say so the moment it is at risk rather than at the end.</p>
             </div>
 
-            <!-- ===== DONE MEANS ===== -->
+            <!-- COST -->
             <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-1.5 pb-2">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Done means</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">How you check my work, not how I describe it</span>
+                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What it costs</h2>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Fixed. Half up front, half on launch.</span>
                 </div>
-                <div class="two-col grid grid-cols-2 gap-x-7 gap-y-[8px]">
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">The page tells one story in either state.</strong> Flip the stock switch and every line on the first screen agrees with every other one. You can test this yourself in under a minute.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">The buy box matches the mock at both sizes</strong>, and the subscription flow completes through to checkout on a real phone &mdash; not a simulator.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">No number contradicts another.</strong> Kit value, per-serving price, plan pricing and badges all say the same thing wherever they appear.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Your team can run it without me.</strong> Stock state, plan copy and kit contents are all editable from the theme editor after handover.</p>
-                </div>
-            </div>
-
-            <div class="mt-auto px-[0.5in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
-                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com</p>
-                <p class="text-[7px] text-neutral-400 tracking-wide">Page 1 of 2 &middot; Statement of work</p>
-            </div>
-        </article>
-
-        <!-- ================= PAGE 2 ================= -->
-        <article class="page-container bg-white relative overflow-hidden">
-
-            <div class="flex items-center justify-between px-[0.5in] py-4 shrink-0" style="background: var(--dark);">
-                <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" class="h-6 w-auto" loading="lazy" decoding="async">
-                <div class="text-right">
-                    <p class="font-display text-[8px] font-700 uppercase tracking-[0.22em]" style="color: var(--teal);">Statement of work</p>
-                    <p class="text-[9px] text-neutral-400 mt-0.5 tracking-wide">Options, working method, and terms</p>
-                </div>
-            </div>
-
-            <!-- ===== OPTIONS ===== -->
-            <div class="px-[0.5in] pt-6 shrink-0">
-                <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-1.5 pb-2.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two ways to do this</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Fixed fee, not hourly</span>
-                </div>
-
                 <div class="two-col grid grid-cols-2 gap-x-5">
                     <div class="opt">
                         <span class="opt-tag">Option B</span>
                         <p class="opt-price">$2,500</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug mt-1.5">The defined build. A closed list &mdash; the eight deliverables opposite, done properly, live on the 1st.</p>
-                        <ul>
-                            <li>All eight deliverables on page one</li>
-                            <li>Scope fixed at signing</li>
-                            <li>Anything new is quoted separately before I start it</li>
-                        </ul>
-                        <p class="text-[9px] text-neutral-400 leading-snug mt-2.5 pt-2 border-t border-neutral-200">Right if your team already has the content, the numbers and the tracking handled internally, and you want a builder.</p>
+                        <p class="text-[11px] text-neutral-700 leading-snug mt-2">The eight items above. Nothing else.</p>
+                        <p class="text-[10px] text-neutral-500 leading-snug mt-1.5">Right if your team already has the content and the tracking covered.</p>
                     </div>
-
                     <div class="opt rec">
-                        <span class="opt-tag">Option A &middot; Recommended</span>
+                        <span class="opt-tag">Option A &middot; I would take this</span>
                         <p class="opt-price">$3,500</p>
-                        <p class="text-[9.9px] text-neutral-500 leading-snug mt-1.5">The same build, plus my time across the two weeks for whatever it turns up.</p>
-                        <ul>
-                            <li>Everything in Option&nbsp;B</li>
-                            <li class="add">A working block of my time, used where it helps most &mdash; the number inconsistencies across the rest of the page, the two unfinished testimonials, conversion tracking on the buy box, whatever surfaces</li>
-                            <li class="add">Written recommendations on anything I find that I am not the right person to fix</li>
-                            <li class="add">No change order for small things. If it is half an hour, I just do it</li>
-                        </ul>
-                        <p class="text-[9px] text-neutral-500 leading-snug mt-2.5 pt-2 border-t border-neutral-200"><strong class="text-neutral-900">Right if you would rather hand the page over than manage it.</strong> The extra thousand buys capacity and judgement, and it bends around whatever you already have planned internally instead of colliding with it.</p>
+                        <p class="text-[11px] text-neutral-700 leading-snug mt-2">The same eight, plus my time for whatever the build turns up.</p>
+                        <p class="text-[10px] text-neutral-500 leading-snug mt-1.5">Numbers across the rest of the page, your two unfinished testimonials, tracking on the buy box. No change orders for small things. <strong class="text-neutral-800">Right if you would rather hand the page over than manage it.</strong></p>
                     </div>
                 </div>
-
-                <p class="text-[9.9px] text-neutral-500 leading-snug mt-3">
-                    Both are fixed. If the work takes longer than I planned, that is mine to absorb. <strong class="text-neutral-900">Half on signing, half on launch.</strong> If you would rather run it hourly, I will, at $75 with a not-to-exceed &mdash; though for a scope this well defined the fixed number is the better deal on your side.
-                </p>
             </div>
 
-            <!-- ===== WHY ME / SHOPIFY ===== -->
+            <!-- WHAT I NEED / HOW I WORK -->
             <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t border-neutral-300 pt-1.5 pb-1.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-500">On the Shopify side</h2>
-                </div>
-                <p class="text-[9.9px] text-neutral-600 leading-snug">
-                    I have been through your theme. It is custom-sectioned rather than page-built, which is the reason two weeks is realistic &mdash; <strong class="text-neutral-900">the buy box lives in <span class="font-mono">product-hero</span>, which already carries a waitlist state and a try-once label in its settings</strong>, and the page assembles from <span class="font-mono">kit-products</span>, <span class="font-mono">testimonials-carousel</span>, <span class="font-mono">signs-grid</span>, <span class="font-mono">ingredients-grid-v2</span>, <span class="font-mono">comparison-table</span> and the rest. I am working with sections and settings you already own, not rebuilding a template from scratch.
-                </p>
-                <p class="text-[9.9px] text-neutral-600 leading-snug mt-1.5">
-                    Closest comparable engagement: <strong class="text-neutral-900">gammalighttherapy.com</strong>. It started as content and search work &mdash; blog build-out and email capture pages on Shopify &mdash; and grew into Liquid and section edits as the store needed them. Independent contractor, not through an agency. Same shape of problem: a live store, an owner who wanted the work taken off their hands, and changes that had to hold up in production.
-                </p>
-            </div>
-
-            <!-- ===== HOW WE WORK ===== -->
-            <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t border-neutral-300 pt-1.5 pb-1.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-500">How we work together</h2>
-                </div>
-                <div class="two-col grid grid-cols-2 gap-x-7 gap-y-[5px]">
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Where.</strong> Slack or Google Chat, whichever you already live in. Email for anything that needs a record. Scheduled calls when a decision needs a conversation rather than a thread.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">How often.</strong> A short written update at the end of each phase, plus a preview link from day two so you can watch it grow rather than wait for a reveal.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">What I need on day one.</strong> Shopify collaborator access with theme permissions, and whoever owns Skio and Junip reachable on a thread. This is the item that can stall everything behind it.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Decisions.</strong> Seven content items are still open on your side &mdash; they are listed in the project brief. None block the start; all of them block the finish.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Tooling, said plainly.</strong> I work with Claude Code against a duplicated development theme. It makes me faster; it does not make the decisions. Every change is read, tested and published by me, and I am accountable for all of it either way.</p>
+                <div class="two-col grid grid-cols-2 gap-x-8">
+                    <div>
+                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
+                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">What I need</h2>
+                        </div>
+                        <div class="space-y-[6px]">
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Collaborator access</strong> with theme permissions, day one. This is the one thing that can stall everything.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Your seven open content items</strong> by Monday 22 Sept. They are listed in the full brief.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>A real restock date.</strong> The banner needs one, and the launch should be timed to it.</p>
+                        </div>
+                        <p class="text-[9.5px] text-neutral-400 leading-snug mt-2">Later than the 22nd and the launch moves day for day. I will tell you the day it is at risk, not the day it slips.</p>
+                    </div>
+                    <div>
+                        <div class="border-t-2 border-neutral-900 pt-2 pb-2">
+                            <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">How I work</h2>
+                        </div>
+                        <div class="space-y-[6px]">
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>Slack or Google Chat,</strong> whichever you already use. A short written update at the end of each phase.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I use Claude Code</strong> against a copy of your theme. It makes me faster. Every change is still mine to test, publish and answer for.</p>
+                            <p class="text-[11px] text-neutral-800 leading-snug"><strong>I have already read your theme.</strong> The buy box sits in <span class="font-mono text-[10px]">product-hero</span>, which already has a waitlist state built into its settings.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ===== RISKS ===== -->
+            <!-- CLOSE -->
             <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="flex items-baseline justify-between border-t border-neutral-300 pt-1.5 pb-1.5">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-500">What could go wrong, and what I do about it</h2>
-                </div>
-                <div class="two-col grid grid-cols-2 gap-x-7 gap-y-[6px]">
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Access or decisions arrive late.</strong> This is the likeliest one. The launch moves day for day, and I tell you the day it is at risk rather than the day it slips.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">The hero image cannot be re-exported in time.</strong> Fallback is a clean crop with the claims set in live text instead. We decide that on the 22nd, not the 30th.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Skio or Junip behaves differently in the new markup.</strong> This is exactly why phase one sits on a development theme with a preview link from day two &mdash; surprises surface in week one, not launch week.</p>
-                    <p class="text-[9.9px] text-neutral-600 leading-snug"><strong class="text-neutral-900">Something turns out bigger than it looked.</strong> I say so before I start it, with what it would take. I do not quietly absorb it and miss the date, and I do not invoice you for a surprise.</p>
-                </div>
-            </div>
-
-            <!-- ===== CLOSE ===== -->
-            <div class="px-[0.5in] pt-5 shrink-0">
-                <div class="rounded-[5px] px-4 py-3" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
-                    <p class="font-display font-700 text-[7px] uppercase tracking-[0.18em] text-neutral-400 mb-1">The short version</p>
-                    <p class="text-[10.5px] text-neutral-700 leading-snug">
-                        The design is settled and the theme is already built for this. What is left is execution, consistency and a date. <strong class="text-neutral-900">Say go by Monday and the page is live, tested and handed over before your stock arrives.</strong>
+                <div class="rounded-[5px] px-4 py-3.5" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
+                    <p class="text-[12px] text-neutral-800 leading-snug">
+                        Your design is settled and your theme is already built for this. What is left is execution and a date. <strong class="text-neutral-900">Reply with the option you want and I will send the agreement and the first invoice the same day.</strong>
                     </p>
                 </div>
-                <p class="text-[9px] text-neutral-400 leading-snug mt-2.5">To start: reply with the option you want and I will send a one-page agreement and the first invoice the same day.</p>
             </div>
 
             <div class="mt-auto px-[0.5in] py-3 flex items-center justify-between border-t border-neutral-200 shrink-0">
-                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com &middot; Valid 30 days from 17 September 2026</p>
-                <p class="text-[7px] text-neutral-400 tracking-wide">Page 2 of 2 &middot; Statement of work</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Chris Hornak &middot; chrishornak.com &middot; Closest Shopify engagement: gammalighttherapy.com, content and SEO that grew into Liquid and section work</p>
+                <p class="text-[7px] text-neutral-400 tracking-wide">Valid 30 days</p>
             </div>
         </article>
       </div>
