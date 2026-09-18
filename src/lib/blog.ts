@@ -121,6 +121,50 @@ export const posts: Post[] = [
       },
     ],
   },
+  {
+    slug: 'text-in-images',
+    title: 'Text in images is a tax you pay forever',
+    teaser:
+      'Text in images looks finished on launch day. After that, every change to the words is a design job, and the words cannot be read aloud, translated, tested or zoomed.',
+    targetKeyword: 'text in images',
+    metaDescription:
+      "Text in images looks fine on launch day. Then every price change, translation, test and phone screen bills you again. Here's what to use instead.",
+    keywords: [
+      'text in images',
+      'images of text',
+      'WCAG 1.4.5',
+      'Shopify image banner',
+      'alt text',
+      'ecommerce accessibility',
+    ],
+    published: true,
+    datePublished: '2026-09-17',
+    dateModified: '2026-09-17',
+    wordCount: 947,
+    readingMinutes: 5,
+    faq: [
+      {
+        question: 'What counts as text in images?',
+        answer:
+          'Any word that lives inside the pixels instead of the page. A headline designed in Canva or Figma and exported as a JPG, a discount badge painted onto a product photo, a price, a star rating, or a chart saved as a PNG. The quick test is to try to highlight the words with your cursor. If you cannot select them, they are part of the image.',
+      },
+      {
+        question: 'Why is text in images bad for a website?',
+        answer:
+          'Every change to the words becomes a design job, with a source file, an export, an upload and new alt text. The words shrink with the image on a phone, so a 24px headline in a 1,200px image renders at 7.8px on a 390px screen. Screen readers only get the alt text, translation tools skip it, and testing a new headline means making a new image.',
+      },
+      {
+        question: 'When is it fine to put text in an image?',
+        answer:
+          'When the look of the words is the point. WCAG 2.2 success criterion 1.4.5 asks for real text where the technology allows it, with an exception for presentations that are essential, and it counts logotypes as essential. Product photos with words on the packaging, social share cards and screenshots used as evidence are also reasonable uses.',
+      },
+      {
+        question: 'How do I put text over an image in Shopify?',
+        answer:
+          'Use a section that places live text on top of the image rather than inside it. The Image banner section in Shopify’s Dawn theme has heading, text and button blocks for this, so the words stay editable in the theme editor. If your theme has no equivalent, it is one of the first sections worth asking a developer for.',
+      },
+    ],
+  },
 ]
 
 export function getPostBySlug(slug: string): Post | undefined {

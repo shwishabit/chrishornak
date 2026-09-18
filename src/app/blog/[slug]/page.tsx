@@ -13,15 +13,19 @@ import { ShopifyThemePost } from '@/components/blog/ShopifyThemePost'
 import { ShopifyThemeDiagram } from '@/components/blog/ShopifyThemeDiagram'
 import { ProductPageAuditPost } from '@/components/blog/ProductPageAuditPost'
 import { ProductPageAuditDiagram } from '@/components/blog/ProductPageAuditDiagram'
+import { TextInImagesPost } from '@/components/blog/TextInImagesPost'
+import { TextInImagesDiagram } from '@/components/blog/TextInImagesDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemePost,
   'product-page-audit': ProductPageAuditPost,
+  'text-in-images': TextInImagesPost,
 }
 
 const postHeroVisualMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemeDiagram,
   'product-page-audit': ProductPageAuditDiagram,
+  'text-in-images': TextInImagesDiagram,
 }
 
 // Table of contents per post — ids match the h2 anchors in the content
@@ -42,6 +46,15 @@ const postTocMap: Record<string, { id: string; label: string }[]> = {
     { id: 'how-to-run-it', label: 'How do you run a contradiction audit?' },
     { id: 'one-source', label: 'The fix is one source, not a better sentence' },
     { id: 'wrong-tool', label: 'When is a contradiction audit the wrong tool?' },
+    { id: 'one-question', label: 'One question' },
+  ],
+  'text-in-images': [
+    { id: 'what-counts', label: 'What counts as text in images?' },
+    { id: 'what-it-costs', label: 'What does the tax actually cost?' },
+    { id: 'when-numbers-change', label: 'What happens when the numbers change?' },
+    { id: 'how-to-find-it', label: 'How do you find text in images on your site?' },
+    { id: 'what-instead', label: 'What should you use instead?' },
+    { id: 'when-its-fine', label: 'When is text in images fine?' },
     { id: 'one-question', label: 'One question' },
   ],
 }
