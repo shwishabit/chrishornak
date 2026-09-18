@@ -165,6 +165,50 @@ export const posts: Post[] = [
       },
     ],
   },
+  {
+    slug: 'measure-website-changes',
+    title: "Measure website changes, or you didn't improve them",
+    teaser:
+      'To measure website changes, you need the number from before the change. That is the only part of the measurement with a deadline, and it is the easiest part to skip.',
+    targetKeyword: 'measure website changes',
+    metaDescription:
+      "To measure website changes, record the number before you touch anything. Here's what to write down, how long to wait, and when it isn't worth it.",
+    keywords: [
+      'measure website changes',
+      'website baseline',
+      'before and after metrics',
+      'PageSpeed Insights field data',
+      'Google Search Console',
+      'conversion rate',
+    ],
+    published: true,
+    datePublished: '2026-09-17',
+    dateModified: '2026-09-17',
+    wordCount: 836,
+    readingMinutes: 4,
+    faq: [
+      {
+        question: 'How do you measure website changes?',
+        answer:
+          'Record a baseline before you change anything. Write down the one number the change is meant to move and the date range, take a screenshot of the page, note the tool and its settings, list anything else happening that week, and pick the date you will check again. Then compare the same number, with the same settings, after the change.',
+      },
+      {
+        question: 'Why do I need a baseline before changing my website?',
+        answer:
+          'Because you can repeat a change but you cannot go back and take the before. Some tools only hold a window of history. PageSpeed Insights field data covers the previous 28 days, Search Console performance data goes back 16 months, and GA4 explorations only reach back as far as the retention setting of 2 or 14 months on a standard property.',
+      },
+      {
+        question: 'How long should I wait before measuring a website change?',
+        answer:
+          'It depends on the source. Lab tools like Lighthouse can be re-run as soon as the change is live. PageSpeed Insights field data needs its 28-day window to fill with the new version. Search performance and sales need long enough date ranges that one unusual week or one good day cannot decide the result.',
+      },
+      {
+        question: 'Does a better number prove my change worked?',
+        answer:
+          'Not on its own. The season, an email send, an ad campaign or a competitor running out of stock can all move the same number. A baseline does not remove that doubt, but it makes it visible, and it lets you check that you measured the page you actually changed.',
+      },
+    ],
+  },
 ]
 
 export function getPostBySlug(slug: string): Post | undefined {

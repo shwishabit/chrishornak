@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="noteTitle noteDesc">
+  <title id="noteTitle">A before note for one website change</title>
+  <desc id="noteDesc">Five fields. The metric, Blog Grader score for one post. The before value, 97 out of 100. The tool and settings, the grader run on the live URL. Other changes, none between the two readings. The check-again date, after the deploy settles. The after value, 100 out of 100.</desc>
+
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#143d35"/>
+      <stop offset="55%" stop-color="#10322b"/>
+      <stop offset="100%" stop-color="#0c2822"/>
+    </linearGradient>
+    <radialGradient id="vig5" cx="50%" cy="45%" r="75%">
+      <stop offset="60%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.42"/>
+    </radialGradient>
+    <filter id="grain5">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg5)"/>
+  <rect width="1200" height="630" filter="url(#grain5)" opacity="0.04"/>
+  <rect width="1200" height="630" fill="url(#vig5)"/>
+
+  <text x="96" y="112" fill="#2dd4a8" font-family="system-ui, sans-serif" font-size="19" font-weight="700" letter-spacing="3.4">THE BEFORE NOTE</text>
+  <text x="96" y="166" fill="#ffffff" font-family="system-ui, sans-serif" font-size="44" font-weight="800" letter-spacing="-1">Write it down first.</text>
+  <text x="96" y="206" fill="#ffffff" fill-opacity="0.55" font-family="system-ui, sans-serif" font-size="22">One real change on this blog, recorded before it shipped.</text>
+
+  <!-- note card -->
+  <rect x="96" y="240" width="700" height="340" rx="14" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.16"/>
+
+  <g font-family="system-ui, sans-serif">
+    <text x="128" y="292" fill="#ffffff" fill-opacity="0.45" font-size="16" font-weight="700" letter-spacing="2.4">METRIC</text>
+    <text x="330" y="292" fill="#ffffff" fill-opacity="0.9" font-size="21">Blog Grader score, one post</text>
+    <line x1="128" y1="314" x2="764" y2="314" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <text x="128" y="352" fill="#ffffff" fill-opacity="0.45" font-size="16" font-weight="700" letter-spacing="2.4">BEFORE</text>
+    <text x="330" y="354" fill="#f59e6b" font-size="26" font-weight="800">97 / 100</text>
+    <line x1="128" y1="374" x2="764" y2="374" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <text x="128" y="412" fill="#ffffff" fill-opacity="0.45" font-size="16" font-weight="700" letter-spacing="2.4">TOOL</text>
+    <text x="330" y="412" fill="#ffffff" fill-opacity="0.9" font-size="21">Grader code, run on the live URL</text>
+    <line x1="128" y1="434" x2="764" y2="434" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <text x="128" y="472" fill="#ffffff" fill-opacity="0.45" font-size="16" font-weight="700" letter-spacing="2.4">ALSO CHANGED</text>
+    <text x="330" y="472" fill="#ffffff" fill-opacity="0.9" font-size="21">Nothing between the two readings</text>
+    <line x1="128" y1="494" x2="764" y2="494" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <text x="128" y="532" fill="#ffffff" fill-opacity="0.45" font-size="16" font-weight="700" letter-spacing="2.4">CHECK AGAIN</text>
+    <text x="330" y="532" fill="#ffffff" fill-opacity="0.9" font-size="21">After the deploy settles</text>
+  </g>
+
+  <!-- after -->
+  <rect x="836" y="240" width="268" height="340" rx="14" fill="#2dd4a8" fill-opacity="0.1" stroke="#2dd4a8" stroke-opacity="0.45"/>
+  <text x="970" y="300" text-anchor="middle" fill="#2dd4a8" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">AFTER</text>
+  <text x="970" y="412" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="72" font-weight="800" letter-spacing="-2">100</text>
+  <text x="970" y="452" text-anchor="middle" fill="#ffffff" fill-opacity="0.55" font-family="system-ui, sans-serif" font-size="20">out of 100</text>
+  <text x="970" y="532" text-anchor="middle" fill="#ffffff" fill-opacity="0.55" font-family="system-ui, sans-serif" font-size="18">One line rewritten</text>
+</svg>

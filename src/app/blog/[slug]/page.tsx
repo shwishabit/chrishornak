@@ -15,17 +15,21 @@ import { ProductPageAuditPost } from '@/components/blog/ProductPageAuditPost'
 import { ProductPageAuditDiagram } from '@/components/blog/ProductPageAuditDiagram'
 import { TextInImagesPost } from '@/components/blog/TextInImagesPost'
 import { TextInImagesDiagram } from '@/components/blog/TextInImagesDiagram'
+import { MeasureWebsiteChangesPost } from '@/components/blog/MeasureWebsiteChangesPost'
+import { MeasureWebsiteChangesDiagram } from '@/components/blog/MeasureWebsiteChangesDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemePost,
   'product-page-audit': ProductPageAuditPost,
   'text-in-images': TextInImagesPost,
+  'measure-website-changes': MeasureWebsiteChangesPost,
 }
 
 const postHeroVisualMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemeDiagram,
   'product-page-audit': ProductPageAuditDiagram,
   'text-in-images': TextInImagesDiagram,
+  'measure-website-changes': MeasureWebsiteChangesDiagram,
 }
 
 // Table of contents per post — ids match the h2 anchors in the content
@@ -55,6 +59,14 @@ const postTocMap: Record<string, { id: string; label: string }[]> = {
     { id: 'how-to-find-it', label: 'How do you find text in images on your site?' },
     { id: 'what-instead', label: 'What should you use instead?' },
     { id: 'when-its-fine', label: 'When is text in images fine?' },
+    { id: 'one-question', label: 'One question' },
+  ],
+  'measure-website-changes': [
+    { id: 'why-baseline', label: 'Why does the baseline matter more than the change?' },
+    { id: 'what-to-record', label: 'What should you record before you change a page?' },
+    { id: 'real-example', label: 'What does this look like on a real page?' },
+    { id: 'how-long-to-wait', label: 'How long should you wait before you measure again?' },
+    { id: 'when-not-to', label: 'When is measuring not worth it?' },
     { id: 'one-question', label: 'One question' },
   ],
 }
