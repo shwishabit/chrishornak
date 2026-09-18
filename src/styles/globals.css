@@ -92,6 +92,42 @@ html {
     cursor: text !important;
     caret-color: var(--color-primary);
   }
+
+  /* Restore the I-beam over readable text. Without it there is no way to see
+     where a selection starts or ends, which makes copying a quote guesswork.
+     Interactive children keep the custom cursor via the rule below. */
+  p,
+  li,
+  dd,
+  dt,
+  blockquote,
+  figcaption,
+  code,
+  pre,
+  td,
+  th,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  time,
+  small {
+    cursor: text !important;
+  }
+
+  /* ...but anything clickable inside that text is still a pointer target. */
+  a,
+  button,
+  summary,
+  label,
+  [role="button"],
+  a *,
+  button *,
+  summary * {
+    cursor: none !important;
+  }
 }
 
 body {
