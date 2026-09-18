@@ -130,9 +130,9 @@ export function getPostBySlug(slug: string): Post | undefined {
 export function getPublishedPosts(): Post[] {
   return posts
     .filter((p) => p.published)
-    // Same-day posts: the one added later to `posts` is the newer one.
+    // Same-day posts keep their order in `posts`, so the lead piece stays on top.
     .sort(
       (a, b) =>
-        b.datePublished.localeCompare(a.datePublished) || posts.indexOf(b) - posts.indexOf(a)
+        b.datePublished.localeCompare(a.datePublished) || posts.indexOf(a) - posts.indexOf(b)
     )
 }
