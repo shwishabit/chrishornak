@@ -15,7 +15,8 @@ export interface Post {
   slug: string
   /** H1 and <title>. Gate: 60 characters or fewer. */
   title: string
-  /** Deck under the H1. Not the meta description. */
+  /** Deck under the H1. Not the meta description. The Blog Grader reads this as the
+   *  opening paragraph, so it must contain the exact target keyword (D198). */
   teaser: string
   /** Gate: the focus keyword the Grader should infer. */
   targetKeyword: string
