@@ -37,7 +37,7 @@ export const posts: Post[] = [
     slug: 'shopify-theme-small-team',
     title: 'A small team moves fast if the Shopify theme allows it',
     teaser:
-      'Shopify is rebuilding its theme layer so machines can read it. That is worth more to a two-person store than a large one, but only under one condition.',
+      'Shopify is rebuilding its theme layer so machines can read it. A readable Shopify theme is worth more to a two-person store than a large one, but only under one condition.',
     targetKeyword: 'Shopify theme',
     metaDescription:
       'Your Shopify theme decides how fast a small team can change the store. Four traits make a theme easy to edit, and one test tells you where you stand.',
@@ -81,7 +81,7 @@ export const posts: Post[] = [
     slug: 'product-page-audit',
     title: 'Product page audit: is your page arguing with itself?',
     teaser:
-      'Most audits hunt for what is missing. The costlier problem is two lines on the same page that disagree, and it is usually two correct edits made on different days.',
+      'A product page audit usually hunts for what is missing. The costlier problem is two lines on the same page that disagree, and it is usually two correct edits made on different days.',
     targetKeyword: 'product page audit',
     metaDescription:
       "A product page audit usually hunts for gaps. The costlier problem is two lines that disagree. Here's how to find those contradictions in about 30 minutes.",

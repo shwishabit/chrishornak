@@ -196,13 +196,13 @@ export function ProductPageAuditPost() {
       <h2 id="wrong-tool">When is a contradiction audit the wrong tool?</h2>
 
       <p>
-        Not every difference is a contradiction. A sale price next to the regular price is a
-        comparison, and it&apos;s doing its job. A subscription price under a one-time price is the
+        Not every difference is a contradiction. The exception is a comparison. A sale price next to
+        the regular price is doing its job. A subscription price under a one-time price is the
         same thing. Leave those alone.
       </p>
 
       <p>
-        It also won&apos;t rescue a weak offer. A page that agrees with itself perfectly can still
+        There&apos;s a catch, though. It won&apos;t rescue a weak offer. A page that agrees with itself perfectly can still
         sell the wrong thing to the wrong person. This audit fixes trust, not demand.
       </p>
 
