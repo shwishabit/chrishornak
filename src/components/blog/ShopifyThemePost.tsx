@@ -132,6 +132,20 @@ export function ShopifyThemePost() {
         thing isn&apos;t editable, or you can&apos;t work out where it lives at all.
       </p>
 
+      <figure>
+        <img
+          src="/images/blog/shopify-theme-ceiling-test.svg"
+          alt="Three outcomes of trying to change one thing in a Shopify theme. One, it takes a minute and the theme is working for you. Two, you find it but it will not edit because the value was written into the code. Three, you cannot find it at all because nothing is named."
+          width={1200}
+          height={630}
+          loading="lazy"
+          className="w-full rounded-2xl shadow-xl shadow-black/20"
+        />
+        <figcaption>
+          Three outcomes, three different problems. Only one of them is a theme working for you.
+        </figcaption>
+      </figure>
+
       <p>
         That result tells you more about what your store can do next year than any theme feature list
         will.
@@ -163,6 +177,27 @@ export function ShopifyThemePost() {
         That engagement moved from content strategy into fractional UX engineering. Custom sections,
         template work, product pages, with the content and search side still mine. It isn&apos;t the
         first time a project has gone that way, and it usually goes that way for the same reason.
+      </p>
+
+      <figure>
+        <img
+          src="/images/blog/gamma-organic-traffic.svg"
+          alt="Bar chart of Gamma Light Therapy organic traffic indexed to the starting month. Month 0 sits at 100 and month 6 sits at 600, a 500 percent increase."
+          width={1200}
+          height={630}
+          loading="lazy"
+          className="w-full rounded-2xl shadow-xl shadow-black/20"
+        />
+        <figcaption>
+          Organic traffic over the same period. The search work is what moved the number, but it
+          could only move it because the pages underneath could be changed.
+        </figcaption>
+      </figure>
+
+      <p>
+        That is the part worth taking from it. Content strategy hits a ceiling the moment the page
+        stops being editable, and most of the time nobody names the ceiling. They just conclude the
+        content didn&apos;t work.
       </p>
 
       <p>Here&apos;s the part that matters to you rather than to me.</p>
