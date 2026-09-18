@@ -4,16 +4,16 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 import { fadeUp, stagger, ease } from '@/lib/animations'
-import type { Post } from '@/lib/writing'
+import type { Post } from '@/lib/blog'
 
-interface WritingLayoutProps {
+interface BlogLayoutProps {
   post: Post
   toc: { id: string; label: string }[]
   heroVisual?: React.ReactNode
   children: React.ReactNode
 }
 
-export function WritingLayout({ post, toc, heroVisual, children }: WritingLayoutProps) {
+export function BlogLayout({ post, toc, heroVisual, children }: BlogLayoutProps) {
   const formattedDate = new Date(post.datePublished + 'T00:00:00').toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -31,7 +31,7 @@ export function WritingLayout({ post, toc, heroVisual, children }: WritingLayout
             </li>
             <li><ChevronRight className="h-3 w-3" /></li>
             <li>
-              <Link href="/writing" className="transition-colors hover:text-foreground">Writing</Link>
+              <Link href="/blog" className="transition-colors hover:text-foreground">Blog</Link>
             </li>
           </ol>
         </nav>
@@ -155,10 +155,10 @@ export function WritingLayout({ post, toc, heroVisual, children }: WritingLayout
       <section className="px-6 pb-20 md:px-12 md:pb-28 lg:px-24">
         <div className="mx-auto max-w-3xl">
           <Link
-            href="/writing"
+            href="/blog"
             className="text-sm text-muted-foreground transition-colors hover:text-primary"
           >
-            More writing
+            More posts
           </Link>
         </div>
       </section>

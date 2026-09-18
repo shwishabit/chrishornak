@@ -3,14 +3,14 @@ import { notFound } from 'next/navigation'
 import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
-import { WritingLayout } from '@/components/sections/WritingLayout'
+import { BlogLayout } from '@/components/sections/BlogLayout'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
-import { posts, getPostBySlug } from '@/lib/writing'
+import { posts, getPostBySlug } from '@/lib/blog'
 
 // Post content components — add new imports as pieces are published
-import { ShopifyThemePost } from '@/components/writing/ShopifyThemePost'
-import { ShopifyThemeDiagram } from '@/components/writing/ShopifyThemeDiagram'
+import { ShopifyThemePost } from '@/components/blog/ShopifyThemePost'
+import { ShopifyThemeDiagram } from '@/components/blog/ShopifyThemeDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemePost,
@@ -51,7 +51,7 @@ export async function generateMetadata({
     description: post.metaDescription,
     keywords: post.keywords,
     alternates: {
-      canonical: `/writing/${post.slug}`,
+      canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
@@ -60,7 +60,7 @@ export async function generateMetadata({
       publishedTime: `${post.datePublished}T00:00:00Z`,
       modifiedTime: `${post.dateModified}T00:00:00Z`,
       authors: ['Chris Hornak'],
-      section: 'Writing',
+      section: 'Blog',
     },
     twitter: {
       card: 'summary_large_image',
@@ -74,7 +74,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function WritingPostPage({
+export default async function BlogPostPage({
   params,
 }: {
   params: Promise<{ slug: string }>
@@ -93,13 +93,13 @@ export default async function WritingPostPage({
     <main id="main-content" className="relative min-h-screen overflow-x-hidden">
       <BackgroundMesh />
       <Navigation />
-      <WritingLayout
+      <BlogLayout
         post={post}
         toc={toc}
         heroVisual={HeroVisual ? <HeroVisual /> : undefined}
       >
         <ContentComponent />
-      </WritingLayout>
+      </BlogLayout>
       <Footer />
 
       {/* BlogPosting + BreadcrumbList + FAQPage */}
@@ -109,10 +109,10 @@ export default async function WritingPostPage({
           '@graph': [
             {
               '@type': 'BlogPosting',
-              '@id': `${siteConfig.domain}/writing/${post.slug}#article`,
+              '@id': `${siteConfig.domain}/blog/${post.slug}#article`,
               headline: post.title,
               description: post.metaDescription,
-              image: `${siteConfig.domain}/writing/${post.slug}/opengraph-image`,
+              image: `${siteConfig.domain}/blog/${post.slug}/opengraph-image`,
               author: {
                 '@type': 'Person',
                 name: 'Chris Hornak',
@@ -133,12 +133,12 @@ export default async function WritingPostPage({
               keywords: post.keywords.join(', '),
               mainEntityOfPage: {
                 '@type': 'WebPage',
-                '@id': `${siteConfig.domain}/writing/${post.slug}`,
+                '@id': `${siteConfig.domain}/blog/${post.slug}`,
               },
               isPartOf: {
                 '@type': 'Blog',
-                '@id': `${siteConfig.domain}/writing`,
-                name: 'Writing',
+                '@id': `${siteConfig.domain}/blog`,
+                name: 'Blog',
               },
               speakable: {
                 '@type': 'SpeakableSpecification',
@@ -149,12 +149,12 @@ export default async function WritingPostPage({
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
-                { '@type': 'ListItem', position: 2, name: 'Writing', item: `${siteConfig.domain}/writing` },
+                { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteConfig.domain}/blog` },
                 {
                   '@type': 'ListItem',
                   position: 3,
                   name: post.title,
-                  item: `${siteConfig.domain}/writing/${post.slug}`,
+                  item: `${siteConfig.domain}/blog/${post.slug}`,
                 },
               ],
             },

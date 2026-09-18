@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
-import { getPostBySlug } from '@/lib/writing'
+import { getPostBySlug } from '@/lib/blog'
 
-export const alt = 'Writing by Chris Hornak'
+export const alt = 'The Chris Hornak blog'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -9,7 +9,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
   const { slug } = await params
   const post = getPostBySlug(slug)
 
-  const headline = post?.title ?? 'Writing'
+  const headline = post?.title ?? 'Blog'
   const minutes = post?.readingMinutes ?? 5
 
   return new ImageResponse(
@@ -45,7 +45,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
               color: '#2dd4a8',
             }}
           >
-            Writing
+            Blog
           </span>
         </div>
 

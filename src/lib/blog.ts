@@ -1,4 +1,4 @@
-// src/lib/writing.ts — /writing post metadata
+// src/lib/blog.ts — /blog post metadata
 //
 // Distinct from lib/guides.ts on purpose. The Signal guides are a closed,
 // numbered curriculum. This is an open series of standalone pieces, so the

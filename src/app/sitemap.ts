@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { siteConfig } from '@/lib/data'
 import { guides } from '@/lib/guides'
+import { getPublishedPosts } from '@/lib/blog'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const guideEntries: MetadataRoute.Sitemap = guides
@@ -11,6 +12,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     }))
+
+  const postEntries: MetadataRoute.Sitemap = getPublishedPosts().map((p) => ({
+    url: `${siteConfig.domain}/blog/${p.slug}`,
+    lastModified: new Date(p.dateModified + 'T00:00:00'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
 
   return [
     {
@@ -26,6 +34,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     ...guideEntries,
+    {
+      url: `${siteConfig.domain}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...postEntries,
     {
       url: `${siteConfig.domain}/work`,
       lastModified: new Date(),

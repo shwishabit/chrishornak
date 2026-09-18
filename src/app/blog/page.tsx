@@ -5,29 +5,29 @@ import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
-import { getPublishedPosts } from '@/lib/writing'
+import { getPublishedPosts } from '@/lib/blog'
 
 export const metadata: Metadata = {
-  title: 'Writing',
+  title: 'Blog',
   description:
     'Essays on how growth actually works. Shopify theme architecture, findability, and the decisions that make a small team move faster than its size.',
   alternates: {
-    canonical: '/writing',
+    canonical: '/blog',
   },
   openGraph: {
-    title: 'Writing by Chris Hornak',
+    title: 'The Chris Hornak blog',
     description:
       'Essays on how growth actually works, and the decisions that make a small team move faster than its size.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Writing by Chris Hornak',
+    title: 'The Chris Hornak blog',
     description:
       'Essays on how growth actually works, and the decisions that make a small team move faster than its size.',
   },
 }
 
-export default function WritingIndexPage() {
+export default function BlogIndexPage() {
   const posts = getPublishedPosts()
 
   return (
@@ -38,7 +38,7 @@ export default function WritingIndexPage() {
       <section className="px-6 pt-32 pb-12 md:px-12 md:pt-40 md:pb-16 lg:px-24">
         <div className="mx-auto max-w-3xl">
           <h1 className="font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl">
-            Writing
+            Blog
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
             Shorter pieces, written when something is worth saying. Separate from the{' '}
@@ -62,7 +62,7 @@ export default function WritingIndexPage() {
               return (
                 <li key={post.slug}>
                   <Link
-                    href={`/writing/${post.slug}`}
+                    href={`/blog/${post.slug}`}
                     className="group block py-8 transition-opacity hover:opacity-90"
                   >
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/60">
@@ -90,14 +90,14 @@ export default function WritingIndexPage() {
           '@graph': [
             {
               '@type': 'Blog',
-              '@id': `${siteConfig.domain}/writing`,
-              name: 'Writing by Chris Hornak',
-              url: `${siteConfig.domain}/writing`,
+              '@id': `${siteConfig.domain}/blog`,
+              name: 'The Chris Hornak blog',
+              url: `${siteConfig.domain}/blog`,
               author: { '@type': 'Person', name: 'Chris Hornak', url: siteConfig.domain },
               blogPost: posts.map((p) => ({
                 '@type': 'BlogPosting',
                 headline: p.title,
-                url: `${siteConfig.domain}/writing/${p.slug}`,
+                url: `${siteConfig.domain}/blog/${p.slug}`,
                 datePublished: `${p.datePublished}T00:00:00Z`,
               })),
             },
@@ -105,7 +105,7 @@ export default function WritingIndexPage() {
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
-                { '@type': 'ListItem', position: 2, name: 'Writing', item: `${siteConfig.domain}/writing` },
+                { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteConfig.domain}/blog` },
               ],
             },
           ],
