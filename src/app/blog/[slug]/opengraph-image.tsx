@@ -49,20 +49,20 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
           </span>
         </div>
 
-        {/* Headline. 92px floor so it stays readable as a phone thumbnail. */}
-        <div style={{ display: 'flex' }}>
-          <span
-            style={{
-              fontSize: '92px',
-              fontWeight: 800,
-              lineHeight: 1.04,
-              letterSpacing: '-0.035em',
-              color: '#f0f0f0',
-              maxWidth: '1000px',
-            }}
-          >
-            {headline}
-          </span>
+        {/* Headline. Satori needs an explicit width on the wrapper to wrap text;
+            without it a long title runs off both edges of the card. */}
+        <div
+          style={{
+            display: 'flex',
+            width: '1056px',
+            fontSize: headline.length > 46 ? '76px' : '92px',
+            fontWeight: 800,
+            lineHeight: 1.06,
+            letterSpacing: '-0.035em',
+            color: '#f0f0f0',
+          }}
+        >
+          {headline}
         </div>
 
         {/* Footer */}

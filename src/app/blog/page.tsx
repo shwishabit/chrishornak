@@ -6,6 +6,12 @@ import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 import { getPublishedPosts } from '@/lib/blog'
+import { ShopifyThemeDiagram } from '@/components/blog/ShopifyThemeDiagram'
+
+// Featured visual per post, so the index shows the same artwork as the piece.
+const postVisualMap: Record<string, React.ComponentType> = {
+  'shopify-theme-small-team': ShopifyThemeDiagram,
+}
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -52,28 +58,36 @@ export default function BlogIndexPage() {
 
       <section className="px-6 pb-24 md:px-12 md:pb-32 lg:px-24">
         <div className="mx-auto max-w-3xl">
-          <ul className="divide-y divide-border/20 border-t border-border/20">
+          <ul className="space-y-16 md:space-y-20">
             {posts.map((post) => {
               const formatted = new Date(post.datePublished + 'T00:00:00').toLocaleDateString(
                 'en-US',
                 { year: 'numeric', month: 'long', day: 'numeric' }
               )
+              const Visual = postVisualMap[post.slug]
 
               return (
                 <li key={post.slug}>
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="group block py-8 transition-opacity hover:opacity-90"
-                  >
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/60">
+                  <Link href={`/blog/${post.slug}`} className="group block">
+                    {Visual && (
+                      <div className="transition-opacity duration-300 group-hover:opacity-90">
+                        <Visual />
+                      </div>
+                    )}
+
+                    <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-muted-foreground/60">
                       <time dateTime={post.datePublished}>{formatted}</time>
                       <span>&middot;</span>
                       <span>{post.readingMinutes} min read</span>
                     </div>
-                    <h2 className="mt-3 font-heading text-2xl font-bold leading-snug tracking-tight transition-colors group-hover:text-primary md:text-3xl">
+
+                    <h2 className="mt-3 font-heading text-2xl font-bold leading-snug tracking-tight transition-colors group-hover:text-primary md:text-[2rem]">
                       {post.title}
                     </h2>
-                    <p className="mt-3 leading-relaxed text-muted-foreground">{post.teaser}</p>
+
+                    <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+                      {post.teaser}
+                    </p>
                   </Link>
                 </li>
               )

@@ -16,14 +16,13 @@ export function ShopifyThemePost() {
   return (
     <>
       <p>
-        Two people can ship a change to their Shopify store this afternoon that used to take a sprint.
+        Your Shopify theme decides how fast your team can change the store. Two people can ship a
+        change this afternoon that used to take a sprint, but only if the theme was built to be read.
       </p>
 
-      <p>Some two-person stores can. Many can&apos;t.</p>
+      <p>Some two-person stores can do that. Many can&apos;t.</p>
 
-      <p>
-        The difference isn&apos;t budget and it isn&apos;t talent. It&apos;s whether the theme can be read.
-      </p>
+      <p>The difference isn&apos;t budget and it isn&apos;t talent. It&apos;s structural.</p>
 
       <h2 id="what-actually-changed">What actually changed</h2>
 
@@ -85,31 +84,32 @@ export function ShopifyThemePost() {
 
       <p>4 traits. You can check all 4 this afternoon, and none of them need you to read code.</p>
 
-      <p>
-        <strong>Sections named for what they do.</strong> A section called{' '}
-        <code>product-hero</code> tells you where the buy box lives. One called{' '}
-        <code>section-7</code> tells you to go ask someone. Names are the index.
-      </p>
+      <ul>
+        <li>
+          <strong>Sections named for what they do.</strong> A section called <code>product-hero</code>{' '}
+          tells you where the buy box lives. One called <code>section-7</code> tells you to go ask
+          someone. Names are the index.
+        </li>
+        <li>
+          <strong>Values that live in settings.</strong> Your price, your badge text, your guarantee
+          copy. If those sit in the theme editor, anyone can change them. If they&apos;re written into
+          the code, every edit is a ticket.
+        </li>
+        <li>
+          <strong>Content in fields, not baked into pictures.</strong> A price burned into a hero JPG
+          can&apos;t be updated, translated or tested, and can&apos;t be read by anything. It goes
+          stale the day you change your pricing, and it goes stale silently.
+        </li>
+        <li>
+          <strong>One source for every number.</strong> Your star rating, your bundle value, your
+          per-serving price. When each lives in one place, changing it is 1 job. Typed into 4 sections
+          by hand, it&apos;s 4 jobs and you&apos;ll miss one.
+        </li>
+      </ul>
 
       <p>
-        <strong>Values that live in settings.</strong> Your price, your badge text, your guarantee
-        copy. If those sit in the theme editor, anyone can change them. If they&apos;re written into
-        the code, every edit is a ticket.
-      </p>
-
-      <p>
-        <strong>Content in fields, not baked into pictures.</strong> This is the one that costs the
-        most and gets noticed the least. A price burned into a hero JPG can&apos;t be updated,
-        can&apos;t be translated, can&apos;t be tested, and can&apos;t be read by anything. It also
-        goes stale the day you change your pricing, and it goes stale silently.
-      </p>
-
-      <p>
-        <strong>One source for every number.</strong> Your star rating, your bundle value, your
-        per-serving price. When each of those lives in one place, changing it is 1 job. When
-        they&apos;re typed into 4 sections by hand, it&apos;s 4 jobs and you&apos;ll miss one. This is
-        also the fastest thing to check from the outside, which is part of why I built the{' '}
-        <Link href="/audit">free findability grader</Link> the way I did.
+        That last one is also the fastest thing to check from the outside, which is part of why I
+        built the <Link href="/audit">free findability grader</Link> the way I did.
       </p>
 
       <p>
@@ -137,17 +137,18 @@ export function ShopifyThemePost() {
         will.
       </p>
 
-      <h2 id="how-i-ended-up-here">How I ended up doing this work</h2>
-
-      <p>I was hired at gammalighttherapy.com to write content and do SEO.</p>
-
-      <p>I ended up in the theme.</p>
+      <h2 id="how-i-ended-up-here">What this looks like on a real store</h2>
 
       <p>
-        Not because anyone planned it. Because the things I was being asked to fix kept turning out to
-        be theme problems wearing content clothes. A page that couldn&apos;t rank because the
-        structure was wrong. Copy nobody could change without a developer. A layout making the
-        argument in the wrong order.
+        I&apos;ve been doing this work for a long time, across a lot of stores. One recent engagement
+        shows the pattern cleanly.
+      </p>
+
+      <p>
+        At gammalighttherapy.com I came in for content and SEO. I ended up in the theme, because the
+        things I was asked to fix kept turning out to be theme problems wearing content clothes. A
+        page that couldn&apos;t rank because the structure was wrong. Copy nobody could change without
+        a developer. A layout making the argument in the wrong order.
       </p>
 
       <p>You can&apos;t fix any of that from the outside.</p>
@@ -159,9 +160,9 @@ export function ShopifyThemePost() {
       </p>
 
       <p>
-        Somewhere in there the job stopped being content strategy and became closer to fractional UX
-        engineering. Custom sections, template work, product pages, with the content and search side
-        still mine.
+        That engagement moved from content strategy into fractional UX engineering. Custom sections,
+        template work, product pages, with the content and search side still mine. It isn&apos;t the
+        first time a project has gone that way, and it usually goes that way for the same reason.
       </p>
 
       <p>Here&apos;s the part that matters to you rather than to me.</p>
