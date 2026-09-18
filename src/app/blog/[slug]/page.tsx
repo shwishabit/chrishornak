@@ -11,13 +11,17 @@ import { posts, getPostBySlug } from '@/lib/blog'
 // Post content components — add new imports as pieces are published
 import { ShopifyThemePost } from '@/components/blog/ShopifyThemePost'
 import { ShopifyThemeDiagram } from '@/components/blog/ShopifyThemeDiagram'
+import { ProductPageAuditPost } from '@/components/blog/ProductPageAuditPost'
+import { ProductPageAuditDiagram } from '@/components/blog/ProductPageAuditDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemePost,
+  'product-page-audit': ProductPageAuditPost,
 }
 
 const postHeroVisualMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemeDiagram,
+  'product-page-audit': ProductPageAuditDiagram,
 }
 
 // Table of contents per post — ids match the h2 anchors in the content
@@ -27,8 +31,17 @@ const postTocMap: Record<string, { id: string; label: string }[]> = {
     { id: 'the-condition', label: 'The condition nobody mentions' },
     { id: 'what-makes-a-theme-easy-to-change', label: 'What makes a Shopify theme easy to change?' },
     { id: 'the-test', label: 'The test worth running today' },
-    { id: 'how-i-ended-up-here', label: 'How I ended up doing this work' },
+    { id: 'how-i-ended-up-here', label: 'What this looks like on a real store' },
     { id: 'bigger-team-or-better-theme', label: 'Do you need a bigger team, or a better theme?' },
+    { id: 'one-question', label: 'One question' },
+  ],
+  'product-page-audit': [
+    { id: 'what-it-looks-like', label: 'What does it look like when a page argues with itself?' },
+    { id: 'worse-than-a-gap', label: 'Why is a contradiction worse than a gap?' },
+    { id: 'where-they-hide', label: 'Where do contradictions usually hide?' },
+    { id: 'how-to-run-it', label: 'How do you run a contradiction audit?' },
+    { id: 'one-source', label: 'The fix is one source, not a better sentence' },
+    { id: 'wrong-tool', label: 'When is a contradiction audit the wrong tool?' },
     { id: 'one-question', label: 'One question' },
   ],
 }
@@ -129,7 +142,7 @@ export default async function BlogPostPage({
               },
               datePublished: `${post.datePublished}T00:00:00Z`,
               dateModified: `${post.dateModified}T00:00:00Z`,
-              wordCount: 1003,
+              wordCount: post.wordCount,
               keywords: post.keywords.join(', '),
               mainEntityOfPage: {
                 '@type': 'WebPage',

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="sheetTitle sheetDesc">
+  <title id="sheetTitle">A contradiction audit worksheet for one product page</title>
+  <desc id="sheetDesc">Claims from one product page sorted by subject. Stock has two versions, sold out and ships same day, so it is flagged. Guarantee has two versions, 30 days and 60 days, so it is flagged. Price has one version, 49 dollars, so it passes.</desc>
+
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#143d35"/>
+      <stop offset="55%" stop-color="#10322b"/>
+      <stop offset="100%" stop-color="#0c2822"/>
+    </linearGradient>
+    <radialGradient id="vig3" cx="50%" cy="45%" r="75%">
+      <stop offset="60%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.42"/>
+    </radialGradient>
+    <filter id="grain3">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg3)"/>
+  <rect width="1200" height="630" filter="url(#grain3)" opacity="0.04"/>
+  <rect width="1200" height="630" fill="url(#vig3)"/>
+
+  <text x="96" y="112" fill="#2dd4a8" font-family="system-ui, sans-serif" font-size="19" font-weight="700" letter-spacing="3.4">THE WORKSHEET</text>
+  <text x="96" y="166" fill="#ffffff" font-family="system-ui, sans-serif" font-size="44" font-weight="800" letter-spacing="-1">Sort every claim by subject.</text>
+  <text x="96" y="206" fill="#ffffff" fill-opacity="0.55" font-family="system-ui, sans-serif" font-size="22">Two versions of one subject is a finding.</text>
+
+  <!-- column labels -->
+  <text x="128" y="268" fill="#ffffff" fill-opacity="0.45" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">SUBJECT</text>
+  <text x="360" y="268" fill="#ffffff" fill-opacity="0.45" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">WHAT THE PAGE SAYS</text>
+  <text x="1072" y="268" text-anchor="end" fill="#ffffff" fill-opacity="0.45" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">RESULT</text>
+
+  <!-- Row 1: stock -->
+  <rect x="96" y="290" width="1008" height="84" rx="12" fill="#f59e6b" fill-opacity="0.1" stroke="#f59e6b" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="128" y="341" fill="#ffffff" font-family="system-ui, sans-serif" font-size="24" font-weight="700">Stock</text>
+  <text x="360" y="325" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">Banner: &#8220;We&#8217;re sold out&#8221;</text>
+  <text x="360" y="356" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">Hero: &#8220;Ships same day&#8221;</text>
+  <text x="1072" y="341" text-anchor="end" fill="#f59e6b" font-family="system-ui, sans-serif" font-size="22" font-weight="800">2 versions</text>
+
+  <!-- Row 2: guarantee -->
+  <rect x="96" y="388" width="1008" height="84" rx="12" fill="#f59e6b" fill-opacity="0.1" stroke="#f59e6b" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="128" y="439" fill="#ffffff" font-family="system-ui, sans-serif" font-size="24" font-weight="700">Guarantee</text>
+  <text x="360" y="423" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">Hero: 30-day guarantee</text>
+  <text x="360" y="454" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">FAQ: 60 days</text>
+  <text x="1072" y="439" text-anchor="end" fill="#f59e6b" font-family="system-ui, sans-serif" font-size="22" font-weight="800">2 versions</text>
+
+  <!-- Row 3: price -->
+  <rect x="96" y="486" width="1008" height="84" rx="12" fill="#2dd4a8" fill-opacity="0.1" stroke="#2dd4a8" stroke-opacity="0.45" stroke-width="1"/>
+  <text x="128" y="537" fill="#ffffff" font-family="system-ui, sans-serif" font-size="24" font-weight="700">Price</text>
+  <text x="360" y="521" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">Hero: $49</text>
+  <text x="360" y="552" fill="#ffffff" fill-opacity="0.85" font-family="system-ui, sans-serif" font-size="20">Cart: $49</text>
+  <text x="1072" y="537" text-anchor="end" fill="#2dd4a8" font-family="system-ui, sans-serif" font-size="22" font-weight="800">Agrees</text>
+</svg>

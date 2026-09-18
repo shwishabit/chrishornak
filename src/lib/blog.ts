@@ -25,6 +25,8 @@ export interface Post {
   published: boolean
   datePublished: string
   dateModified: string
+  /** Body words, counted from the rendered post. Feeds BlogPosting.wordCount. */
+  wordCount: number
   /** Rounded up from word count at 225 wpm. */
   readingMinutes: number
   faq: PostFaq[]
@@ -50,6 +52,7 @@ export const posts: Post[] = [
     published: true,
     datePublished: '2026-09-17',
     dateModified: '2026-09-17',
+    wordCount: 1003,
     readingMinutes: 5,
     faq: [
       {
@@ -74,6 +77,50 @@ export const posts: Post[] = [
       },
     ],
   },
+  {
+    slug: 'product-page-audit',
+    title: 'Product page audit: is your page arguing with itself?',
+    teaser:
+      'Most audits hunt for what is missing. The costlier problem is two lines on the same page that disagree, and it is usually two correct edits made on different days.',
+    targetKeyword: 'product page audit',
+    metaDescription:
+      "A product page audit usually hunts for gaps. The costlier problem is two lines that disagree. Here's how to find those contradictions in about 30 minutes.",
+    keywords: [
+      'product page audit',
+      'contradiction audit',
+      'product page consistency',
+      'Google Merchant Center mismatched availability',
+      'Shopify metafields',
+      'ecommerce conversion',
+    ],
+    published: true,
+    datePublished: '2026-09-17',
+    dateModified: '2026-09-17',
+    wordCount: 985,
+    readingMinutes: 5,
+    faq: [
+      {
+        question: 'What is a contradiction audit on a product page?',
+        answer:
+          'It is a product page audit that looks for claims made twice in different versions, rather than for missing information. You copy every factual claim on the page into one list, sort the list by subject, and flag any subject with two versions. Stock and shipping, price, ratings, guarantees and dates are where contradictions usually hide.',
+      },
+      {
+        question: 'Why is a contradiction worse than missing information?',
+        answer:
+          'A gap sends the reader looking for the answer. A contradiction makes them doubt every other claim on the page, because they cannot tell which version is true. Machines are stricter still. Google Merchant Center disapproves products whose landing page availability does not match the product feed, and Google Search requires structured data to be a true representation of the page content.',
+      },
+      {
+        question: 'How long does a contradiction audit take?',
+        answer:
+          'About 30 minutes for a single product page, with a phone and a blank document. Past a few dozen products it stops scaling by hand, and you want the product issues Merchant Center reports plus a crawler instead.',
+      },
+      {
+        question: 'How do I stop a Shopify product page contradicting itself?',
+        answer:
+          'Give each fact one home. Store values like a guarantee length in a metafield that every section reads from, so a change happens once. For stock, wrap shipping promises in a check against the Liquid product.available property, which returns true when at least one variant is in stock, so the line disappears when you sell out.',
+      },
+    ],
+  },
 ]
 
 export function getPostBySlug(slug: string): Post | undefined {
@@ -83,5 +130,9 @@ export function getPostBySlug(slug: string): Post | undefined {
 export function getPublishedPosts(): Post[] {
   return posts
     .filter((p) => p.published)
-    .sort((a, b) => b.datePublished.localeCompare(a.datePublished))
+    // Same-day posts: the one added later to `posts` is the newer one.
+    .sort(
+      (a, b) =>
+        b.datePublished.localeCompare(a.datePublished) || posts.indexOf(b) - posts.indexOf(a)
+    )
 }
