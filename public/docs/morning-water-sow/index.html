@@ -306,21 +306,22 @@
         .cmp { width: 100%; border-collapse: separate; border-spacing: 0; }
         .cmp td { vertical-align: top; }
         .cmp .lab {
-            font-size: 11px; color: #3d4644; line-height: 1.4;
-            padding: 4px 18px 4px 0; border-bottom: 1px solid #edf0f1;
+            font-size: 11px; color: #3d4644; line-height: 1.32;
+            padding: 3px 16px 3px 0; border-bottom: 1px solid #edf0f1;
         }
         .cmp .lab b { color: #171c1b; font-weight: 600; }
         .cmp .cell {
-            width: 130px; text-align: center; padding: 4px 8px;
+            width: 108px; text-align: center; padding: 4px 6px;
             border-bottom: 1px solid #edf0f1;
         }
         .cmp .cell.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
         .yes { color: var(--teal); font-size: 15px; font-weight: 800; line-height: 1; }
         .no { color: #d3d8da; font-size: 15px; line-height: 1; }
+        .part { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 7px; letter-spacing: .04em; color: #0d6b53; line-height: 1.2; }
 
         .cmp .hd { padding: 0 0 12px; vertical-align: bottom; }
-        .cmp .hd-cell { width: 130px; padding: 0; vertical-align: bottom; }
-        .hd-box { padding: 12px 12px 13px; border-radius: 7px 7px 0 0; text-align: center; }
+        .cmp .hd-cell { width: 108px; padding: 0; vertical-align: bottom; }
+        .hd-box { padding: 10px 8px 10px; border-radius: 7px 7px 0 0; text-align: center; }
         .hd-box.b { background: #f4f5f6; border: 1px solid #e6e9ea; border-bottom: 0; }
         .hd-box.a { background: var(--dark); border: 1px solid var(--dark); border-bottom: 0; }
         .hd-name {
@@ -345,7 +346,7 @@
         .grp td {
             font-family: 'Sora', sans-serif; font-weight: 800; font-size: 7.5px;
             letter-spacing: 0.18em; text-transform: uppercase; color: #8e9997;
-            padding: 11px 0 4px; border-bottom: 1px solid #dfe4e5;
+            padding: 9px 0 4px; border-bottom: 1px solid #dfe4e5;
         }
         .grp td.hl { background: #f4fcf9; border-left: 1px solid #d6f2e8; border-right: 1px solid #d6f2e8; }
         .cmp tr.last .cell.hl { border-bottom: 1px solid #d6f2e8; border-radius: 0 0 7px 7px; }
@@ -702,15 +703,23 @@
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-8 shrink-0">
+            <div class="px-[0.72in] pt-6 shrink-0">
                 <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-1">
-                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Two ways to do this</h2>
+                    <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Three ways to do this</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Fixed fee &middot; 50% up front, 50% due on completion</span>
                 </div>
 
                 <table class="cmp">
                     <tr>
                         <td class="hd"></td>
+                        <td class="hd-cell">
+                            <div class="hd-box b">
+                                <p class="hd-name">Live by<br>the 25th</p>
+                                <p class="hd-price">$1,500</p>
+                                <p class="hd-role">Leaner plan, one week</p>
+                                <p class="hd-line">For the new date</p>
+                            </div>
+                        </td>
                         <td class="hd-cell">
                             <div class="hd-box b">
                                 <p class="hd-name">The page</p>
@@ -729,32 +738,33 @@
                         </td>
                     </tr>
 
-                    <tr class="grp"><td>The rebuild, in full</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab"><b>The new buy box, written in Liquid</b> in your <span class="font-mono text-[9.5px]">product-hero</span> section, against your Skio plans</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Page and gallery reordered</b> in your own section settings, ticker cut, rendering faults fixed</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Every number on the page reconciled:</b> kit value, star rating, hero claims</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Your two placeholder testimonials replaced</b> with real ones from your own review export</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Sold out and in stock</b> become a switch you flip</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Tested, published and handed over</b> as patterns your team can reuse, plus two days of aftercare</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="grp"><td>The rebuild, in full</td><td></td><td></td><td class="hl"></td></tr>
+                    <tr><td class="lab"><b>The new buy box, written in Liquid</b> in your <span class="font-mono text-[9.5px]">product-hero</span> section, against your Skio plans</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Page and gallery reordered</b> in your own section settings, ticker cut, rendering faults fixed</td><td class="cell"><span class="part">Faults only</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Every number on the page reconciled:</b> kit value, star rating, hero claims</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Your two placeholder testimonials replaced</b> with real ones from your own review export</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Sold out and in stock</b> become a switch you flip</td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Tested, published and handed over</b> as patterns your team can reuse, plus two days of aftercare</td><td class="cell"><span class="part">Aftercare only</span></td><td class="cell"><span class="yes">&#10003;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
 
-                    <tr class="grp"><td>What nobody has picked up yet</td><td></td><td class="hl"></td></tr>
-                    <tr><td class="lab"><b>The 1.5 litre section, designed and built,</b> the way I wireframed it on page one</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>Analytics and conversion tracking configured,</b> with a baseline taken before launch</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>SEO audit and Search Console review,</b> so the rebuild does not cost you rankings</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr><td class="lab"><b>AEO and GEO pass,</b> so the page reads properly to AI assistants</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
-                    <tr class="last"><td class="lab"><b>Buyer journey consulting,</b> from the ad through to the second month</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="grp"><td>What nobody has picked up yet</td><td></td><td></td><td class="hl"></td></tr>
+                    <tr><td class="lab"><b>The 1.5 litre section, designed and built,</b> the way I wireframed it on page one</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>Analytics and conversion tracking configured,</b> with a baseline taken before launch</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>SEO audit and Search Console review,</b> so the rebuild does not cost you rankings</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr><td class="lab"><b>AEO and GEO pass,</b> so the page reads properly to AI assistants</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
+                    <tr class="last"><td class="lab"><b>Buyer journey consulting,</b> from the ad through to the second month</td><td class="cell"><span class="no">&ndash;</span></td><td class="cell"><span class="no">&ndash;</span></td><td class="cell hl"><span class="yes">&#10003;</span></td></tr>
                 </table>
 
-                <div class="two-col grid grid-cols-2 gap-x-10 mt-5 pt-3.5 border-t border-neutral-200">
+                <div class="two-col grid grid-cols-3 gap-x-6 mt-4 pt-3 border-t border-neutral-200">
+                    <p class="text-[10.5px] text-neutral-500 leading-relaxed"><strong class="text-neutral-800">Best for</strong> your new date. The leaner plan, live Friday 25 Sept. The rest can wait.</p>
                     <p class="text-[10.5px] text-neutral-500 leading-relaxed"><strong class="text-neutral-800">Best for</strong> a team that knows what needs doing and wants it built properly. The whole request, live on the 1st.</p>
-                    <p class="text-[10.5px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">Best for</strong> a team that wants someone under the hood, owning the parts nobody has picked up. <strong class="text-neutral-900">That work is real, and it has no owner.</strong></p>
+                    <p class="text-[10.5px] text-neutral-700 leading-relaxed"><strong class="text-neutral-900">Best for</strong> a team that wants someone owning the parts nobody has picked up. <strong class="text-neutral-900">That work is real, and it has no owner.</strong></p>
                 </div>
-                <p class="text-[10px] text-neutral-500 leading-relaxed mt-3">
-                    <strong class="text-neutral-800">Neither option includes</strong> new photography, the 5-stick trial SKU, other templates, or Skio plan changes.
+                <p class="text-[10px] text-neutral-500 leading-relaxed mt-2">
+                    <strong class="text-neutral-800">No option includes</strong> new photography, the 5-stick trial SKU, other templates, or Skio plan changes.
                 </p>
             </div>
 
-            <div class="px-[0.72in] pt-5 shrink-0">
+            <div class="px-[0.72in] pt-4 shrink-0">
                 <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2 pb-2.5">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">I already ran the findability check on you</h2>
                     <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">chrishornak.com/audit?url=morningwater.co</span>
@@ -775,13 +785,13 @@
                             <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">Heading levels skip.</strong> Harder for an assistant to outline the page.</p>
                             <p class="text-[10.5px] text-neutral-700 leading-snug"><strong class="text-neutral-900">robots.txt blocks some CSS and JavaScript.</strong> Crawlers see less than a visitor does.</p>
                         </div>
-                        <p class="text-[10px] text-neutral-500 leading-relaxed mt-2.5">Hours, not days, and I am in those files anyway. <strong class="text-neutral-800">They come with the larger option.</strong></p>
+                        <p class="text-[10px] text-neutral-500 leading-relaxed mt-1.5">Hours, not days, and I am in those files anyway. <strong class="text-neutral-800">They come with the larger option.</strong></p>
                     </div>
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-4 shrink-0">
-                <div class="rounded-[5px] px-5 py-3" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
+            <div class="px-[0.72in] pt-3 shrink-0">
+                <div class="rounded-[5px] px-5 py-2.5" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
                     <p class="text-[12.5px] text-neutral-800 leading-relaxed">
                         <strong class="text-neutral-900">Reply with the option you want and I will send the agreement and the first invoice the same day.</strong>
                     </p>
