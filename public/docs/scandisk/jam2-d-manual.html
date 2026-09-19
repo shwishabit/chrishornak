@@ -46,7 +46,7 @@
     <h2>The story</h2>
     <p>Press START on the title and this comes up before the rules. Five lines, one at a time, all of them on screen inside two seconds. A press while they are still arriving drops the rest in at once — it takes a second press to move on, so mashing START never skips the screen.</p>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/story-CzZ-KTk6.png" alt="The story screen: one blank tape and no second one, the copy has to finish tonight, something red is eating the drive, when the drive is full it is over, it reads fastest when files match." width="540" height="492"><figcaption>The last line is the game's one trick, told as fiction before any rule explains it.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/story-C2DlkF9g.png" alt="The story screen: one blank tape and no second one, the copy has to finish tonight, something red is eating the drive, when the drive is full it is over, it reads fastest when files match." width="540" height="492"><figcaption>The last line is the game's one trick, told as fiction before any rule explains it.</figcaption></figure>
     </div>
   </section>
 
@@ -62,17 +62,20 @@
     </ol>
     <div class="tip">The whole game is one question, every turn: <strong>cash the chain in now, or spend a card to protect it for one more turn?</strong></div>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/howto-D4I_ue6e.png" alt="The how-to screen listing the six rules." width="540" height="492"><figcaption>All six rules on one screen, before you play.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/howto-CF26gQAZ.png" alt="The how-to screen listing the six rules." width="540" height="492"><figcaption>All six rules on one screen, before you play.</figcaption></figure>
       <figure><img src="/docs/scandisk/assets/mid-DrPMe1QJ.png" alt="Sector 2, chain x3 on PIC, the virus's next card is PIC 2." width="540" height="492"><figcaption>A real hand. Chain <span class="g">x3</span> on PIC — and the virus's next card is <span class="r">PIC</span>. Save the PIC now for +8, or block with the EXE and keep the chain.</figcaption></figure>
     </div>
   </section>
 
   <section id="start">
-    <h2>The first ten seconds</h2>
-    <p>Title → <kbd>Enter</kbd> → the story → <kbd>Enter</kbd> → the six rules → <kbd>Enter</kbd> → <strong>SAFE MODE</strong>, the teaching board. One idea only: <em>same type in a row = bigger chain</em>. The sign is on screen the whole time, the buttons are on the pad, and the virus in SAFE MODE has no file type, so it can never break your chain while you learn it. Nine bytes, three turns. You cannot get there without chaining.</p>
+    <h2>The first ten seconds: the game plays itself first</h2>
+    <p>Title → <kbd>Enter</kbd> → the story → <kbd>Enter</kbd> → the six rules → <kbd>Enter</kbd> → <strong>SAFE MODE</strong>, the teaching board. <strong>You do not play it yet. The game plays it for you.</strong></p>
+    <p>The bot that runs our sim takes the board and plays it slowly, on screen, saying one plain thing per move: which card, and <em>why</em>. Then it stops on the card it did <em>not</em> play and tells you why it kept it — because that is the move a card game never shows you. "I keep the PIC, but not to save it. TXT is next from the virus. A shield." When the demo is done, the <strong>same board with the same hand</strong> is handed back to you. (team call, round 2.)</p>
+    <p>Press <em>any</em> button during the demo to take the board over mid-move — the screen says YOUR TURN. Press <kbd>Enter</kbd> to skip the whole demo and get the board fresh.</p>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/gym-CqzjefbD.png" alt="SAFE MODE: two TXT cards framed green, the sign reads SAME TYPE IN A ROW = BIGGER CHAIN." width="540" height="492"><figcaption>SAFE MODE. A <span class="g">green frame</span> means that card carries on your chain.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/title-DprjdM1Z.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/demo1-mwPNMeK0.png" alt="The demo's first move: the bot points at a TXT card and the line reads I START A CHAIN WITH TXT." width="540" height="492"><figcaption>Beat one. The bot names the move and the reason, one idea per line.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/gym-DHukaXyd.png" alt="The demo mid-board: a green TXT card worth plus 8 sits next to a PIC card, the virus's next card is TXT, and the line reads the red card is TXT so is my chain, I spend this one as a shield instead." width="540" height="492"><figcaption>The shield beat. The TXT card would pay <span class="g">+8</span> — and the bot spends the PIC instead, because the virus's card is TXT and would take the chain. This is the move nobody works out alone, so the demo says it out loud with the card lit.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/title-Cefa2ubu.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
     </div>
   </section>
 
@@ -87,8 +90,8 @@
       <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
     </table>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/pad-phone-MBJ9BlGA.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/pad-pc-DXhdkjve.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-phone-Bafd4JX0.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-pc-DqUxj_ry.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
     </div>
   </section>
 
@@ -112,8 +115,12 @@
       <li><strong>Blocking does not touch the chain</strong> — only a save moves it.</li>
       <li><strong>The virus card is fully derived</strong> from the sector and the round, so the two cards on screen are never a lie.</li>
       <li><strong>SAFE MODE never ends a run.</strong> Fail it and it restarts.</li>
+      <li><strong>Round 2: the hands-on gym was deleted and replaced by the self-playing demo.</strong> You watch the bot play the teaching board, then get the same board.</li>
+      <li><strong>Round 2: SAFE MODE's virus now HAS a file type</strong>, on a fixed four-card script. It used to be typeless so a beginner could not lose a chain — but a typeless virus also makes the shield idea invisible, and the shield is the one thing nobody works out alone. A real threat is what the demo points at. This <em>replaced</em> the old rule, it did not stack on it.</li>
+      <li><strong>Round 2: one bot brain.</strong> The bot that teaches you on screen is the same file the sim measures (<code>src/jam2d/bot.ts</code>). If they drifted apart, the demo would be a lie.</li>
     </ul>
-    <p>What we cut on the way: an "eats your hand" virus card (replaced by "breaks your chain"), a discard-and-reshuffle deck, special card powers, an END TURN button, and a fourth file type.</p>
+    <p>What we cut on the way: an "eats your hand" virus card (replaced by "breaks your chain"), a discard-and-reshuffle deck, special card powers, an END TURN button, a fourth file type, the hands-on gym, and the typeless SAFE MODE virus.</p>
+    <p><strong>Measured and thrown away (round 2):</strong> we raised every sector's opening flood to force the save-or-block call earlier. The win rate fell from 9/30 to 2/30 and the strict real-choice rate barely moved (42% → 45%). It made the game harder, not deeper, so we reverted it. The round-1 numbers stand.</p>
     <a class="back" href="jam2-d.html">← Back to the game</a>
   </section>
 </main>

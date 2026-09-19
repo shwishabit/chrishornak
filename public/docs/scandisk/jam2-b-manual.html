@@ -37,7 +37,7 @@
 You save what you can.</p>
 <p><a href="jam2-b.html">▶ Play it</a></p>
 
-<figure><img src="/docs/scandisk/assets/story-aH4WeKj9.png" alt="The story screen">
+<figure><img src="/docs/scandisk/assets/story-BtqN0L3Z.png" alt="The story screen">
   <figcaption>The story screen, between the title and the rules. Four lines, one every 0.45 s, all up in about
   1.4 seconds. A press while they are still arriving drops the rest in at once; the next press moves on, so
   mashing START never skips it.</figcaption></figure>
@@ -52,32 +52,50 @@ You save what you can.</p>
   <li><b>The end.</b> Files surface one at a time. When the last of the eight is saved or eaten, the board ends. Save 4 to keep the sector.</li>
 </ol>
 
-<h2>The first ten seconds</h2>
-<p>The gym board opens with one worker, one file and one slow patch of rot in the far corner.
-The sign under the board says: <b>WALK ONTO THE FILE. HE COPIES IT, THEN CARRIES IT TO P BY HIMSELF.</b>
-You move the cursor onto the file and press X. That is the whole game learned. Then the real drive starts.</p>
+<h2>The tutorial plays itself</h2>
+<p>Round 2 cut the hands-on gym. In its place, <b>the bot plays the teaching board while you watch</b> — the
+same bot that plays the 30 boards in the sim below, so you are watching a real game played well, not a
+scripted cartoon.</p>
+<ol>
+  <li>Four opening lines name the pieces: the port, red's next cell, your men.</li>
+  <li>Then it plays. One line at the bottom says what it is doing and why, in plain words. One idea per line.</li>
+  <li><b>Any button takes the board over right where it stands.</b> <b>START</b> skips the lesson for good.</li>
+  <li>When it has saved two files it stops and hands you the <b>same board</b>, fresh, with a card: YOUR TURN.</li>
+</ol>
+<p class="note"><b>The clock.</b> SALVAGE is the only real-time game in the jam, so the demo owns the clock two
+ways <b>(team call)</b>. It runs the world at <b>0.45×</b> speed, and every narrated beat <b>freezes the world</b>
+while the line is read — about 2 seconds. An order line is posted <b>before</b> the order is given, so the words
+are never behind the picture. Nothing scrolls, nothing flashes, and nothing happens while you are reading.</p>
 
 <div class="row">
-  <figure><img src="/docs/scandisk/assets/title-ChYyUuUS.png" alt="Title screen"><figcaption>Title.</figcaption></figure>
-  <figure><img src="/docs/scandisk/assets/howto-B_kd3sIk.png" alt="How to play screen"><figcaption>The six rules, one screen, on the way in.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/demo-CEn-0OXT.png" alt="The self-playing tutorial mid-lesson">
+    <figcaption>The demo. The bot has walked a man onto MOM.WAV; the line says why he is standing still.
+    The HUD says how to take over.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/handover-Crnka6Id.png" alt="The handover card">
+    <figcaption>The handover. Same board, reset, no hurry.</figcaption></figure>
 </div>
 
-<figure><img src="/docs/scandisk/assets/gym-CDB6Fobt.png" alt="The teaching gym">
-  <figcaption>The gym. One worker (blue, white frame = picked), one file, one patch of rot.
-  The hollow red square is the cell red takes next.</figcaption></figure>
+<h2>The teaching board</h2>
+<p>Two men, four files, one rot mass close enough that <b>both</b> verbs come up: carry one out, and stand on the
+cell red wants. Save 2 of 4. It is a real small game, not a sign. <b>(team call)</b></p>
 
-<figure><img src="/docs/scandisk/assets/mid-CftP5qGY.png" alt="A real sector mid-game">
+<div class="row">
+  <figure><img src="/docs/scandisk/assets/title-DQ34K5FP.png" alt="Title screen"><figcaption>Title.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/howto-B1C6fsnx.png" alt="How to play screen"><figcaption>The six rules, one screen, on the way in.</figcaption></figure>
+</div>
+
+<figure><img src="/docs/scandisk/assets/mid-DY3ab3pc.png" alt="A real sector mid-game">
   <figcaption>A real sector. <span class="green">P</span> is the port. Green pages are files.
   Faint blue dots are each worker's route. The pips over a worker's head are his three bites.
   The bar at the top right fills to red's next move.</figcaption></figure>
 
-<figure><img src="/docs/scandisk/assets/end-D6Kvx_3O.png" alt="The end of a sector">
+<figure><img src="/docs/scandisk/assets/end-DZisapPw.png" alt="The end of a sector">
   <figcaption>The ending. Every file is settled — saved in blue, eaten in red. No mop-up: nothing is left to chase.</figcaption></figure>
 
 <h2>The pad</h2>
 <div class="row">
-  <figure><img src="/docs/scandisk/assets/pad-pc-CaVc3AyC.png" alt="The pad on a PC screen"><figcaption>PC: keys light the same buttons.</figcaption></figure>
-  <figure><img src="/docs/scandisk/assets/pad-phone-B0o-IzKm.png" alt="The pad at 390px phone width"><figcaption>Phone (390px): tap the pad.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/pad-pc-BAsnq5Wp.png" alt="The pad on a PC screen"><figcaption>PC: keys light the same buttons.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/pad-phone-BD_iAune.png" alt="The pad at 390px phone width"><figcaption>Phone (390px): tap the pad.</figcaption></figure>
 </div>
 <table>
   <tr><td><b>D-pad</b></td><td>move the cursor (arrows or WASD)</td></tr>
@@ -90,12 +108,19 @@ You move the cursor onto the file and press X. That is the whole game learned. T
 <h2>The one idea</h2>
 <p>A worker is either a <b>carrier</b> or a <b>wall</b>, never both. You only have four of them, so every rescue
 opens a hole and every hole you plug is a file you are not saving. That single trade-off is the whole game.</p>
+<p><b>Round 2 found that the wall half was a lie.</b> The sim counted the bot's block orders for the first time:
+<b>0 in 30 boards</b>. A carry always outscored a block, so nobody ever held a line — the trade-off was a
+sentence in this manual, not a decision. The rules were fine; the bot was pricing the verb wrong. A bite
+cancels red's <i>whole</i> push for that tick, so a block is now priced by the cells it cancels, and a man can
+get set on the wider rot front instead of only on the one cell red takes next. Blocks per board went
+<b>0.00 → 2.27</b>, files saved went <b>3.17 → 3.30</b>, and a real choice went <b>54% → 70%</b>.
+On screen, a man who is about to be bitten now wears two pale-blue brackets: <b>he is a wall this tick</b>.</p>
 
 <h2>What the bots say</h2>
-<p class="note">30 boards, real time stepped at 1/60, a simple rescue bot:
+<p class="note">30 boards, real time stepped at 1/60, the same bot that plays the tutorial on screen:
 <b>29 of 30 ended cleanly inside 3:00–6:00</b> · <b>0 endless boards</b> · length 3:06 / 3:27 / 4:16 (p10 / median / p90) ·
-a real choice (2 or more orders worth giving) on <b>54%</b> of the bot's decisions.
-Re-run with <code>npm run sim-jam2b</code>.</p>
+sector kept 13/30 · saved 3.30 of 8 · a real choice (2 or more orders worth giving) on <b>70%</b> of decisions ·
+block orders <b>2.27 per board</b>. Re-run with <code>npm run sim-jam2b</code>.</p>
 
 <h2>Team calls (Chris to rule on)</h2>
 <table>
@@ -106,6 +131,9 @@ Re-run with <code>npm run sim-jam2b</code>.</p>
   <tr><td><b>Save 4 of 8</b></td><td>The keep line. The greedy bot averages 3.2, so a human should beat it.</td></tr>
   <tr><td><b>Fat front</b></td><td>Red prefers filling in over racing ahead, so it reads as rot, not a snake.</td></tr>
   <tr><td><b>Drive dies at 7:00</b></td><td>A backstop that has never fired in 30 bot boards.</td></tr>
+  <tr><td><b>Demo speed 0.45×</b></td><td>Plus a full freeze on every narrated beat. The words never lag the picture.</td></tr>
+  <tr><td><b>Any button = YOUR TURN</b></td><td>You take the board as it stands. START skips to a real sector.</td></tr>
+  <tr><td><b>Teaching board</b></td><td>2 men, 4 files, save 2. The demo and your try are the same board.</td></tr>
 </table>
 
 <h2>Sound</h2>
