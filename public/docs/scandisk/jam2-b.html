@@ -36,19 +36,19 @@
     @media (max-width: 640px), (pointer: coarse) {
       html, body { height: 100%; }
       body { justify-content: space-between; gap: 0; padding: calc(8px + env(safe-area-inset-top, 0px)) 0 calc(14px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
-      #pad { width: 100%; max-width: 480px; padding: 0 18px; align-items: center; gap: 14px 0; }
-      .dpad { grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); }
+      #pad { width: 100%; max-width: 480px; padding: 0 18px; align-items: center; gap: 10px 0; }
+      .dpad { grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); }
       .dpad button { font-size: 18px; }
       .ab { gap: 18px; }
-      .ab button { width: 74px; height: 74px; font-size: 18px; }
-      #pad .ab .a { margin-top: -34px; }
-      .sys button { width: 96px; height: 34px; }
+      .ab button { width: 58px; height: 58px; font-size: 18px; }
+      #pad .ab .a { margin-top: -26px; }
+      .sys button { width: 96px; height: 28px; }
       /* The screen sits in a Game Boy style bezel (rounded bottom-right corner). */
-      canvas { padding: 8px; background: #141420; border-radius: 8px 8px 28px 8px; box-sizing: content-box; }
+      canvas { padding: 4px; margin: auto 0; background: #141420; border-radius: 8px 8px 28px 8px; box-sizing: content-box; }
       #howto { display: none; } /* phone: the pad has MANUAL */
     }
   </style>
-  <script type="module" crossorigin src="/docs/scandisk/assets/jam2b-I89QOjnE.js"></script>
+  <script type="module" crossorigin src="/docs/scandisk/assets/jam2b-DCvefFKb.js"></script>
   <link rel="modulepreload" crossorigin href="/docs/scandisk/assets/font-9Nx1chFU.js">
 </head>
 <body>
