@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCANDISK · SALVAGE — how to play</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #080810; color: #d8e0f0; font: 16px/1.6 ui-monospace, Consolas, monospace;
+    padding: 28px 18px 60px; max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: #e8f0f8; letter-spacing: .04em; }
+  h2 { font-size: 15px; margin: 34px 0 8px; color: #40d080; letter-spacing: .08em; text-transform: uppercase; }
+  p, li { color: #b8c4d8; }
+  .lede { color: #9098b8; margin: 0 0 6px; }
+  ol { padding-left: 22px; }
+  ol li { margin: 6px 0; }
+  b { color: #e8f0f8; font-weight: 600; }
+  .red { color: #f03828; } .blue { color: #3878f8; } .green { color: #40d080; }
+  figure { margin: 18px 0; }
+  img { width: 100%; max-width: 420px; display: block; image-rendering: pixelated; border: 1px solid #282838; background: #080810; }
+  figcaption { font-size: 13px; color: #606880; margin-top: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 18px; }
+  .row figure { flex: 1 1 260px; margin: 0; }
+  .row img { max-width: 100%; }
+  table { border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  td { padding: 3px 14px 3px 0; color: #9098b8; vertical-align: top; }
+  td b { color: #d8e0f0; }
+  a { color: #3878f8; }
+  .note { border-left: 2px solid #282838; padding-left: 12px; color: #9098b8; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>SCANDISK · SALVAGE</h1>
+<p class="lede">Jam 2 · Team B (real time). The last working machine. A virus is eating the drive.
+You save what you can.</p>
+<p><a href="jam2-b.html">▶ Play it</a></p>
+
+<h2>The six rules</h2>
+<ol>
+  <li><b>Real time.</b> <span class="red">Red</span> takes a cell every few seconds and never stops. The more files it eats, the faster it spreads.</li>
+  <li><b>One order.</b> Move the cursor with the D-pad. <b>X</b> sends your picked worker there. <b>Z</b> picks another worker.</li>
+  <li><b>Carry.</b> A worker who steps on a <span class="green">file</span> copies it (a few seconds, standing still), then carries it to the <span class="green">PORT</span> by himself. That file is SAVED.</li>
+  <li><b>Wall.</b> Red cannot enter a worker's cell. It bites him instead and loses that tick. Three bites and he is gone for good.</li>
+  <li><b>Loss.</b> Red on a file eats it. A carried file dies with its worker.</li>
+  <li><b>The end.</b> Files surface one at a time. When the last of the eight is saved or eaten, the board ends. Save 4 to keep the sector.</li>
+</ol>
+
+<h2>The first ten seconds</h2>
+<p>The gym board opens with one worker, one file and one slow patch of rot in the far corner.
+The sign under the board says: <b>WALK ONTO THE FILE. HE COPIES IT, THEN CARRIES IT TO P BY HIMSELF.</b>
+You move the cursor onto the file and press X. That is the whole game learned. Then the real drive starts.</p>
+
+<div class="row">
+  <figure><img src="/docs/scandisk/assets/title-ChYyUuUS.png" alt="Title screen"><figcaption>Title.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/howto-B_kd3sIk.png" alt="How to play screen"><figcaption>The six rules, one screen, on the way in.</figcaption></figure>
+</div>
+
+<figure><img src="/docs/scandisk/assets/gym-CDB6Fobt.png" alt="The teaching gym">
+  <figcaption>The gym. One worker (blue, white frame = picked), one file, one patch of rot.
+  The hollow red square is the cell red takes next.</figcaption></figure>
+
+<figure><img src="/docs/scandisk/assets/mid-CftP5qGY.png" alt="A real sector mid-game">
+  <figcaption>A real sector. <span class="green">P</span> is the port. Green pages are files.
+  Faint blue dots are each worker's route. The pips over a worker's head are his three bites.
+  The bar at the top right fills to red's next move.</figcaption></figure>
+
+<figure><img src="/docs/scandisk/assets/end-D6Kvx_3O.png" alt="The end of a sector">
+  <figcaption>The ending. Every file is settled — saved in blue, eaten in red. No mop-up: nothing is left to chase.</figcaption></figure>
+
+<h2>The pad</h2>
+<div class="row">
+  <figure><img src="/docs/scandisk/assets/pad-pc-CaVc3AyC.png" alt="The pad on a PC screen"><figcaption>PC: keys light the same buttons.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/pad-phone-B0o-IzKm.png" alt="The pad at 390px phone width"><figcaption>Phone (390px): tap the pad.</figcaption></figure>
+</div>
+<table>
+  <tr><td><b>D-pad</b></td><td>move the cursor (arrows or WASD)</td></tr>
+  <tr><td><b>X</b></td><td>send the picked worker to the cursor</td></tr>
+  <tr><td><b>Z</b></td><td>pick the next worker (the label says which one)</td></tr>
+  <tr><td><b>START</b></td><td>new sector (press twice mid-board)</td></tr>
+  <tr><td><b>MANUAL</b></td><td>this page</td></tr>
+</table>
+
+<h2>The one idea</h2>
+<p>A worker is either a <b>carrier</b> or a <b>wall</b>, never both. You only have four of them, so every rescue
+opens a hole and every hole you plug is a file you are not saving. That single trade-off is the whole game.</p>
+
+<h2>What the bots say</h2>
+<p class="note">30 boards, real time stepped at 1/60, a simple rescue bot:
+<b>29 of 30 ended cleanly inside 3:00–6:00</b> · <b>0 endless boards</b> · length 3:06 / 3:27 / 4:16 (p10 / median / p90) ·
+a real choice (2 or more orders worth giving) on <b>54%</b> of the bot's decisions.
+Re-run with <code>npm run sim-jam2b</code>.</p>
+
+<h2>Team calls (Chris to rule on)</h2>
+<table>
+  <tr><td><b>Copy time</b></td><td>4 seconds standing on the file before he can lift it. This is what makes a rescue risky.</td></tr>
+  <tr><td><b>Crew of 4</b></td><td>They never come back inside a board. Losing one really hurts.</td></tr>
+  <tr><td><b>Files surface</b></td><td>3 at the start, then one every 34 s. This, not the walking, is what sets board length.</td></tr>
+  <tr><td><b>The port is safe</b></td><td>Red can surround it but never eat it. It is your machine.</td></tr>
+  <tr><td><b>Save 4 of 8</b></td><td>The keep line. The greedy bot averages 3.2, so a human should beat it.</td></tr>
+  <tr><td><b>Fat front</b></td><td>Red prefers filling in over racing ahead, so it reads as rot, not a snake.</td></tr>
+  <tr><td><b>Drive dies at 7:00</b></td><td>A backstop that has never fired in 30 bot boards.</td></tr>
+</table>
+
+<h2>Sound</h2>
+<p>Sine tones only, none above 262 Hz, all quiet. Red growing is 82 Hz; a bite 98; a save 147 then 196;
+a file eaten 73. No flashing — a fresh red cell blooms over half a second.</p>
+
+</body>
+</html>

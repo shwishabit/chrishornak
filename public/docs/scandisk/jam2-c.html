@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>SCANDISK · PURGE (jam2-C)</title>
+  <!-- TEAM C · ACTION PUZZLE. Learning line: "Do I feel the chain build, and does the big one feel big?" -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #080810; overflow: hidden; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+    canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; background: #080810; }
+    #howto { position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 5;
+      width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+      font: bold 14px ui-monospace, Consolas, monospace; color: #606880; border: 1px solid #282838;
+      background: transparent; text-decoration: none; opacity: .7; }
+    #howto:hover, #howto:focus-visible { color: #d8e0f0; border-color: #606880; opacity: 1; }
+    body.shot #howto, body.shot #pad { display: none; }
+    /* Game Boy pad, PC and phone alike; keys light the same buttons (standing rule 8). */
+    #pad { display: grid; width: min(100vw, 420px); padding: 0 16px 10px; box-sizing: border-box;
+      grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 10px 0; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .dpad { display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(3, 48px); }
+    .ab { display: flex; gap: 14px; justify-content: flex-end; align-items: center; }
+    .sys { grid-column: 1 / -1; display: flex; gap: 18px; justify-content: center; }
+    #pad button { font: bold 13px ui-monospace, Consolas, monospace; color: #e8f0f8; background: #282838; border: 0;
+      touch-action: none; -webkit-tap-highlight-color: transparent; padding: 0; }
+    #pad button.on { background: #484868; }
+    .dpad button { border-radius: 6px; }
+    .ab button { width: 62px; height: 62px; border-radius: 50%; font-size: 15px; }
+    #pad .ab .a { background: #1840a0; margin-top: -26px; }
+    #pad .ab .a.on { background: #3878f8; }
+    .ab label, .sys small { display: block; font: 10px ui-monospace, Consolas, monospace; color: #606880; text-align: center; margin-top: 4px; min-height: 12px; }
+    .sys button { width: 86px; height: 30px; border-radius: 15px; font-size: 11px; color: #9098b8; }
+    @media (max-width: 640px), (pointer: coarse) {
+      html, body { height: 100%; }
+      body { justify-content: space-between; gap: 0; padding: calc(8px + env(safe-area-inset-top, 0px)) 0 calc(14px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+      #pad { width: 100%; max-width: 480px; padding: 0 14px; align-items: center; gap: 14px 0; }
+      .dpad { grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(3, 58px); }
+      .dpad button { font-size: 18px; }
+      .ab { gap: 14px; }
+      .ab button { width: 70px; height: 70px; font-size: 18px; }
+      #pad .ab .a { margin-top: -32px; }
+      .sys button { width: 92px; height: 34px; }
+      canvas { padding: 8px; background: #141420; border-radius: 8px 8px 28px 8px; box-sizing: content-box; }
+      #howto { display: none; }
+    }
+  </style>
+  <script type="module" crossorigin src="/docs/scandisk/assets/jam2c-BJz_mbkB.js"></script>
+  <link rel="modulepreload" crossorigin href="/docs/scandisk/assets/font-9Nx1chFU.js">
+</head>
+<body>
+  <canvas id="screen" width="160" height="144" aria-label="SCANDISK PURGE"></canvas>
+  <div id="pad" aria-label="Touch buttons">
+    <div class="dpad">
+      <span></span><button data-b="up" aria-label="Up">▲</button><span></span>
+      <button data-b="left" aria-label="Left">◀</button><span></span><button data-b="right" aria-label="Right">▶</button>
+      <span></span><button data-b="down" aria-label="Down">▼</button><span></span>
+    </div>
+    <div class="ab">
+      <div><button data-b="b" aria-label="B (Z): take a charge back">Z</button><label id="zlabel">-</label></div>
+      <div><button class="a" data-b="a" aria-label="A (X): plant or set off a charge">X</button><label id="xlabel">PLANT</label></div>
+    </div>
+    <div class="sys">
+      <div><button data-b="select" aria-label="Select (manual)">MANUAL</button><small>BACKSPACE</small></div>
+      <div><button data-b="start" aria-label="Start (new run)">START</button><small>ENTER</small></div>
+    </div>
+  </div>
+  <a id="howto" href="jam2-c-manual.html" target="scandisk-manual" title="How to play (Backspace)" aria-label="How to play">?</a>
+</body>
+</html>

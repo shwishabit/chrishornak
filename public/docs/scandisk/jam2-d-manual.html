@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCANDISK · LAST BACKUP manual (jam 2, team D)</title>
+<!-- Jam-2 team D manual. Every screenshot is the real game: `bash tools/manual-jam2d-shots.sh` with the dev
+     server on 3124 re-shoots manual/jam2d/*.png from src/jam2d/scenes.ts. Update in the same loop as a rule change. -->
+<style>
+  :root { --bg: #080810; --panel: #101018; --line: #282838; --ink: #d8e0f0; --dim: #9098b8;
+          --blue: #3878f8; --green: #40d080; --red: #f03828; --white: #e8f0f8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 ui-monospace, Consolas, monospace; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header { border: 2px solid var(--line); padding: 20px 22px; margin-bottom: 36px; background: var(--panel); }
+  header h1 { margin: 0; font-size: 2rem; letter-spacing: .12em; color: var(--white); }
+  header p { margin: 6px 0 0; color: var(--dim); }
+  section { margin: 0 0 44px; }
+  h2 { font-size: 1.1rem; color: var(--white); border-bottom: 1px solid var(--line); padding-bottom: 6px; margin: 0 0 12px; }
+  p, ul, ol { margin: 0 0 12px; max-width: 70ch; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .shots { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 12px; margin: 14px 0 6px; }
+  figure { margin: 0; flex: 1 1 280px; max-width: 400px; }
+  figure img { display: block; width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--line); }
+  figcaption { color: var(--dim); font-size: .85rem; margin-top: 6px; }
+  .b { color: var(--blue); } .r { color: var(--red); } .g { color: var(--green); }
+  kbd { color: var(--white); background: var(--line); padding: 1px 7px; border-radius: 3px; font: inherit; }
+  table { border-collapse: collapse; margin: 6px 0 12px; }
+  td { padding: 4px 16px 4px 0; vertical-align: top; }
+  .tip { border-left: 3px solid var(--green); background: var(--panel); padding: 10px 14px; margin: 10px 0; max-width: 70ch; }
+  .back { display: inline-block; margin-top: 8px; color: var(--ink); }
+  @media (max-width: 600px) { figure { max-width: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>LAST BACKUP</h1>
+    <p>SCANDISK · jam 2 · team D (RUN + HAND) · 2026-09-19</p>
+    <p><strong>The drive is dying. You copy files off it, and one long chain saves a whole sector at once.</strong></p>
+  </header>
+
+  <section id="rules">
+    <h2>The six rules</h2>
+    <ol>
+      <li><strong>Hit the target before the drive fills.</strong> The blue bar on top is what you saved. The <span class="r">red</span> bar under it is the drive filling up.</li>
+      <li><strong>Hand of 3. You spend 2 every turn. The 3rd stays</strong> for next turn. There is no "end turn" button — the turn ends when your 2 cards are gone.</li>
+      <li><strong><kbd>X</kbd> saves a card. Bytes = size × chain.</strong> Save the same file type again and the chain goes up. Save a different type and it drops back to x1. The green number on each card is what it pays <em>right now</em>.</li>
+      <li><strong>The virus shows its next 2 cards.</strong> The big one fires at the end of this turn. It floods the drive by its number, and if its type matches your chain, it breaks the chain.</li>
+      <li><strong><kbd>Z</kbd> blocks with a card.</strong> The card's size cuts that flood, size for size. Cut it all and the chain is safe too.</li>
+      <li><strong>Target met: take 1 of 3 new cards</strong> into your deck. 4 sectors and the drive is saved. Drive full and the run is over.</li>
+    </ol>
+    <div class="tip">The whole game is one question, every turn: <strong>cash the chain in now, or spend a card to protect it for one more turn?</strong></div>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/howto-ATdsqKsR.png" alt="The how-to screen listing the six rules." width="540" height="492"><figcaption>All six rules on one screen, before you play.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/mid-D_CVajMG.png" alt="Sector 2, chain x3 on PIC, the virus's next card is PIC 2." width="540" height="492"><figcaption>A real hand. Chain <span class="g">x3</span> on PIC — and the virus's next card is <span class="r">PIC</span>. Save the PIC now for +8, or block with the EXE and keep the chain.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="start">
+    <h2>The first ten seconds</h2>
+    <p>Title → <kbd>Enter</kbd> → the six rules → <kbd>Enter</kbd> → <strong>SAFE MODE</strong>, the teaching board. One idea only: <em>same type in a row = bigger chain</em>. The sign is on screen the whole time, the buttons are on the pad, and the virus in SAFE MODE has no file type, so it can never break your chain while you learn it. Nine bytes, three turns. You cannot get there without chaining.</p>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/gym-BPxda-Tf.png" alt="SAFE MODE: two TXT cards framed green, the sign reads SAME TYPE IN A ROW = BIGGER CHAIN." width="540" height="492"><figcaption>SAFE MODE. A <span class="g">green frame</span> means that card carries on your chain.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/title-CabB14ML.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="buttons">
+    <h2>Buttons</h2>
+    <p>The Game Boy pad under the screen works the same on PC and phone. On a PC the pad lights up with your keys.</p>
+    <table>
+      <tr><td><kbd>← →</kbd></td><td>Pick a card.</td></tr>
+      <tr><td><kbd>X</kbd></td><td>SAVE this card. After the run ends: new run.</td></tr>
+      <tr><td><kbd>Z</kbd></td><td>BLOCK with this card. The pad label shows how much it cuts.</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>New run (press twice mid-run).</td></tr>
+      <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
+    </table>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/pad-phone-C-TnKE7J.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-pc-QIC_eyrp.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="big">
+    <h2>The big moment, and the end</h2>
+    <p>A chain carries across turns. Protect it with blocks for two or three turns, keep feeding it one type, and then a size-3 card lands for twenty-odd bytes and clears the sector in one press.</p>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/big-BGWpp_Iw.png" alt="Chain x7 pays 21 bytes and fills the target bar." width="540" height="492"><figcaption>Chain <span class="g">x7</span>, one card, +21 bytes, sector cleared.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pick-CiPZhdKe.png" alt="Three offered cards after clearing a sector." width="540" height="492"><figcaption>Between sectors: take one card. This is the only growth there is — nothing carries to the next run.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/win-BN4Eyqhh.png" alt="DRIVE SAVED with the total bytes." width="540" height="492"><figcaption>Four sectors: DRIVE SAVED. The run stops there — no mop-up.</figcaption></figure>
+    </div>
+    <p>A run always ends because <strong>the virus's numbers climb</strong>. Two size-3 cards can block 6; by round ten or so the flood is bigger than that, and nothing holds it.</p>
+  </section>
+
+  <section id="calls">
+    <h2>Team calls (Chris to rule on)</h2>
+    <ul>
+      <li><strong>Spend exactly 2 cards a turn.</strong> This replaced an "end turn" button and forced a real keep-one decision every turn.</li>
+      <li><strong>The deck is a bag, drawn with replacement.</strong> No discard pile, no reshuffle — one fewer rule. Cards you take between sectors change the odds, not a shuffle order.</li>
+      <li><strong>A block only stops flood up to the card's size.</strong> Big cards are both your big scores and your big shields.</li>
+      <li><strong>Blocking does not touch the chain</strong> — only a save moves it.</li>
+      <li><strong>The virus card is fully derived</strong> from the sector and the round, so the two cards on screen are never a lie.</li>
+      <li><strong>SAFE MODE never ends a run.</strong> Fail it and it restarts.</li>
+    </ul>
+    <p>What we cut on the way: an "eats your hand" virus card (replaced by "breaks your chain"), a discard-and-reshuffle deck, special card powers, an END TURN button, and a fourth file type.</p>
+    <a class="back" href="jam2-d.html">← Back to the game</a>
+  </section>
+</main>
+</body>
+</html>

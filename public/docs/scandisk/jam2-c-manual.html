@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCANDISK · PURGE manual (jam2-C)</title>
+<!-- Every picture on this page is a real screenshot of the real game.
+     Re-shoot with `bash tools/manual-jam2c-shots.sh` (dev server on 3123). -->
+<style>
+  :root { --bg:#080810; --panel:#101018; --line:#282838; --ink:#d8e0f0; --dim:#9098b8;
+          --blue:#3878f8; --blueL:#a8c8ff; --green:#40d080; --red:#f03828; --white:#e8f0f8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 ui-monospace, Consolas, monospace; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 80px; }
+  header { border:2px solid var(--line); padding:20px 22px; margin-bottom:32px; background:var(--panel); }
+  header h1 { margin:0; font-size:2rem; letter-spacing:.12em; color:var(--white); }
+  header p { margin:6px 0 0; color:var(--dim); }
+  section { margin:0 0 40px; }
+  h2 { font-size:1.05rem; color:var(--white); border-bottom:1px solid var(--line); padding-bottom:6px; margin:0 0 12px; }
+  p, ul, ol { margin:0 0 12px; max-width:70ch; }
+  ul, ol { padding-left:22px; }
+  .shots { display:flex; flex-wrap:wrap; gap:10px 12px; margin:14px 0 6px; }
+  figure { margin:0; flex:1 1 280px; max-width:400px; }
+  figure img { display:block; width:100%; height:auto; image-rendering:pixelated; border:1px solid var(--line); }
+  figcaption { color:var(--dim); font-size:.85rem; margin-top:6px; }
+  .b { color:var(--blueL); } .r { color:var(--red); } .g { color:var(--green); }
+  kbd { color:var(--white); background:var(--line); padding:1px 7px; border-radius:3px; font:inherit; }
+  table { border-collapse:collapse; margin:6px 0 12px; }
+  td { padding:4px 16px 4px 0; vertical-align:top; }
+  .tip { border-left:3px solid var(--green); background:var(--panel); padding:10px 14px; margin:10px 0; max-width:70ch; }
+  @media (max-width:600px) { figure { max-width:none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>SCANDISK · PURGE</h1>
+    <p>Jam 2 · TEAM C · action puzzle · 2026-09-19</p>
+    <p><strong>The virus is eating the drive. Plant charges, set one off, and blow a whole sector clean in one chain.</strong></p>
+  </header>
+
+  <section>
+    <h2>The six rules</h2>
+    <ol>
+      <li>Each beat the <span class="r">red</span> virus grows onto its mark (the red corners). It marks more cells the longer a sector runs.</li>
+      <li><kbd>X</kbd> on an empty cell: plant a <span class="b">charge</span>. You hold 5. One comes back each beat. A charge on a mark blocks that growth.</li>
+      <li><kbd>X</kbd> on a charge: it goes off. A beam shoots out four ways.</li>
+      <li>A beam stops at the <strong>first</strong> cell it meets. Red dies. Your <span class="b">blue data</span> dies. Another charge goes off too.</li>
+      <li>Charges that go off together are your <strong>CHAIN</strong>. Red killed × chain = score.</li>
+      <li>No red left: sector clean. No data left: drive lost. Clear all 4 sectors: drive saved.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/howto-ZRn4FMyx.png" alt="The how-to screen with the six rules." width="540" height="492"><figcaption>The same six rules, on one screen in the game.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/title-Dwx21sk-.png" alt="The title screen." width="540" height="492"><figcaption>Title. Any button starts.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Buttons</h2>
+    <p>The pad under the screen works the same on a PC and on a phone. On a PC it lights up with your keys.</p>
+    <table>
+      <tr><td><kbd>← ↑ → ↓</kbd></td><td>Move the cursor (hold to slide).</td></tr>
+      <tr><td><kbd>X</kbd></td><td>Plant a charge, or set off the charge you are standing on. After a run: new run.</td></tr>
+      <tr><td><kbd>Z</kbd></td><td>Take a charge back (a mis-tap costs you nothing).</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>New run. In the test sector: skip it.</td></tr>
+      <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
+    </table>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/pad-phone-XEjsugxn.png" alt="The game at 390px phone width with the on-screen pad." width="420" height="880"><figcaption>390px phone width. Every button is a thumb-sized tap. The X label says what X does here.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-pc-BQjQEyRE.png" alt="The game on a PC with the pad under the screen." width="1100" height="900"><figcaption>PC. The pad lights up with the keys, so PC and phone play the same.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reading the screen</h2>
+    <ul>
+      <li>Top bar: the beat filling. When it is full, the virus grows.</li>
+      <li>Line 1: sector · red left · data left · score.</li>
+      <li>Line 2: what <kbd>X</kbd> does here. On a charge it reads the whole blast before you press it: <span class="b">CHAIN 4 KILL 9</span> <span class="r">-1 DATA</span>. The blue pips on the right are the charges in hand.</li>
+      <li>On the board: <span class="r">red corners</span> = where the virus grows next beat. A thin blue line between two charges = they can see each other, so they chain. A white box = a red cell this blast kills. A red cross = your own data this blast burns.</li>
+    </ul>
+    <div class="shots">
+      <figure><img src="/docs/scandisk/assets/mid-BHrtLeI_.png" alt="A mid-run board: two charges linked by a line, white boxes on the red cells the blast would kill." width="540" height="492"><figcaption>Two charges see each other, so the line joins them. The header reads the blast before you commit.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/chain-DpgxnUpf.png" alt="The chain going off: beams across the board and a CHAIN 2 banner." width="540" height="492"><figcaption>The big moment: beams fire in a ripple, low tones walk up, the banner names the chain.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>The test sector (the gym)</h2>
+    <p>The first board has no clock. Two charges already sit in a line with red above and below them. Move onto one and press <kbd>X</kbd>: both go off, that is a chain of 2. Then the sign asks you to plant one yourself and finish the last three red cells.</p>
+    <div class="shots"><figure><img src="data:image/png;base64,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" alt="The teaching board with a sign under it." width="540" height="492"><figcaption>One idea, one sign, no way to fail.</figcaption></figure></div>
+  </section>
+
+  <section>
+    <h2>The trade-off</h2>
+    <p>Waiting makes the chain bigger. Waiting also lets the virus grow between your charges, and a red cell in the gap cuts the link. Your own beams burn your own data, so the biggest blast is often not the right one.</p>
+    <div class="shots"><figure><img src="data:image/png;base64,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" alt="The end of a run." width="540" height="492"><figcaption>The end of a run. X starts a new one.</figcaption></figure></div>
+  </section>
+
+  <section>
+    <h2>Calls the team made for Chris (say if any are wrong)</h2>
+    <ul>
+      <li>A blast is worked out against the board as it was when you pressed X, so the preview is always exactly right.</li>
+      <li>The beat holds while a chain is rippling, so a big one is never cut short.</li>
+      <li><kbd>Z</kbd> takes a charge back and refunds it (phone mis-taps).</li>
+      <li>When the virus has no room to grow beside itself, it drops <em>new infections</em> anywhere on the drive, including on a data cell. That is what stops a walled-in stall, and it is why no run runs for ever.</li>
+      <li>Firing re-aims the virus's marks. Setting off a small charge to move a mark off your data is a real tactic, and it costs you a charge.</li>
+      <li>The test sector has no clock and never runs out of charges.</li>
+      <li>4 sectors per run.</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCANDISK · BAD SECTOR — how to play (jam 2, team A)</title>
+<style>
+  :root { --ink:#d8e0f0; --dim:#9098b8; --faint:#606880; --blue:#3878f8; --red:#f03828; --green:#40d080; --line:#282838; }
+  html,body { margin:0; background:#080810; color:var(--ink); font:15px/1.6 ui-monospace, Consolas, monospace; }
+  main { max-width: 760px; margin: 0 auto; padding: 28px 18px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: 2px; }
+  h2 { font-size: 15px; margin: 34px 0 10px; color: var(--blue); letter-spacing: 1px; }
+  p, li { color: var(--ink); }
+  .sub { color: var(--faint); margin: 0 0 22px; }
+  ol, ul { padding-left: 20px; }
+  li { margin: 6px 0; }
+  img { display:block; width:100%; max-width: 480px; image-rendering: pixelated; border:1px solid var(--line); background:#141420; margin: 10px 0 4px; }
+  figure { margin: 0 0 22px; }
+  figcaption { color: var(--dim); font-size: 13px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; }
+  .row figure { flex:1 1 300px; }
+  .row img { max-width:100%; }
+  b.red { color: var(--red); } b.blue { color: var(--blue); } b.green { color: var(--green); }
+  .call { color: var(--faint); font-size: 13px; }
+  a { color: var(--blue); }
+  hr { border:0; border-top:1px solid var(--line); margin: 30px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SCANDISK · BAD SECTOR</h1>
+  <p class="sub">Jam 2 · TEAM A (tactics) · <a href="jam2-a.html">play it</a></p>
+
+  <p>The drive is rotting under your feet. You cannot shoot. You can only <b>shove</b> the virus into the drive's own
+  holes — and hold on until the backup is done.</p>
+
+  <h2>THE SIX RULES</h2>
+  <ol>
+    <li>Two <b class="blue">PROGRAMS</b>. Each gets 3 steps a round. A step walks one tile, or SHOVES what is next to it one tile.</li>
+    <li>A red shoved into a wall, a hole, a file or another red <b>CRASHES</b>. Shoving is your only weapon.</li>
+    <li>Every red shows its next hit <b>one round early</b>. It all happens when you press START.</li>
+    <li><b class="red">WORM</b> walks at the nearest file and eats it. <b class="red">SPIKE</b> fires down its line, kills the first thing in it, then turns a quarter clockwise.</li>
+    <li>Each round one tile <b>CRACKS</b>. At the end of the round it is a hole — and whatever stands on it crashes.</li>
+    <li>Lose a <b class="green">FILE</b>, or both programs, and the sector is LOST. Fill the BACKUP bar, or crash the last red, and it is CLEAN.</li>
+  </ol>
+
+  <h2>BUTTONS</h2>
+  <ul>
+    <li><b>Arrows / D-pad</b> — the whole game. Walk, or shove. There is no attack button.</li>
+    <li><b>X</b> — swap to your other program. <b>Z</b> — undo a step (as far back as the start of the round).</li>
+    <li><b>START</b> — end the round. Only then does the virus move.</li>
+    <li><b>MANUAL / Backspace</b> — this page.</li>
+  </ul>
+
+  <h2>WHAT YOU SEE</h2>
+  <div class="row">
+    <figure>
+      <img src="data:image/png;base64,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" alt="The title screen">
+      <figcaption>Title. START goes to the six rules, START again starts the gym.</figcaption>
+    </figure>
+    <figure>
+      <img src="/docs/scandisk/assets/howto-BxuxvdW2.png" alt="The six rules on one screen">
+      <figcaption>Six rules, one screen, in the game.</figcaption>
+    </figure>
+  </div>
+  <figure>
+    <img src="/docs/scandisk/assets/gym-BiXbGxRd.png" alt="The teaching gym: one program, one worm, one hole">
+    <figcaption>The gym — one idea. Walk up to the worm, then shove it into the hole. That is the whole lesson.</figcaption>
+  </figure>
+  <figure>
+    <img src="/docs/scandisk/assets/mid-D6gW52xF.png" alt="A mid-game board with the virus telegraphing every attack">
+    <figcaption>A real board. The dotted red line is a SPIKE's shot and the red frame is what it kills. The red
+    arrow head is where a WORM walks next. The dim jagged tile is the CRACK — it opens at the end of the round.
+    Everything red on this screen happens when you press START, and not before.</figcaption>
+  </figure>
+  <figure>
+    <img src="/docs/scandisk/assets/win-C8RsHS7a.png" alt="One red left, about to be shoved off the drive">
+    <figcaption>The winning moment: one red left, one shove from the edge. Crash the last red and the sector is clean
+    before the backup even finishes.</figcaption>
+  </figure>
+
+  <h2>THE PAD</h2>
+  <div class="row">
+    <figure>
+      <img src="/docs/scandisk/assets/pad-pc-Dr5Rt_oR.png" alt="The game on a PC with the on-screen pad lit">
+      <figcaption>PC: the pad lights up with each key, so PC and phone testing match.</figcaption>
+    </figure>
+    <figure>
+      <img src="/docs/scandisk/assets/pad-phone-BKJNkQWB.png" alt="The game at 390px phone width">
+      <figcaption>Phone at 390px: tap the pad.</figcaption>
+    </figure>
+  </div>
+
+  <hr>
+  <h2>THREE THINGS TO TRY</h2>
+  <ol>
+    <li>Shove a worm into a SPIKE's dotted line. The virus shoots its own unit.</li>
+    <li>Shove a red onto the CRACK and leave it there. The drive kills it for free at the end of the round.</li>
+    <li>When a spike's shot frames one of your files, do not walk into the line — shove a red into it instead.</li>
+  </ol>
+
+  <h2>CALLS WE MADE FOR YOU (team calls)</h2>
+  <ul class="call">
+    <li>Losing ONE file loses the sector. Three files means three things to guard, not three lives.</li>
+    <li>Spikes turn clockwise after every shot, so you can read them rounds ahead.</li>
+    <li>You cannot shove your own program, and you cannot walk into a hole.</li>
+    <li>A program out of steps hands over to the other one by itself.</li>
+    <li>Holes and beams: a beam flies over a hole, so a hole is cover for nothing.</li>
+    <li>The crack is always shown before it opens. Nothing in this game is a surprise.</li>
+    <li>Numbers: 8x6 drive, 3 steps each, 5 reds, backup 8 rounds. All in <code>src/jam2a/tune2a.ts</code>.</li>
+  </ul>
+</main>
+</body>
+</html>
