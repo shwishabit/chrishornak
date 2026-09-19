@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCANDISK v9 manual</title>
+<!-- Test-build manual. Screenshots come from the real game: `npm run manual9` (dev server on 3101)
+     re-shoots manual/v9/*.png from src/v9/scenes.ts. Update this page in the same loop as any rule change. -->
+<style>
+  :root { --bg: #080810; --panel: #101018; --line: #282838; --ink: #d8e0f0; --dim: #9098b8;
+          --blue: #3878f8; --green: #40d080; --red: #f03828; --white: #e8f0f8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 ui-monospace, Consolas, monospace; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header { border: 2px solid var(--line); padding: 20px 22px; margin-bottom: 36px; background: var(--panel); }
+  header h1 { margin: 0; font-size: 2rem; letter-spacing: .12em; color: var(--white); }
+  header p { margin: 6px 0 0; color: var(--dim); }
+  section { margin: 0 0 44px; }
+  h2 { font-size: 1.1rem; color: var(--white); border-bottom: 1px solid var(--line); padding-bottom: 6px; margin: 0 0 12px; }
+  p, ul, ol { margin: 0 0 12px; max-width: 70ch; }
+  ul, ol { padding-left: 22px; }
+  .shots { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 14px 0 6px; }
+  figure { margin: 0; flex: 1 1 280px; max-width: 400px; }
+  figure img { display: block; width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--line); }
+  figcaption { color: var(--dim); font-size: .85rem; margin-top: 6px; }
+  .b { color: var(--blue); } .r { color: var(--red); } .g { color: var(--green); }
+  kbd { color: var(--white); background: var(--line); padding: 1px 7px; border-radius: 3px; font: inherit; }
+  table { border-collapse: collapse; margin: 6px 0 12px; }
+  td { padding: 4px 16px 4px 0; vertical-align: top; }
+  .tip { border-left: 3px solid var(--green); background: var(--panel); padding: 10px 14px; margin: 10px 0; max-width: 70ch; }
+  .back { display: inline-block; margin-top: 8px; color: var(--ink); }
+  @media (max-width: 600px) { figure { max-width: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>SCANDISK</h1>
+    <p>Instruction manual · test build v9 QUARANTINE · 2026-09-18</p>
+    <p><strong>It is growing. You can see exactly where. You have two stones to cut it off.</strong></p>
+  </header>
+
+  <section id="rules">
+    <h2>The rules in one minute</h2>
+    <ol>
+      <li><strong>Your turn:</strong> place 2 <span class="b">blue</span> stones on empty points.</li>
+      <li><strong>Then the virus grows:</strong> every <span class="r">red</span> group grows 1 cell onto the spot it marked (red corners). A blue stone on a mark blocks it.</li>
+      <li><strong>Mood:</strong> the top line shows the mood now and the NEXT one. HUNT = its marks go toward your stones. SPREAD = toward open space. BURROW = toward the nearest file.</li>
+      <li><strong>Surround</strong> a red group on every side and it is deleted. If red surrounds a blue group, it is <strong>infected</strong> and turns red.</li>
+      <li><strong>3 blue in a straight line = FIREWALL</strong> (a bright bar). Its group is never infected, and red can't grow onto a point next to it (the small blue crosses).</li>
+      <li><strong>Delete the group that holds the ROOT</strong> (the red cell with the bright core): every red cell crashes, and the sector is clean. If red grows onto a <span class="g">file</span>, the file is lost. Lose all 3 files and the sector is lost.</li>
+    </ol>
+    <p>A file is not a free side: it can't be used to breathe, and you can't place a stone on it. Guard it from the sides.</p>
+    <div class="shots"><figure><img src="/docs/scandisk/assets/mid-ZG_QswDI.png" alt="A board with red groups, red corner marks where they will grow, and HUNT NEXT BURROW on the top line." width="540" height="492"><figcaption>Red corners = where each red group grows after your 2 stones. Top line: the mood now, then the next one.</figcaption></figure></div>
+  </section>
+
+  <section id="buttons">
+    <h2>Buttons</h2>
+    <p>The Game Boy pad under the screen works the same on PC and phone. On a PC, the pad lights up with your keys.</p>
+    <table>
+      <tr><td><kbd>← ↑ → ↓</kbd></td><td>Move (hold to slide).</td></tr>
+      <tr><td><kbd>X</kbd></td><td>Place a stone. After a board ends: next board.</td></tr>
+      <tr><td><kbd>Z</kbd></td><td>Take back your first stone (before the second).</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Skip the lesson. New board (press twice during a game).</td></tr>
+      <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
+    </table>
+    <p>One short lesson comes first: SURROUND THE ROOT.</p>
+  </section>
+
+  <section id="hints">
+    <h2>The hints</h2>
+    <ul>
+      <li><span class="b">Blue dot</span>: a stone here deletes a red group.</li>
+      <li><span class="g">Hollow green box</span>: a stone here makes a new firewall.</li>
+      <li><span class="r">Red frame around your stones</span>: the growth now on the board would infect them.</li>
+      <li>Grey corners: a mark you blocked.</li>
+    </ul>
+    <div class="shots"><figure><img src="/docs/scandisk/assets/firewall-ihPOqgUQ.png" alt="Three blue stones joined by a bright bar; small blue crosses on the points next to it." width="540" height="492"><figcaption>A firewall. Red can't grow onto the small crosses, so its mark goes the other way.</figcaption></figure><figure><img src="/docs/scandisk/assets/last-side-DFVHz2JW.png" alt="A big red group with one free side left; a blue dot sits on it." width="540" height="492"><figcaption>The root's group has 1 free side left (ROOT 1 FREE). The blue dot is the kill.</figcaption></figure></div>
+  </section>
+
+  <section id="end">
+    <h2>How a sector ends</h2>
+    <div class="shots"><figure><img src="/docs/scandisk/assets/ripple-D8-EJCiU.png" alt="Red cells crashing one by one, nearest to the root first." width="540" height="492"><figcaption>The root's group is gone: every red cell crashes, one by one.</figcaption></figure><figure><img src="/docs/scandisk/assets/clean-Bi4Xp4bD.png" alt="No red left; SECTOR CLEAN, ROUND 9." width="540" height="492"><figcaption>SECTOR CLEAN. Press X for the next sector.</figcaption></figure></div>
+    <p>In bot tests (a simple greedy player, 100 boards), the root dies by round 15 in about 7 of 10 boards; a board takes about 8 rounds.</p>
+    <a class="back" href="v9.html">← Back to the game</a>
+  </section>
+</main>
+</body>
+</html>
