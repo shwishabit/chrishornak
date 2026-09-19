@@ -33,7 +33,7 @@
   <h1>SCANDISK · BAD SECTOR</h1>
   <p class="sub">Jam 2 · TEAM A (tactics) · <a href="jam2-a.html">play it</a></p>
 
-  <p><b>Round 2.</b> Title → STORY → the six rules → <b>the drive plays a board for you and says what it is doing</b> → the same board, your turn. The drive is rotting under your feet. You cannot shoot. You can only <b>shove</b> the virus into the drive's own
+  <p><b>Round 2.</b> Title → STORY → <b>three lines</b> → <b>the drive plays a board for you and says what it is doing</b> → the same board, your turn. All six rules are on this page, not in your way in the game. The drive is rotting under your feet. You cannot shoot. You can only <b>shove</b> the virus into the drive's own
   holes — and hold on until the backup is done.</p>
 
   <figure>
@@ -67,25 +67,43 @@
       <figcaption>Title. START opens the story, then the six rules, then the demo.</figcaption>
     </figure>
     <figure>
-      <img src="/docs/scandisk/assets/howto-PCXsGIrO.png" alt="The six rules on one screen">
-      <figcaption>Six rules, one screen, in the game.</figcaption>
+      <img src="/docs/scandisk/assets/howto-DBXPZeaW.png" alt="Three lines, then the demo">
+      <figcaption>Three lines, then the demo. The 14-line rule wall was cut — the demo is the tutorial now.</figcaption>
     </figure>
   </div>
   <figure>
-    <img src="/docs/scandisk/assets/teach-BPseqhf2.png" alt="The bot playing the teaching board, with its own line under the board">
+    <img src="/docs/scandisk/assets/teach-D4kjGmMI.png" alt="The bot playing the teaching board, with its own line under the board">
     <figcaption>The tutorial plays itself. The same bot that proves the game in the sim plays the teaching board,
     one step every 1.25 s, and writes its own line under the board — here, <i>SHOVED IT INTO A HOLE. GONE.</i>
     The line is read off the real board after the real move, so it can never say something that did not happen.
     Any button hands the board to you. (team call)</figcaption>
   </figure>
 
+  <div class="row">
+    <figure>
+      <img src="/docs/scandisk/assets/demo-goal-DT3gJFSP.png" alt="The demo naming the goal before its first move, at 390px">
+      <figcaption>Before move one, at phone width: <b>WIN: KEEP EVERY FILE ALIVE UNTIL THE BACKUP BAR IS FULL.</b>
+      The white X is already promising the next shove kills.</figcaption>
+    </figure>
+    <figure>
+      <img src="/docs/scandisk/assets/demo-kill-DWbvA8Jh.png" alt="The demo shoving a red into a hole, at 390px">
+      <figcaption>The money move, on screen, first: <i>SHOVED IT INTO A HOLE. GONE.</i> The teaching board has no
+      dice in it, so this is the same first move every single run.</figcaption>
+    </figure>
+  </div>
+
   <h2>THE TUTORIAL THAT PLAYS ITSELF <span class="tc">(team call, round 2)</span></h2>
   <p>Round 1 gave you a gym and asked you to solve it cold. Chris cut that. Now:</p>
   <ol>
+    <li>Before move one it names the goal: <b>WIN: KEEP EVERY FILE ALIVE UNTIL THE BACKUP BAR IS FULL.</b></li>
     <li>The bot plays a hand-built board. Nothing random, no cracking tile — just the virus and you.</li>
+    <li>Its first move on screen is always the money move: <i>SHOVED IT INTO A HOLE. GONE.</i> The board has no
+    dice in it, so that is a guarantee, not a hope.</li>
     <li>Every step it takes, a short line names the move and the reason. One idea per line.</li>
     <li>The top of the screen always reads <b>WATCHING — ANY BUTTON = YOUR TURN</b>.</li>
-    <li>Press anything and it stops mid-move. That is also the skip.</li>
+    <li>Press anything and you get the board <b>from the top</b>. Every button does the same thing — there is no
+    separate skip, and nothing on screen calls it one. (Thresh fix: taking over early used to hand you the
+    half-played board after the bot had made the good moves.)</li>
     <li>When it finishes, you get <b>the same board</b> from the start, now that you know the ask.</li>
   </ol>
   <p>The board teaches four things in order: a worm with a hole behind it (one shove), a spike aimed at MOM.WAV
@@ -98,6 +116,13 @@
   <ul>
     <li><b>A white X on a red</b> — shove that way and it CRASHES. No maths, no counting.</li>
     <li><b>A hollow red box one tile further</b> — that is where it lands instead. It does not die.</li>
+  </ul>
+  <h2>TELLING THE TWO REDS APART <span class="tc">(team call, round 2)</span></h2>
+  <ul>
+    <li><b class="red">WORM</b> — the heaviest thing on the board. A full solid tile with a dark bite out of it.
+    It is the one that eats your files, so it is the one that shouts.</li>
+    <li><b class="red">SPIKE</b> — a hollow shell with a bright barrel. A machine, not a mouth. It is dangerous
+    but it tells you where it is pointing, so it does not need the weight.</li>
   </ul>
   <p>The BLOCKED nag was deleted to pay for it: the board now shows you what is legal, so it does not need to
   tell you off.</p>

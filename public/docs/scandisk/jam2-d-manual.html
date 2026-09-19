@@ -70,11 +70,13 @@
   <section id="start">
     <h2>The first ten seconds: the game plays itself first</h2>
     <p>Title → <kbd>Enter</kbd> → the story → <kbd>Enter</kbd> → the six rules → <kbd>Enter</kbd> → <strong>SAFE MODE</strong>, the teaching board. <strong>You do not play it yet. The game plays it for you.</strong></p>
-    <p>The bot that runs our sim takes the board and plays it slowly, on screen, saying one plain thing per move: which card, and <em>why</em>. Then it stops on the card it did <em>not</em> play and tells you why it kept it — because that is the move a card game never shows you. "I keep the PIC, but not to save it. TXT is next from the virus. A shield." When the demo is done, the <strong>same board with the same hand</strong> is handed back to you. (team call, round 2.)</p>
+    <p>The bot that runs our sim takes the board and plays it slowly, on screen, saying one plain thing per move: which card, and <em>why</em>. Then it stops on the card it did <em>not</em> play, puts that card under its own border and a <strong>KEPT</strong> tag, and tells you why it is holding it — because that is the move a card game never shows you. When the demo is done, the <strong>same board with the same hand</strong> is handed back to you. (team call, round 2.)</p>
+    <p>The teaching board's opening hand <em>and</em> its refills are scripted, so this is the same run for every player. Every number in the shots below is the number you will see.</p>
     <p>Press <em>any</em> button during the demo to take the board over mid-move — the screen says YOUR TURN. Press <kbd>Enter</kbd> to skip the whole demo and get the board fresh.</p>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/demo1-mwPNMeK0.png" alt="The demo's first move: the bot points at a TXT card and the line reads I START A CHAIN WITH TXT." width="540" height="492"><figcaption>Beat one. The bot names the move and the reason, one idea per line.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/gym-DHukaXyd.png" alt="The demo mid-board: a green TXT card worth plus 8 sits next to a PIC card, the virus's next card is TXT, and the line reads the red card is TXT so is my chain, I spend this one as a shield instead." width="540" height="492"><figcaption>The shield beat. The TXT card would pay <span class="g">+8</span> — and the bot spends the PIC instead, because the virus's card is TXT and would take the chain. This is the move nobody works out alone, so the demo says it out loud with the card lit.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/demo1-CCFy64fS.png" alt="The demo's first move: two TXT 3 cards and a PIC 2, the bot points at the first TXT and the line reads I start a chain with TXT, the next TXT will pay double." width="540" height="492"><figcaption>Beat one. The bot names the move and the reason, one idea per line. The next beat pays <span class="g">6</span> — the demo's first sum is one worth caring about.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/kept-BJFijUh8.png" alt="The demo's kept card: a TXT 1 under a double white border tagged KEPT, with the line I keep the TXT, it matches my chain, next turn it pays 4." width="540" height="492"><figcaption>The line that does the real teaching is about a card the bot <em>did not spend</em>. So that card gets its own border and the word <strong>KEPT</strong> — the words and the pixels point at the same card.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/gym-D4zICSCy.png" alt="The demo mid-board: chain x3, the virus's card is a red TXT 2, an on-chain TXT sits in hand, and the line reads the red card is TXT so is my chain, I spend this one as a shield instead." width="540" height="492"><figcaption>The shield beat. Chain <span class="g">x3</span> on TXT, and the virus's card is a red <span class="r">TXT 2</span> — it would take the chain. So the bot spends the off-type PIC as armour. This is the move nobody works out alone, so the demo says it out loud with the card lit.</figcaption></figure>
       <figure><img src="/docs/scandisk/assets/title-Cefa2ubu.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
     </div>
   </section>
@@ -90,7 +92,7 @@
       <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
     </table>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/pad-phone-Bafd4JX0.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-phone-brDSxTA6.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
       <figure><img src="/docs/scandisk/assets/pad-pc-DqUxj_ry.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
     </div>
   </section>
@@ -117,6 +119,7 @@
       <li><strong>SAFE MODE never ends a run.</strong> Fail it and it restarts.</li>
       <li><strong>Round 2: the hands-on gym was deleted and replaced by the self-playing demo.</strong> You watch the bot play the teaching board, then get the same board.</li>
       <li><strong>Round 2: SAFE MODE's virus now HAS a file type</strong>, on a fixed four-card script. It used to be typeless so a beginner could not lose a chain — but a typeless virus also makes the shield idea invisible, and the shield is the one thing nobody works out alone. A real threat is what the demo points at. This <em>replaced</em> the old rule, it did not stack on it.</li>
+      <li><strong>Round 2: the teaching board's draws are scripted, not random.</strong> Pinning only the opening hand left the headline beat to the run seed. Now the refills are pinned too, so the demo is the same run — and the same numbers — every time.</li>
       <li><strong>Round 2: one bot brain.</strong> The bot that teaches you on screen is the same file the sim measures (<code>src/jam2d/bot.ts</code>). If they drifted apart, the demo would be a lie.</li>
     </ul>
     <p>What we cut on the way: an "eats your hand" virus card (replaced by "breaks your chain"), a discard-and-reshuffle deck, special card powers, an END TURN button, a fourth file type, the hands-on gym, and the typeless SAFE MODE virus.</p>

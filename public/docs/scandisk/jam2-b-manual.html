@@ -37,12 +37,16 @@
 You save what you can.</p>
 <p><a href="jam2-b.html">▶ Play it</a></p>
 
-<figure><img src="/docs/scandisk/assets/story-BtqN0L3Z.png" alt="The story screen">
+<figure><img src="/docs/scandisk/assets/story-BQJCmiYJ.png" alt="The story screen">
   <figcaption>The story screen, between the title and the rules. Four lines, one every 0.45 s, all up in about
   1.4 seconds. A press while they are still arriving drops the rest in at once; the next press moves on, so
   mashing START never skips it.</figcaption></figure>
 
 <h2>The six rules</h2>
+<p class="note">The game itself no longer shows these. On the way in you get <b>three ideas</b> — the rot never
+stops, the files go to the port, a man carries <i>or</i> holds and cannot do both — and then the demo plays a
+board. Six numbered rules in front of a stranger is a wall, and if the demo works you do not need them.
+They live here instead, in full. <b>(team call)</b></p>
 <ol>
   <li><b>Real time.</b> <span class="red">Red</span> takes a cell every few seconds and never stops. The more files it eats, the faster it spreads.</li>
   <li><b>One order.</b> Move the cursor with the D-pad. <b>X</b> sends your picked worker there. <b>Z</b> picks another worker.</li>
@@ -53,35 +57,42 @@ You save what you can.</p>
 </ol>
 
 <h2>The tutorial plays itself</h2>
-<p>Round 2 cut the hands-on gym. In its place, <b>the bot plays the teaching board while you watch</b> — the
-same bot that plays the 30 boards in the sim below, so you are watching a real game played well, not a
-scripted cartoon.</p>
+<p>Round 2 cut the hands-on gym. In its place the game <b>plays a board in front of you and says why</b>. It takes
+about <b>25 seconds</b> and it teaches three things in order: a <b>carry</b>, a <b>block</b>, a <b>save</b>.</p>
 <ol>
-  <li>Four opening lines name the pieces: the port, red's next cell, your men.</li>
-  <li>Then it plays. One line at the bottom says what it is doing and why, in plain words. One idea per line.</li>
+  <li>Four opening lines name the pieces: the port, red's next cell, your two men.</li>
+  <li>"SEND THE LOW MAN AT MOM.WAV." — and he goes. Every line is said, then the rules do exactly that.</li>
+  <li>"RED WANTS THAT HOLLOW BOX. GET THERE FIRST." The second man stands on it. Red bites him and loses its
+  whole turn. That is the block, named out loud.</li>
+  <li>"PULL HIM OUT. THREE BITES AND HE IS GONE." Then the first man lands MOM.WAV at the port.</li>
   <li><b>Any button takes the board over right where it stands.</b> <b>START</b> skips the lesson for good.</li>
-  <li>When it has saved two files it stops and hands you the <b>same board</b>, fresh, with a card: YOUR TURN.</li>
+  <li>At the end: the <b>same board</b>, fresh, with a card. YOUR TURN. Save 2 of 4.</li>
 </ol>
-<p class="note"><b>The clock.</b> SALVAGE is the only real-time game in the jam, so the demo owns the clock two
-ways <b>(team call)</b>. It runs the world at <b>0.45×</b> speed, and every narrated beat <b>freezes the world</b>
-while the line is read — about 2 seconds. An order line is posted <b>before</b> the order is given, so the words
-are never behind the picture. Nothing scrolls, nothing flashes, and nothing happens while you are reading.</p>
+<p class="note"><b>The clock, and what went wrong first.</b> SALVAGE is the only real-time game in the jam.
+The first build of this demo <b>froze the world</b> on every narrated line so the words could not fall behind.
+Red grows constantly, so a line fired nearly every frame, each one bought another two seconds of freeze, and
+the world got one frame of motion per freeze — the men never moved, nothing was ever saved, and the demo could
+not reach its own ending. Thresh gated it: do not ship. The rebuild does the opposite. <b>The world never
+stops</b>; it runs at <b>0.55×</b> throughout. The demo is a <b>scripted list of beats</b> — a line, the order it
+describes, and the thing that must become true before the next line — so the lesson is certain instead of
+hoped for. Every cap is in <b>real seconds</b>, not world seconds. <b>(team call)</b></p>
 
 <div class="row">
-  <figure><img src="/docs/scandisk/assets/demo-CEn-0OXT.png" alt="The self-playing tutorial mid-lesson">
+  <figure><img src="/docs/scandisk/assets/demo-B9wgmY5k.png" alt="The self-playing tutorial mid-lesson">
     <figcaption>The demo. The bot has walked a man onto MOM.WAV; the line says why he is standing still.
     The HUD says how to take over.</figcaption></figure>
-  <figure><img src="/docs/scandisk/assets/handover-Crnka6Id.png" alt="The handover card">
+  <figure><img src="/docs/scandisk/assets/handover-D3HR-WhR.png" alt="The handover card">
     <figcaption>The handover. Same board, reset, no hurry.</figcaption></figure>
 </div>
 
 <h2>The teaching board</h2>
-<p>Two men, four files, one rot mass close enough that <b>both</b> verbs come up: carry one out, and stand on the
-cell red wants. Save 2 of 4. It is a real small game, not a sign. <b>(team call)</b></p>
+<p>Two men, four files, and a 2×3 rot mass parked one cell short of TAXES.XLS. Because red prefers a fat front,
+that shape makes its next cell the <b>same cell every tick</b> — which is what lets the demo promise a block
+instead of hoping for one. Save 2 of 4. It is a real small game, not a sign. <b>(team call)</b></p>
 
 <div class="row">
-  <figure><img src="/docs/scandisk/assets/title-DQ34K5FP.png" alt="Title screen"><figcaption>Title.</figcaption></figure>
-  <figure><img src="/docs/scandisk/assets/howto-B1C6fsnx.png" alt="How to play screen"><figcaption>The six rules, one screen, on the way in.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/title-Chw4M8oK.png" alt="Title screen"><figcaption>Title.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/howto-hBQu3S9G.png" alt="How to play screen"><figcaption>The six rules, one screen, on the way in.</figcaption></figure>
 </div>
 
 <figure><img src="/docs/scandisk/assets/mid-DY3ab3pc.png" alt="A real sector mid-game">
@@ -94,8 +105,8 @@ cell red wants. Save 2 of 4. It is a real small game, not a sign. <b>(team call)
 
 <h2>The pad</h2>
 <div class="row">
-  <figure><img src="/docs/scandisk/assets/pad-pc-BAsnq5Wp.png" alt="The pad on a PC screen"><figcaption>PC: keys light the same buttons.</figcaption></figure>
-  <figure><img src="/docs/scandisk/assets/pad-phone-BD_iAune.png" alt="The pad at 390px phone width"><figcaption>Phone (390px): tap the pad.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/pad-pc-Coc2EaJS.png" alt="The pad on a PC screen"><figcaption>PC: keys light the same buttons.</figcaption></figure>
+  <figure><img src="/docs/scandisk/assets/pad-phone-zhoGE36t.png" alt="The pad at 390px phone width"><figcaption>Phone (390px): tap the pad.</figcaption></figure>
 </div>
 <table>
   <tr><td><b>D-pad</b></td><td>move the cursor (arrows or WASD)</td></tr>
@@ -131,7 +142,7 @@ block orders <b>2.27 per board</b>. Re-run with <code>npm run sim-jam2b</code>.<
   <tr><td><b>Save 4 of 8</b></td><td>The keep line. The greedy bot averages 3.2, so a human should beat it.</td></tr>
   <tr><td><b>Fat front</b></td><td>Red prefers filling in over racing ahead, so it reads as rot, not a snake.</td></tr>
   <tr><td><b>Drive dies at 7:00</b></td><td>A backstop that has never fired in 30 bot boards.</td></tr>
-  <tr><td><b>Demo speed 0.45×</b></td><td>Plus a full freeze on every narrated beat. The words never lag the picture.</td></tr>
+  <tr><td><b>Demo speed 0.55×</b></td><td>The world never stops. Each line waits for its own beat instead, capped in real seconds.</td></tr>
   <tr><td><b>Any button = YOUR TURN</b></td><td>You take the board as it stands. START skips to a real sector.</td></tr>
   <tr><td><b>Teaching board</b></td><td>2 men, 4 files, save 2. The demo and your try are the same board.</td></tr>
 </table>
