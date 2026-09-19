@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SCANDISK — jam 2 games</title>
+  <style>
+    :root{--bg:#080810;--panel:#141420;--rule:#282838;--ink:#e8f0f8;--soft:#8890b0;
+      --a:#3878f8;--b:#d7a544;--c:#3fb59f;--d:#e8705e;}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--ink);
+      font:16px/1.5 ui-monospace,Consolas,"SF Mono",monospace;-webkit-text-size-adjust:100%}
+    .wrap{max-width:38rem;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px))}
+    h1{font-size:22px;letter-spacing:.06em;margin:0 0 4px}
+    .sub{color:var(--soft);font-size:13px;margin:0 0 26px;line-height:1.5}
+    ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+    li{background:var(--panel);border:1px solid var(--rule);border-left:4px solid var(--k,var(--a));
+      border-radius:6px;padding:14px 16px}
+    li.a{--k:var(--a)} li.b{--k:var(--b)} li.c{--k:var(--c)} li.d{--k:var(--d)}
+    .play{display:block;font-size:19px;font-weight:700;letter-spacing:.04em;color:var(--ink);
+      text-decoration:none;padding:6px 0}
+    .play:active{color:var(--k)}
+    .kind{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--k);margin-bottom:2px}
+    p{margin:8px 0 0;font-size:14px;color:#c4ccdd}
+    .note{margin-top:10px;padding-top:9px;border-top:1px dotted var(--rule);font-size:12.5px;color:var(--soft)}
+    .man{display:inline-block;margin-top:10px;font-size:12px;color:var(--soft)}
+    li.held{opacity:.68}
+    footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--rule);color:var(--soft);font-size:12.5px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SCANDISK · JAM 2</h1>
+  <p class="sub">Four teams, four small games, one drive being eaten. Play in this order. Do not read the manual — press START. After each one, answer one question: <strong>want to play it again?</strong></p>
+
+  <ul>
+    <li class="a">
+      <div class="kind">1 · turn-based tactics</div>
+      <a class="play" href="jam2-a.html">A · BAD SECTOR</a>
+      <p>Two programs, no attack button. You only shove. A red pushed into a wall, a hole, a file or another red dies.</p>
+      <div class="note">Thresh: best first 30 seconds, and the likely winner.</div>
+      <a class="man" href="jam2-a-manual.html">manual →</a>
+    </li>
+    <li class="b">
+      <div class="kind">2 · real-time strategy</div>
+      <a class="play" href="jam2-b.html">B · SALVAGE</a>
+      <p>Four workers. Each can carry a file out, or stand in the rot's way. Never both. Save four of eight.</p>
+      <div class="note">Thresh: clearest screen; its length is already right.</div>
+      <a class="man" href="jam2-b-manual.html">manual →</a>
+    </li>
+    <li class="d">
+      <div class="kind">3 · roguelike deckbuilder</div>
+      <a class="play" href="jam2-d.html">D · LAST BACKUP</a>
+      <p>A hand of three, spend two a turn. Same file type again grows your chain. The cards that break your chain are your shields.</p>
+      <div class="note">Thresh: worth one board. Ask — was any turn actually hard?</div>
+      <a class="man" href="jam2-d-manual.html">manual →</a>
+    </li>
+    <li class="c held">
+      <div class="kind">4 · arcade puzzle · being tuned</div>
+      <a class="play" href="jam2-c.html">C · PURGE</a>
+      <p>Plant charges, set one off, blow a chain across the sector. The header shows the whole blast before you press the button.</p>
+      <div class="note">Thresh: too hard to win yet. Team C is fixing the numbers.</div>
+      <a class="man" href="jam2-c-manual.html">manual →</a>
+    </li>
+  </ul>
+
+  <footer>
+    Older builds: <a class="man" href="v9.html" style="margin:0">v9 QUARANTINE</a> · <a class="man" href="v8.html" style="margin:0">v8</a>
+  </footer>
+</div>
+</body>
+</html>
