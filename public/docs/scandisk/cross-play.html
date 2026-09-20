@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SCANDISK — cross-play, 12 reports</title>
+  <style>
+    :root{--bg:#080810;--panel:#141420;--panel2:#191926;--rule:#282838;--ink:#e8f0f8;--soft:#8890b0;
+      --a:#3878f8;--b:#d7a544;--c:#3fb59f;--d:#e8705e;--warn:#e8705e;--ok:#3fb59f;}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--ink);
+      font:16px/1.55 ui-monospace,Consolas,"SF Mono",monospace;-webkit-text-size-adjust:100%}
+    .wrap{max-width:44rem;margin:0 auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(48px + env(safe-area-inset-bottom,0px))}
+    h1{font-size:21px;letter-spacing:.05em;margin:0 0 4px}
+    .sub{color:var(--soft);font-size:13px;margin:0 0 20px;line-height:1.5}
+    .sub a{color:var(--soft)}
+    nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+    nav a{flex:1 1 auto;text-align:center;min-width:5.5rem;background:var(--panel);border:1px solid var(--rule);
+      border-bottom:3px solid var(--k,var(--rule));border-radius:5px;padding:9px 6px;
+      font-size:12px;letter-spacing:.08em;color:var(--ink);text-decoration:none}
+    nav a.a{--k:var(--a)} nav a.b{--k:var(--b)} nav a.c{--k:var(--c)} nav a.d{--k:var(--d)}
+
+    h2{font-size:17px;letter-spacing:.05em;margin:0;padding:0}
+    .game{margin:0 0 40px;scroll-margin-top:14px}
+    .ghead{border-left:4px solid var(--k);background:var(--panel);border:1px solid var(--rule);
+      border-left:4px solid var(--k);border-radius:6px;padding:14px 16px;margin-bottom:14px}
+    .game.a{--k:var(--a)} .game.b{--k:var(--b)} .game.c{--k:var(--c)} .game.d{--k:var(--d)}
+    .kind{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--k);margin-bottom:3px}
+    .ghead p{margin:8px 0 0;font-size:13.5px;color:#c4ccdd}
+    .links{margin-top:11px;font-size:12px;color:var(--soft)}
+    .links a{color:var(--soft);margin-right:14px}
+
+    .agree{background:var(--panel2);border:1px solid var(--rule);border-radius:6px;padding:13px 16px;margin-bottom:16px}
+    .agree h3{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ok);margin:0 0 9px}
+    .agree ul{margin:0;padding-left:1.1em}
+    .agree li{margin-bottom:7px;font-size:13.5px;line-height:1.5}
+    .agree li:last-child{margin-bottom:0}
+    .agree b{color:var(--ink)}
+    .split{color:var(--warn)}
+
+    details{background:var(--panel);border:1px solid var(--rule);border-radius:6px;margin-bottom:10px}
+    details[open]{background:var(--panel)}
+    summary{cursor:pointer;padding:12px 15px;font-size:13px;letter-spacing:.04em;list-style:none}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"+";float:right;color:var(--soft);font-weight:700}
+    details[open] summary::after{content:"\2013"}
+    summary .who{color:var(--rc);font-weight:700}
+    .r-a{--rc:var(--a)} .r-b{--rc:var(--b)} .r-c{--rc:var(--c)} .r-d{--rc:var(--d)}
+    .body{padding:0 15px 14px;border-top:1px solid var(--rule);margin-top:0}
+    .one{font-size:13px;color:#c4ccdd;font-style:normal;margin:12px 0 4px;padding-left:10px;border-left:2px solid var(--rule)}
+    .body h4{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin:16px 0 7px}
+    .body h4.like{color:var(--ok)} .body h4.no{color:var(--warn)}
+    .body ul{margin:0;padding-left:1.1em}
+    .body li{margin-bottom:8px;font-size:13.5px;line-height:1.5;color:#d2dae8}
+    code{font-size:12px;color:var(--soft);background:#0e0e18;padding:1px 4px;border-radius:3px}
+    .q{margin-top:14px;padding:10px 12px;background:#0e0e18;border-radius:5px;font-size:13px;color:#c4ccdd}
+    .q span{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-bottom:5px}
+    .bias{font-size:12px;color:var(--soft);line-height:1.5;margin:10px 0 0;padding-top:10px;border-top:1px dotted var(--rule)}
+
+    .top{background:var(--panel2);border:1px solid var(--rule);border-radius:6px;padding:16px;margin-bottom:30px}
+    .top h3{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+    .top h3+p{margin-top:-4px}
+    .top p{margin:0 0 12px;font-size:13.5px;color:#c4ccdd;line-height:1.55}
+    .top ol{margin:0;padding-left:1.3em}
+    .top li{margin-bottom:9px;font-size:13.5px;line-height:1.5;color:#d2dae8}
+    .top li:last-child{margin-bottom:0}
+    .tag{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      padding:2px 6px;border-radius:3px;background:#2a1a1a;color:var(--warn);margin-right:6px;vertical-align:1px}
+    .tag.ok{background:#14261f;color:var(--ok)}
+    footer{margin-top:34px;padding-top:15px;border-top:1px solid var(--rule);color:var(--soft);font-size:12.5px;line-height:1.6}
+    footer a{color:var(--soft)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>SCANDISK · CROSS-PLAY</h1>
+  <p class="sub">Every team reviewed the other three games. Never its own. 4 teams &times; 3 games = <strong>12 reports</strong>, and each game below carries the 3 written about it.<br>
+  Nobody fixed anything. Nothing was built from this. <strong>Your play note still outranks all 12.</strong><br>
+  <a href="/docs/scandisk/">&larr; back to the games</a></p>
+
+  <nav>
+    <a class="a" href="#a">A · BAD SECTOR</a>
+    <a class="b" href="#b">B · SALVAGE</a>
+    <a class="c" href="#c">C · PURGE</a>
+    <a class="d" href="#d">D · LAST BACKUP</a>
+  </nav>
+
+  <div class="top">
+    <h3>Read this first — what came out of all 12</h3>
+    <p>Four things showed up in more than one game. These are the ones worth your attention before you read a single report.</p>
+    <ol>
+      <li><span class="tag">Bug</span><b>D's block button prints the wrong number.</b> The button reads <code>BLOCK 3</code> while the rule caps the block at the flood still coming in. D's own phone screenshot shows a virus card at <b>2</b> and a button saying <b>3</b>. Team A found it. It is a defect, not taste.</li>
+      <li><span class="tag">Bug</span><b>C's proof may be measuring a game nobody plays.</b> The sim gives the bot 2 actions per beat. The real game has no cap — a fast thumb can plant all 8 charges and fire inside one 4.8s beat. If that holds, every PASS number on C's card belongs to a slower player. This is your own round-2 rule biting again: <em>a sim number is not a screen.</em></li>
+      <li><span class="tag">Bug</span><b>D's manual opens on a false caption.</b> <code>title.png</code> is the SAFE MODE practice board, captioned "The title." D has a real title screen the screenshot never reached. All three rival teams caught it independently.</li>
+      <li><span class="tag ok">Pattern</span><b>All four games know more than they draw.</b> A already computes what the worm is walking at. B already picks where the next file surfaces. C already knows your best chain. D already knows what a card blocks. None of it reaches the screen. That is one shared fix, not four.</li>
+      <li><span class="tag">Pattern</span><b>The "flailing player gets paid" disease is not dead.</b> C had it and fixed it with one rule. D still has it: the random bot has near-best plays on 48% of turns, the smart bot on 42%. Playing well <em>narrows</em> the game. Team C flagged it with its hands up, naming its own old bug.</li>
+      <li><span class="tag">Open</span><b>The phone dead band never closed.</b> Round 2 called it engine-level. Three reviewers measured roughly 110-130px of black above the board and 150px below the pad, on every game. On B it did not close, it moved.</li>
+    </ol>
+  </div>
+
+  <!-- ================= A ================= -->
+  <section class="game a" id="a">
+    <div class="ghead">
+      <div class="kind">reviewed by B · C · D</div>
+      <h2>A · BAD SECTOR</h2>
+      <p>Turn-based tactics. Two programs, no attack button. You only shove.</p>
+      <div class="links"><a href="/docs/scandisk/jam2-a.html">play &rarr;</a><a href="/docs/scandisk/jam2-a-manual.html">manual &rarr;</a></div>
+    </div>
+
+    <div class="agree">
+      <h3>Where all three agreed</h3>
+      <ul>
+        <li><b>The forecast cannot lie, and that is the best code in the jam.</b> <code>forecast()</code> runs the real <code>resolve()</code> and draws what came back. All three called it out unprompted. C: "best single engineering decision." D: "the strongest single line of code in the jam."</li>
+        <li><b>The random crack tile is the one unowned die.</b> Every round a hole opens on a uniformly random open tile. All three flagged it: this is the only game promising perfect information, and once a round something happens that no amount of reading can anticipate. <em>Three different fixes offered:</em> let the virus aim it (C), crack the tile a red died on (D), or replace it outright (B).</li>
+        <li><b>Two win conditions race, and the quiet one always loses.</b> The screen promises "keep every file alive until the BACKUP bar fills" — but the bar is set to 8 rounds and the median board ends at 4. You actually win by exterminating. B, C and D each arrived at this separately. D put it hardest: <b>nothing counts up</b>, and waiting out the timer prints the same CLEAN as wiping the board.</li>
+        <li><b>The DANGER line is the wrong shape.</b> All three hit the same HUD row. It gives you the count and withholds the name — and the game already knows the name.</li>
+        <li class="split"><b>Contested:</b> C wants UNDO replaced with instant RESTART ("undo is restart with the pain smeared out"). B and D both named UNDO as a thing they liked.</li>
+      </ul>
+    </div>
+
+    <details class="r-b">
+      <summary><span class="who">TEAM B · REAL TIME</span> — Jonasson, the Pfeiffers, Adams, Fumoto</summary>
+      <div class="body">
+        <p class="one">An 8x6 grid where two programs get three steps each, your only weapon is shoving a red into a wall, and the board shows you the whole next round before you commit.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>The forecast cannot lie, by construction. <code>rules.ts:177</code> — <code>forecast()</code> runs the real <code>resolve()</code> and returns its log. A system showing its own working is exactly what our school wants.</li>
+          <li>No attack button. Arrows are the whole verb set; walk and shove are the same press, decided by what is next to you. One input, four consequences.</li>
+          <li>The teaching board has no dice in it. <code>pickCrack</code> returns -1 while teaching, and the map is hand-built. <code>teach.png</code> shows the money move as move one, guaranteed, every run.</li>
+          <li><code>Z UNDO</code> is on the pad, labelled, at phone width. A turn game that lets you step back is a turn game that lets you think instead of guess.</li>
+          <li>The goal is named before move one — <code>demo-goal.png</code> holds it 2.6s. Most tutorials teach the verbs and never the ask.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li>The stated goal is not the real goal. <code>tune2a.ts:4</code> sets <code>maxRound: 8</code>, but the sim's median board ends at round 4. The screen promises survival; the maths pays extermination.</li>
+          <li>Worm and spike read as one red mass from arm's length. Two units with completely different behaviour, one silhouette.</li>
+          <li>The loudest thing on the board is the cheapest rule. The cracked tile is uniform random, yet it out-shouts the spike.</li>
+          <li><code>DANGER: 1 OF YOURS DIES ON START</code> gives the count and withholds the name. The one fact the forecast refuses to hand over is the one you would act on.</li>
+          <li>The manual's winning shot reads <code>SECTOR 00</code>. <code>scenes.ts:31</code> never sets <code>g.sector</code>, so the victory screenshot shows a sector that cannot exist in play.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Pick one win condition. Either stop the board ending on the last crash so the bar means something, or cut <code>maxRound</code> to the real median. Right now two win conditions race and the quiet one always loses.</li>
+          <li>Give spike and worm different shapes, not different red glyphs. Shape carries across a room; hue does not.</li>
+          <li>Aim the crack instead of rolling it. Open it under the tile the virus most wants, and it joins the rest of the board as something you can read.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li>Name the file in the danger line: <code>DANGER: MOM.WAV DIES ON START</code>. <b>Replaces</b> the count line. Same row, same pixels, a decision instead of a jump-scare.</li>
+          <li>A <code>BACKUP +1</code> tile a program can stand on to fill the bar faster. <b>Replaces</b> the random crack. The bar becomes something you play toward rather than something that expires behind you.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>When you won — did the backup bar fill, or did you kill the last red? And which one did you think you were playing for?</div>
+        <p class="bias">Their stated bias: over-values systems that keep running while you look away, and boards readable from across the room. Under-values pleasure in the exact instant of a press.</p>
+      </div>
+    </details>
+
+    <details class="r-c">
+      <summary><span class="who">TEAM C · ACTION PUZZLE</span> — Pajitnov, Kenta Cho, Cavanagh, Barth</summary>
+      <div class="body">
+        <p class="one">One verb — shove — and a board that tells you the truth about next round before you commit to it.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li><code>rules.ts:176-180</code> — <code>forecast()</code> literally calls <code>resolve()</code> and draws what came back. The marks cannot lie, ever, by construction. Best single engineering decision in the three games we played.</li>
+          <li><code>rules.ts:209-236</code> — walk and attack are the same button in the same direction. One rule, learned in five seconds. We build our whole school on that sentence and A got there without us.</li>
+          <li><code>rules.ts:151</code> — every spike turns a quarter clockwise each round. One line of code, and now the board is readable three rounds deep. Free depth, no extra rule.</li>
+          <li>"YOU HAVE NO GUN. YOU ONLY SHOVE." Four words name the whole game. And the goal arrives before the verbs.</li>
+          <li>Sim: smart 20/30, random 0/30. Median 4 rounds means a loss costs you almost nothing — failure fast, restart fast, exactly right.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><code>rules.ts:182-187</code> — the crack tile is uniform rng from every open cell. This is the one game that promises perfect information, and once a round an unowned die drops a hole somewhere.</li>
+          <li><code>rules.ts:191</code> — one file eaten and the whole sector is LOST. No gradient at all. The BACKUP bar is a thing you survive, not a thing you build, so the eight rounds have no shape. Round 7 feels like round 2.</li>
+          <li><code>redsMax: 6</code> is hit at sector 3 and <code>maxRound</code> stays 8 forever. Sector 6 is identical to sector 3. The escalation stops and the game never tells you.</li>
+          <li><code>mid.png</code> — six rows of text wrapped around an 8x6 board. The board already draws the beam that kills the program. The DANGER line is a caption on a picture that was already clear.</li>
+          <li>Roughly 130px of black above the board and 150px below the pad on an 844px frame. The board is about a quarter of the phone. Shared dead band — not A's fault, but A wears it worst because its grid is smallest.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Let the virus choose the crack, not the rng. Nearest open tile to a live file. Same hazard, same telegraph, but now it comes out of the board state and a good player sees it two rounds out.</li>
+          <li>Delete the DANGER text and put a mark on the piece that dies. No text where a shape will do. You free a HUD row and the eye goes to the board.</li>
+          <li>Once reds cap at sector 3, escalate by cutting <code>maxRound</code> one round per sector instead of adding reds. Same board, less air. That is rhythm, and it costs one line.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A red shoved into another red crashes BOTH.</b> <b>Replaces</b> the single-kill. Now herding two reds together is a play worth setting up a round in advance, and the board has one big moment instead of five equal ones.</li>
+          <li><b>A RESTART button that re-deals the same board instantly.</b> <b>Replaces</b> UNDO on Z. Undo is restart with the pain smeared out. With a median board of 4 rounds you are asking for 30 seconds of a player's life — take the whole thing back.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>When the crack opened, did you feel you had made a mistake — or that the drive did it to you?</div>
+        <p class="bias">Their stated bias: over-values things the hands do every second, and calls dead time a flaw even when calm is the point. Discount them on turn length.</p>
+      </div>
+    </details>
+
+    <details class="r-d">
+      <summary><span class="who">TEAM D · RUN + HAND</span> — LocalThunk, Derek Yu, Trobbiani, Blow</summary>
+      <div class="body">
+        <p class="one">A small board where the virus shows you its whole next move and you spend six steps making it kill itself — and it never once tells you how well you did it.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>The forecast cannot lie, because it <em>is</em> the resolution. Nothing on that board is a promise the rules can break. That is the strongest single line of code in the jam.</li>
+          <li>The SPIKE turns exactly a quarter clockwise after every shot. Deterministic, so you can read one four rounds out. That is the "see a stupid-big play coming" feeling arriving in a tactics game.</li>
+          <li><code>DANGER: 1 OF YOURS DIES ON START</code> names the consequence in plain words before you commit. The HUD is doing a job, not decorating.</li>
+          <li>Z undoes back to the start of the round. A 3-step hand you can try and take back is a hand, not a submission.</li>
+          <li>Sim: smart 20/30, random 0/30, reds crashed 3.9 vs 1.2. The game is about a third skill and nothing about luck at the top end.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>Nothing counts up.</b> The only number that moves is the BACKUP bar, which fills at a fixed 8 rounds regardless of you. Waiting out the timer and wiping the board both print CLEAN. The best play in the game pays exactly the same as the dullest.</li>
+          <li>The crack is a uniform random open tile every round. That is randomness deciding the outcome, not making a story — one round's warning and no way to have planned for it.</li>
+          <li>Losing <b>one</b> file ends the board. No partial result, so no "I got two out" to remember. Compare B's end card, which names every file it saved and lost.</li>
+          <li>The filename row is a text label, not a playable object. It never says which one the worm is walking at — and <code>wormTarget()</code> already knows, every frame.</li>
+          <li>Rounds median 4 against <code>maxRound</code> 8. Half the boards never reach the bar the demo told you to watch.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>The crack: instead of a random open tile, crack the tile a red died on last round. Same rule, same count, but now the drive rots <em>because of what you did</em> — randomness that makes a story instead of a coin flip.</li>
+          <li>The two wins should not read the same. Name them apart on screen — PURGED vs SURVIVED — so the good one is a thing to reach for.</li>
+          <li>Move the file names off the HUD text row and onto the file tiles, with a pip on whichever one a worm is walking at. Replaces a label with an object.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A crash tally next to the backup bar</b> — reds crashed this board, counting up as they die. <b>Replaces</b> the three-filename text row. Your sim already measures it (3.9 vs 1.2) and the player is the only person in the room who can't see it.</li>
+          <li><b>One file you are allowed to lose per sector.</b> <b>Replaces</b> the instant loss on any file lost. Right now every board is pass/fail; letting a board absorb one bad break gives the losses a shape and gives the player a moment of "that one's gone, save the rest."</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>When you pressed START, did you already know what the virus would do — or were you finding out?</div>
+        <p class="bias">Their stated bias: over-values a number that climbs and a run that remembers. Under-values a clean single board that ends and asks nothing more of you.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= B ================= -->
+  <section class="game b" id="b">
+    <div class="ghead">
+      <div class="kind">reviewed by A · C · D</div>
+      <h2>B · SALVAGE</h2>
+      <p>Real-time strategy. Four workers. Each carries a file out, or stands in the rot. Never both.</p>
+      <div class="links"><a href="/docs/scandisk/jam2-b.html">play &rarr;</a><a href="/docs/scandisk/jam2-b-manual.html">manual &rarr;</a></div>
+    </div>
+
+    <div class="agree">
+      <h3>Where all three agreed</h3>
+      <ul>
+        <li><b>Crew alive at the end is exactly 1.00 of 4, every single board.</b> All three flagged the same number. C said it best: <em>"A toll that never varies is not a consequence, it is a tax."</em> Bad North's losses hurt because you sometimes get everyone out. Here you never do, so after two boards you stop caring which man walks into the rot.</li>
+        <li><b>The median board loses.</b> Files saved averages 3.30 against a keep line of 4; the sector is kept 13 times in 30. A and D both noted the HUD spends most of a board with the right number frozen and the wrong one climbing.</li>
+        <li><b>One order is the whole game, and that is the achievement.</b> C and D both singled it out. C: "We have spent whole jams trying to get down to one order and failing. B started there." Carrying and blocking are not two buttons — they are two places.</li>
+        <li><b>Blocking is still unproven on a frame.</b> A and C both pointed at the same thing: the sim reports 2.27 blocks per board, which is the same shape of number round 2 reported when blocking happened <em>zero times on screen</em>.</li>
+        <li class="split"><b>Contested, sharply:</b> the 4-second copy. D calls it the <b>best rule in the game</b> — "a rescue is a commitment you can be punished for mid-way." A says it is the most dangerous four seconds in the game with no timer on screen and a silent cancel. C says calm is not the same as idle and wants it held on X. <em>Three teams, three opposite verdicts on one number.</em></li>
+      </ul>
+    </div>
+
+    <details class="r-a">
+      <summary><span class="who">TEAM A · TACTICS</span> — Subset Games (Ma + Davis), Cowley, Pickering, Sato</summary>
+      <div class="body">
+        <p class="one">Four men on a dying drive, walking files to a port while a red mass eats toward them — and it tells you, in words, which file it is walking at.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>The HUD names red's target <b>by filename</b> — <code>RED MOM.WAV</code>. The virus states its intention in words, not a heat map. We would steal that line as-is.</li>
+          <li>Red's next cells are drawn on the board a full tick early, and a worker standing on one is marked too. That is our one-turn-early promise, ported into real time. It works.</li>
+          <li>The teaching board is a real board, not a sign: hand-placed so <b>both</b> verbs come up, and the demo you watch and the board you play are the same board. A demo you then inherit beats a demo you only watch.</li>
+          <li>Red prefers a fat front over a fast line. The mass reads as a mass — you can see which edge is advancing. Anti-snake was the right call.</li>
+          <li>The how-to's third line is the whole game: <em>"A MAN CARRIES A FILE OUT, OR HE STANDS IN THE ROT AND HOLDS IT BACK. HE CANNOT DO BOTH."</em> A trade-off stated in one sentence.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>The preview is only half the information.</b> You see red's next cell, but not whether your man arrives first. Free step 0.55s, carrying 0.95s, tick 3.5s — that is six-and-a-bit cells per tick, worked out in your head, with the clock running. Judged against B's <em>own</em> goal, this is the one sum the game asks for and does not show.</li>
+          <li><b>Crew alive at the end avg 1.00/4.</b> With keep 4 and files saved avg 3.30/8, the median board is a loss. "Save what you can" is honest; a 43% keep rate on top of a 75% crew loss is attrition, not a puzzle.</li>
+          <li>Four seconds standing still on the file, and walking away silently cancels it. The most dangerous four seconds in the game has no timer on screen and no warning before the cancel.</li>
+          <li>The canonical six rules say <b>"Save 5 of 8 to keep the sector."</b> The tuning ships keep 4 and the HUD prints 4. The rule list is wrong by one against the game.</li>
+          <li>Phone dead band did not close, it moved: roughly 110px of black <em>above</em> the board and 130px below the pad.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Put the tick clock <b>on the man</b>, not only in the HUD corner: draw the cell he will be standing in when the next tick lands. Nothing else changes and the arithmetic stops being mental.</li>
+          <li>Draw the copy timer on the worker as a filling bar, and warn before a new order cancels it.</li>
+          <li>Move one of two numbers: keep 3, or crew 5. A 43% keep rate with 3 of 4 men dead says the board is priced above what four men can do.</li>
+          <li>Grow the board into the top gap on phone. The board is the game; the black bar is not.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A HOLD order.</b> X on a cell red is about to take plants the man there, and he does not walk off for any reason until you say so. <b>Replaces</b> the current silent cancel — same button count, one clear intent per press, and the block verb finally gets a button of its own.</li>
+          <li><b>Name the tick.</b> A plain count — 3, 2, 1 — to the next virus tick. <b>Replaces</b> the unlabelled red progress bar, which shows time passing but never says in what unit.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>When red took a file — could you have stopped it, and did you know that <em>before</em> it happened?</div>
+        <p class="bias">Their stated bias: over-values a board you can solve in your head before touching a button, and always asks for one more number on screen. Under-values pressure from a clock, a draw, or a climbing score.</p>
+      </div>
+    </details>
+
+    <details class="r-c">
+      <summary><span class="who">TEAM C · ACTION PUZZLE</span> — Pajitnov, Kenta Cho, Cavanagh, Barth</summary>
+      <div class="body">
+        <p class="one">You give one kind of order, and the two things you can do with it fall out of where you send the man.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li><code>rules.ts:121</code> — "Send a worker to a cell. That is the only order in the game." One order. We have spent whole jams trying to get down to one order and failing. B started there.</li>
+          <li>Carrying and blocking are not two buttons, they are two places. Step on a file, he copies it; stand where red wants to go, he blocks it. The rules never had to say "block" — the world says it.</li>
+          <li><code>planNext()</code> runs every frame and the cells red will take next are drawn as hollow red squares. A real-time game that still telegraphs. That is hard and B did it.</li>
+          <li><code>end.png</code> — five names in blue, three in red, by filename. MOM.WAV going red is worth more than any number. Partial credit gives the board a shape A does not have.</li>
+          <li>Sim: 29/30 end clean, median 3:27, longest 4:41. The length target is not a hope, it is controlled.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>Crew alive at the end avg 1.00/4</b> — exactly one man, every board. A toll that never varies is not a consequence, it is a tax. Bad North's losses hurt because you sometimes get everyone out. Here you never do, so after two boards you stop caring which man walks into the rot.</li>
+          <li>Sim reports 2.27 blocks/board — the same number round 2 reported when blocking happened <b>zero times on screen</b>. Nothing in these numbers shows the fix landed. The one verb that makes B special is still unproven on a frame.</li>
+          <li><code>copyS: 4</code>. Four seconds of standing on a file with no input, against a 3.5s virus tick. Calm is B's goal and we will not mark it down for being calm — but calm is not the same as idle. The copy is the moment you most want to be doing something, and it is the one moment the game takes the controller away.</li>
+          <li>The cursor and the picked worker are both a white outline on a blue square. Two of them on screen, same mark, different meaning.</li>
+          <li>The file roster along the bottom has four states and two legible marks. Grey means "not surfaced yet" and also reads as "gone." On a 390px frame that row is the only place you can count what is left.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Make the copy a thing the hands do. Hold X while he is on the file and the copy runs; let go and it stops. Same four seconds, but they are yours. If that is too much, cut it to 1.5s. Either beats four seconds of watching.</li>
+          <li>Give the cursor and the picked man different shapes, not the same outline in two places. Corner brackets for the cursor, a filled ring for the man. One shape, one meaning.</li>
+          <li>The roster row needs four marks, not two colours and a grey: hollow = still down there, solid green = on the board, blue = saved, red X = eaten. It is the scoreboard and right now it is the hardest thing to read at phone width.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A man who reaches the PORT is patched: bites back to 0.</b> <b>Replaces</b> the one-way bite clock. Pulling a wounded man home becomes a real order that competes with the file he was going to fetch — which is what fixes the flat "1.00 crew alive" number without touching the virus at all.</li>
+          <li><b>Hold Z to send every idle man to the cursor at once.</b> <b>Replaces</b> the one-at-a-time cycle as the panic control. On a phone, tapping Z three times to find the right man while a 3.5s tick runs is the slowest thing in the game.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>You lost three of your four men. Name the one whose death you chose.</div>
+        <p class="bias">Their stated bias: over-values things the hands do every second. Under-values patience, reading a board, and a slow loss — "discount us on B especially."</p>
+      </div>
+    </details>
+
+    <details class="r-d">
+      <summary><span class="who">TEAM D · RUN + HAND</span> — LocalThunk, Derek Yu, Trobbiani, Blow</summary>
+      <div class="body">
+        <p class="one">Four men, one order, and a rot that never stops — you spend the whole board choosing which file you are not going to save.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li><b>One order in the entire game.</b> Cursor + X is the whole verb set. No menu, no build tree. The screen is the interface and the interface is the game.</li>
+          <li>The bite economy is a real verb with a real price: a bite cancels red's <b>whole</b> push for that tick. A man standing still is literally worth three cells of drive.</li>
+          <li><code>end.png</code> — SECTOR KEPT / 5 SAVED, 3 EATEN, with names in a blue column and a red column. That is a run's story on one screen. The names are why it lands.</li>
+          <li>The eight letter tiles along the bottom are eight objects that light as files surface, not a "FILES: 3/8" string. That is the most Trobbiani thing in the jam.</li>
+          <li>Copy takes 4 seconds standing still on the file. A rescue is a commitment you can be punished for mid-way. <b>Best rule in the game.</b></li>
+          <li>Round 2 caught its own lie: the manual claimed a block/carry trade-off, the sim said blocks happened 0 times, and the pricing got fixed. Respect.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li>The median run <b>loses</b>. Saved avg 3.30 of 8 against a keep line of 4; sector kept 13/30. The HUD spends most of a board with the right number frozen and the wrong number climbing.</li>
+          <li>The PORT is a thin green outline on the left edge. It is the one cell every file has to reach and it is the quietest object on the screen.</li>
+          <li>Crew alive at the end averages <b>1.00 of 4</b> and they never come back. You lose three men a board and the HUD moves from CREW 4 to CREW 1. Three deaths, one digit.</li>
+          <li>Board length is set by a timer nothing on screen shows: 34s decides when the next file appears, and its cell is picked the instant before it lands. You cannot position for a file you cannot see coming.</li>
+          <li>The virus re-aims at the nearest file every single tick. Always honest, always instantaneous — so there is no threat that builds over three ticks.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Show the next file 8 seconds before it surfaces. The cell is already chosen; drawing a faint marker early costs no rule and converts a surprise into a plan you can run men toward.</li>
+          <li>The red HUD line should move onto the eight-tile roster — mark the tile red is hunting. Replaces a sentence with a highlight on an object already on screen.</li>
+          <li>Save-4-of-8 as pass/fail flattens 5 and 4 into the same word. Make the saved count itself the result, so a 6 feels like a 6.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>Name the four men.</b> Put names on the board and on the end card beside what each carried out and where he died. <b>Replaces</b> the CREW 4 counter. An average of one survivor per board is a story every single time, and it is currently an integer.</li>
+          <li><b>A one-line "last board" reading on the title screen</b> — files saved last time vs this time. <b>Replaces</b> the story screen's slot on the way in. No carry-over power, no rule change: just a number that climbs across boards so a session has a shape.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>Name one man you lost and what he was carrying. If you can't, the crew is a number and not a crew.</div>
+        <p class="bias">Their stated bias: over-values a number that climbs and a run that remembers what happened. Under-values a clean single board that ends and asks nothing more.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= C ================= -->
+  <section class="game c" id="c">
+    <div class="ghead">
+      <div class="kind">reviewed by A · B · D</div>
+      <h2>C · PURGE</h2>
+      <p>Arcade puzzle. Plant charges, chain detonations, and your own beams burn your own data.</p>
+      <div class="links"><a href="/docs/scandisk/jam2-c.html">play &rarr;</a><a href="/docs/scandisk/jam2-c-manual.html">manual &rarr;</a></div>
+    </div>
+
+    <div class="agree">
+      <h3>Where all three agreed</h3>
+      <ul>
+        <li><b>The charge-conservation fix is the best design work anyone did in round 2.</b> All three said so independently. One rule change — deleted, not added — moved the random bot's best chain from 9.8 down to 3.3 while the smart bot held 5.6. A: "the cleanest single fix in the jam." D: "a one-rule fix to a whole-game problem."</li>
+        <li><b>The blue link line between two charges is the single best object in the jam.</b> B and D both. D: "the big play made visible before it exists — it is the thing we would steal." B: "the entire system drawn on the board with one pixel of line."</li>
+        <li><b>Data and charges are both blue, and at phone width that is the one readability failure.</b> All three. The thing you shoot with and the thing you must not shoot look the same. The charge already has a diamond inside it — a handful of pixels on a phone.</li>
+        <li><b>The beat clock is a 2px red line at the very top edge.</b> B and D both called it the worst real estate on screen for the most important object in the game.</li>
+        <li><b>The title screen does not describe the game.</b> All three. It never says there are seven sectors (A, B) and never uses the word DATA (D) — the 21 blue squares you must not shoot.</li>
+        <li class="split"><b>The finding that matters most:</b> B found the sim gives the bot 2 actions per beat, while the real game has no cap. A fast thumb can plant all 8 and fire inside one beat. <em>"Today the proof and the product are two different games."</em></li>
+        <li class="split"><b>Contested:</b> D says conserving charges at 8 fixed who gets paid but "flattened how big the dream can get." A wants the wobble in the virus's aim cut so chains can be planned. Both are asking for more ceiling, from opposite ends.</li>
+      </ul>
+    </div>
+
+    <details class="r-a">
+      <summary><span class="who">TEAM A · TACTICS</span> — Subset Games (Ma + Davis), Cowley, Pickering, Sato</summary>
+      <div class="body">
+        <p class="one">Plant up to eight charges on a 9x7 sector, then set one off and watch it light the rest — the chain is the score, and your own beams kill your own data.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>The chain resolves against a <b>snapshot</b> of the board as it was when the chain started — "the preview you see before you press X is exactly what happens." That is our school's first commandment, and C shipped it.</li>
+          <li>The round-2 rule change worked, and the number proves it: smart 28/30 clean at score 192; random 0/30 at 26 — a <b>7.3x skill gap</b>. Conserving charges fixed "the chain pays the wrong player" with one rule change instead of three. The cleanest single fix in the jam.</li>
+          <li><code>chain.png</code> shows the beam lines out of the cursor <em>before</em> you commit. You can see where a beam stops without spending anything.</li>
+          <li><b>76% of beats have 2+ useful moves</b> at a 4.5s average beat. That is a lot of real choice for a game with a clock on it.</li>
+          <li>The anti-turtle valve is honest and <em>says the word</em>: wall your data in and the virus drops NEW INFECTIONS anywhere, note and all. Zero endless runs, and the player is told why.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>One beat of lookahead, and the beat after it is a coin flip.</b> The random-wobble weight (10) outweighs the go-for-data weight (6), so the wobble is the dominant term in where the virus marks. You can see the next mark; you cannot plan a three-beat chain — which is the exact thing the game most wants you to do.</li>
+          <li><b>The how-to never names the tell.</b> Three bullets and not one says what the dashed red corners are. Only the demo says it — and the how-to's own footer offers START to skip the demo. Skip it and you never learn the only lookahead in the game.</li>
+          <li>Data (light blue square) and a charge (blue diamond) are two blues meaning opposite things. The phone shot has <b>no charge on the board at all</b>, so the pairing is untested at the size Chris will actually play it.</li>
+          <li>Rule 4 — your own beam burns your own data — is the best rule in the game, but nothing marks which of <em>your</em> cells a beam is currently pointed at. The preview draws the beam; it does not colour what the beam will kill.</li>
+          <li>The title says PURGE and never says there are seven sectors. The player learns how long the game is on screen two.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Cut the random-wobble weight to at or below the go-for-data weight. Keep the wobble as a tie-break, not the main term. Two beats become readable and a planned chain becomes a plan.</li>
+          <li>Colour the preview by outcome: red cells the beam will kill in one colour, your own data it will burn in another. Same lines, priced.</li>
+          <li>Move "THE DASHED RED CORNERS = WHERE RED GROWS NEXT" onto the how-to as bullet 4, so the tell survives a skipped demo.</li>
+          <li>Put "7 SECTORS" under PURGE on the title.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A held preview.</b> Hold X on a charge to light the whole chain — every charge that fires, every red that dies, every data cell that burns — release to fire, Z to back out. <b>Replaces</b> the single cross-hair, which shows one charge's four beams and never the chain the game scores you on.</li>
+          <li><b>Show the mark two beats out</b>, drawn at half weight. <b>Replaces</b> the RAMP surprise as the source of pressure. The pressure should come from watching it arrive, not from being told after it did.</li>
+        </ul>
+        <div class="q"><span>Their question for you after sector 1</span>The dashed red square — when did you work out what it was, and did the game ever tell you?</div>
+        <p class="bias">Their stated bias: over-values a board you can solve in your head, and always asks for one more number on screen. Under-values clock pressure and a climbing score.</p>
+      </div>
+    </details>
+
+    <details class="r-b">
+      <summary><span class="who">TEAM B · REAL TIME</span> — Jonasson, the Pfeiffers, Adams, Fumoto</summary>
+      <div class="body">
+        <p class="one">A 9x7 drive where red grows one cell a beat, you hold eight charges in total, and one press can set a whole lattice off at once.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>The chain fix landed and the numbers prove it: smart best chain 5.6 vs random 3.3 (round 1 had it backwards). Charges conserved at 8 means a big chain must be arranged, not hoarded. The best feeling now pays the player who planned it.</li>
+          <li>The thin blue thread between two charges that can see each other. The entire system drawn on the board with one pixel of line. Readable from the other side of the room — the highest compliment we have.</li>
+          <li>The header reads the blast before you commit — <code>CHAIN 3 KILL 6</code> — computed off a snapshot of the board. No arithmetic in the player's head.</li>
+          <li><b>NEW INFECTION:</b> when the virus has no room beside itself it drops anywhere, including on data. A stall cannot hold and no run is endless — and it is a rule doing it, not a timer. <b>The single best piece of system design in the three games we read.</b></li>
+          <li>Z takes a charge back and refunds it. A phone mis-tap costs nothing. Quiet, generous, invisible when it works.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>The sim measures a game nobody plays.</b> <code>tools/jam2c-sim.ts:4</code> gives the bot 2 actions per beat; the real game has no cap — <code>canPlant</code> only checks that you hold a charge. A fast thumb can plant eight and fire inside one 4.8s beat. Every number in the sim output belongs to a slower player than the one holding the phone.</li>
+          <li>The clock is the most important object on screen and it is 2px tall at the very top edge. For a game whose whole pressure is the beat, that is the worst real estate available.</li>
+          <li>Red and blue data are the same square. 21 blue, 5 red, identical shape. The two things you must never confuse are separated by hue alone.</li>
+          <li>The title never says what a run is — no mention of a sector being one of seven. And on that same screen Z has a blank label under it.</li>
+          <li>The door is late. Smart saves 12/30 after clearing 5.7 of 7 sectors, median run 4:38. Most losses land in the last two sectors, four-plus minutes in.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li><b>Cap the actions inside a beat, or stop quoting the sim.</b> Make 2-per-beat a real rule and the proof becomes true; leave it open and re-measure at real thumb speed. Today the proof and the product are two different games.</li>
+          <li>Move the beat clock off the top edge to under the CHAIN / KILL line and give it height. It is the metronome of the whole game; let it breathe where the eye already is.</li>
+          <li>Make data a different shape from red. The charge is already a diamond, so the idea is proven inside this game's own art.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li>One honest line on the title: <code>SEVEN SECTORS. THE BEAT NEVER STOPS.</code> <b>Replaces</b> "PLANT CHARGES. BLOW THE SECTOR CLEAN," which describes a button rather than a run.</li>
+          <li>One beat of held silence before a chain of 5+ ripples. <b>Replaces</b> the 1.3s CHAIN banner — trade the caption for the pause. The loud thing lands harder after a silent one.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>Did you ever wait a beat on purpose to make a chain bigger — or did you fire the moment two charges lined up?</div>
+        <p class="bias">Their stated bias: pushes every game toward fewer verbs and more standing consequence. Under-values the spike of one big number — "discount every note where we ask a fast game to slow down."</p>
+      </div>
+    </details>
+
+    <details class="r-d">
+      <summary><span class="who">TEAM D · RUN + HAND</span> — LocalThunk, Derek Yu, Trobbiani, Blow</summary>
+      <div class="body">
+        <p class="one">You plant eight charges across a rotting board, watch a blue line snap between two of them, and press X on a play you saw coming four beats ago — which is exactly the feeling we were chasing, in a different genre.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li><b>The blue link line between two charges that can see each other.</b> That is the big play made visible before it exists. It is the single best object in the jam and it is the thing we would steal.</li>
+          <li>The header reads the blast before you commit — <code>CHAIN 2 KILL 2</code> plus a <code>-1 DATA</code> warning. The blast snapshots the board at press time, so the preview can never be wrong. You pay before you press.</li>
+          <li>Charges conserved at 8 is the round's best design work: it moved the random bot's best chain 9.8 → 3.3 while the smart bot held 5.6. The chain now pays the right player. A one-rule fix to a whole-game problem.</li>
+          <li>Your own beam burns your own data. The cost sits <em>inside</em> the reward, so the biggest blast is often the wrong one. A and B state their trade-off; C enforces it.</li>
+          <li>Skill gap 192 vs 26 (×7.3), random ends clean 0/30. Nothing else in the jam separates a good player from a flailing one that cleanly.</li>
+          <li>Z refunds a planted charge. A phone mis-tap costs nothing. Small, correct, and nobody else did it.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>The payoff is the quietest pixel on the screen.</b> The score is kill × chain, and the banner renders it as CHAIN 2 big with a small <code>+4</code> beside it, while the score sits in the top-right corner. The multiply is the whole engine and it is drawn like a footnote.</li>
+          <li>The ceiling is now too low to dream about. Best chain averages 5.6 because the supply is capped at 8. You fixed who gets paid and flattened how big the dream can get in the same change.</li>
+          <li>18 of 30 smart runs lost with sectors cleared averaging 5.7 of 7. The run overwhelmingly dies in the last two sectors — four minutes in, at the door. That is the worst place to lose.</li>
+          <li>The title never uses the word DATA. The 21 blue squares are the thing you must not shoot, and the title screen does not know they exist. The story screen says it, one screen later.</li>
+          <li>At phone width data and charges are both blue boxes. The diamond inside the charge is a handful of pixels on a phone.</li>
+          <li><code>over.png</code> is one line: DRIVE SAVED — 1240 — X AGAIN. The run's whole story — best chain, sectors, data you burned yourself — dies with the screen.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>The CHAIN banner should be the loudest thing on screen and should draw the multiply, counting up: <code>9 RED × CHAIN 4</code>. Replaces the tiny <code>+4</code> and stops the corner score being the only place the number lives.</li>
+          <li>Put the beat clock on the cursor or make it the board's frame. Everything in the game is timed off it and it is the least visible element.</li>
+          <li>Give the charge one of the brief's two spare colours so it stops being blue. At 390px, data-blue and charge-blue is the one readability failure in an otherwise very readable game.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>A run card at the end:</b> best chain, sectors cleared, red killed, data you burned yourself. <b>Replaces</b> the single DRIVE SAVED line. Your sim already tracks best chain — the only person who never sees their own best chain is the player who made it.</li>
+          <li><b>One sector in seven opens with 9 charges instead of 8.</b> <b>Replaces</b> the RAMP extra-mark as that sector's variable. Nothing carries over, so must-keep 8 holds. Right now the only thing that changes sector to sector is more red; let one sector change in your favour so a run has a peak to remember instead of a slope to die on.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>Did you ever hold off a beat on purpose to make the chain bigger? If the answer is no, the trade-off in the manual is not yet on the screen.</div>
+        <p class="bias">Their stated bias: over-values a climbing number and a run that remembers. Under-values a clean single board that ends and asks nothing more.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= D ================= -->
+  <section class="game d" id="d">
+    <div class="ghead">
+      <div class="kind">reviewed by A · B · C</div>
+      <h2>D · LAST BACKUP</h2>
+      <p>Roguelike deckbuilder. A hand of three, spend two. Same file type grows the chain.</p>
+      <div class="links"><a href="/docs/scandisk/jam2-d.html">play &rarr;</a><a href="/docs/scandisk/jam2-d-manual.html">manual &rarr;</a></div>
+    </div>
+
+    <div class="agree">
+      <h3>Where all three agreed</h3>
+      <ul>
+        <li><b>The live payout on every card face is the best readability in the jam.</b> All three, in almost the same words. A: "the clearest single piece of perfect information in any of the three games we played." B: "best single UI idea in the jam." C: "best readability in the jam." The arithmetic is done, on the card, before you press.</li>
+        <li><b>The bag is drawn with replacement — and that is the softest part of the game.</b> A and C both, hard. Nothing can be counted, thinned or set up. A deckbuilder's whole lever is the deck, and here the deck is a probability table you nudge by one card a sector. C: "this is the single change that turns D's luck into a plan."</li>
+        <li><b>The tutorial's headline lesson is a 14% case.</b> All three found the same number: 9.5 shield blocks a run, of which only 1.3 save a live chain. The thing the demo teaches hardest is the thing that happens least — and the random bot blocks more than twice as often as the smart one. B: "Rule 5 names a verb the numbers punish."</li>
+        <li><b>Playing well narrows the game.</b> All three. Thinnest skill gap in the jam (1.8x against A's 20-to-0 and C's 7.3x), and the strict real-choice number is <em>higher</em> for the random bot (48%) than the smart one (42%). C named it as the same disease as its own old chain bug, with its hands up.</li>
+        <li><span class="tag">Bug</span><b>The manual's first screenshot is captioned "The title." It is not.</b> All three caught it. It is the SAFE MODE practice board; D has a real title screen the shot never reached. C called it a straight violation of the jam's own screenshot rule.</li>
+        <li><span class="tag">Bug</span><b>The block button prints the raw card size, not what it actually blocks.</b> Team A alone found this one, in code: the label prints the card's size while the rule caps the block at the incoming flood. The phone shot shows a virus card at 2 and a button reading BLOCK 3. In a game that prices the save side to the byte, the block side is mispriced.</li>
+      </ul>
+    </div>
+
+    <details class="r-a">
+      <summary><span class="who">TEAM A · TACTICS</span> — Subset Games (Ma + Davis), Cowley, Pickering, Sato</summary>
+      <div class="body">
+        <p class="one">Hand of three, spend two, chain the same file type for multiplied bytes — while the virus's next two cards sit face up telling you exactly which chain it is about to break.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li><b>Every card carries its own price in green on its face.</b> You know the exact bytes before you press the button. This is the clearest single piece of perfect information in any of the three games we played.</li>
+          <li>The virus's next two cards are face up with type <b>and</b> number, and they are <b>derived, not drawn</b> — so they cannot lie. The comment is backed by the maths.</li>
+          <li><code>mid.png</code> is a whole game in one frame: chain <b>x3 PIC</b>, and the virus's very next card is a red <b>PIC 2</b>. The thing you want and the thing about to take it, on screen at the same time, adjacent. We would steal that layout wholesale.</li>
+          <li>Hand of 3, spend 2, the third carries. The kept card replaces an END TURN button <em>and</em> is the most interesting decision in most hands — one rule doing two jobs is a producer's cut done right.</li>
+          <li><b>100% of turns have 2+ useful plays</b>, and the sector ends the instant the target is met with no mop-up. Rule 4 of the jam, satisfied structurally rather than by a timer.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li><b>The Z label lies.</b> <code>main.ts:592</code> prints <code>BLOCK ${card.s}</code> — the card's raw size — while <code>rules.ts:161 blockValue</code> correctly caps the cut at the flood still incoming. The phone shot shows the virus card at <b>2</b> and the Z button reading <b>BLOCK 3</b>. The wasted point is invisible at the exact moment you spend it. In a game that prices the save side to the byte, mispricing the block side is the bug we would fix before anything else in this jam.</li>
+          <li><b>On PC the block side has no number at all.</b> The footer draws "X SAVE Z BLOCK 2 LEFT" while the same three cards show +8 / +1 / +3 for the save side. Every turn is a save-or-block choice and only one side is priced.</li>
+          <li><b>The bag is drawn with replacement.</b> That is a probability, not a deck. You cannot count it, so the card you take between sectors dilutes a distribution by a tenth instead of promising to come around.</li>
+          <li><b>The metric may be rewarding the wrong player, same shape as C's round-2 bug.</b> Skill gap is 1.8x against C's 7.3x; the random bot blocks 22.2/run to smart's 9.5; and strict real-choice is higher for random (48%) than smart (42%). That pattern is worth the hard look C gave its chain.</li>
+          <li>The manual's title shot is the gym board, not a title screen. And SAFE MODE — the sector name on two shots — is never explained on the how-to.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Print <code>blockValue</code>, not <code>card.s</code>, on the Z label and anywhere else the block is previewed. One number, honest, both platforms.</li>
+          <li>Put <b>both</b> prices on every card face: the green +bytes it already has, plus a second line for what that card blocks right now. The choice has two sides; the card should show two.</li>
+          <li>Draw from the bag <b>without</b> replacement, reshuffle when empty. Then the card taken between sectors is a promise and the chain you are building is a plan you can defend.</li>
+          <li>One line on the how-to: "SAFE MODE IS THE PRACTICE SECTOR."</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>Show the bag.</b> One line under the hand: what is left by type (TXT x4 · PIC x3 · EXE x2). <b>Replaces</b> the with-replacement draw's only virtue — that you never have to think about the deck — with something worth thinking about. Costs one line of screen.</li>
+          <li><b>Mark the chain-breaker.</b> When the virus's face-up card matches your chain type, outline the CHAIN panel in red. <b>Replaces</b> the one-shot "Z BLOCKS THE FLOOD" tip, which fires once, on sector 1 round 2, and never again.</li>
+        </ul>
+        <div class="q"><span>Their question for you after sector 1</span>The Z button said BLOCK 3 — how much flood did it actually stop?</div>
+        <p class="bias">Their stated bias: over-values a board you can solve in your head, and always asks for one more number on screen. Under-values hand luck and the spike of one big number.</p>
+      </div>
+    </details>
+
+    <details class="r-b">
+      <summary><span class="who">TEAM B · REAL TIME</span> — Jonasson, the Pfeiffers, Adams, Fumoto</summary>
+      <div class="body">
+        <p class="one">Hand of three, spend two, the third stays; same file type in a row multiplies, and the virus shows you the two cards that will flood the drive next.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>Every card carries what it pays right now — <code>PIC 2</code> reads <code>+8</code> on a x3 PIC chain. The arithmetic is done on the card, before the press. <b>Best single UI idea in the jam.</b></li>
+          <li>The Z pad button is a live number — <code>BLOCK 3</code>. The button says what pressing it does in this state, on this card, not what it does in general.</li>
+          <li><code>kept.png</code> is the strongest teaching frame across all three games. The bot boxes the card it did <b>not</b> play, tags it KEPT, and says why: "PIC IS NEXT FROM THE VIRUS. A SHIELD." A negative decision made visible — nothing else in this jam teaches a non-move.</li>
+          <li>No end-turn button: the turn ends when your two cards are gone. One verb deleted, and the keep-one decision is forced every single turn.</li>
+          <li>The virus is fully derived from a hash, not rolled, so both face-up cards are honest. Same discipline as A's forecast.</li>
+          <li>The demo's refills are scripted, so the numbers in the manual are the numbers every player sees.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li>The demo spends its headline beat on a move that is rarely that move. 9.5 shield blocks a run, of which <b>1.3</b> saved a live chain. 86% of blocks are plain damage soak. The teaching frame teaches the 14% case.</li>
+          <li>Blocking is what the bad player does: random bot blocks 22.2/run, smart 9.5. <b>Rule 5 names a verb the numbers punish.</b></li>
+          <li>Thinnest skill gap in the jam — smart clears 3.03 sectors vs random 1.70 (x1.8). A goes 20 wins to 0; C scores 192 vs 26. Paired with 100% "2+ useful plays" but only 42% near-best, that reads as: most turns offer options, few turns have a right answer.</li>
+          <li>The CHAIN panel collides with itself — NONE and ANY CARD sit a pixel or two apart inside the box. It is the first panel a new player reads.</li>
+          <li>The DRIVE row uses three marks — solid red, red outline, grey dash — and nothing on screen says the outlines are the incoming flood. That is the most useful fact on the row.</li>
+          <li>The manual's title shot is not a title screen; it is the SAFE MODE board. D is the only one of the three whose name never appears on a shot.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Make blocking scarce so it becomes a decision. 9.5 a run is a habit, not a choice. Pay the block only when it stops the whole flood — the branch already exists — and the count falls while the moment rises.</li>
+          <li>Fix the CHAIN box: two lines of state are being drawn in the space of one.</li>
+          <li>Label the drive bar's outlined cells or drop them. Three visual states, no legend.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li>A chain that decays by one on its own each turn unless fed. <b>Replaces</b> the virus's type-match chain break. The chain becomes a thing that is always running and always slipping, instead of a thing whose whole fate rides on one hash.</li>
+          <li>An end-of-run line naming the biggest single save — the sim says it averages 9.4 bytes. <b>Replaces</b> the bytes total on the win screen. "69 bytes" is a number; "TAX.DOC, 21 bytes, round 7" is a sentence a player repeats to someone else.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>Name the turn you blocked. Was it to save the chain, or because the drive bar scared you?</div>
+        <p class="bias">Their stated bias: pushes toward fewer verbs and more standing consequence. Under-values precise hands, hand luck, and the spike of one big number.</p>
+      </div>
+    </details>
+
+    <details class="r-c">
+      <summary><span class="who">TEAM C · ACTION PUZZLE</span> — Pajitnov, Kenta Cho, Cavanagh, Barth</summary>
+      <div class="body">
+        <p class="one">Three cards, spend two, and every card tells you on its face exactly what it is worth right now.</p>
+        <h4 class="like">Like</h4>
+        <ul>
+          <li>Each card carries its own live payout in green: <code>+8</code>, <code>+1</code>, <code>+3</code>. The arithmetic is done, on the card, at the moment you look at it. That is the shape doing the work instead of a rules line. <b>Best readability in the jam.</b></li>
+          <li>You must spend exactly 2 of 3 and the third carries. One rule deletes the END TURN button and creates the entire decision. Barth would steal this.</li>
+          <li>X saves, Z blocks, same card. One object, two jobs, zero new UI — and Z is labelled live as "BLOCK 3" so the second meaning is never hidden.</li>
+          <li>The virus's next two cards are face up with type <em>and</em> number, derived from a hash so they cannot lie. A random-draw game that still lets you plan two turns out.</li>
+          <li><code>big.png</code> — a x7 chain cashing for +21 in one card, readable in one glance. That is the big moment the jam asked every team for, and D is the only one of the three that reliably produces it.</li>
+          <li>Sim: <b>2+ useful plays on 553/553 turns (100%)</b>. There is never a dead turn. Our hands always had something to do, which is the bar we set and the bar we failed on our own game.</li>
+        </ul>
+        <h4 class="no">Don't like</h4>
+        <ul>
+          <li>The bag is drawn <b>with replacement</b>. Nothing can be counted, thinned or set up. A deckbuilder's whole lever is the deck, and here the deck is a probability table you can nudge by exactly one card per sector. Judged against what a deckbuilder promises, this is the softest part of the game.</li>
+          <li><code>big.png</code> — the chain is at x7 and neither card in hand is a PIC. The largest number in the game is decided by a draw, not by a play. We say this with our hands up: <b>C had the exact same disease</b> — our chain paid the random bot 9.8 and the smart bot 6.0. It is the shared bug of this jam and D has not beaten it either.</li>
+          <li>Sim: smart bot has near-best plays on <b>42%</b> of turns, random on <b>48%</b>. Playing well <em>narrows</em> the game. The interesting decisions belong to the player who does not yet know what they are doing — the same failure as the chain, one level up.</li>
+          <li>Sim: 9.5 shield blocks a run, of which <b>1.3</b> saved a live chain. The tutorial's headline lesson is true about one block in seven. The rest are plain damage control, so the thing the demo teaches hardest is the thing that happens least.</li>
+          <li><code>title.png</code> is <b>not the title screen</b>. It is the SAFE MODE gym board at 0/20 R1. The manual captions it "The title." and the alt text describes a title screen — but <code>main.ts:575</code> has a real <code>drawTitle()</code> and this shot never reached it. Straight violation of the jam's own screenshot rule. Chris opens the manual on a screenshot whose caption is false.</li>
+          <li>The payout is the number you act on and it is the smallest glyph on the card, bottom-aligned, in the dimmest colour. Plus the shared dead band: ~110px black above, ~150px below the pad.</li>
+        </ul>
+        <h4>Would change</h4>
+        <ul>
+          <li>Draw without replacement and reshuffle when the bag runs dry. Same nine cards, same sizes, nothing else moves. Now a player can count what is left and build toward the x7 instead of praying at it. <b>This is the single change that turns D's luck into a plan.</b></li>
+          <li>Let one of the three offers between sectors be <b>remove a card</b>. Subtraction is a deckbuilder's real lever and right now the deck only ever grows, 9 cards to 12 across a whole run.</li>
+          <li>The CHAIN box shows x3 and a type icon but not what breaks if you lose it. Show the number at risk. The chain should feel heavier the higher it climbs, and the box is where that weight goes.</li>
+        </ul>
+        <h4>Would add <span style="text-transform:none;letter-spacing:0">(each replaces something)</span></h4>
+        <ul>
+          <li><b>An off-type card knocks the chain down by 1 instead of resetting it to 1.</b> <b>Replaces</b> the hard reset on a type change. Keep the virus's break at a hard zero so the threat stays the threat — but stop the <em>draw</em> from being one. A x7 survives one bad hand as a x6, the player stays in the moment, and the big number becomes something built over turns rather than granted. Costs one line.</li>
+          <li><b>Put the run's byte total in the header.</b> It already exists and is only shown after you die. <b>Replaces</b> the round counter in the top-right — the round number tells you nothing you can act on; a climbing score tells you whether this run beats the last one.</li>
+        </ul>
+        <div class="q"><span>Their question for you after board 1</span>Your chain got to x3. Did you build it, or did the cards hand it to you?</div>
+        <p class="bias">Their stated bias: over-values things the hands do every second, and a restart that costs nothing. Under-values patience and a slow loss.</p>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    12 reports, written 2026-09-20. Rules for this round are in <code>Games/Scandisk/jam-2-rules.md</code> → "Round 3 — CROSS-PLAY"; the raw files are in <code>Games/Scandisk/cross-play/</code>.<br>
+    No team reviewed its own game. No team changed a line of code. <strong>Nothing gets built from this until you say so.</strong><br>
+    <a href="/docs/scandisk/">&larr; back to the games</a>
+  </footer>
+
+</div>
+</body>
+</html>
