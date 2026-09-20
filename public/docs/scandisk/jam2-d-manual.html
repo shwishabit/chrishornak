@@ -55,15 +55,15 @@
     <ol>
       <li><strong>Hit the target before the drive fills.</strong> The blue bar on top is what you saved. The <span class="r">red</span> bar under it is the drive filling up.</li>
       <li><strong>Hand of 3. You spend 2 every turn. The 3rd stays</strong> for next turn. There is no "end turn" button — the turn ends when your 2 cards are gone.</li>
-      <li><strong><kbd>X</kbd> saves a card. Bytes = size × chain.</strong> Save the same file type again and the chain goes up. Save a different type and it drops back to x1. The green number on each card is what it pays <em>right now</em>.</li>
-      <li><strong>The virus shows its next 2 cards.</strong> The big one fires at the end of this turn. It floods the drive by its number, and if its type matches your chain, it breaks the chain.</li>
+      <li><strong><kbd>X</kbd> saves a card. Bytes = size × chain.</strong> Save the same file type again and the chain goes up. Save a different type and it drops back to x1. Every card face carries <strong>both prices</strong>: the <span class="g">green +number</span> is what it pays if you save it right now, the <span class="b">blue −number</span> is how much flood it would actually cut if you blocked with it right now.</li>
+      <li><strong>The virus shows its next 2 cards — and it hunts your chain.</strong> The big one fires at the end of this turn. It floods the drive by its number, and if its type matches your chain, it breaks the chain. Once your chain is <strong>x2 or better</strong>, its next card leans toward your chain’s type about six times in ten. You still see it coming two cards ahead.</li>
       <li><strong><kbd>Z</kbd> blocks with a card.</strong> The card's size cuts that flood, size for size. Cut it all and the chain is safe too.</li>
       <li><strong>Target met: take 1 of 3 new cards</strong> into your deck. 4 sectors and the drive is saved. Drive full and the run is over.</li>
     </ol>
     <div class="tip">The whole game is one question, every turn: <strong>cash the chain in now, or spend a card to protect it for one more turn?</strong></div>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/howto-DbuNGcKY.png" alt="The how-to screen: three numbered ideas and a quiet footer reading I will play one first and say why, any button takes over, manual has all 6 rules." width="540" height="492"><figcaption>The in-game screen is <strong>three ideas</strong>, not six rules. Thresh&rsquo;s note, which Chris took across all four games: <em>if the demo works you need two lines, not six rules; if you need six rules, the demo failed.</em> The six rules live here, in full, above.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/mid-DK536NK-.png" alt="Sector 2, chain x3 on PIC, the virus's next card is PIC 2." width="540" height="492"><figcaption>A real hand. Chain <span class="g">x3</span> on PIC — and the virus's next card is <span class="r">PIC</span>. Save the PIC now for +8, or block with the EXE and keep the chain.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/howto-r8TFsQOb.png" alt="The how-to screen: three numbered ideas and a quiet footer reading I will play one first and say why, any button takes over, manual has all 6 rules." width="540" height="492"><figcaption>The in-game screen is <strong>three ideas</strong>, not six rules. Thresh&rsquo;s note, which Chris took across all four games: <em>if the demo works you need two lines, not six rules; if you need six rules, the demo failed.</em> The six rules live here, in full, above.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/mid-DTQhyQqK.png" alt="Sector 2, chain x3 on PIC, the virus's next card is PIC 2." width="540" height="492"><figcaption>A real hand. Chain <span class="g">x3</span> on PIC — and the virus is <em>hunting</em> it: its next card is <span class="r">PIC</span>. Save the PIC now for the green number, or block with the EXE for the blue one and keep the chain.</figcaption></figure>
     </div>
   </section>
 
@@ -74,10 +74,10 @@
     <p>The teaching board's opening hand <em>and</em> its refills are scripted, so this is the same run for every player. Every number in the shots below is the number you will see.</p>
     <p>Press <em>any</em> button during the demo to take the board over mid-move — the screen says YOUR TURN. Press <kbd>Enter</kbd> to skip the whole demo and get the board fresh.</p>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/demo1-CCFy64fS.png" alt="The demo's first move: two TXT 3 cards and a PIC 2, the bot points at the first TXT and the line reads I start a chain with TXT, the next TXT will pay double." width="540" height="492"><figcaption>Beat one. The bot names the move and the reason, one idea per line. The next beat pays <span class="g">6</span> — the demo's first sum is one worth caring about.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/kept-DUxrfh12.png" alt="The demo's kept card: a PIC 1 under a double white border tagged KEPT, with the line I keep the PIC but not to save it, PIC is next from the virus, a shield." width="540" height="492"><figcaption>The one lesson a rules list cannot teach: the card you <em>hold back</em>. The chain is TXT, so cashing this PIC would knock <span class="g">x3</span> back to x1 &mdash; and the virus's face-up <em>next</em> card is PIC. So the bot holds it. A card decided against, aimed at a threat you can already see. It gets its own border and the word <strong>KEPT</strong>, so the words and the pixels point at the same card.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/gym-BFjjVuPr.png" alt="The demo mid-board: chain x3, the virus's card is a red TXT 2, an on-chain TXT sits in hand, and the line reads the red card is TXT so is my chain, I spend this one as a shield instead." width="540" height="492"><figcaption>The shield beat. Chain <span class="g">x3</span> on TXT, and the virus's card is a red <span class="r">TXT 2</span> — it would take the chain. So the bot spends the off-type PIC as armour. This is the move nobody works out alone, so the demo says it out loud with the card lit.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/title-DZ_PRS5U.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/demo1-76R0PU98.png" alt="The demo's first move: two TXT 3 cards and a PIC 2, the bot points at the first TXT and the line reads I start a chain with TXT, the next TXT will pay double." width="540" height="492"><figcaption>Beat one. The bot names the move and the reason, one idea per line. The next beat pays <span class="g">6</span> — the demo's first sum is one worth caring about.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/kept-CqkAkO38.png" alt="The demo's kept card: a PIC 1 under a double white border tagged KEPT, with the line I keep the PIC but not to save it, PIC is next from the virus, a shield." width="540" height="492"><figcaption>The one lesson a rules list cannot teach: the card you <em>hold back</em>. The chain is TXT, so cashing this PIC would knock <span class="g">x3</span> back to x1 &mdash; and the virus's face-up <em>next</em> card is PIC. So the bot holds it. A card decided against, aimed at a threat you can already see. It gets its own border and the word <strong>KEPT</strong>, so the words and the pixels point at the same card.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/gym-DGtBRCNf.png" alt="The demo mid-board: chain x3, the virus's card is a red TXT 2, an on-chain TXT sits in hand, and the line reads my chain is big, it is coming for TXT, I spend this one as a shield instead." width="540" height="492"><figcaption>The shield beat. Chain <span class="g">x3</span> on TXT, and the virus's card is a red <span class="r">TXT 2</span> — it would take the chain. So the bot spends the off-type PIC as armour, and names the rule out loud: <em>my chain is big, it is coming for TXT.</em> A virus that hunts you and never says so reads as rigged. This is the move nobody works out alone, so the demo says it with the card lit.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/title-DWuGo3hk.png" alt="The title screen with SCANDISK LAST BACKUP and three file cards." width="540" height="492"><figcaption>The title.</figcaption></figure>
     </div>
   </section>
 
@@ -87,13 +87,13 @@
     <table>
       <tr><td><kbd>← →</kbd></td><td>Pick a card.</td></tr>
       <tr><td><kbd>X</kbd></td><td>SAVE this card. After the run ends: new run.</td></tr>
-      <tr><td><kbd>Z</kbd></td><td>BLOCK with this card. The pad label shows how much it cuts.</td></tr>
+      <tr><td><kbd>Z</kbd></td><td>BLOCK with this card. The blue number on the card face — and the pad label — shows how much it actually cuts.</td></tr>
       <tr><td><kbd>Enter</kbd></td><td>New run (press twice mid-run).</td></tr>
       <tr><td><kbd>Backspace</kbd></td><td>Open this manual.</td></tr>
     </table>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/pad-phone-CuqMtKyV.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/pad-pc-nL_skKlj.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-phone-DUhkoiI6.png" alt="The game at 390px phone width with the touch pad below." width="420" height="880"><figcaption>390px phone width: the screen on top, the pad in thumb reach.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/pad-pc-CsRv39mp.png" alt="The game on a PC with the pad lit under the screen." width="1100" height="900"><figcaption>PC: the same pad, lit by your keys.</figcaption></figure>
     </div>
   </section>
 
@@ -101,9 +101,9 @@
     <h2>The big moment, and the end</h2>
     <p>A chain carries across turns. Protect it with blocks for two or three turns, keep feeding it one type, and then a size-3 card lands for twenty-odd bytes and clears the sector in one press.</p>
     <div class="shots">
-      <figure><img src="/docs/scandisk/assets/big-DYf8HyG3.png" alt="Chain x7 pays 21 bytes and fills the target bar." width="540" height="492"><figcaption>Chain <span class="g">x7</span>, one card, +21 bytes, sector cleared.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/big-xVUp6QgH.png" alt="Chain x7 pays 21 bytes and fills the target bar." width="540" height="492"><figcaption>Chain <span class="g">x7</span>, one card, +21 bytes, sector cleared.</figcaption></figure>
       <figure><img src="/docs/scandisk/assets/pick-PEEbfbRQ.png" alt="Three offered cards after clearing a sector." width="540" height="492"><figcaption>Between sectors: take one card. This is the only growth there is — nothing carries to the next run.</figcaption></figure>
-      <figure><img src="/docs/scandisk/assets/win-BvwxP69r.png" alt="DRIVE SAVED with the total bytes." width="540" height="492"><figcaption>Four sectors: DRIVE SAVED. The run stops there — no mop-up.</figcaption></figure>
+      <figure><img src="/docs/scandisk/assets/win-BH9mxhzE.png" alt="DRIVE SAVED with the total bytes." width="540" height="492"><figcaption>Four sectors: DRIVE SAVED. The run stops there — no mop-up.</figcaption></figure>
     </div>
     <p>A run always ends because <strong>the virus's numbers climb</strong>. Two size-3 cards can block 6; by round ten or so the flood is bigger than that, and nothing holds it.</p>
   </section>
@@ -115,14 +115,17 @@
       <li><strong>The deck is a bag, drawn with replacement.</strong> No discard pile, no reshuffle — one fewer rule. Cards you take between sectors change the odds, not a shuffle order.</li>
       <li><strong>A block only stops flood up to the card's size.</strong> Big cards are both your big scores and your big shields.</li>
       <li><strong>Blocking does not touch the chain</strong> — only a save moves it.</li>
-      <li><strong>The virus card is fully derived</strong> from the sector and the round, so the two cards on screen are never a lie.</li>
+      <li><strong>The virus card is resolved once, when it is first shown, and then frozen.</strong> It used to be a pure function of the sector and the round. Now that it aims at your chain it cannot be, so the game holds a two-card queue: a card is rolled the moment it appears in the second slot, using your chain as it stands <em>then</em>, and it never changes again. The sim checks it — the card shown in slot 2 equalled the card that fired on <strong>343/343 and 514/514 turns, 100%</strong>. The two cards on screen are still never a lie.</li>
       <li><strong>SAFE MODE never ends a run.</strong> Fail it and it restarts.</li>
       <li><strong>Round 2: the hands-on gym was deleted and replaced by the self-playing demo.</strong> You watch the bot play the teaching board, then get the same board.</li>
       <li><strong>Round 2: SAFE MODE's virus now HAS a file type</strong>, on a fixed four-card script. It used to be typeless so a beginner could not lose a chain — but a typeless virus also makes the shield idea invisible, and the shield is the one thing nobody works out alone. A real threat is what the demo points at. This <em>replaced</em> the old rule, it did not stack on it.</li>
       <li><strong>Round 2: the teaching board's draws are scripted, not random.</strong> Pinning only the opening hand left the headline beat to the run seed. Now the refills are pinned too, so the demo is the same run — and the same numbers — every time.</li>
+      <li><strong>Round 4: the virus aims.</strong> At chain x2+ its next card leans to your chain’s type 60% of the time, from the same hash — a seed still replays identically. The teaching board is <em>exempt</em>: SAFE MODE stays on its fixed script, or every number in this manual would go stale. The aim is applied to the newly-pushed card only, two rounds ahead, so you always see it coming.</li>
+      <li><strong>Round 4: both prices on every card face.</strong> The block price used to live only on the footer and the Z pad, for the selected card. Now that blocking matters most turns instead of one in three, you have to compare save-vs-shield across three cards at a glance, so both numbers sit on the card. The blue number is the <em>real</em> cut, capped at the flood still coming — never the raw card size.</li>
       <li><strong>Round 2: one bot brain.</strong> The bot that teaches you on screen is the same file the sim measures (<code>src/jam2d/bot.ts</code>). If they drifted apart, the demo would be a lie.</li>
     </ul>
     <p>What we cut on the way: an "eats your hand" virus card (replaced by "breaks your chain"), a discard-and-reshuffle deck, special card powers, an END TURN button, a fourth file type, the hands-on gym, and the typeless SAFE MODE virus.</p>
+    <p><strong>Round 4 numbers (30 runs):</strong> honesty 100% (343/343 smart, 514/514 random). Biggest single save average 9.6 bytes — the aim did <em>not</em> eat the big moment, so the 60% stands and was not dropped to 45%. Blocks that saved a live chain rose from 1.3 to 1.5 a run. The skill gap (x1.8) and the strict real-choice rate (43% smart vs 48% random) did <strong>not</strong> move, and both still miss their gate — the aim made the board sharper without making skill pay more. That is the cue for the next change, not for this one to be kept quiet.</p>
     <p><strong>Measured and thrown away (round 2):</strong> we raised every sector's opening flood to force the save-or-block call earlier. The win rate fell from 9/30 to 2/30 and the strict real-choice rate barely moved (42% → 45%). It made the game harder, not deeper, so we reverted it. The round-1 numbers stand.</p>
     <a class="back" href="jam2-d.html">← Back to the game</a>
   </section>
