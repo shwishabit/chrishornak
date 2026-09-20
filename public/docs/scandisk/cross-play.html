@@ -68,6 +68,7 @@
     .tag{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
       padding:2px 6px;border-radius:3px;background:#2a1a1a;color:var(--warn);margin-right:6px;vertical-align:1px}
     .tag.ok{background:#14261f;color:var(--ok)}
+    .tag.fixed{background:#14261f;color:var(--ok)}
     footer{margin-top:34px;padding-top:15px;border-top:1px solid var(--rule);color:var(--soft);font-size:12.5px;line-height:1.6}
     footer a{color:var(--soft)}
   </style>
@@ -89,11 +90,11 @@
 
   <div class="top">
     <h3>Read this first — what came out of all 12</h3>
-    <p>Four things showed up in more than one game. These are the ones worth your attention before you read a single report.</p>
+    <p>Six findings outrank the rest — three real defects, then three patterns that showed up in more than one game. Read these before you read a single report. The defects are already fixed; the patterns are not.</p>
     <ol>
-      <li><span class="tag">Bug</span><b>D's block button prints the wrong number.</b> The button reads <code>BLOCK 3</code> while the rule caps the block at the flood still coming in. D's own phone screenshot shows a virus card at <b>2</b> and a button saying <b>3</b>. Team A found it. It is a defect, not taste.</li>
-      <li><span class="tag">Bug</span><b>C's proof may be measuring a game nobody plays.</b> The sim gives the bot 2 actions per beat. The real game has no cap — a fast thumb can plant all 8 charges and fire inside one 4.8s beat. If that holds, every PASS number on C's card belongs to a slower player. This is your own round-2 rule biting again: <em>a sim number is not a screen.</em></li>
-      <li><span class="tag">Bug</span><b>D's manual opens on a false caption.</b> <code>title.png</code> is the SAFE MODE practice board, captioned "The title." D has a real title screen the screenshot never reached. All three rival teams caught it independently.</li>
+      <li><span class="tag fixed">Fixed</span><b>D's block button printed the wrong number.</b> It read <code>BLOCK 3</code> while the rule caps the block at the flood still coming in. Team A found it; the fix turned out to be <b>three</b> places, not two — the pad label, the PC footer (which carried no number at all) and the post-play event line. All now print the real capped value. Verified on screen: virus card <b>2</b>, held card TXT <b>3</b>, button reads <b>BLOCK 2</b>. The rule itself was not touched.</li>
+      <li><span class="tag">Confirmed — and it does not stand</span><b>C's proof was measuring a game nobody plays.</b> The sim capped the bot at 2 actions per beat. The real game has no cap. Re-measured at thumb speed, <b>three of the six holds fail</b>: ends-clean 93% &rarr; <b>0%</b>, win rate 40% &rarr; <b>77%</b>, shortest runs 3:17 &rarr; <b>0:58</b>. You can empty your hand and fire before the virus grows once. A sweep found the card passes at <em>exactly</em> 2 actions per beat and nowhere else — so it is a missing rule, not a tuning number. Three candidate rules are in the backlog, marked <b>do not build without Chris</b>. This is your own round-2 gate biting again: <em>a sim number is not a screen.</em></li>
+      <li><span class="tag fixed">Fixed</span><b>D's manual opened on a false caption.</b> <code>title.png</code> was the SAFE MODE practice board, captioned "The title." All three rival teams caught it independently. Cause was not the shot script: the scene list had no <code>title</code> key, so the request fell through and silently produced a believable wrong figure. Scene added, re-shot, caption and alt text now true.</li>
       <li><span class="tag ok">Pattern</span><b>All four games know more than they draw.</b> A already computes what the worm is walking at. B already picks where the next file surfaces. C already knows your best chain. D already knows what a card blocks. None of it reaches the screen. That is one shared fix, not four.</li>
       <li><span class="tag">Pattern</span><b>The "flailing player gets paid" disease is not dead.</b> C had it and fixed it with one rule. D still has it: the random bot has near-best plays on 48% of turns, the smart bot on 42%. Playing well <em>narrows</em> the game. Team C flagged it with its hands up, naming its own old bug.</li>
       <li><span class="tag">Open</span><b>The phone dead band never closed.</b> Round 2 called it engine-level. Three reviewers measured roughly 110-130px of black above the board and 150px below the pad, on every game. On B it did not close, it moved.</li>
@@ -377,7 +378,7 @@
         <li><b>Data and charges are both blue, and at phone width that is the one readability failure.</b> All three. The thing you shoot with and the thing you must not shoot look the same. The charge already has a diamond inside it — a handful of pixels on a phone.</li>
         <li><b>The beat clock is a 2px red line at the very top edge.</b> B and D both called it the worst real estate on screen for the most important object in the game.</li>
         <li><b>The title screen does not describe the game.</b> All three. It never says there are seven sectors (A, B) and never uses the word DATA (D) — the 21 blue squares you must not shoot.</li>
-        <li class="split"><b>The finding that matters most:</b> B found the sim gives the bot 2 actions per beat, while the real game has no cap. A fast thumb can plant all 8 and fire inside one beat. <em>"Today the proof and the product are two different games."</em></li>
+        <li class="split"><b>The finding that matters most — now confirmed.</b> B found the sim gives the bot 2 actions per beat while the real game has no cap. <em>"Today the proof and the product are two different games."</em> Re-measured at thumb speed on the same 30 seeds: <b>ends-clean 93% &rarr; 0%</b>, <b>win rate 40% &rarr; 77%</b>, <b>p10 run length 3:17 &rarr; 0:58</b>. The chain still pays the skilled player (4.9 vs 4.3), but the margin collapses from 2.3 to 0.6. A sweep found the card passes at exactly 2 actions per beat and nowhere else. <b>C's proof card does not stand.</b> No tuning number fixes it — a player can empty their hand and fire before the virus grows once, so it is a missing rule. The game was not changed; three candidate rules are in the backlog marked <em>do not build without Chris</em>.</li>
         <li class="split"><b>Contested:</b> D says conserving charges at 8 fixed who gets paid but "flattened how big the dream can get." A wants the wobble in the virus's aim cut so chains can be planned. Both are asking for more ceiling, from opposite ends.</li>
       </ul>
     </div>
@@ -510,8 +511,8 @@
         <li><b>The bag is drawn with replacement — and that is the softest part of the game.</b> A and C both, hard. Nothing can be counted, thinned or set up. A deckbuilder's whole lever is the deck, and here the deck is a probability table you nudge by one card a sector. C: "this is the single change that turns D's luck into a plan."</li>
         <li><b>The tutorial's headline lesson is a 14% case.</b> All three found the same number: 9.5 shield blocks a run, of which only 1.3 save a live chain. The thing the demo teaches hardest is the thing that happens least — and the random bot blocks more than twice as often as the smart one. B: "Rule 5 names a verb the numbers punish."</li>
         <li><b>Playing well narrows the game.</b> All three. Thinnest skill gap in the jam (1.8x against A's 20-to-0 and C's 7.3x), and the strict real-choice number is <em>higher</em> for the random bot (48%) than the smart one (42%). C named it as the same disease as its own old chain bug, with its hands up.</li>
-        <li><span class="tag">Bug</span><b>The manual's first screenshot is captioned "The title." It is not.</b> All three caught it. It is the SAFE MODE practice board; D has a real title screen the shot never reached. C called it a straight violation of the jam's own screenshot rule.</li>
-        <li><span class="tag">Bug</span><b>The block button prints the raw card size, not what it actually blocks.</b> Team A alone found this one, in code: the label prints the card's size while the rule caps the block at the incoming flood. The phone shot shows a virus card at 2 and a button reading BLOCK 3. In a game that prices the save side to the byte, the block side is mispriced.</li>
+        <li><span class="tag fixed">Fixed</span><b>The manual's first screenshot was captioned "The title." It was not.</b> All three caught it. It was the SAFE MODE practice board. The scene list had no <code>title</code> key, so the request fell through and produced a believable wrong figure in silence. Scene added, re-shot, caption now true.</li>
+        <li><span class="tag fixed">Fixed</span><b>The block button printed the raw card size, not what it actually blocks.</b> Team A alone found this one, in code. It turned out to be three places, not two — the pad label, the PC footer (no number at all) and the post-play event line. All now print the capped value. The rule was not touched, only the number shown.</li>
       </ul>
     </div>
 
@@ -631,7 +632,7 @@
 
   <footer>
     12 reports, written 2026-09-20. Rules for this round are in <code>Games/Scandisk/jam-2-rules.md</code> → "Round 3 — CROSS-PLAY"; the raw files are in <code>Games/Scandisk/cross-play/</code>.<br>
-    No team reviewed its own game. No team changed a line of code. <strong>Nothing gets built from this until you say so.</strong><br>
+    No team reviewed its own game, and no reviewer changed a line of code. Afterwards, on Chris's call, <strong>the three defects only</strong> were fixed — D's block label and D's manual caption in the game, and C's sim re-measured honestly. No rules, no tuning, no design changes. <strong>Everything else on this page is still just an opinion until you play the four.</strong><br>
     <a href="/docs/scandisk/">&larr; back to the games</a>
   </footer>
 
