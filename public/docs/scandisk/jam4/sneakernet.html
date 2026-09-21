@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>SNEAKERNET - sketch</title>
+<style>
+  html,body{margin:0;background:#1d2522;color:#d8e2d6;font:13px/1.35 "Courier New",monospace;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  #wrap{max-width:420px;margin:0 auto;padding:8px 10px 14px;box-sizing:border-box}
+  #top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  #title{font-weight:bold;letter-spacing:2px;color:#e3c46b}
+  #state{font-weight:bold}
+  canvas{display:block;width:100%;image-rendering:pixelated;border:2px solid #3b4a43;box-sizing:border-box;background:#26312c}
+  #how{margin:6px 0;color:#aebcae;font-size:12px}
+  #how b{color:#e3c46b}
+  #pad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,52px);gap:6px;justify-content:center;margin-top:6px}
+  #pad button{font:bold 18px "Courier New",monospace;background:#34423c;color:#d8e2d6;border:2px solid #51645a;border-radius:6px}
+  #pad button:active{background:#44564d}
+  #pad button:disabled{opacity:.3}
+  #msg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,24,.88)}
+  #msg div{background:#2a3631;border:2px solid #e3c46b;padding:18px 20px;text-align:center;max-width:300px}
+  #msg h2{margin:0 0 8px;color:#e3c46b;letter-spacing:2px}
+  #msg button{margin-top:12px;font:bold 16px "Courier New",monospace;background:#e3c46b;color:#1d2522;border:0;padding:10px 18px;border-radius:4px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="top"><span id="title">SNEAKERNET</span><span id="state">NORMAL</span></div>
+  <canvas id="c" width="336" height="432"></canvas>
+  <div id="how">
+    1. Tap a cell next to you to step. <b>Copper clicks</b>: the diamond sentry hears it 2 cells away (the gold ripple) and the blind hound hears it anywhere. Silicon is silent.<br>
+    2. <b>Red = sight.</b> End a turn in it: <b>!</b> ALERT, and they go to the <b>!</b>. Arrows go dark until you're out of sight 3 turns. Only in a socket &#9634; can you WAIT.<br>
+    3. Take the <b>copy</b> from the gold core out to the port. Carrying it, <b>every step clicks</b>. A virus that steps on a fuse is purged.
+  </div>
+  <div id="pad">
+    <span></span><button data-a="U">&#9650;</button><span></span>
+    <button data-a="L">&#9664;</button><button data-a="W" id="waitBtn">W</button><button data-a="R">&#9654;</button>
+    <span></span><button data-a="D">&#9660;</button><span></span>
+  </div>
+</div>
+<div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><button id="again">RESTART</button></div></div>
+<script>
+// ===== LOGIC-START (pure, no DOM; the check script evals this block) =====
+var W = 7, H = 9;
+// # wall(chip)  . silicon(silent)  = copper(clicks)  S socket(hide/wait)  F fuse  C core(copy)  P port
+var MAP = [
+  "##.C.##",
+  "...=...",
+  ".#.=.#.",
+  "S..F..S",
+  ".==.==.",
+  ".......",
+  ".#.=.#.",
+  "S.F=...",
+  "##.P.##"
+];
+var DIRS = {U:[0,-1], L:[-1,0], D:[0,1], R:[1,0]};
+var ORDER = ["U","L","D","R"];            // pinned tie-break: up, then left, then down, then right
+var CW = {U:"R", R:"D", D:"L", L:"U"};
+function tile(x,y){ return (x<0||y<0||x>=W||y>=H) ? "#" : MAP[y][x]; }
+function newGame(){
+  return {
+    p:{x:3,y:8}, carry:false, over:null, turn:0,
+    level:"NORMAL", cnt:0, lastSeen:null, seenNow:false, noise:[], heard:{},
+    fuses:{}, // "x,y" -> true when spent
+    scan:{x:6,y:1,face:"L",alive:true},
+    patrol:{x:0,y:5,face:"R",alive:true,route:[[0,5],[6,5]],idx:1,inv:null},
+    hound:{x:1,y:1,alive:true,target:null}
+  };
+}
+function clone(s){ return JSON.parse(JSON.stringify(s)); }
+function isFuse(s,x,y){ return tile(x,y)==="F" && !s.fuses[x+","+y]; }
+function procAt(s,x,y,skip){
+  var L=[s.scan,s.patrol,s.hound];
+  for(var i=0;i<L.length;i++){ var q=L[i]; if(q!==skip && q.alive && q.x===x && q.y===y) return q; }
+  return null;
+}
+function procPass(s,x,y,self){ var t=tile(x,y); if(t==="#"||t==="S"||t==="P") return false; return !procAt(s,x,y,self); }
+// BFS distance from target over cells a process may walk (the target itself always counts as source).
+function distMap(s,tx,ty,self){
+  var d={}, q=[[tx,ty]]; d[tx+","+ty]=0;
+  while(q.length){ var c=q.shift(), k=c[0]+","+c[1];
+    for(var i=0;i<4;i++){ var v=DIRS[ORDER[i]], nx=c[0]+v[0], ny=c[1]+v[1], nk=nx+","+ny;
+      if(d[nk]===undefined && procPass(s,nx,ny,null)){ d[nk]=d[k]+1; q.push([nx,ny]); } } }
+  return d;
+}
+// One step toward target; only moves if it gets strictly closer. Returns dir or null.
+function plan(s,q,tx,ty){
+  if(tx===null||tx===undefined) return null;
+  var d=distMap(s,tx,ty,q), cur=d[q.x+","+q.y]; if(cur===undefined) cur=999;
+  var best=null, bd=cur;
+  for(var i=0;i<4;i++){ var k=ORDER[i], v=DIRS[k], nx=q.x+v[0], ny=q.y+v[1];
+    var nd=d[nx+","+ny]; if(nd===undefined) continue;
+    if(!(procPass(s,nx,ny,q) || (nx===s.p.x&&ny===s.p.y&&tile(nx,ny)!=="S"))) continue;
+    if(nd<bd){ bd=nd; best=k; } }
+  return best;
+}
+function man(a,b){ return Math.abs(a.x-b.x)+Math.abs(a.y-b.y); }
+// Fair AI: a process only acts on what it saw or heard. inv = the "!" it saw you on, or the "?" click it heard.
+function patrolTarget(s){
+  var q=s.patrol;
+  if(q.inv) return q.inv;
+  return q.route[q.idx];
+}
+function houndTarget(s){ return s.hound.target; }
+// Which way each mover goes next if the player makes no noise (for the arrows).
+function forecast(s){
+  var t=clone(s), out={};
+  if(t.patrol.alive){ var pt=patrolTarget(t); if(pt && !t.patrol.inv && t.patrol.x===pt[0]&&t.patrol.y===pt[1]){ t.patrol.idx=1-t.patrol.idx; pt=t.patrol.route[t.patrol.idx]; } out.patrol=plan(t,t.patrol,pt?pt[0]:null,pt?pt[1]:null); }
+  if(t.hound.alive){ var ht=houndTarget(t); out.hound=ht?plan(t,t.hound,ht[0],ht[1]):null; }
+  out.scan=CW[t.scan.face];
+  return out;
+}
+function sightCells(s,q){
+  var v=DIRS[q.face], x=q.x+v[0], y=q.y+v[1], c=[];
+  while(tile(x,y)!=="#"){ if(procAt(s,x,y,null)) break; c.push([x,y]); x+=v[0]; y+=v[1]; }
+  return c;
+}
+function sees(s,q){
+  if(!q.alive || tile(s.p.x,s.p.y)==="S") return false;
+  var c=sightCells(s,q); for(var j=0;j<c.length;j++) if(c[j][0]===s.p.x&&c[j][1]===s.p.y) return true;
+  return false;
+}
+function seen(s){ return sees(s,s.scan)||sees(s,s.patrol); }
+var HEAR=2;
+// A click at n: patrol hears it inside the 2-cell ripple; the hound hears every click on the board.
+function hear(s,n,ev){
+  s.noise.push(n);
+  if(s.patrol.alive && Math.abs(s.patrol.x-n[0])+Math.abs(s.patrol.y-n[1])<=HEAR){ s.patrol.inv=n; s.heard.patrol=true; }
+  if(s.hound.alive){ s.hound.target=n; s.heard.hound=true; }
+}
+function legal(s,a){
+  if(s.over) return false;
+  if(a==="W") return tile(s.p.x,s.p.y)==="S";
+  var v=DIRS[a], nx=s.p.x+v[0], ny=s.p.y+v[1];
+  if(tile(nx,ny)==="#") return false;
+  if(procAt(s,nx,ny,null)) return false;
+  return true;
+}
+function moveProc(s,q,dir,ev){
+  if(!dir) return;
+  var v=DIRS[dir]; q.x+=v[0]; q.y+=v[1]; if(q.face!==undefined) q.face=dir;
+  if(isFuse(s,q.x,q.y)){ s.fuses[q.x+","+q.y]=true; q.alive=false; ev.push("purge"); return; }
+  if(q.x===s.p.x&&q.y===s.p.y){ s.over="LOST"; ev.push("caught"); }
+}
+function step(s0,a){
+  var s=clone(s0), ev=[];
+  if(!legal(s,a)) return {s:s0, ev:["bump"]};
+  s.turn++; s.noise=[]; s.heard={};
+  var noise=null;
+  if(a!=="W"){
+    var v=DIRS[a]; s.p.x+=v[0]; s.p.y+=v[1];
+    var t=tile(s.p.x,s.p.y);
+    if(t==="C" && !s.carry){ s.carry=true; ev.push("pickup"); }
+    if(t==="P" && s.carry){ s.over="CLEAN"; ev.push("win"); return {s:s,ev:ev}; }
+    if(t==="=" || s.carry){ noise=[s.p.x,s.p.y]; ev.push("click"); } else ev.push("step");
+  } else ev.push("wait");
+  // hearing
+  if(noise) hear(s,noise,ev);
+  // sight (checked where your move ends, before anyone moves: the red line you see is the one that catches you): whoever sees you marks "!" on your cell. PATROL walks to the "!". SCAN can't move, so it rings the "!" (a click the others may hear).
+  var byPatrol=sees(s,s.patrol), byScan=sees(s,s.scan);
+  s.seenNow=byPatrol||byScan;
+  if(s.seenNow){
+    if(s.level!=="ALERT") ev.push("alert");
+    s.level="ALERT"; s.cnt=0; s.lastSeen=[s.p.x,s.p.y];
+    if(byPatrol) s.patrol.inv=s.lastSeen;
+    if(byScan) hear(s,s.lastSeen,ev);
+  } else if(s.level==="ALERT"){ s.cnt++; if(s.cnt>=3){ s.level="NORMAL"; s.cnt=0; s.lastSeen=null; ev.push("normal"); } }
+  // patrol moves
+  var q=s.patrol;
+  if(q.alive){
+    if(!q.inv && q.x===q.route[q.idx][0] && q.y===q.route[q.idx][1]) q.idx=1-q.idx;
+    var pt=patrolTarget(s), pd=plan(s,q,pt[0],pt[1]);
+    moveProc(s,q,pd,ev);
+    if(q.alive && q.inv && ((q.x===q.inv[0] && q.y===q.inv[1]) || !pd)) q.inv=null; // reached the mark (or can't get closer): give up, back to route
+    if(s.over) return {s:s,ev:ev};
+  }
+  // hound moves (blind; walks to the last click it heard)
+  var h=s.hound;
+  if(h.alive){
+    var ht=houndTarget(s);
+    var hd=ht?plan(s,h,ht[0],ht[1]):null;
+    if(hd) moveProc(s,h,hd,ev);
+    if(h.alive && h.target && ((h.x===h.target[0] && h.y===h.target[1]) || !hd)) h.target=null; // reached (or stuck): sits and listens
+    if(s.over) return {s:s,ev:ev};
+  }
+  // scan sweeps (4-beat, clockwise)
+  s.scan.face=CW[s.scan.face];
+  // late hearing: whoever now stands in a ripple drawn this turn heard it (reacts next turn)
+  s.noise.forEach(function(n){ if(s.patrol.alive && !s.heard.patrol && Math.abs(s.patrol.x-n[0])+Math.abs(s.patrol.y-n[1])<=HEAR){ s.patrol.inv=n; s.heard.patrol=true; } });
+  // boxed in: no legal move left (outside a socket you can't wait) = lost, never a frozen board
+  if(!["U","D","L","R","W"].some(function(a){ return legal(s,a); })){ s.over="LOST"; s.boxed=true; ev.push("caught"); }
+  return {s:s, ev:ev};
+}
+// ===== LOGIC-END =====
+
+// ---------- view ----------
+var cv=document.getElementById("c"), g=cv.getContext("2d"), CS=48;
+var S=newGame(), bang=0;
+var COL={wall:"#1a211e",wallLeg:"#56645c",sil:"#3a4640",silDot:"#465550",cu:"#a8683a",cuLine:"#d08a4f",sock:"#2c3833",sockLine:"#9fb3a6",
+  fuse:"#6d7d5a",fuseWire:"#e3c46b",core:"#e3c46b",port:"#56645c",pl:"#dfeee2",virus:"#c8553d",sight:"rgba(200,85,61,.28)",arrow:"#e8a07f"};
+function drawCell(x,y){
+  var t=tile(x,y), px=x*CS, py=y*CS;
+  if(t==="#"){ g.fillStyle=COL.wall; g.fillRect(px,py,CS,CS); g.fillStyle="#2a332f"; g.fillRect(px+8,py+8,CS-16,CS-16);
+    g.fillStyle=COL.wallLeg; for(var i=0;i<3;i++){ g.fillRect(px+12+i*10,py+3,4,5); g.fillRect(px+12+i*10,py+CS-8,4,5);} return; }
+  g.fillStyle=COL.sil; g.fillRect(px,py,CS,CS); g.fillStyle=COL.silDot; g.fillRect(px+22,py+22,4,4);
+  if(t==="="){ g.fillStyle=COL.cu; g.fillRect(px+2,py+2,CS-4,CS-4); g.fillStyle=COL.cuLine; g.fillRect(px+6,py+14,CS-12,4); g.fillRect(px+6,py+30,CS-12,4); }
+  if(t==="S"){ g.fillStyle=COL.sock; g.fillRect(px+4,py+4,CS-8,CS-8); g.strokeStyle=COL.sockLine; g.lineWidth=3; g.strokeRect(px+7,py+7,CS-14,CS-14); }
+  if(t==="F"){ if(S.fuses[x+","+y]){ g.fillStyle="#2b2f2c"; g.fillRect(px+12,py+18,24,12); }
+    else { g.fillStyle=COL.fuse; g.fillRect(px+10,py+17,28,14); g.fillStyle=COL.fuseWire; g.fillRect(px+10,py+23,28,2); g.fillStyle="#9aa58a"; g.fillRect(px+8,py+16,4,16); g.fillRect(px+36,py+16,4,16);} }
+  if(t==="C"){ g.fillStyle="#5b4d25"; g.fillRect(px+4,py+4,CS-8,CS-8); if(!S.carry){ g.fillStyle=COL.core; g.fillRect(px+14,py+14,20,20); g.fillStyle="#8a7534"; g.fillRect(px+20,py+20,8,8);} }
+  if(t==="P"){ g.fillStyle=COL.port; g.fillRect(px+6,py+30,CS-12,14); g.fillStyle="#1d2522"; g.fillRect(px+12,py+34,CS-24,6); }
+}
+function arrow(x,y,d,col){
+  var v=DIRS[d], cx=x*CS+CS/2+v[0]*17, cy=y*CS+CS/2+v[1]*17;
+  g.fillStyle=col; g.beginPath();
+  g.moveTo(cx+v[0]*6, cy+v[1]*6);
+  g.lineTo(cx-v[0]*3+v[1]*6, cy-v[1]*3+v[0]*6);
+  g.lineTo(cx-v[0]*3-v[1]*6, cy-v[1]*3-v[0]*6);
+  g.closePath(); g.fill();
+}
+function drawProc(q,kind){
+  if(!q.alive) return;
+  var px=q.x*CS, py=q.y*CS;
+  g.fillStyle=COL.virus;
+  if(kind==="scan"){ g.fillRect(px+10,py+10,28,28); g.fillStyle="#1d2522"; g.fillRect(px+18,py+18,12,12); g.fillStyle="#e8a07f"; var v=DIRS[q.face]; g.fillRect(px+21+v[0]*6,py+21+v[1]*6,6,6); }
+  if(kind==="patrol"){ g.beginPath(); g.moveTo(px+24,py+6); g.lineTo(px+42,py+24); g.lineTo(px+24,py+42); g.lineTo(px+6,py+24); g.closePath(); g.fill();
+    g.fillStyle="#1d2522"; var w=DIRS[q.face]; g.fillRect(px+21+w[0]*7,py+21+w[1]*7,6,6); }
+  if(kind==="hound"){ g.fillRect(px+8,py+18,32,18); g.fillRect(px+8,py+10,8,8); g.fillRect(px+32,py+10,8,8); g.fillStyle="#1d2522"; g.fillRect(px+14,py+24,20,3); }
+}
+function draw(){
+  g.fillStyle="#26312c"; g.fillRect(0,0,cv.width,cv.height);
+  for(var y=0;y<H;y++) for(var x=0;x<W;x++) drawCell(x,y);
+  // sight lines (always visible: they are fact, not forecast)
+  [S.scan,S.patrol].forEach(function(q){ if(!q.alive) return; g.fillStyle=COL.sight; sightCells(S,q).forEach(function(c){ g.fillRect(c[0]*CS,c[1]*CS,CS,CS); }); });
+  // hearing ripple: every click this turn draws its 2-cell reach (the patrol's ears). The hound hears all clicks.
+  (S.noise||[]).forEach(function(n){ g.strokeStyle="rgba(227,196,107,.55)"; g.lineWidth=2;
+    for(var y=0;y<H;y++) for(var x=0;x<W;x++){ var d=Math.abs(x-n[0])+Math.abs(y-n[1]); if(d<=HEAR && tile(x,y)!=="#") g.strokeRect(x*CS+3,y*CS+3,CS-6,CS-6); } });
+  // where each process is headed: "?" = a click it heard, "!" = where it saw you
+  function mark(t,ch,col){ g.strokeStyle=col; g.lineWidth=2; g.strokeRect(t[0]*CS+12,t[1]*CS+12,24,24); g.fillStyle=col; g.font="bold 16px Courier New"; g.fillText(ch,t[0]*CS+19,t[1]*CS+29); }
+  if(S.lastSeen && S.level==="ALERT") mark(S.lastSeen,"!","#e8a07f");
+  if(S.patrol.alive && S.patrol.inv && !(S.lastSeen && S.patrol.inv[0]===S.lastSeen[0] && S.patrol.inv[1]===S.lastSeen[1])) mark(S.patrol.inv,"?","#e3c46b");
+  if(S.hound.alive && S.hound.target) mark(S.hound.target,"?","#e3c46b");
+  drawProc(S.scan,"scan"); drawProc(S.patrol,"patrol"); drawProc(S.hound,"hound");
+  // "?" tell over any process that heard a click this turn
+  g.fillStyle="#e3c46b"; g.font="bold 16px Courier New";
+  if(S.heard && S.heard.patrol && S.patrol.alive) g.fillText("?",S.patrol.x*CS+34,S.patrol.y*CS+14);
+  if(S.heard && S.heard.hound && S.hound.alive) g.fillText("?",S.hound.x*CS+34,S.hound.y*CS+14);
+  // intent arrows: shown in NORMAL/EVASION, dark on ALERT (Kojima)
+  if(S.level==="NORMAL" && !S.over){ var f=forecast(S);
+    if(f.patrol&&S.patrol.alive) arrow(S.patrol.x,S.patrol.y,f.patrol,COL.arrow);
+    if(f.hound&&S.hound.alive) arrow(S.hound.x,S.hound.y,f.hound,COL.arrow);
+    if(S.scan.alive) arrow(S.scan.x,S.scan.y,f.scan,"#8a5a48"); }
+  // player packet
+  var px=S.p.x*CS, py=S.p.y*CS, hid=tile(S.p.x,S.p.y)==="S";
+  g.fillStyle=hid?"#9fb3a6":COL.pl; g.fillRect(px+13,py+13,22,22); g.fillStyle="#1d2522"; g.fillRect(px+17,py+17,14,14);
+  if(S.carry){ g.fillStyle=COL.core; g.fillRect(px+19,py+19,10,10); } else { g.fillStyle=COL.pl; g.fillRect(px+21,py+21,6,6); }
+  if(bang>0){ g.fillStyle="#e8a07f"; g.font="bold 22px Courier New"; g.fillText("!",px+19,py+8); }
+  var st=document.getElementById("state");
+  st.textContent = S.level + (S.level!=="NORMAL" ? " "+(3-S.cnt) : "") + (S.carry ? " · COPY" : "");
+  st.style.color = S.level==="ALERT" ? "#e8a07f" : "#9fb3a6";
+  document.getElementById("waitBtn").disabled = !legal(S,"W");
+}
+// ---------- sound: PC-speaker square waves, low pitch only ----------
+var AC=null, alarm=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
+function tone(f,dur,when,vol){ var a=ac(); if(!a) return; var o=a.createOscillator(), gg=a.createGain(), lp=a.createBiquadFilter();
+  o.type="square"; o.frequency.value=f; lp.type="lowpass"; lp.frequency.value=900; gg.gain.value=vol||0.05;
+  var t0=a.currentTime+(when||0); gg.gain.setValueAtTime(vol||0.05,t0); gg.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(lp); lp.connect(gg); gg.connect(a.destination); o.start(t0); o.stop(t0+dur+0.02); }
+function setAlarm(on){ var a=ac(); if(!a) return;
+  if(on && !alarm){ var o=a.createOscillator(), gg=a.createGain(), lp=a.createBiquadFilter(); o.type="square"; o.frequency.value=82; lp.type="lowpass"; lp.frequency.value=500; gg.gain.value=0.025; o.connect(lp); lp.connect(gg); gg.connect(a.destination); o.start(); alarm={o:o,g:gg}; }
+  if(!on && alarm){ alarm.g.gain.setTargetAtTime(0,a.currentTime,0.03); alarm.o.stop(a.currentTime+0.2); alarm=null; } }
+function sounds(ev){
+  ev.forEach(function(e){
+    if(e==="click") tone(120,0.04,0,0.06);
+    if(e==="step") tone(55,0.02,0,0.015);
+    if(e==="bump") tone(65,0.06,0,0.03);
+    if(e==="pickup"){ tone(131,0.12,0); tone(165,0.16,0.12); }
+    if(e==="alert"){ tone(98,0.1,0); tone(147,0.14,0.1); }
+    if(e==="purge"){ tone(196,0.1,0.05); tone(147,0.1,0.15); tone(98,0.1,0.25); tone(65,0.22,0.35); }
+    if(e==="caught"){ tone(98,0.2,0); tone(73,0.2,0.2); tone(49,0.4,0.4); }
+    if(e==="win"){ tone(131,0.12,0); tone(165,0.12,0.13); tone(196,0.12,0.26); tone(262,0.3,0.39,0.04); }
+  });
+}
+// ---------- input ----------
+function act(a){
+  if(S.over) return;
+  var r=step(S,a); S=r.s; bang = (r.ev.indexOf("alert")>=0) ? 1 : 0;
+  sounds(r.ev); setAlarm(S.level==="ALERT" && S.seenNow && !S.over);
+  draw();
+  if(S.over){ setAlarm(false); setTimeout(showEnd, 350); }
+}
+function showEnd(){
+  document.getElementById("msgT").textContent = S.over==="CLEAN" ? "BOARD CLEAN" : "PACKET LOST";
+  document.getElementById("msgB").textContent = S.over==="CLEAN" ? ("Copy walked out in "+S.turn+" steps.") : (S.boxed ? "Boxed in: no move left." : S.carry ? "Caught on the walk home." : "A virus stepped onto you.");
+  document.getElementById("msg").style.display="flex";
+}
+function restart(){ S=newGame(); bang=0; setAlarm(false); document.getElementById("msg").style.display="none"; draw(); }
+document.getElementById("again").onclick=restart;
+document.querySelectorAll("#pad button").forEach(function(b){ b.addEventListener("click",function(){ act(b.getAttribute("data-a")); }); });
+cv.addEventListener("click",function(e){
+  var r=cv.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*W), y=Math.floor((e.clientY-r.top)/r.height*H);
+  var dx=x-S.p.x, dy=y-S.p.y;
+  if(dx===0&&dy===0) act("W"); else if(Math.abs(dx)+Math.abs(dy)===1) act(dx===1?"R":dx===-1?"L":dy===1?"D":"U");
+});
+document.addEventListener("keydown",function(e){ var m={ArrowUp:"U",ArrowDown:"D",ArrowLeft:"L",ArrowRight:"R"," ":"W",w:"W"}; if(m[e.key]){ e.preventDefault(); act(m[e.key]); } if(e.key==="r") restart(); });
+// test hook: ?keys=U,U,L  replays moves (headless screenshots)
+(function(){ var k=new URLSearchParams(location.search).get("keys"); draw(); if(k) k.split(",").forEach(function(a){ if(a) { var r=step(S,a); S=r.s; bang=(r.ev.indexOf("alert")>=0)?1:0; } }); draw(); if(k&&S.over) showEnd(); })();
+</script>
+</body>
+</html>
