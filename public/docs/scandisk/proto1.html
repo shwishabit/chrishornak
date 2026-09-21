@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>SCANDISK · Prototype 1</title>
+<!-- Prototype 1 shell (Claude). Pad + overlays copied from jam4/sneakernet.html (Chris-approved: GBC pad is the ONLY input,
+     overlays cover only the screen so any pad button closes them). Teams never edit this file — ask Claude.
+     The label under A / B and the title strip are set from code (#aLab, #bLab, #genre). -->
+<style>
+  /* Locked GBC palette: ground #080810 · panel #101018/#181828 · trace #383848 · dim #202030 · white #e8f0f8 · blue #3878f8/#1840a0/#88b0ff · red #f03828/#901808 · orange #f89020 · yellow #f0d040 · green #40d080 · purple #a060f0 */
+  html,body{margin:0;background:#080810;color:#e8f0f8;font:13px/1.35 ui-monospace,"IBM Plex Mono",Consolas,monospace;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  #wrap{max-width:390px;margin:0 auto;padding:6px 10px 8px;box-sizing:border-box}
+  #top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-size:12px}
+  #title{font-weight:bold;letter-spacing:2px}
+  #top small{color:#606880}
+  #screen{position:relative}
+  canvas{display:block;width:100%;image-rendering:pixelated;image-rendering:crisp-edges;background:#080810;border:2px solid #181828;border-radius:4px 4px 16px 4px;box-sizing:border-box}
+  #pad{display:grid;width:100%;padding:8px 6px 0;box-sizing:border-box;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+  .dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
+  .ab{display:flex;gap:12px;justify-content:flex-end;align-items:center}
+  .sys{grid-column:1 / -1;display:flex;gap:18px;justify-content:center}
+  #pad button{font:bold 13px ui-monospace,"IBM Plex Mono",Consolas,monospace;color:#e8f0f8;background:#181828;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+  #pad button.on{background:#383848}
+  #pad button.off{opacity:.35}
+  .dpad button{border-radius:6px}
+  .ab button{width:58px;height:58px;border-radius:50%;font-size:15px}
+  #pad .ab .a{background:#1840a0;margin-top:-24px}
+  #pad .ab .a.on{background:#3878f8}
+  .ab label,.sys small{display:block;font:10px ui-monospace,"IBM Plex Mono",Consolas,monospace;color:#88b0ff;text-align:center;margin-top:4px;max-width:80px}
+  .sys button{width:84px;height:30px;border-radius:15px;font-size:11px}
+  @media (max-width:640px),(pointer:coarse){
+    .dpad{grid-template-columns:repeat(3,62px);grid-template-rows:repeat(3,62px)}
+    .dpad button{font-size:18px}
+    .ab{gap:14px}
+    .ab button{width:70px;height:70px;font-size:16px}
+    #pad .ab .a{margin-top:-32px}
+    .sys button{width:100px;height:34px}
+  }
+  #help,#msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#080810;padding:8px 10px;box-sizing:border-box;overflow:auto;border:2px solid #181828;border-radius:4px 4px 16px 4px}
+  #help > div{font-size:11.5px;line-height:1.4;color:#e8f0f8}
+  #help b{color:#88b0ff}
+  #help .r{color:#f03828}
+  #help p{margin:0 0 6px}
+  #help .close{margin:0;color:#88b0ff}
+  #msg > div{text-align:center}
+  #msg h2{margin:0 0 8px;letter-spacing:2px;font-size:18px}
+  #msg .press{margin-top:12px;color:#88b0ff;font-weight:bold}
+  body.shot #pad{display:none}
+</style>
+  <script type="module" crossorigin src="/docs/scandisk/assets/proto1-O9-YrQdR.js"></script>
+  <link rel="modulepreload" crossorigin href="/docs/scandisk/assets/modulepreload-polyfill-B5Qt9EMX.js">
+</head>
+<body>
+<div id="wrap">
+  <div id="top"><span id="title">SCANDISK</span><small id="genre">pocket strategy · prototype 1</small></div>
+  <div id="screen">
+    <canvas id="c" width="160" height="144" aria-label="SCANDISK game screen"></canvas>
+    <div id="help" role="dialog" aria-label="How to play"><div id="helpBody"></div></div>
+    <div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><div class="press" id="msgP">PRESS START</div></div></div>
+  </div>
+  <div id="pad" aria-label="Game Boy buttons">
+    <div class="dpad">
+      <span></span><button data-b="up" aria-label="Up">&#9650;</button><span></span>
+      <button data-b="left" aria-label="Left">&#9664;</button><span></span><button data-b="right" aria-label="Right">&#9654;</button>
+      <span></span><button data-b="down" aria-label="Down">&#9660;</button><span></span>
+    </div>
+    <div class="ab">
+      <div><button data-b="b" aria-label="B (Z)">B</button><label id="bLab">--</label></div>
+      <div><button class="a" data-b="a" aria-label="A (X)">A</button><label id="aLab">--</label></div>
+    </div>
+    <div class="sys">
+      <div><button data-b="select" aria-label="Select (Backspace): how to play">SELECT</button><small>HOW TO</small></div>
+      <div><button data-b="start" aria-label="Start (Enter)">START</button><small id="startLab">START</small></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
