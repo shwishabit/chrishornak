@@ -4,42 +4,75 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex">
-<title>SNEAKERNET - sketch</title>
+<title>SNEAKERNET · pocket stealth · sketch</title>
 <style>
   html,body{margin:0;background:#1d2522;color:#d8e2d6;font:13px/1.35 "Courier New",monospace;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-  #wrap{max-width:420px;margin:0 auto;padding:8px 10px 14px;box-sizing:border-box}
+  #wrap{max-width:390px;margin:0 auto;padding:6px 10px 8px;box-sizing:border-box}
   #top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
   #title{font-weight:bold;letter-spacing:2px;color:#e3c46b}
   #state{font-weight:bold}
   canvas{display:block;width:100%;image-rendering:pixelated;border:2px solid #3b4a43;box-sizing:border-box;background:#26312c}
   #how{margin:6px 0;color:#aebcae;font-size:12px}
   #how b{color:#e3c46b}
-  #pad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,52px);gap:6px;justify-content:center;margin-top:6px}
-  #pad button{font:bold 18px "Courier New",monospace;background:#34423c;color:#d8e2d6;border:2px solid #51645a;border-radius:6px}
-  #pad button:active{background:#44564d}
-  #pad button:disabled{opacity:.3}
+  /* Game Boy pad (pattern from jam2-a.html): the ONLY input. Keys light the same buttons. */
+  #pad{display:grid;width:100%;padding:4px 6px 0;box-sizing:border-box;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+  .dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
+  .ab{display:flex;gap:12px;justify-content:flex-end;align-items:center}
+  .sys{grid-column:1 / -1;display:flex;gap:18px;justify-content:center}
+  #pad button{font:bold 13px "Courier New",monospace;color:#d8e2d6;background:#34423c;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+  #pad button.on{background:#51645a}
+  #pad button.off{opacity:.35}
+  .dpad button{border-radius:6px}
+  .ab button{width:58px;height:58px;border-radius:50%;font-size:15px}
+  #pad .ab .a{background:#6b5a2a;margin-top:-24px}
+  #pad .ab .a.on{background:#a08a44}
+  .ab label,.sys small{display:block;font:10px "Courier New",monospace;color:#8a9a8e;text-align:center;margin-top:4px}
+  .sys button{width:84px;height:30px;border-radius:15px;font-size:11px;color:#aebcae}
+  @media (max-width:640px),(pointer:coarse){
+    .dpad{grid-template-columns:repeat(3,62px);grid-template-rows:repeat(3,62px)}
+    .dpad button{font-size:18px}
+    .ab{gap:14px}
+    .ab button{width:70px;height:70px;font-size:16px}
+    #pad .ab .a{margin-top:-32px}
+    .sys button{width:100px;height:34px}
+  }
+  #help{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,24,.93);padding:14px;box-sizing:border-box}
+  #help > div{background:#2a3631;border:2px solid #51645a;padding:14px 16px;max-width:360px;font-size:13px;color:#cdd8cd}
+  #help b{color:#e3c46b}
+  #help p{margin:0 0 8px}
   #msg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,24,.88)}
   #msg div{background:#2a3631;border:2px solid #e3c46b;padding:18px 20px;text-align:center;max-width:300px}
   #msg h2{margin:0 0 8px;color:#e3c46b;letter-spacing:2px}
-  #msg button{margin-top:12px;font:bold 16px "Courier New",monospace;background:#e3c46b;color:#1d2522;border:0;padding:10px 18px;border-radius:4px}
+  #msg .press{margin-top:12px;color:#e3c46b;font-weight:bold}
 </style>
 </head>
 <body>
 <div id="wrap">
-  <div id="top"><span id="title">SNEAKERNET</span><span id="state">NORMAL</span></div>
+  <div id="top"><span id="title">SNEAKERNET <small style="color:#8a9a8e;font-weight:normal;letter-spacing:0">pocket stealth · sketch</small></span><span id="state">NORMAL</span></div>
   <canvas id="c" width="336" height="432"></canvas>
-  <div id="how">
-    1. Tap a cell next to you to step. <b>Copper clicks</b>: the diamond sentry hears it 2 cells away (the gold ripple) and the blind hound hears it anywhere. Silicon is silent.<br>
-    2. <b>Red = sight.</b> End a turn in it: <b>!</b> ALERT, and they go to the <b>!</b>. Arrows go dark until you're out of sight 3 turns. Only in a socket &#9634; can you WAIT.<br>
-    3. Take the <b>copy</b> from the gold core out to the port. Carrying it, <b>every step clicks</b>. A virus that steps on a fuse is purged.
-  </div>
-  <div id="pad">
-    <span></span><button data-a="U">&#9650;</button><span></span>
-    <button data-a="L">&#9664;</button><button data-a="W" id="waitBtn">W</button><button data-a="R">&#9654;</button>
-    <span></span><button data-a="D">&#9660;</button><span></span>
+  <div id="pad" aria-label="Game Boy buttons">
+    <div class="dpad">
+      <span></span><button data-b="up" aria-label="Up: step">&#9650;</button><span></span>
+      <button data-b="left" aria-label="Left: step">&#9664;</button><span></span><button data-b="right" aria-label="Right: step">&#9654;</button>
+      <span></span><button data-b="down" aria-label="Down: step">&#9660;</button><span></span>
+    </div>
+    <div class="ab">
+      <div><button data-b="b" aria-label="B (Z): not used yet">B</button><label>--</label></div>
+      <div><button class="a" data-b="a" aria-label="A (X): wait, only in a socket">A</button><label id="aLab">WAIT</label></div>
+    </div>
+    <div class="sys">
+      <div><button data-b="select" aria-label="Select (Backspace): how to play">SELECT</button><small>HOW TO</small></div>
+      <div><button data-b="start" aria-label="Start (Enter): restart">START</button><small>RESTART</small></div>
+    </div>
   </div>
 </div>
-<div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><button id="again">RESTART</button></div></div>
+<div id="help"><div>
+  <p><b>D-PAD</b> steps one cell. <b>Copper clicks</b>: the diamond sentry hears it 2 cells away (the gold ripple), and the blind hound hears it anywhere. Silicon is silent.</p>
+  <p><b>Red = sight.</b> End a move in it: <b>!</b> ALERT, and they go to the <b>!</b>. The arrows go dark until you're out of sight 3 turns. <b>A</b> = WAIT, only in a socket &#9634;.</p>
+  <p>Take the <b>copy</b> from the gold core out to the port. Carrying it, <b>every step clicks</b>. A virus that steps on a fuse is purged.</p>
+  <p style="margin:0;color:#8a9a8e">SELECT shows this again · START restarts · any button closes</p>
+</div></div>
+<div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><div class="press">PRESS START</div></div></div>
 <script>
 // ===== LOGIC-START (pure, no DOM; the check script evals this block) =====
 var W = 7, H = 9;
@@ -260,13 +293,13 @@ function draw(){
   var st=document.getElementById("state");
   st.textContent = S.level + (S.level!=="NORMAL" ? " "+(3-S.cnt) : "") + (S.carry ? " · COPY" : "");
   st.style.color = S.level==="ALERT" ? "#e8a07f" : "#9fb3a6";
-  document.getElementById("waitBtn").disabled = !legal(S,"W");
+  var canW=legal(S,"W"); document.querySelector('[data-b="a"]').classList.toggle("off",!canW); document.getElementById("aLab").textContent = canW ? "WAIT" : "WAIT (socket)";
 }
 // ---------- sound: PC-speaker square waves, low pitch only ----------
 var AC=null, alarm=null;
 function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
 function tone(f,dur,when,vol){ var a=ac(); if(!a) return; var o=a.createOscillator(), gg=a.createGain(), lp=a.createBiquadFilter();
-  o.type="square"; o.frequency.value=f; lp.type="lowpass"; lp.frequency.value=900; gg.gain.value=vol||0.05;
+  o.type="square"; o.frequency.value=f; lp.type="lowpass"; lp.frequency.value=500; gg.gain.value=vol||0.05;
   var t0=a.currentTime+(when||0); gg.gain.setValueAtTime(vol||0.05,t0); gg.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
   o.connect(lp); lp.connect(gg); gg.connect(a.destination); o.start(t0); o.stop(t0+dur+0.02); }
 function setAlarm(on){ var a=ac(); if(!a) return;
@@ -298,16 +331,27 @@ function showEnd(){
   document.getElementById("msg").style.display="flex";
 }
 function restart(){ S=newGame(); bang=0; setAlarm(false); document.getElementById("msg").style.display="none"; draw(); }
-document.getElementById("again").onclick=restart;
-document.querySelectorAll("#pad button").forEach(function(b){ b.addEventListener("click",function(){ act(b.getAttribute("data-a")); }); });
-cv.addEventListener("click",function(e){
-  var r=cv.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*W), y=Math.floor((e.clientY-r.top)/r.height*H);
-  var dx=x-S.p.x, dy=y-S.p.y;
-  if(dx===0&&dy===0) act("W"); else if(Math.abs(dx)+Math.abs(dy)===1) act(dx===1?"R":dx===-1?"L":dy===1?"D":"U");
-});
-document.addEventListener("keydown",function(e){ var m={ArrowUp:"U",ArrowDown:"D",ArrowLeft:"L",ArrowRight:"R"," ":"W",w:"W"}; if(m[e.key]){ e.preventDefault(); act(m[e.key]); } if(e.key==="r") restart(); });
+var help=document.getElementById("help");
+function setHelp(on){ help.style.display = on ? "flex" : "none"; }
+var DMAP={up:"U",down:"D",left:"L",right:"R"};
+function press(b){
+  if(help.style.display==="flex"){ setHelp(false); return; }   // any button closes the how-to
+  if(b==="select"){ setHelp(true); return; }
+  if(b==="start"){ restart(); return; }
+  if(S.over) return;
+  if(DMAP[b]) act(DMAP[b]);
+  else if(b==="a"){ if(legal(S,"W")) act("W"); else sounds(["bump"]); }
+  // B: not used yet (no new rule invented)
+}
+function light(b,on){ var el=document.querySelector('#pad [data-b="'+b+'"]'); if(el) el.classList.toggle("on",on); }
+document.querySelectorAll("#pad button").forEach(function(el){ var b=el.getAttribute("data-b");
+  el.addEventListener("pointerdown",function(e){ e.preventDefault(); light(b,true); press(b); });
+  ["pointerup","pointerleave","pointercancel"].forEach(function(t){ el.addEventListener(t,function(){ light(b,false); }); }); });
+var KEYS={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",x:"a",X:"a",z:"b",Z:"b",Enter:"start",Backspace:"select"};
+document.addEventListener("keydown",function(e){ var b=KEYS[e.key]; if(!b) return; e.preventDefault(); light(b,true); if(!e.repeat) press(b); });
+document.addEventListener("keyup",function(e){ var b=KEYS[e.key]; if(b) light(b,false); });
 // test hook: ?keys=U,U,L  replays moves (headless screenshots)
-(function(){ var k=new URLSearchParams(location.search).get("keys"); draw(); if(k) k.split(",").forEach(function(a){ if(a) { var r=step(S,a); S=r.s; bang=(r.ev.indexOf("alert")>=0)?1:0; } }); draw(); if(k&&S.over) showEnd(); })();
+(function(){ var k=new URLSearchParams(location.search).get("keys"); draw(); if(k) k.split(",").forEach(function(a){ if(a) { var r=step(S,a); S=r.s; bang=(r.ev.indexOf("alert")>=0)?1:0; } }); draw(); if(k&&S.over) showEnd(); if(!k && !new URLSearchParams(location.search).has("nohelp")) setHelp(true); })();
 </script>
 </body>
 </html>

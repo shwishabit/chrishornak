@@ -4,78 +4,111 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex, nofollow">
-<title>BREAKPOINT · sketch</title>
+<title>BREAKPOINT · one-tap puzzle · sketch</title>
 <style>
 :root{
   --ground:#0E1214; --panel:#161C20; --bus:#1A2126; --drive:#1F2A2E; --line:#0A0D0F;
-  --ink:#D7DEE2; --muted:#7F8E96; --corr:#B9C7CC; --corr2:#8FA0A6; --red:#D2503C; --bad:#0A0D0F; --badink:#6A4E46;
+  --ink:#D7DEE2; --muted:#7F8E96; --corr:#B9C7CC; --red:#D2503C; --bad:#0A0D0F; --badink:#6A4E46; --cur:#F0E68C;
   --mono:ui-monospace, Consolas, "Courier New", monospace;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--mono)}
-body{padding:10px 12px 24px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-.wrap{max-width:390px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
-h1{font-size:.95rem;letter-spacing:.16em;margin:0;font-weight:700}
-h1 small{color:var(--muted);letter-spacing:.06em;font-weight:400;font-size:.7rem;margin-left:8px}
-.howto{font-size:.72rem;line-height:1.5;color:var(--muted);margin:0;padding:0;list-style:none}
+html,body{margin:0;height:100%;background:var(--ground);color:var(--ink);font-family:var(--mono);overflow:hidden}
+body{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 12px calc(6px + env(safe-area-inset-bottom,0px));touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.wrap{width:100%;max-width:390px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+h1{font-size:.9rem;letter-spacing:.16em;margin:0;font-weight:700}
+h1 small{color:var(--muted);letter-spacing:.06em;font-weight:400;font-size:.66rem;margin-left:8px}
+.howto{position:absolute;inset:0;z-index:2;background:rgba(14,18,20,.94);font-size:.74rem;line-height:1.5;color:var(--ink);margin:0;padding:14px 12px;list-style:none;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.howto .dim{color:var(--muted);font-size:.66rem}
 .howto b{color:var(--ink);font-weight:600}
 .howto .r{color:var(--red);font-weight:700}
-.top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;background:var(--panel);padding:8px 10px}
-.lab{font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+.top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;background:var(--panel);padding:6px 10px}
+.lab{font-size:.66rem;color:var(--muted);letter-spacing:.1em}
 .next{display:grid;grid-template-columns:repeat(3,14px);grid-template-rows:repeat(2,14px);gap:2px;background:var(--line);padding:2px}
 .next i{display:block;background:var(--bus)}
 .next i.on{background:var(--corr)}
-.qcount{font-size:.8rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.qcount{font-size:.8rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
 .qcount b{font-size:1.1rem}
-.status{font-size:.78rem;min-height:1.3em;color:var(--ink)}
-.boardwrap{position:relative}
+.boardwrap{position:relative;align-self:center;width:min(100%, calc((100vh - 372px) * 0.75));min-width:210px}
 .board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(8,1fr);gap:2px;background:var(--line);padding:2px;width:100%;aspect-ratio:6/8}
-.cell{position:relative;background:var(--bus);border:0;margin:0;padding:0;font-family:var(--mono)}
+.cell{position:relative;background:var(--bus)}
 .cell.drive{background:var(--drive)}
-.cell.busline{box-shadow:inset 0 -3px 0 var(--red);opacity:.92} /* the fail line: a column of B reaching this line = DRIVE FAILED */
+.cell.busline{box-shadow:inset 0 -3px 0 var(--red)} /* the fail line: a column of B reaching this line = DRIVE FAILED */
 .cell.arm::after{content:"";position:absolute;left:30%;top:30%;width:40%;height:40%;background:var(--red)}
 .cell.corr{background:var(--corr)}
-.cell.corr.drive{background:var(--corr)}
-.cell.corr.arm::after{background:var(--red);left:25%;top:25%;width:50%;height:50%;outline:2px solid var(--ground)}
+.cell.corr.arm::after{left:25%;top:25%;width:50%;height:50%;outline:2px solid var(--ground)}
 .cell.bad{background:var(--bad);background-image:repeating-linear-gradient(45deg,transparent 0 4px,var(--badink) 4px 6px)}
 .cell.bad::before{content:"B";position:absolute;inset:0;display:grid;place-items:center;font-size:.7rem;color:var(--badink);font-weight:700}
-.cell.can{cursor:pointer}
-.end{position:absolute;inset:0;background:rgba(14,18,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px}
-.end h2{margin:0;font-size:1.1rem;letter-spacing:.14em}
-.end p{margin:0;font-size:.8rem;color:var(--muted);line-height:1.6}
+.cell.cur{outline:3px solid var(--cur);outline-offset:-3px;z-index:1}
+.end{position:absolute;inset:0;background:rgba(14,18,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px}
+.end h2{margin:0;font-size:1rem;letter-spacing:.14em}
+.end p{margin:0;font-size:.74rem;color:var(--muted);line-height:1.6}
 .end p b{color:var(--ink);font-variant-numeric:tabular-nums}
-button.act{font-family:var(--mono);font-size:.85rem;font-weight:700;letter-spacing:.1em;background:var(--ink);color:var(--ground);border:0;padding:12px 22px;cursor:pointer}
-.foot{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;color:var(--muted)}
-.foot button{font-family:var(--mono);font-size:.68rem;background:none;border:1px solid var(--muted);color:var(--muted);padding:4px 8px;cursor:pointer}
 [hidden]{display:none!important}
+/* The Game Boy pad (pattern from jam2-a.html); keys light the same buttons. */
+#pad{display:grid;width:min(100vw,420px);padding:0 16px 4px;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
+.ab{display:flex;gap:12px;justify-content:flex-end;align-items:center}
+.sys{grid-column:1/-1;display:flex;gap:18px;justify-content:center}
+#pad button{font:bold 13px var(--mono);color:#e8f0f8;background:#282838;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+#pad button.on{background:#484868}
+.dpad button{border-radius:6px}
+.ab button{width:58px;height:58px;border-radius:50%;font-size:15px}
+#pad .ab .a{background:#1840a0;margin-top:-24px}
+#pad .ab .a.on{background:#3878f8}
+.ab label,.sys small{display:block;font:10px var(--mono);color:#606880;text-align:center;margin-top:4px}
+.sys button{width:84px;height:30px;border-radius:15px;font-size:11px;color:#9098b8}
+@media (max-width:640px),(pointer:coarse){
+  #pad{width:100%;max-width:480px;padding:0 14px;align-items:center;gap:8px 0}
+  .dpad{grid-template-columns:repeat(3,62px);grid-template-rows:repeat(3,62px)}
+  .dpad button{font-size:18px}
+  .ab{gap:14px}
+  .ab button{width:70px;height:70px;font-size:16px}
+  #pad .ab .a{margin-top:-32px}
+  .sys button{width:100px;height:34px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>BREAKPOINT<small>sketch · one drive</small></h1>
-  <ol class="howto">
-    <li>1. Corruption falls one row every tap. The next packet is shown above.</li>
-    <li>2. Tap an empty drive cell: set a <span class="r">breakpoint</span>. Tap any breakpoint: fire them <b>all</b>. All are spent, hit or miss.</li>
-    <li>3. Corruption that reaches the floor burns that cell for good. A column burned up to the bus = drive failed.</li>
-  </ol>
+  <h1>BREAKPOINT<small>one-tap puzzle · sketch</small></h1>
   <div class="top">
     <div><div class="lab">NEXT <span id="nextin"></span></div><div class="next" id="next"></div></div>
-    <div class="status" id="status" aria-live="polite"></div>
+    <div class="lab" id="hint">SELECT = how to play</div>
     <div class="qcount"><div class="lab">QUEUE</div><b id="qn">0</b></div>
   </div>
   <div class="boardwrap">
     <div class="board" id="board" role="grid" aria-label="Drive, 6 by 8"></div>
+    <ol class="howto" id="howto" hidden>
+      <li>1. Corruption falls one row every A or B press. The next packet is shown above. D-pad moves the cursor (free).</li>
+      <li>2. A on an empty drive cell: set a <span class="r">breakpoint</span>. A on a breakpoint, or B anywhere: fire them <b>all</b>. All are spent, hit or miss.</li>
+      <li>3. Corruption that reaches the floor burns that cell for good. A column burned up to the red line = drive failed.</li>
+      <li class="dim">SELECT closes this.</li>
+    </ol>
     <div class="end" id="end" hidden>
       <h2 id="endTitle"></h2>
       <p id="endStats"></p>
-      <button class="act" id="rescan" type="button">RESCAN</button>
+      <p>START = rescan</p>
     </div>
   </div>
-  <div class="foot"><span id="sndlab">sound: on after first tap</span><button id="snd" type="button">MUTE</button></div>
+</div>
+<div id="pad" aria-label="Touch buttons">
+  <div class="dpad">
+    <span></span><button data-b="up" aria-label="Up: move cursor up">▲</button><span></span>
+    <button data-b="left" aria-label="Left: move cursor left">◀</button><span></span><button data-b="right" aria-label="Right: move cursor right">▶</button>
+    <span></span><button data-b="down" aria-label="Down: move cursor down">▼</button><span></span>
+  </div>
+  <div class="ab">
+    <div><button data-b="b" aria-label="B (Z): fire all breakpoints">B</button><label id="labB">FIRE ALL</label></div>
+    <div><button class="a" data-b="a" aria-label="A (X): arm, or fire if on a breakpoint">A</button><label id="labA">ARM</label></div>
+  </div>
+  <div class="sys">
+    <div><button data-b="select" aria-label="Select: how to play">SELECT</button><small>HOW TO</small></div>
+    <div><button data-b="start" aria-label="Start: rescan">START</button><small>RESCAN</small></div>
+  </div>
 </div>
 
 <script id="core">
-// ---- BREAKPOINT core: pure functions, no DOM. Also driven by tools/check in node. ----
+// ---- BREAKPOINT core: pure functions, no DOM. Also driven by the check script in node. ----
 var BP = (function(){
   var W=6, H=8, BUS=3, SPACING=3; // drive = rows 3..7. FAILED when any column is burned up to the bus (a hole through the drive).
   // shapes: [dr,dc] with dr 0 = top row. Whole packet enters rows 0-1 at once.
@@ -135,24 +168,33 @@ var BP = (function(){
     if(hole) s.over="FAILED";
     else if(s.queue.length===0 && s.cells.length===0) s.over="CLEAN";
   }
-  // The one tap. Returns {kind, hits} or null for an illegal tap (turn does not pass).
+  function endTurn(s){
+    s.turn++;
+    advance(s);
+    if(s.turn%SPACING===0) spawn(s);
+    endCheck(s);
+  }
+  // The one action (A at the cursor). Returns {kind, hits} or null for an illegal press (turn does not pass).
   function tap(s,r,c){
     if(s.over) return null;
     var res;
     if(s.armed[k(r,c)]) res={kind:"fire", hits:fire(s)};
     else if(canArm(s,r,c)){ s.armed[k(r,c)]=1; res={kind:"arm"}; }
     else return null;
-    s.turn++;
-    advance(s);
-    if(s.turn%SPACING===0) spawn(s);
-    endCheck(s);
+    endTurn(s);
+    return res;
+  }
+  // B: fire all from anywhere. Same rule as tapping a breakpoint; illegal (no turn) when nothing is armed.
+  function fireAll(s){
+    if(s.over || armedList(s).length===0) return null;
+    var res={kind:"fire", hits:fire(s)};
+    endTurn(s);
     return res;
   }
   function start(){ var s=newState(); spawn(s); return s; }
 
   // ---- bots (for the check; the sketch itself never runs them) ----
   // Naive: "wait, arm, fire per packet". Looks only at the front (lowest) packet.
-  // Fires as soon as any corruption sits on a breakpoint; otherwise arms the cell directly under a front-packet cell; else the top drive row under it.
   function naive(s){
     for(var i=0;i<s.cells.length;i++){ var c=s.cells[i]; if(s.armed[k(c.r,c.c)]) return [c.r,c.c]; }
     if(s.cells.length===0){ for(var r=BUS;r<H;r++)for(var cc=0;cc<W;cc++) if(canArm(s,r,cc)) return [r,cc]; return null; }
@@ -163,7 +205,6 @@ var BP = (function(){
     for(r=BUS;r<H;r++)for(cc=0;cc<W;cc++) if(canArm(s,r,cc)) return [r,cc];
     return null;
   }
-  // Planner: depth-limited search over useful taps (fire, or arm in a column that has corruption above). Proves a line exists.
   function candidates(s){
     var out=[], arms=armedList(s); if(arms.length) out.push([arms[0].r,arms[0].c]);
     var cols={}; s.cells.forEach(function(c){cols[c.c]=1;});
@@ -171,11 +212,7 @@ var BP = (function(){
     if(!out.length) for(r=BUS;r<H;r++)for(cc=0;cc<W;cc++) if(canArm(s,r,cc)){out.push([r,cc]);break;}
     return out;
   }
-  function score(s){ // lower is better
-    var v=badCount(s)*100 + s.spent*0.2;
-    if(s.over==="FAILED") v+=10000;
-    return v;
-  }
+  function score(s){ var v=badCount(s)*100 + s.spent*0.2; if(s.over==="FAILED") v+=10000; return v; }
   function search(s,depth){
     if(depth===0||s.over) return score(s);
     var best=Infinity, cs=candidates(s);
@@ -192,15 +229,17 @@ var BP = (function(){
     while(!s.over && guard++<200){ var m=bot(s,depth); if(!m) break; tap(s,m[0],m[1]); }
     return s;
   }
-  return {W:W,H:H,BUS:BUS,SPACING:SPACING,SHAPES:SHAPES,OPENING:OPENING,start:start,tap:tap,canArm:canArm,corrAt:corrAt,badCount:badCount,naive:naive,planner:planner,run:run,clone:clone};
+  return {W:W,H:H,BUS:BUS,SPACING:SPACING,SHAPES:SHAPES,OPENING:OPENING,start:start,tap:tap,fireAll:fireAll,canArm:canArm,corrAt:corrAt,badCount:badCount,naive:naive,planner:planner,run:run,clone:clone};
 })();
 if(typeof module!=="undefined") module.exports=BP;
 </script>
 
 <script>
 (function(){
-  var S=null, boardEl=document.getElementById("board"), nextEl=document.getElementById("next"), qn=document.getElementById("qn");
-  var statusEl=document.getElementById("status"), endEl=document.getElementById("end"), endTitle=document.getElementById("endTitle"), endStats=document.getElementById("endStats");
+  var S=null, cur={r:5,c:2};
+  var boardEl=document.getElementById("board"), nextEl=document.getElementById("next"), qn=document.getElementById("qn");
+  var endEl=document.getElementById("end"), endTitle=document.getElementById("endTitle"), endStats=document.getElementById("endStats");
+  var howto=document.getElementById("howto"), labA=document.getElementById("labA");
   var cellEls=[];
 
   // ---- sound: PC-speaker style, square wave, all LOW (55-160 Hz). No high pitches, no flashing anywhere. ----
@@ -208,11 +247,13 @@ if(typeof module!=="undefined") module.exports=BP;
   function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){AC=null;} } if(AC&&AC.state==="suspended")AC.resume(); return AC; }
   function beep(freq,ms,when,type,gain){
     if(muted) return; var a=ac(); if(!a) return;
-    var o=a.createOscillator(), g=a.createGain(); o.type=type||"square"; o.frequency.value=freq;
-    var t0=a.currentTime+(when||0); g.gain.setValueAtTime(gain||0.07,t0); g.gain.setValueAtTime(0.0001,t0+ms/1000);
-    o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0+ms/1000+0.01);
+    // low-pass keeps the square/saw overtones out of the sharp range (ADHD rule: no sharp or high sounds); soft edges avoid clicks
+    var o=a.createOscillator(), g=a.createGain(), lp=a.createBiquadFilter(); o.type=type||"square"; o.frequency.value=freq; lp.type="lowpass"; lp.frequency.value=500;
+    var t0=a.currentTime+(when||0), t1=t0+ms/1000; g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(gain||0.07,t0+0.005); g.gain.setValueAtTime(gain||0.07,Math.max(t0+0.005,t1-0.008)); g.gain.linearRampToValueAtTime(0.0001,t1);
+    o.connect(lp); lp.connect(g); g.connect(a.destination); o.start(t0); o.stop(t1+0.01);
   }
   var SND={
+    move:function(){beep(100,15,0,"square",0.03);},
     arm:function(){beep(150,35);},
     fire:function(hits){ beep(80,90,0,"square",0.09); for(var i=0;i<hits;i++) beep(120,30,0.11+i*0.07); },
     burn:function(n){ for(var i=0;i<n;i++) beep(55,220,i*0.12,"sawtooth",0.06); },
@@ -220,14 +261,10 @@ if(typeof module!=="undefined") module.exports=BP;
     clean:function(){ beep(110,120); beep(140,120,0.16); beep(160,200,0.32); },
     fail:function(){ beep(90,200); beep(70,200,0.24); beep(55,400,0.48,"sawtooth",0.06); }
   };
-  document.getElementById("snd").addEventListener("click",function(){ muted=!muted; this.textContent=muted?"UNMUTE":"MUTE"; document.getElementById("sndlab").textContent="sound: "+(muted?"off":"on"); });
 
   // ---- board ----
   for(var r=0;r<BP.H;r++)for(var c=0;c<BP.W;c++){
-    var b=document.createElement("button"); b.type="button"; b.className="cell"+(r>=BP.BUS?" drive":"")+(r===BP.BUS-1?" busline":"");
-    b.dataset.r=r; b.dataset.c=c; b.setAttribute("aria-label","row "+(r+1)+" col "+(c+1));
-    (function(rr,cc){ b.addEventListener("click",function(){onTap(rr,cc);}); })(r,c);
-    boardEl.appendChild(b); cellEls.push(b);
+    var d=document.createElement("div"); d.className="cell"; d.setAttribute("role","gridcell"); boardEl.appendChild(d); cellEls.push(d);
   }
   for(var i=0;i<6;i++){ nextEl.appendChild(document.createElement("i")); }
 
@@ -238,7 +275,7 @@ if(typeof module!=="undefined") module.exports=BP;
       if(S.bad[key]) cls+=" bad";
       if(S.armed[key]) cls+=" arm";
       if(BP.corrAt(S,r,c)) cls+=" corr";
-      if(!S.over && (S.armed[key]||BP.canArm(S,r,c))) cls+=" can";
+      if(!S.over && cur.r===r && cur.c===c) cls+=" cur";
       el.className=cls;
     }
     var nx=S.queue[0], on={};
@@ -247,9 +284,8 @@ if(typeof module!=="undefined") module.exports=BP;
     qn.textContent=S.queue.length;
     var until=BP.SPACING-(S.turn%BP.SPACING);
     document.getElementById("nextin").textContent=nx?"· in "+until+(until===1?" tap":" taps"):"· none";
+    labA.textContent=S.armed[cur.r+","+cur.c]?"FIRE ALL":"ARM";
     var bad=BP.badCount(S);
-    // Producers' cut (Jobs): no running counts on screen; the board already shows red and B. Numbers only at the end.
-    statusEl.textContent="";
     if(S.over){
       endEl.hidden=false;
       endTitle.textContent=S.over==="FAILED"?"DRIVE FAILED":(bad===0?"DRIVE CLEAN":"SCAN DONE · "+bad+" BAD");
@@ -257,23 +293,50 @@ if(typeof module!=="undefined") module.exports=BP;
     } else endEl.hidden=true;
   }
 
-  function onTap(r,c){
-    if(!S||S.over) return;
-    var before=BP.badCount(S);
-    var res=BP.tap(S,r,c);
+  function after(res,before){
     if(!res){ SND.bad(); return; }
     if(res.kind==="arm") SND.arm(); else SND.fire(res.hits);
     var burned=BP.badCount(S)-before; if(burned) SND.burn(burned);
     if(S.over==="CLEAN") SND.clean(); else if(S.over==="FAILED") SND.fail();
-    render();
   }
-  function reset(){ S=BP.start(); render(); }
-  document.getElementById("rescan").addEventListener("click",reset);
+  // A: the one action at the cursor (arm, or fire if the cursor is on a breakpoint). One turn.
+  function pressA(r,c){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.tap(S,r,c),before); render(); }
+  // B: fire all from anywhere. One turn. Nothing armed = nothing happens, no turn.
+  function pressB(){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.fireAll(S),before); render(); }
+  // D-pad: moves the cursor inside the drive. Free (no turn).
+  function move(dr,dc){
+    if(!S||S.over) return;
+    var nr=Math.max(BP.BUS,Math.min(BP.H-1,cur.r+dr)), nc=Math.max(0,Math.min(BP.W-1,cur.c+dc));
+    if(nr!==cur.r||nc!==cur.c){ cur.r=nr; cur.c=nc; SND.move(); render(); }
+  }
+  function reset(){ S=BP.start(); cur={r:5,c:2}; render(); }
+  function press(b){
+    if(!muted) ac();
+    if(b==="up") move(-1,0); else if(b==="down") move(1,0); else if(b==="left") move(0,-1); else if(b==="right") move(0,1);
+    else if(b==="a") pressA(cur.r,cur.c); else if(b==="b") pressB();
+    else if(b==="start") reset(); else if(b==="select") howto.hidden=!howto.hidden;
+  }
+
+  // ---- pad: touch/mouse + keyboard light the same buttons ----
+  var btns={}; Array.prototype.forEach.call(document.querySelectorAll("#pad button"),function(el){
+    btns[el.dataset.b]=el;
+    el.addEventListener("pointerdown",function(e){ e.preventDefault(); el.classList.add("on"); press(el.dataset.b); });
+    el.addEventListener("pointerup",function(){ el.classList.remove("on"); });
+    el.addEventListener("pointercancel",function(){ el.classList.remove("on"); });
+    el.addEventListener("pointerleave",function(){ el.classList.remove("on"); });
+  });
+  var KEYS={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",x:"a",X:"a",z:"b",Z:"b",Enter:"start",Backspace:"select"};
+  document.addEventListener("keydown",function(e){ var b=KEYS[e.key]; if(!b) return; e.preventDefault(); if(e.repeat) return; btns[b].classList.add("on"); press(b); });
+  document.addEventListener("keyup",function(e){ var b=KEYS[e.key]; if(!b) return; btns[b].classList.remove("on"); });
+
   reset();
-  // Dev/replay hook only: ?taps=r,c;r,c;... plays a tap list on load (silent). Used for headless screenshots.
-  var q=new URLSearchParams(location.search).get("taps");
-  if(q){ muted=true; q.split(";").forEach(function(t){ var a=t.split(","); if(a.length===2) onTap(+a[0],+a[1]); }); muted=false; }
-  window.BPGame={state:function(){return S;},tap:onTap,reset:reset};
+  window.BPGame={state:function(){return S;},press:press,reset:reset};
+  // Dev/replay hook only: ?taps=r,c;r,c;... plays A-presses at those cells on load (silent), cursor ends on the last one.
+  // ?keys=up,a,b,... plays pad presses. Both used for headless screenshots.
+  var q=new URLSearchParams(location.search);
+  if(q.get("taps")){ muted=true; q.get("taps").split(";").forEach(function(t){ var a=t.split(","); if(a.length===2){ cur={r:+a[0],c:+a[1]}; pressA(+a[0],+a[1]); } }); muted=false; }
+  if(q.get("keys")){ muted=true; q.get("keys").split(",").forEach(press); muted=false; }
+  if(q.get("howto")) howto.hidden=false;
 })();
 </script>
 </body>
