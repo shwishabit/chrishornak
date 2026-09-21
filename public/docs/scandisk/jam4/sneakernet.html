@@ -6,28 +6,28 @@
 <meta name="robots" content="noindex">
 <title>SNEAKERNET · pocket stealth · sketch</title>
 <style>
-  html,body{margin:0;background:#1d2522;color:#d8e2d6;font:13px/1.35 "Courier New",monospace;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  /* Locked GBC palette: ground #080810 · panel #101018/#181828 · trace #383848 · dim #202030 · white #e8f0f8 · blue #3878f8/#1840a0/#88b0ff · red #f03828/#901808 · orange #f89020 · yellow #f0d040 · green #40d080 · purple #a060f0 */
+  html,body{margin:0;background:#080810;color:#e8f0f8;font:13px/1.35 ui-monospace,"IBM Plex Mono",Consolas,monospace;-webkit-user-select:none;user-select:none;touch-action:manipulation}
   #wrap{max-width:390px;margin:0 auto;padding:6px 10px 8px;box-sizing:border-box}
-  #top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-  #title{font-weight:bold;letter-spacing:2px;color:#e3c46b}
-  #state{font-weight:bold}
-  canvas{display:block;width:100%;image-rendering:pixelated;border:2px solid #3b4a43;box-sizing:border-box;background:#26312c}
-  #how{margin:6px 0;color:#aebcae;font-size:12px}
-  #how b{color:#e3c46b}
+  #top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-size:12px}
+  #title{font-weight:bold;letter-spacing:2px}
+  #top small{color:#383848}
+  #screen{position:relative}
+  canvas{display:block;width:100%;image-rendering:pixelated;background:#080810;border:2px solid #181828;border-radius:4px 4px 16px 4px;box-sizing:border-box}
   /* Game Boy pad (pattern from jam2-a.html): the ONLY input. Keys light the same buttons. */
-  #pad{display:grid;width:100%;padding:4px 6px 0;box-sizing:border-box;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+  #pad{display:grid;width:100%;padding:8px 6px 0;box-sizing:border-box;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
   .dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
   .ab{display:flex;gap:12px;justify-content:flex-end;align-items:center}
   .sys{grid-column:1 / -1;display:flex;gap:18px;justify-content:center}
-  #pad button{font:bold 13px "Courier New",monospace;color:#d8e2d6;background:#34423c;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
-  #pad button.on{background:#51645a}
+  #pad button{font:bold 13px ui-monospace,"IBM Plex Mono",Consolas,monospace;color:#e8f0f8;background:#181828;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+  #pad button.on{background:#383848}
   #pad button.off{opacity:.35}
   .dpad button{border-radius:6px}
   .ab button{width:58px;height:58px;border-radius:50%;font-size:15px}
-  #pad .ab .a{background:#6b5a2a;margin-top:-24px}
-  #pad .ab .a.on{background:#a08a44}
-  .ab label,.sys small{display:block;font:10px "Courier New",monospace;color:#8a9a8e;text-align:center;margin-top:4px}
-  .sys button{width:84px;height:30px;border-radius:15px;font-size:11px;color:#aebcae}
+  #pad .ab .a{background:#1840a0;margin-top:-24px}
+  #pad .ab .a.on{background:#3878f8}
+  .ab label,.sys small{display:block;font:10px ui-monospace,"IBM Plex Mono",Consolas,monospace;color:#88b0ff;text-align:center;margin-top:4px}
+  .sys button{width:84px;height:30px;border-radius:15px;font-size:11px}
   @media (max-width:640px),(pointer:coarse){
     .dpad{grid-template-columns:repeat(3,62px);grid-template-rows:repeat(3,62px)}
     .dpad button{font-size:18px}
@@ -36,20 +36,30 @@
     #pad .ab .a{margin-top:-32px}
     .sys button{width:100px;height:34px}
   }
-  #help{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,24,.93);padding:14px;box-sizing:border-box}
-  #help > div{background:#2a3631;border:2px solid #51645a;padding:14px 16px;max-width:360px;font-size:13px;color:#cdd8cd}
-  #help b{color:#e3c46b}
-  #help p{margin:0 0 8px}
-  #msg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,26,24,.88)}
-  #msg div{background:#2a3631;border:2px solid #e3c46b;padding:18px 20px;text-align:center;max-width:300px}
-  #msg h2{margin:0 0 8px;color:#e3c46b;letter-spacing:2px}
-  #msg .press{margin-top:12px;color:#e3c46b;font-weight:bold}
+  /* Overlays cover ONLY the game screen, never the pad, so any pad button can close them. */
+  #help,#msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#080810;padding:8px 10px;box-sizing:border-box;overflow:auto;border:2px solid #181828;border-radius:4px 4px 16px 4px}
+  #help > div{font-size:11.5px;line-height:1.4;color:#e8f0f8}
+  #help b{color:#88b0ff}
+  #help .r{color:#f03828}
+  #help p{margin:0 0 6px}
+  #msg > div{text-align:center}
+  #msg h2{margin:0 0 8px;letter-spacing:2px;font-size:18px}
+  #msg .press{margin-top:12px;color:#88b0ff;font-weight:bold}
 </style>
 </head>
 <body>
 <div id="wrap">
-  <div id="top"><span id="title">SNEAKERNET <small style="color:#8a9a8e;font-weight:normal;letter-spacing:0">pocket stealth · sketch</small></span><span id="state">NORMAL</span></div>
-  <canvas id="c" width="336" height="432"></canvas>
+  <div id="top"><span id="title">SNEAKERNET</span><small>pocket stealth · sketch</small></div>
+  <div id="screen">
+    <canvas id="c" width="160" height="144"></canvas>
+    <div id="help"><div>
+      <p><b>D-PAD</b> steps one cell. <b>Trace</b> tiles (lit dot, bar) click: the <span class="r">red sentry</span> hears 2 cells (the blue ripple); the blind <span style="color:#f89020">orange hound</span> hears any click. Dim tiles are silent.</p>
+      <p><span class="r">Red dots = sight.</span> End a move in it: <span class="r">!</span> ALERT, and they walk to the <span class="r">!</span>. Arrows go dark until 3 turns unseen. <b>A</b> = WAIT, only in a socket (blue frame).</p>
+      <p>Take the <span style="color:#40d080">green copy</span> out to the port (bottom). Carrying it, every step clicks. A virus that steps on a <span style="color:#a060f0">purple fuse</span> is purged.</p>
+      <p style="margin:0;color:#88b0ff">SELECT = this · START = restart · any button or tap closes</p>
+    </div></div>
+    <div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><div class="press">PRESS START</div></div></div>
+  </div>
   <div id="pad" aria-label="Game Boy buttons">
     <div class="dpad">
       <span></span><button data-b="up" aria-label="Up: step">&#9650;</button><span></span>
@@ -66,13 +76,6 @@
     </div>
   </div>
 </div>
-<div id="help"><div>
-  <p><b>D-PAD</b> steps one cell. <b>Copper clicks</b>: the diamond sentry hears it 2 cells away (the gold ripple), and the blind hound hears it anywhere. Silicon is silent.</p>
-  <p><b>Red = sight.</b> End a move in it: <b>!</b> ALERT, and they go to the <b>!</b>. The arrows go dark until you're out of sight 3 turns. <b>A</b> = WAIT, only in a socket &#9634;.</p>
-  <p>Take the <b>copy</b> from the gold core out to the port. Carrying it, <b>every step clicks</b>. A virus that steps on a fuse is purged.</p>
-  <p style="margin:0;color:#8a9a8e">SELECT shows this again · START restarts · any button closes</p>
-</div></div>
-<div id="msg"><div><h2 id="msgT"></h2><div id="msgB"></div><div class="press">PRESS START</div></div></div>
 <script>
 // ===== LOGIC-START (pure, no DOM; the check script evals this block) =====
 var W = 7, H = 9;
@@ -228,71 +231,80 @@ function step(s0,a){
 }
 // ===== LOGIC-END =====
 
-// ---------- view ----------
-var cv=document.getElementById("c"), g=cv.getContext("2d"), CS=48;
+// ---------- view: 160x144 GBC screen, 16px cells, board at x=24..135 ----------
+var cv=document.getElementById("c"), g=cv.getContext("2d"), CS=16, OX=24, OY=0;
 var S=newGame(), bang=0;
-var COL={wall:"#1a211e",wallLeg:"#56645c",sil:"#3a4640",silDot:"#465550",cu:"#a8683a",cuLine:"#d08a4f",sock:"#2c3833",sockLine:"#9fb3a6",
-  fuse:"#6d7d5a",fuseWire:"#e3c46b",core:"#e3c46b",port:"#56645c",pl:"#dfeee2",virus:"#c8553d",sight:"rgba(200,85,61,.28)",arrow:"#e8a07f"};
+var P={ground:"#080810",p1:"#101018",p2:"#181828",trace:"#383848",dim:"#202030",white:"#e8f0f8",blue:"#3878f8",blueD:"#1840a0",blueL:"#88b0ff",
+  red:"#f03828",redD:"#901808",orange:"#f89020",yellow:"#f0d040",green:"#40d080",purple:"#a060f0"};
+// 3x5 pixel font (approach from src/font.ts)
+var FONT={A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",P:"110101110100100",R:"110101110101101",S:"011100010001110",T:"111010010010010",U:"101101101101111",W:"101101111111101",Y:"101101010010010",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001","5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111"," ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000"};
+function px(x,y,w,h,c){ g.fillStyle=c; g.fillRect(x,y,w,h); }
+function text(s,x,y,c){ s=String(s).toUpperCase(); for(var i=0;i<s.length;i++){ var gl=FONT[s[i]]; if(!gl) continue; for(var b=0;b<15;b++) if(gl[b]==="1") px(x+i*4+(b%3),y+Math.floor(b/3),1,1,c); } }
+function cx(x){ return OX+x*CS; } function cy(y){ return OY+y*CS; }
 function drawCell(x,y){
-  var t=tile(x,y), px=x*CS, py=y*CS;
-  if(t==="#"){ g.fillStyle=COL.wall; g.fillRect(px,py,CS,CS); g.fillStyle="#2a332f"; g.fillRect(px+8,py+8,CS-16,CS-16);
-    g.fillStyle=COL.wallLeg; for(var i=0;i<3;i++){ g.fillRect(px+12+i*10,py+3,4,5); g.fillRect(px+12+i*10,py+CS-8,4,5);} return; }
-  g.fillStyle=COL.sil; g.fillRect(px,py,CS,CS); g.fillStyle=COL.silDot; g.fillRect(px+22,py+22,4,4);
-  if(t==="="){ g.fillStyle=COL.cu; g.fillRect(px+2,py+2,CS-4,CS-4); g.fillStyle=COL.cuLine; g.fillRect(px+6,py+14,CS-12,4); g.fillRect(px+6,py+30,CS-12,4); }
-  if(t==="S"){ g.fillStyle=COL.sock; g.fillRect(px+4,py+4,CS-8,CS-8); g.strokeStyle=COL.sockLine; g.lineWidth=3; g.strokeRect(px+7,py+7,CS-14,CS-14); }
-  if(t==="F"){ if(S.fuses[x+","+y]){ g.fillStyle="#2b2f2c"; g.fillRect(px+12,py+18,24,12); }
-    else { g.fillStyle=COL.fuse; g.fillRect(px+10,py+17,28,14); g.fillStyle=COL.fuseWire; g.fillRect(px+10,py+23,28,2); g.fillStyle="#9aa58a"; g.fillRect(px+8,py+16,4,16); g.fillRect(px+36,py+16,4,16);} }
-  if(t==="C"){ g.fillStyle="#5b4d25"; g.fillRect(px+4,py+4,CS-8,CS-8); if(!S.carry){ g.fillStyle=COL.core; g.fillRect(px+14,py+14,20,20); g.fillStyle="#8a7534"; g.fillRect(px+20,py+20,8,8);} }
-  if(t==="P"){ g.fillStyle=COL.port; g.fillRect(px+6,py+30,CS-12,14); g.fillStyle="#1d2522"; g.fillRect(px+12,py+34,CS-24,6); }
+  var t=tile(x,y), X=cx(x), Y=cy(y);
+  if(t==="#"){ px(X,Y,CS,CS,P.p1); px(X+3,Y+3,10,10,P.ground); for(var i=0;i<3;i++){ px(X+4+i*3,Y+1,1,2,P.dim); px(X+4+i*3,Y+13,1,2,P.dim);} return; }
+  px(X,Y,CS,CS,P.ground);
+  if(t==="="){ px(X+1,Y+1,14,14,P.p2); px(X+1,Y+7,14,2,P.dim); px(X+6,Y+6,4,4,P.trace); px(X+7,Y+7,2,2,P.white); return; }  // trace tile: brighter dot
+  px(X+7,Y+7,2,2,P.dim);  // dim dotted silicon
+  if(t==="S"){ px(X+2,Y+2,12,1,P.blueD); px(X+2,Y+13,12,1,P.blueD); px(X+2,Y+2,1,12,P.blueD); px(X+13,Y+2,1,12,P.blueD); }
+  if(t==="F"){ if(S.fuses[x+","+y]) px(X+4,Y+6,8,4,P.dim); else { px(X+3,Y+5,10,6,P.purple); px(X+4,Y+6,8,4,P.ground); px(X+4,Y+7,8,2,P.purple); px(X+5,Y+7,2,1,P.white); } }
+  if(t==="C"){ if(!S.carry){ px(X+3,Y+3,10,10,P.green); px(X+4,Y+4,8,8,P.ground); px(X+5,Y+5,6,6,P.green); px(X+5,Y+5,2,1,P.white); } else { px(X+3,Y+3,10,1,P.dim); px(X+3,Y+12,10,1,P.dim); px(X+3,Y+3,1,10,P.dim); px(X+12,Y+3,1,10,P.dim);} }
+  if(t==="P"){ px(X+2,Y+12,12,3,P.trace); px(X+4,Y+13,8,1,P.ground); px(X+7,Y+4,2,6,P.white); px(X+5,Y+6,6,1,P.white); px(X+6,Y+5,4,1,P.white); }
 }
-function arrow(x,y,d,col){
-  var v=DIRS[d], cx=x*CS+CS/2+v[0]*17, cy=y*CS+CS/2+v[1]*17;
-  g.fillStyle=col; g.beginPath();
-  g.moveTo(cx+v[0]*6, cy+v[1]*6);
-  g.lineTo(cx-v[0]*3+v[1]*6, cy-v[1]*3+v[0]*6);
-  g.lineTo(cx-v[0]*3-v[1]*6, cy-v[1]*3-v[0]*6);
-  g.closePath(); g.fill();
-}
+function sight(x,y){ var X=cx(x),Y=cy(y); for(var j=1;j<CS;j+=3) for(var i=1+(j%2);i<CS;i+=3) px(X+i,Y+j,1,1,P.redD); }
+function arrow(x,y,d,c){ var X=cx(x),Y=cy(y);
+  if(d==="U") px(X+6,Y,4,1,c); if(d==="D") px(X+6,Y+15,4,1,c); if(d==="L") px(X,Y+6,1,4,c); if(d==="R") px(X+15,Y+6,1,4,c); }
+function block(X,Y,main,shade,hi){ px(X+2,Y+2,12,12,shade); px(X+3,Y+3,10,10,main); px(X+4,Y+4,3,1,hi); px(X+4,Y+4,1,3,hi); }
+function face(X,Y,d){ var v=DIRS[d]; px(X+7+v[0]*4,Y+7+v[1]*4,2,2,P.ground); }
 function drawProc(q,kind){
-  if(!q.alive) return;
-  var px=q.x*CS, py=q.y*CS;
-  g.fillStyle=COL.virus;
-  if(kind==="scan"){ g.fillRect(px+10,py+10,28,28); g.fillStyle="#1d2522"; g.fillRect(px+18,py+18,12,12); g.fillStyle="#e8a07f"; var v=DIRS[q.face]; g.fillRect(px+21+v[0]*6,py+21+v[1]*6,6,6); }
-  if(kind==="patrol"){ g.beginPath(); g.moveTo(px+24,py+6); g.lineTo(px+42,py+24); g.lineTo(px+24,py+42); g.lineTo(px+6,py+24); g.closePath(); g.fill();
-    g.fillStyle="#1d2522"; var w=DIRS[q.face]; g.fillRect(px+21+w[0]*7,py+21+w[1]*7,6,6); }
-  if(kind==="hound"){ g.fillRect(px+8,py+18,32,18); g.fillRect(px+8,py+10,8,8); g.fillRect(px+32,py+10,8,8); g.fillStyle="#1d2522"; g.fillRect(px+14,py+24,20,3); }
+  if(!q.alive) return; var X=cx(q.x), Y=cy(q.y);
+  if(kind==="scan"){ block(X,Y,P.yellow,P.redD,P.white); px(X+6,Y+6,4,4,P.redD); face(X,Y,q.face); }
+  if(kind==="patrol"){ block(X,Y,P.red,P.redD,P.orange); px(X+2,Y+2,2,2,P.ground); px(X+12,Y+2,2,2,P.ground); px(X+2,Y+12,2,2,P.ground); px(X+12,Y+12,2,2,P.ground); face(X,Y,q.face); }
+  if(kind==="hound"){ block(X,Y+1,P.orange,P.redD,P.yellow); px(X+2,Y+1,3,3,P.orange); px(X+11,Y+1,3,3,P.orange); px(X+5,Y+10,6,1,P.redD); }
 }
+function mark(t,ch,c){ var X=cx(t[0]),Y=cy(t[1]);
+  px(X+1,Y+1,3,1,c); px(X+1,Y+1,1,3,c); px(X+12,Y+1,3,1,c); px(X+14,Y+1,1,3,c);
+  px(X+1,Y+14,3,1,c); px(X+1,Y+12,1,3,c); px(X+12,Y+14,3,1,c); px(X+14,Y+12,1,3,c);
+  text(ch,X+7,Y+5,c); }
 function draw(){
-  g.fillStyle="#26312c"; g.fillRect(0,0,cv.width,cv.height);
+  px(0,0,160,144,P.ground);
   for(var y=0;y<H;y++) for(var x=0;x<W;x++) drawCell(x,y);
-  // sight lines (always visible: they are fact, not forecast)
-  [S.scan,S.patrol].forEach(function(q){ if(!q.alive) return; g.fillStyle=COL.sight; sightCells(S,q).forEach(function(c){ g.fillRect(c[0]*CS,c[1]*CS,CS,CS); }); });
-  // hearing ripple: every click this turn draws its 2-cell reach (the patrol's ears). The hound hears all clicks.
-  (S.noise||[]).forEach(function(n){ g.strokeStyle="rgba(227,196,107,.55)"; g.lineWidth=2;
-    for(var y=0;y<H;y++) for(var x=0;x<W;x++){ var d=Math.abs(x-n[0])+Math.abs(y-n[1]); if(d<=HEAR && tile(x,y)!=="#") g.strokeRect(x*CS+3,y*CS+3,CS-6,CS-6); } });
-  // where each process is headed: "?" = a click it heard, "!" = where it saw you
-  function mark(t,ch,col){ g.strokeStyle=col; g.lineWidth=2; g.strokeRect(t[0]*CS+12,t[1]*CS+12,24,24); g.fillStyle=col; g.font="bold 16px Courier New"; g.fillText(ch,t[0]*CS+19,t[1]*CS+29); }
-  if(S.lastSeen && S.level==="ALERT") mark(S.lastSeen,"!","#e8a07f");
-  if(S.patrol.alive && S.patrol.inv && !(S.lastSeen && S.patrol.inv[0]===S.lastSeen[0] && S.patrol.inv[1]===S.lastSeen[1])) mark(S.patrol.inv,"?","#e3c46b");
-  if(S.hound.alive && S.hound.target) mark(S.hound.target,"?","#e3c46b");
+  // sight: dim red dither (always shown: fact, not forecast)
+  [S.scan,S.patrol].forEach(function(q){ if(!q.alive) return; sightCells(S,q).forEach(function(c){ sight(c[0],c[1]); }); });
+  // hearing ripple: your click's 2-cell reach, blue ticks (the sentry's ears). The hound hears every click.
+  (S.noise||[]).forEach(function(n){ for(var y=0;y<H;y++) for(var x=0;x<W;x++){ if(Math.abs(x-n[0])+Math.abs(y-n[1])<=HEAR && tile(x,y)!=="#"){ var X=cx(x),Y=cy(y);
+    px(X,Y+7,1,2,P.blueL); px(X+15,Y+7,1,2,P.blueL); px(X+7,Y,2,1,P.blueL); px(X+7,Y+15,2,1,P.blueL); } } });
+  // where each process is headed: "!" = where it saw you, "?" = a click it heard (in that guard's colour)
+  if(S.lastSeen && S.level==="ALERT") mark(S.lastSeen,"!",P.red);
+  if(S.patrol.alive && S.patrol.inv && !(S.lastSeen && S.patrol.inv[0]===S.lastSeen[0] && S.patrol.inv[1]===S.lastSeen[1])) mark(S.patrol.inv,"?",P.red);
+  if(S.hound.alive && S.hound.target) mark(S.hound.target,"?",P.orange);
   drawProc(S.scan,"scan"); drawProc(S.patrol,"patrol"); drawProc(S.hound,"hound");
-  // "?" tell over any process that heard a click this turn
-  g.fillStyle="#e3c46b"; g.font="bold 16px Courier New";
-  if(S.heard && S.heard.patrol && S.patrol.alive) g.fillText("?",S.patrol.x*CS+34,S.patrol.y*CS+14);
-  if(S.heard && S.heard.hound && S.hound.alive) g.fillText("?",S.hound.x*CS+34,S.hound.y*CS+14);
-  // intent arrows: shown in NORMAL/EVASION, dark on ALERT (Kojima)
+  // "?" tell over a process that heard a click this turn
+  if(S.heard && S.heard.patrol && S.patrol.alive) text("?",cx(S.patrol.x)+12,Math.max(0,cy(S.patrol.y)),P.white);
+  if(S.heard && S.heard.hound && S.hound.alive) text("?",cx(S.hound.x)+12,Math.max(0,cy(S.hound.y)),P.white);
+  // intent arrows: NORMAL only, dark on ALERT (Kojima)
   if(S.level==="NORMAL" && !S.over){ var f=forecast(S);
-    if(f.patrol&&S.patrol.alive) arrow(S.patrol.x,S.patrol.y,f.patrol,COL.arrow);
-    if(f.hound&&S.hound.alive) arrow(S.hound.x,S.hound.y,f.hound,COL.arrow);
-    if(S.scan.alive) arrow(S.scan.x,S.scan.y,f.scan,"#8a5a48"); }
-  // player packet
-  var px=S.p.x*CS, py=S.p.y*CS, hid=tile(S.p.x,S.p.y)==="S";
-  g.fillStyle=hid?"#9fb3a6":COL.pl; g.fillRect(px+13,py+13,22,22); g.fillStyle="#1d2522"; g.fillRect(px+17,py+17,14,14);
-  if(S.carry){ g.fillStyle=COL.core; g.fillRect(px+19,py+19,10,10); } else { g.fillStyle=COL.pl; g.fillRect(px+21,py+21,6,6); }
-  if(bang>0){ g.fillStyle="#e8a07f"; g.font="bold 22px Courier New"; g.fillText("!",px+19,py+8); }
-  var st=document.getElementById("state");
-  st.textContent = S.level + (S.level!=="NORMAL" ? " "+(3-S.cnt) : "") + (S.carry ? " · COPY" : "");
-  st.style.color = S.level==="ALERT" ? "#e8a07f" : "#9fb3a6";
+    if(f.patrol&&S.patrol.alive) arrow(S.patrol.x,S.patrol.y,f.patrol,P.red);
+    if(f.hound&&S.hound.alive) arrow(S.hound.x,S.hound.y,f.hound,P.orange);
+    if(S.scan.alive) arrow(S.scan.x,S.scan.y,f.scan,P.yellow); }
+  // you: blue lit block + crosshair corners (dimmer when hidden in a socket)
+  var X=cx(S.p.x), Y=cy(S.p.y), hid=tile(S.p.x,S.p.y)==="S";
+  if(hid){ px(X+4,Y+4,8,8,P.blueD); px(X+5,Y+5,3,1,P.blueL); }
+  else block(X,Y,P.blue,P.blueD,P.blueL);
+  if(S.carry) px(X+6,Y+6,4,4,P.green);
+  var cc=hid?P.blueD:P.blueL;
+  px(X,Y,3,1,cc); px(X,Y,1,3,cc); px(X+13,Y,3,1,cc); px(X+15,Y,1,3,cc);
+  px(X,Y+15,3,1,cc); px(X,Y+13,1,3,cc); px(X+13,Y+15,3,1,cc); px(X+15,Y+13,1,3,cc);
+  // the "!" stays readable when it sits under you
+  if(S.lastSeen && S.level==="ALERT" && S.lastSeen[0]===S.p.x && S.lastSeen[1]===S.p.y){ px(X+11,Y,5,7,P.ground); text("!",X+12,Y+1,P.red); }
+  // side columns: status (left), copy (right)
+  var al=S.level==="ALERT";
+  text(al?"ALRT":"NORM",4,4,al?P.red:P.trace); if(al) text(String(3-S.cnt),10,12,P.red);
+  text("COPY",140,4,S.carry?P.green:P.dim);
+  if(S.carry){ px(145,12,6,6,P.green); px(146,13,4,4,P.ground); px(147,14,2,2,P.green); }
+  text("T"+S.turn,4,134,P.trace);
   var canW=legal(S,"W"); document.querySelector('[data-b="a"]').classList.toggle("off",!canW); document.getElementById("aLab").textContent = canW ? "WAIT" : "WAIT (socket)";
 }
 // ---------- sound: PC-speaker square waves, low pitch only ----------
@@ -328,11 +340,12 @@ function act(a){
 function showEnd(){
   document.getElementById("msgT").textContent = S.over==="CLEAN" ? "BOARD CLEAN" : "PACKET LOST";
   document.getElementById("msgB").textContent = S.over==="CLEAN" ? ("Copy walked out in "+S.turn+" steps.") : (S.boxed ? "Boxed in: no move left." : S.carry ? "Caught on the walk home." : "A virus stepped onto you.");
-  document.getElementById("msg").style.display="flex";
+  document.getElementById("msgT").style.color = S.over==="CLEAN" ? "#40d080" : "#f03828"; document.getElementById("msg").style.display="flex";
 }
 function restart(){ S=newGame(); bang=0; setAlarm(false); document.getElementById("msg").style.display="none"; draw(); }
 var help=document.getElementById("help");
 function setHelp(on){ help.style.display = on ? "flex" : "none"; }
+help.addEventListener("pointerdown",function(e){ e.preventDefault(); setHelp(false); });
 var DMAP={up:"U",down:"D",left:"L",right:"R"};
 function press(b){
   if(help.style.display==="flex"){ setHelp(false); return; }   // any button closes the how-to
@@ -352,6 +365,7 @@ document.addEventListener("keydown",function(e){ var b=KEYS[e.key]; if(!b) retur
 document.addEventListener("keyup",function(e){ var b=KEYS[e.key]; if(b) light(b,false); });
 // test hook: ?keys=U,U,L  replays moves (headless screenshots)
 (function(){ var k=new URLSearchParams(location.search).get("keys"); draw(); if(k) k.split(",").forEach(function(a){ if(a) { var r=step(S,a); S=r.s; bang=(r.ev.indexOf("alert")>=0)?1:0; } }); draw(); if(k&&S.over) showEnd(); if(!k && !new URLSearchParams(location.search).has("nohelp")) setHelp(true); })();
+(function(){ var pr=new URLSearchParams(location.search).get("press"); if(pr) pr.split(",").forEach(function(b){ if(b) press(b); }); })();
 </script>
 </body>
 </html>

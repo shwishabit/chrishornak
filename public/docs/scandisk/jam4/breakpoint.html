@@ -6,56 +6,22 @@
 <meta name="robots" content="noindex, nofollow">
 <title>BREAKPOINT · one-tap puzzle · sketch</title>
 <style>
-:root{
-  --ground:#0E1214; --panel:#161C20; --bus:#1A2126; --drive:#1F2A2E; --line:#0A0D0F;
-  --ink:#D7DEE2; --muted:#7F8E96; --corr:#B9C7CC; --red:#D2503C; --bad:#0A0D0F; --badink:#6A4E46; --cur:#F0E68C;
-  --mono:ui-monospace, Consolas, "Courier New", monospace;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--ground);color:var(--ink);font-family:var(--mono);overflow:hidden}
-body{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 12px calc(6px + env(safe-area-inset-bottom,0px));touch-action:manipulation;user-select:none;-webkit-user-select:none}
-.wrap{width:100%;max-width:390px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
-h1{font-size:.9rem;letter-spacing:.16em;margin:0;font-weight:700}
-h1 small{color:var(--muted);letter-spacing:.06em;font-weight:400;font-size:.66rem;margin-left:8px}
-.howto{position:absolute;inset:0;z-index:2;background:rgba(14,18,20,.94);font-size:.74rem;line-height:1.5;color:var(--ink);margin:0;padding:14px 12px;list-style:none;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.howto .dim{color:var(--muted);font-size:.66rem}
-.howto b{color:var(--ink);font-weight:600}
-.howto .r{color:var(--red);font-weight:700}
-.top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;background:var(--panel);padding:6px 10px}
-.lab{font-size:.66rem;color:var(--muted);letter-spacing:.1em}
-.next{display:grid;grid-template-columns:repeat(3,14px);grid-template-rows:repeat(2,14px);gap:2px;background:var(--line);padding:2px}
-.next i{display:block;background:var(--bus)}
-.next i.on{background:var(--corr)}
-.qcount{font-size:.8rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
-.qcount b{font-size:1.1rem}
-.boardwrap{position:relative;align-self:center;width:min(100%, calc((100vh - 372px) * 0.75));min-width:210px}
-.board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(8,1fr);gap:2px;background:var(--line);padding:2px;width:100%;aspect-ratio:6/8}
-.cell{position:relative;background:var(--bus)}
-.cell.drive{background:var(--drive)}
-.cell.busline{box-shadow:inset 0 -3px 0 var(--red)} /* the fail line: a column of B reaching this line = DRIVE FAILED */
-.cell.arm::after{content:"";position:absolute;left:30%;top:30%;width:40%;height:40%;background:var(--red)}
-.cell.corr{background:var(--corr)}
-.cell.corr.arm::after{left:25%;top:25%;width:50%;height:50%;outline:2px solid var(--ground)}
-.cell.bad{background:var(--bad);background-image:repeating-linear-gradient(45deg,transparent 0 4px,var(--badink) 4px 6px)}
-.cell.bad::before{content:"B";position:absolute;inset:0;display:grid;place-items:center;font-size:.7rem;color:var(--badink);font-weight:700}
-.cell.cur{outline:3px solid var(--cur);outline-offset:-3px;z-index:1}
-.end{position:absolute;inset:0;background:rgba(14,18,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px}
-.end h2{margin:0;font-size:1rem;letter-spacing:.14em}
-.end p{margin:0;font-size:.74rem;color:var(--muted);line-height:1.6}
-.end p b{color:var(--ink);font-variant-numeric:tabular-nums}
-[hidden]{display:none!important}
+/* Locked GBC look (VISION 14, BRIEF §10): 160x144 canvas, palette only, dim dotted tiles, crosshair cursor. */
+html,body{margin:0;height:100%;background:#080810;overflow:hidden}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(8px + env(safe-area-inset-top,0px)) 0 calc(10px + env(safe-area-inset-bottom,0px));box-sizing:border-box;touch-action:manipulation;user-select:none;-webkit-user-select:none;font:12px ui-monospace,Consolas,monospace;color:#9098b8}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:#080810;padding:4px;background:#141420;border-radius:8px 8px 28px 8px;box-sizing:content-box}
 /* The Game Boy pad (pattern from jam2-a.html); keys light the same buttons. */
-#pad{display:grid;width:min(100vw,420px);padding:0 16px 4px;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+#pad{display:grid;width:min(100vw,420px);padding:0 16px 4px;box-sizing:border-box;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
 .dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
 .ab{display:flex;gap:12px;justify-content:flex-end;align-items:center}
 .sys{grid-column:1/-1;display:flex;gap:18px;justify-content:center}
-#pad button{font:bold 13px var(--mono);color:#e8f0f8;background:#282838;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+#pad button{font:bold 13px ui-monospace,Consolas,monospace;color:#e8f0f8;background:#282838;border:0;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
 #pad button.on{background:#484868}
 .dpad button{border-radius:6px}
 .ab button{width:58px;height:58px;border-radius:50%;font-size:15px}
 #pad .ab .a{background:#1840a0;margin-top:-24px}
 #pad .ab .a.on{background:#3878f8}
-.ab label,.sys small{display:block;font:10px var(--mono);color:#606880;text-align:center;margin-top:4px}
+.ab label,.sys small{display:block;font:10px ui-monospace,Consolas,monospace;color:#606880;text-align:center;margin-top:4px}
 .sys button{width:84px;height:30px;border-radius:15px;font-size:11px;color:#9098b8}
 @media (max-width:640px),(pointer:coarse){
   #pad{width:100%;max-width:480px;padding:0 14px;align-items:center;gap:8px 0}
@@ -69,28 +35,7 @@ h1 small{color:var(--muted);letter-spacing:.06em;font-weight:400;font-size:.66re
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>BREAKPOINT<small>one-tap puzzle · sketch</small></h1>
-  <div class="top">
-    <div><div class="lab">NEXT <span id="nextin"></span></div><div class="next" id="next"></div></div>
-    <div class="lab" id="hint">SELECT = how to play</div>
-    <div class="qcount"><div class="lab">QUEUE</div><b id="qn">0</b></div>
-  </div>
-  <div class="boardwrap">
-    <div class="board" id="board" role="grid" aria-label="Drive, 6 by 8"></div>
-    <ol class="howto" id="howto" hidden>
-      <li>1. Corruption falls one row every A or B press. The next packet is shown above. D-pad moves the cursor (free).</li>
-      <li>2. A on an empty drive cell: set a <span class="r">breakpoint</span>. A on a breakpoint, or B anywhere: fire them <b>all</b>. All are spent, hit or miss.</li>
-      <li>3. Corruption that reaches the floor burns that cell for good. A column burned up to the red line = drive failed.</li>
-      <li class="dim">SELECT closes this.</li>
-    </ol>
-    <div class="end" id="end" hidden>
-      <h2 id="endTitle"></h2>
-      <p id="endStats"></p>
-      <p>START = rescan</p>
-    </div>
-  </div>
-</div>
+<canvas id="screen" width="160" height="144" aria-label="BREAKPOINT, jam 4 team 3 sketch"></canvas>
 <div id="pad" aria-label="Touch buttons">
   <div class="dpad">
     <span></span><button data-b="up" aria-label="Up: move cursor up">▲</button><span></span>
@@ -236,11 +181,85 @@ if(typeof module!=="undefined") module.exports=BP;
 
 <script>
 (function(){
-  var S=null, cur={r:5,c:2};
-  var boardEl=document.getElementById("board"), nextEl=document.getElementById("next"), qn=document.getElementById("qn");
-  var endEl=document.getElementById("end"), endTitle=document.getElementById("endTitle"), endStats=document.getElementById("endStats");
-  var howto=document.getElementById("howto"), labA=document.getElementById("labA");
-  var cellEls=[];
+  var S=null, cur={r:5,c:2}, showHelp=false;
+  var C=document.getElementById("screen"), X=C.getContext("2d");
+  var labA=document.getElementById("labA");
+
+  // ---- locked palette (BRIEF §10 / VISION 14). Blue = you, red = the virus (VISION 12). ----
+  var P={ground:"#080810",panel:"#101018",panel2:"#181828",trace:"#383848",dim:"#202030",white:"#e8f0f8",
+         blue:"#3878f8",blue2:"#1840a0",blue3:"#88b0ff",red:"#f03828",red2:"#901808",orange:"#f89020",yellow:"#f0d040",green:"#40d080",purple:"#a060f0"};
+
+  // ---- 3x5 pixel font (copied from src/font.ts) ----
+  var G={A:["010","101","111","101","101"],B:["110","101","110","101","110"],C:["011","100","100","100","011"],D:["110","101","101","101","110"],
+    E:["111","100","110","100","111"],F:["111","100","110","100","100"],G:["011","100","101","101","011"],H:["101","101","111","101","101"],
+    I:["111","010","010","010","111"],J:["001","001","001","101","010"],K:["101","101","110","101","101"],L:["100","100","100","100","111"],
+    M:["101","111","111","101","101"],N:["110","101","101","101","101"],O:["010","101","101","101","010"],P:["110","101","110","100","100"],
+    Q:["010","101","101","110","011"],R:["110","101","110","101","101"],S:["011","100","010","001","110"],T:["111","010","010","010","010"],
+    U:["101","101","101","101","111"],V:["101","101","101","101","010"],W:["101","101","111","111","101"],X:["101","101","010","101","101"],
+    Y:["101","101","010","010","010"],Z:["111","001","010","100","111"],
+    "0":["111","101","101","101","111"],"1":["010","110","010","010","111"],"2":["111","001","111","100","111"],"3":["111","001","011","001","111"],
+    "4":["101","101","111","001","001"],"5":["111","100","111","001","111"],"6":["111","100","111","101","111"],"7":["111","001","010","010","010"],
+    "8":["111","101","111","101","111"],"9":["111","101","111","001","111"]," ":["000","000","000","000","000"],".":["000","000","000","000","010"],
+    ",":["000","000","000","010","100"],":":["000","010","000","010","000"],"+":["000","010","111","010","000"],"-":["000","000","111","000","000"],
+    "=":["000","111","000","111","000"],"!":["010","010","010","000","010"],"<":["001","010","100","010","001"],">":["100","010","001","010","100"],
+    "(":["010","100","100","100","010"],")":["010","001","001","001","010"],"'":["010","010","000","000","000"],"?":["111","001","011","000","010"],
+    "/":["001","001","010","100","100"],"%":["101","001","010","100","101"]};
+  function px(x,y,w,h,col){ X.fillStyle=col; X.fillRect(x,y,w,h); }
+  function text(s,x,y,col,k){ k=k||1; s=String(s).toUpperCase(); var cx=x;
+    for(var i=0;i<s.length;i++){ var g=G[s[i]]||G["?"]; for(var r=0;r<5;r++)for(var c=0;c<3;c++) if(g[r][c]==="1") px(cx+c*k,y+r*k,k,k,col); cx+=4*k; } }
+  function tw(s,k){ return String(s).length*4*(k||1)-(k||1); }
+  function wrap(s,n){ var out=[],line=""; s.split(" ").forEach(function(w){ if(line.length+w.length+(line?1:0)>n){out.push(line);line=w;} else line=line?line+" "+w:w; }); if(line)out.push(line); return out; }
+
+  // ---- drawing: board 6x8 at 16px = 96x128, x 32..127, y 8..135. Side columns: NEXT (left), QUEUE (right). ----
+  var BX=32, BY=8, CS=16;
+  function block(x,y,dark,light){ px(x+1,y+1,14,14,dark); px(x+2,y+2,11,11,light); px(x+3,y+3,3,1,P.white); px(x+3,y+4,1,2,P.white); } // 8x8-style lit block, two shades + inner highlight
+  function draw(){
+    px(0,0,160,144,P.ground);
+    text("BREAKPOINT",BX,1,P.white); text("PUZZLE",131,1,P.trace);
+    // side panels
+    px(0,BY,30,128,P.panel); px(130,BY,30,128,P.panel);
+    text("NEXT",3,12,P.trace);
+    var nx=S.queue[0], on={};
+    if(nx) BP.SHAPES[nx[0]].forEach(function(d){ on[d[0]*3+d[1]]=1; });
+    for(var r=0;r<2;r++)for(var c=0;c<3;c++){ var x=4+c*8, y=20+r*8; if(on[r*3+c]){ px(x,y,7,7,P.red2); px(x+1,y+1,5,5,P.red); } else px(x+3,y+3,1,1,P.dim); }
+    var until=BP.SPACING-(S.turn%BP.SPACING);
+    if(nx){ text("IN",3,40,P.trace); text(until,15,40,P.white); } else text("NONE",3,40,P.trace);
+    text("QUEUE",133,12,P.trace); text(S.queue.length,134,20,P.white,2);
+    // crosshair under the tiles
+    if(!S.over){ px(BX,BY+cur.r*CS+7,96,2,P.dim); px(BX+cur.c*CS+7,BY,2,128,P.dim); }
+    // tiles
+    for(r=0;r<BP.H;r++)for(c=0;c<BP.W;c++){
+      x=BX+c*CS; y=BY+r*CS; var key=r+","+c;
+      if(S.bad[key]){ px(x+1,y+1,14,14,P.dim); for(var i=0;i<14;i++){ px(x+1+i,y+1+i,1,1,P.red2); px(x+14-i,y+1+i,1,1,P.red2); } }
+      else if(!(cur.r===r&&cur.c===c&&!S.over)) px(x+7,y+7,2,2,r>=BP.BUS?P.trace:P.dim);
+      if(BP.corrAt(S,r,c)) block(x,y,P.red2,P.red);
+      if(S.armed[key]){ if(BP.corrAt(S,r,c)) px(x+3,y+3,10,10,P.ground); px(x+4,y+4,8,8,P.blue2); px(x+5,y+5,6,6,P.blue); px(x+5,y+5,2,1,P.blue3); }
+    }
+    // fail line: thin dim red between bus and drive
+    px(BX,BY+BP.BUS*CS-1,96,1,P.red2);
+    // cursor corners
+    if(!S.over){ x=BX+cur.c*CS; y=BY+cur.r*CS; var w=P.white;
+      px(x,y,4,1,w);px(x,y,1,4,w); px(x+12,y,4,1,w);px(x+15,y,1,4,w); px(x,y+15,4,1,w);px(x,y+12,1,4,w); px(x+12,y+15,4,1,w);px(x+15,y+12,1,4,w); }
+    text("SELECT=HOW TO",BX,137,P.trace);
+    if(S.over){
+      var bad=BP.badCount(S), title=S.over==="FAILED"?"DRIVE FAILED":(bad===0?"DRIVE CLEAN":"SCAN DONE "+bad+" BAD");
+      px(8,40,144,66,P.ground); px(9,41,142,64,P.panel2);
+      text(title,80-tw(title,2)/2,46,S.over==="FAILED"?P.red:P.white,2);
+      text("TURNS "+S.turn,16,64,P.white); text("BAD SECTORS "+bad,16,72,P.white); text("BREAKPOINTS SPENT "+S.spent,16,80,P.white);
+      text("START=RESCAN",16,94,P.trace);
+    }
+    if(showHelp){
+      px(0,BY,160,128,P.ground); px(1,BY+1,158,126,P.panel);
+      var lines=[].concat(wrap("1. CORRUPTION FALLS ONE ROW EVERY A OR B PRESS. THE NEXT PACKET IS SHOWN LEFT. D-PAD MOVES THE CURSOR, FREE.",38),[""],
+        wrap("2. A ON AN EMPTY DRIVE CELL: SET A BREAKPOINT (BLUE). A ON A BREAKPOINT, OR B ANYWHERE: FIRE THEM ALL. ALL ARE SPENT, HIT OR MISS.",38),[""],
+        wrap("3. CORRUPTION (RED) THAT REACHES THE FLOOR BURNS THAT CELL FOR GOOD. A COLUMN BURNED UP TO THE RED LINE = DRIVE FAILED.",38),[""],["SELECT CLOSES THIS."]);
+      for(i=0;i<lines.length;i++) text(lines[i],4,BY+6+i*7,i===lines.length-1?P.trace:P.white);
+    }
+    labA.textContent=S.armed[cur.r+","+cur.c]?"FIRE ALL":"ARM";
+  }
+  // integer scale so pixels stay square
+  function fit(){ var k=Math.max(1,Math.floor(Math.min((window.innerWidth-16)/160,(window.innerHeight-300)/144))); C.style.width=(160*k)+"px"; C.style.height=(144*k)+"px"; }
+  window.addEventListener("resize",fit); fit();
 
   // ---- sound: PC-speaker style, square wave, all LOW (55-160 Hz). No high pitches, no flashing anywhere. ----
   var AC=null, muted=false;
@@ -262,37 +281,6 @@ if(typeof module!=="undefined") module.exports=BP;
     fail:function(){ beep(90,200); beep(70,200,0.24); beep(55,400,0.48,"sawtooth",0.06); }
   };
 
-  // ---- board ----
-  for(var r=0;r<BP.H;r++)for(var c=0;c<BP.W;c++){
-    var d=document.createElement("div"); d.className="cell"; d.setAttribute("role","gridcell"); boardEl.appendChild(d); cellEls.push(d);
-  }
-  for(var i=0;i<6;i++){ nextEl.appendChild(document.createElement("i")); }
-
-  function render(){
-    for(var r=0;r<BP.H;r++)for(var c=0;c<BP.W;c++){
-      var el=cellEls[r*BP.W+c], key=r+","+c, cls="cell";
-      if(r>=BP.BUS) cls+=" drive"; if(r===BP.BUS-1) cls+=" busline";
-      if(S.bad[key]) cls+=" bad";
-      if(S.armed[key]) cls+=" arm";
-      if(BP.corrAt(S,r,c)) cls+=" corr";
-      if(!S.over && cur.r===r && cur.c===c) cls+=" cur";
-      el.className=cls;
-    }
-    var nx=S.queue[0], on={};
-    if(nx){ BP.SHAPES[nx[0]].forEach(function(d){ on[d[0]*3+d[1]]=1; }); }
-    for(var i=0;i<6;i++) nextEl.children[i].className=on[i]?"on":"";
-    qn.textContent=S.queue.length;
-    var until=BP.SPACING-(S.turn%BP.SPACING);
-    document.getElementById("nextin").textContent=nx?"· in "+until+(until===1?" tap":" taps"):"· none";
-    labA.textContent=S.armed[cur.r+","+cur.c]?"FIRE ALL":"ARM";
-    var bad=BP.badCount(S);
-    if(S.over){
-      endEl.hidden=false;
-      endTitle.textContent=S.over==="FAILED"?"DRIVE FAILED":(bad===0?"DRIVE CLEAN":"SCAN DONE · "+bad+" BAD");
-      endStats.innerHTML="turns <b>"+S.turn+"</b> · bad sectors <b>"+bad+"</b> · breakpoints spent <b>"+S.spent+"</b>";
-    } else endEl.hidden=true;
-  }
-
   function after(res,before){
     if(!res){ SND.bad(); return; }
     if(res.kind==="arm") SND.arm(); else SND.fire(res.hits);
@@ -300,21 +288,21 @@ if(typeof module!=="undefined") module.exports=BP;
     if(S.over==="CLEAN") SND.clean(); else if(S.over==="FAILED") SND.fail();
   }
   // A: the one action at the cursor (arm, or fire if the cursor is on a breakpoint). One turn.
-  function pressA(r,c){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.tap(S,r,c),before); render(); }
+  function pressA(r,c){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.tap(S,r,c),before); draw(); }
   // B: fire all from anywhere. One turn. Nothing armed = nothing happens, no turn.
-  function pressB(){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.fireAll(S),before); render(); }
+  function pressB(){ if(!S||S.over) return; var before=BP.badCount(S); after(BP.fireAll(S),before); draw(); }
   // D-pad: moves the cursor inside the drive. Free (no turn).
   function move(dr,dc){
     if(!S||S.over) return;
     var nr=Math.max(BP.BUS,Math.min(BP.H-1,cur.r+dr)), nc=Math.max(0,Math.min(BP.W-1,cur.c+dc));
-    if(nr!==cur.r||nc!==cur.c){ cur.r=nr; cur.c=nc; SND.move(); render(); }
+    if(nr!==cur.r||nc!==cur.c){ cur.r=nr; cur.c=nc; SND.move(); draw(); }
   }
-  function reset(){ S=BP.start(); cur={r:5,c:2}; render(); }
+  function reset(){ S=BP.start(); cur={r:5,c:2}; draw(); }
   function press(b){
     if(!muted) ac();
     if(b==="up") move(-1,0); else if(b==="down") move(1,0); else if(b==="left") move(0,-1); else if(b==="right") move(0,1);
     else if(b==="a") pressA(cur.r,cur.c); else if(b==="b") pressB();
-    else if(b==="start") reset(); else if(b==="select") howto.hidden=!howto.hidden;
+    else if(b==="start") reset(); else if(b==="select"){ showHelp=!showHelp; draw(); }
   }
 
   // ---- pad: touch/mouse + keyboard light the same buttons ----
@@ -329,6 +317,9 @@ if(typeof module!=="undefined") module.exports=BP;
   document.addEventListener("keydown",function(e){ var b=KEYS[e.key]; if(!b) return; e.preventDefault(); if(e.repeat) return; btns[b].classList.add("on"); press(b); });
   document.addEventListener("keyup",function(e){ var b=KEYS[e.key]; if(!b) return; btns[b].classList.remove("on"); });
 
+  // Safety net (Chris got trapped on a how-to once): a tap on the screen closes the how-to, or rescans from the end screen. Overlays never cover the pad.
+  C.addEventListener("pointerdown",function(e){ e.preventDefault(); if(showHelp){ showHelp=false; draw(); } else if(S&&S.over) reset(); });
+
   reset();
   window.BPGame={state:function(){return S;},press:press,reset:reset};
   // Dev/replay hook only: ?taps=r,c;r,c;... plays A-presses at those cells on load (silent), cursor ends on the last one.
@@ -336,7 +327,7 @@ if(typeof module!=="undefined") module.exports=BP;
   var q=new URLSearchParams(location.search);
   if(q.get("taps")){ muted=true; q.get("taps").split(";").forEach(function(t){ var a=t.split(","); if(a.length===2){ cur={r:+a[0],c:+a[1]}; pressA(+a[0],+a[1]); } }); muted=false; }
   if(q.get("keys")){ muted=true; q.get("keys").split(",").forEach(press); muted=false; }
-  if(q.get("howto")) howto.hidden=false;
+  if(q.get("howto")){ showHelp=true; draw(); }
 })();
 </script>
 </body>
