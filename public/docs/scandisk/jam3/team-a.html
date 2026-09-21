@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SCANDISK RESCAN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --ground:#0F1519; --panel:#151E24; --board:#17302C; --board-edge:#0C1D1A; --line:#244A43;
+  --ink:#DCE6EA; --muted:#8A9CA5; --blue:#4F9FD4; --blue-rim:#2F6E99; --red:#D2644E; --red-rim:#963F2F;
+  --hint:#9FD3C4; --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--ground)}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--mono);padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{font-size:1rem;font-weight:700;letter-spacing:.14em;margin:0}
+.why{font-size:.75rem;color:var(--muted);line-height:1.45;margin:4px 0 0}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:var(--panel);border-radius:6px;padding:10px 14px}
+.side{display:flex;align-items:center;gap:10px;font-size:.85rem}
+.side.r{justify-content:flex-end}
+.side b{font-size:1.5rem;font-variant-numeric:tabular-nums;font-weight:700}
+.dot{width:16px;height:16px;border-radius:50%;flex:none}
+.dot.blue{background:var(--blue)} .dot.red{background:var(--red)}
+.side.off{color:var(--muted)}
+.vs{color:var(--muted);font-size:.75rem}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:2px;background:var(--line);padding:2px;border-radius:6px;border:6px solid var(--board-edge);width:100%;aspect-ratio:1}
+.cell{appearance:none;border:0;margin:0;padding:0;background:var(--board);position:relative;display:grid;place-items:center;font-family:var(--mono)}
+.cell.can{cursor:pointer}
+.cell>.chip,.cell::after{grid-area:1/1}
+.cell:focus-visible{outline:2px solid var(--hint);outline-offset:-2px;z-index:1}
+.chip{width:78%;height:auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:clamp(.62rem, 3.2vw, .9rem);color:#0F1519;transition:background-color .45s ease}
+.chip.blue{background:var(--blue);box-shadow:inset 0 -3px 0 var(--blue-rim)}
+.chip.red{background:var(--red);box-shadow:inset 0 -3px 0 var(--red-rim)}
+.cell.can::after{content:"";width:24%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid var(--hint);opacity:.7}
+.cell.last .chip{outline:2px solid var(--ink);outline-offset:1px}
+.cell.flip .chip{box-shadow:inset 0 0 0 2px rgba(15,21,25,.45)}
+.picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pick{font-family:var(--mono);font-size:.85rem;font-weight:700;letter-spacing:.06em;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:6px;padding:10px 4px;cursor:pointer;line-height:1.3}
+.pick small{display:block;font-weight:400;font-size:.66rem;color:var(--muted)}
+.pick[aria-pressed="true"]{border-color:var(--hint)}
+.pick:disabled{opacity:.35;cursor:not-allowed}
+.status{min-height:2.8em;font-size:.88rem;line-height:1.4;background:var(--panel);border-radius:6px;padding:10px 14px}
+.end{border-left:3px solid var(--hint)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+button.act{font-family:var(--mono);font-size:.85rem;font-weight:600;letter-spacing:.06em;background:var(--ink);color:var(--ground);border:0;border-radius:4px;padding:10px 16px;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--hint);outline-offset:2px}
+label{font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+select{font-family:var(--mono);font-size:.8rem;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+ol.rules{font-size:.76rem;color:var(--muted);line-height:1.5;margin:0;padding-left:1.4em}
+ol.rules b{color:var(--ink);font-weight:600}
+.err{background:#2A1A18;border-left:3px solid var(--red);padding:12px 14px;border-radius:6px;font-size:.85rem;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.chip{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>SCANDISK · RESCAN</h1>
+    <p class="why" id="why">Why not just Othello? Here a flip can set off the next flip, and every chip shows which attack it stops.</p>
+  </div>
+
+  <div id="err" class="err" hidden></div>
+
+  <div id="game">
+    <div class="score" aria-live="polite">
+      <div class="side" id="sideBlue"><span class="dot blue"></span><span>DATA</span><b id="nBlue">2</b></div>
+      <span class="vs">vs</span>
+      <div class="side r" id="sideRed"><b id="nRed">2</b><span>VIRUS</span><span class="dot red"></span></div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="board" id="board" role="grid" aria-label="Disk surface, 8 by 8 clusters"></div>
+    <div style="height:12px"></div>
+    <div class="picker" id="picker" role="group" aria-label="Chip type">
+      <button class="pick" type="button" data-t="0">S · SYS<small>beats EXE</small></button>
+      <button class="pick" type="button" data-t="1">E · EXE<small>beats DAT</small></button>
+      <button class="pick" type="button" data-t="2">D · DAT<small>beats SYS</small></button>
+    </div>
+    <div style="height:12px"></div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div style="height:12px"></div>
+    <div class="controls">
+      <label for="level">Virus level
+        <select id="level">
+          <option value="0">0 · random</option>
+          <option value="1">1 · greedy</option>
+          <option value="2" selected>2 · looks 2 ahead</option>
+          <option value="3">3 · looks 3 ahead</option>
+        </select>
+      </label>
+      <button class="act" id="newGame" type="button">NEW SCAN</button>
+    </div>
+  </div>
+
+  <ol class="rules" id="rules">
+    <li>Trap virus chips in a line to flip them, like Othello. Pick your chip's type first.</li>
+    <li><b>SYS beats EXE, EXE beats DAT, DAT beats SYS.</b> A line holding a chip that beats yours is <b>GUARDED</b> and won't flip.</li>
+    <li>Flipped chips keep their type. Each one yours beats <b>RESCANS</b>: it fires its own lines. Chains carry on.</li>
+    <li>You can't place the same type twice in a row.</li>
+    <li>No flip? <b>QUARANTINE</b>: place any type next to your own chip. Nothing flips.</li>
+    <li>Ends when the disk is full or a side can't place. Most chips wins.</li>
+  </ol>
+</div>
+
+<script src="core.js"></script>
+<script src="team-a.js"></script>
+<script>
+(function(){
+  var A = window.TeamA, Core = window.Core;
+  var LET = ['S','E','D'], NAME = A.TYPES;
+  var errEl = document.getElementById('err');
+
+  // ---- URL options: fail loudly on anything unknown ----
+  var twist = true, levelFromUrl = null, problems = [];
+  var params = new URLSearchParams(location.search);
+  params.forEach(function(v, k){
+    if (k === 'twist') { if (v === '0') twist = false; else if (v === '1') twist = true; else problems.push('twist=' + v + ' (use 0 or 1)'); }
+    else if (k === 'level') { if (/^[0-3]$/.test(v)) levelFromUrl = v; else problems.push('level=' + v + ' (use 0-3)'); }
+    else problems.push('unknown option "' + k + '"');
+  });
+  if (problems.length) {
+    errEl.hidden = false;
+    errEl.textContent = 'This link has an option the game does not know: ' + problems.join(', ') + '. Remove it and reload. Valid: ?twist=0 (plain Othello), ?twist=1, ?level=0-3.';
+    document.getElementById('game').hidden = true;
+    document.getElementById('rules').hidden = true;
+    return;
+  }
+  if (levelFromUrl !== null) document.getElementById('level').value = levelFromUrl;
+  if (!twist) {
+    document.getElementById('why').textContent = 'PLAIN OTHELLO (?twist=0): no types, no guards, no rescans. A stuck side passes.';
+    document.getElementById('picker').hidden = true;
+    document.getElementById('rules').innerHTML = '<li>Trap virus chips in a straight line to flip them. Every move must flip.</li><li>No move? You pass. Ends when nobody can move. Most chips wins.</li>';
+  }
+
+  var boardEl = document.getElementById('board'), statusEl = document.getElementById('status');
+  var picks = [].slice.call(document.querySelectorAll('.pick'));
+  var cells = [], s, sel = 0, token = 0, busy = false;
+
+  for (var i = 0; i < 64; i++) {
+    var c = document.createElement('button');
+    c.type = 'button'; c.className = 'cell';
+    c.addEventListener('click', (function(k){ return function(){ tap(k); }; })(i));
+    var chip = document.createElement('span'); chip.className = 'chip';
+    c.appendChild(chip); boardEl.appendChild(c); cells.push(c);
+  }
+  picks.forEach(function(p){ p.addEventListener('click', function(){ sel = +p.dataset.t; render(); }); });
+
+  // The ONE legal-move list: TeamA.moves(s). The UI only filters it.
+  function myMoves(){ return (s.turn === 1 && !A.isOver(s)) ? A.moves(s) : []; }
+  function isQuarantine(ms){ return twist && ms.length && A.dec(ms[0]).quiet; }
+  function legalSquares(ms){
+    var out = {};
+    ms.forEach(function(mv){
+      if (!twist) { if (mv >= 0) out[mv] = mv; return; }
+      var d = A.dec(mv); if (d.type === sel) out[d.sq] = mv;
+    });
+    return out;
+  }
+  function allowedTypes(ms){
+    var t = {}; ms.forEach(function(mv){ t[A.dec(mv).type] = 1; }); return t;
+  }
+
+  function render(){
+    var ms = busy ? [] : myMoves();
+    if (twist && ms.length) {
+      var ok = allowedTypes(ms);
+      if (!ok[sel]) { for (var t = 0; t < 3; t++) if (ok[t]) { sel = t; break; } }
+      picks.forEach(function(p){ var t = +p.dataset.t; p.disabled = !ok[t]; p.setAttribute('aria-pressed', t === sel ? 'true' : 'false'); });
+    } else picks.forEach(function(p){ p.disabled = true; p.setAttribute('aria-pressed', +p.dataset.t === sel ? 'true' : 'false'); });
+    var legal = legalSquares(ms), fl = {};
+    (s.flipped || []).forEach(function(x){ fl[x] = 1; });
+    for (var i = 0; i < 64; i++) {
+      var c = cells[i], chip = c.firstChild, own = s.b[i];
+      chip.className = 'chip' + (own === 1 ? ' blue' : own === 2 ? ' red' : '');
+      chip.textContent = own && twist ? LET[s.t[i]] : '';
+      c.classList.toggle('can', legal[i] !== undefined);
+      c.classList.toggle('last', i === s.last);
+      c.classList.toggle('flip', !!fl[i]);
+      var lab = 'row ' + ((i >> 3) + 1) + ' column ' + ((i & 7) + 1) + (own ? ', ' + (own === 1 ? 'data' : 'virus') + (twist ? ' ' + NAME[s.t[i]] : '') : ', empty');
+      c.setAttribute('aria-label', lab);
+    }
+    var k = Core.count(s.b);
+    document.getElementById('nBlue').textContent = k[1];
+    document.getElementById('nRed').textContent = k[2];
+    var over = A.isOver(s);
+    document.getElementById('sideBlue').className = 'side ' + (s.turn === 1 && !over ? 'on' : 'off');
+    document.getElementById('sideRed').className = 'side r ' + (s.turn === 2 && !over ? 'on' : 'off');
+  }
+  function say(t, end){ statusEl.textContent = t; statusEl.classList.toggle('end', !!end); }
+
+  function describe(prev, who){
+    if (!twist) return '';
+    if (s.quiet) return who + ' QUARANTINED: planted ' + NAME[s.t[s.last]] + ', nothing flipped. ';
+    var n = s.flipped.length, r = s.rescans;
+    return who + ' placed ' + NAME[s.t[s.last]] + ': ' + n + ' flipped' + (r ? ', ' + r + ' RESCAN' + (r > 1 ? 'S' : '') : '') + '. ';
+  }
+
+  function step(){
+    render();
+    if (A.isOver(s)) { finish(); return; }
+    if (s.turn === 2) {
+      busy = true; render();
+      var t = ++token;
+      setTimeout(function(){
+        if (t !== token) return;
+        var lv = parseInt(document.getElementById('level').value, 10);
+        var mv = A.botMove(s, lv, Math.random);
+        var passed = mv === A.PASS;
+        s = A.apply(s, mv); busy = false;
+        var msg = passed ? 'The virus has no move. It passes. ' : describe(null, 'Virus');
+        step();
+        if (!A.isOver(s)) say(msg + yourPrompt());
+      }, 600);
+      say('The virus is scanning...');
+      return;
+    }
+    var ms = A.moves(s);
+    if (!twist && ms.length === 1 && ms[0] === A.PASS) {
+      say('You have no move. You pass.');
+      var t2 = ++token;
+      setTimeout(function(){ if (t2 !== token) return; s = A.apply(s, A.PASS); step(); }, 1300);
+      return;
+    }
+    say(yourPrompt());
+  }
+  function yourPrompt(){
+    var ms = myMoves();
+    if (isQuarantine(ms)) return 'You are STUCK: QUARANTINE. Pick any type, tap a ring next to your chips.';
+    if (!twist) return 'Your move. Tap a ring.';
+    return 'Your move. Pick a type, tap a ring.' + (s.lock[1] >= 0 ? ' (' + NAME[s.lock[1]] + ' is busy this turn.)' : '');
+  }
+  function tap(i){
+    if (busy || s.turn !== 1 || A.isOver(s)) return;
+    var legal = legalSquares(myMoves());
+    if (legal[i] === undefined) return;
+    s = A.apply(s, legal[i]);
+    var msg = describe(null, 'You');
+    step();
+    if (!A.isOver(s) && s.turn === 2) say(msg + 'The virus is scanning...');
+  }
+  function finish(){
+    busy = false; render();
+    var k = Core.count(s.b), msg;
+    if (k[1] > k[2]) msg = 'Disk clean. Data wins, ' + k[1] + ' to ' + k[2] + '.';
+    else if (k[2] > k[1]) msg = 'Disk infected. The virus wins, ' + k[2] + ' to ' + k[1] + '.';
+    else msg = 'Draw, ' + k[1] + ' each.';
+    say('Scan complete. ' + msg + ' Would you play again?', true);
+  }
+  function start(){
+    token++; busy = false; sel = 0;
+    s = A.newGame({ twist: twist });
+    step();
+  }
+  document.getElementById('newGame').addEventListener('click', start);
+  start();
+})();
+</script>
+</body>
+</html>

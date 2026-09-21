@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cross-Linked</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --ground:#0F1519; --panel:#151E24; --board:#17302C; --board-edge:#0C1D1A; --line:#244A43;
+  --ink:#DCE6EA; --muted:#8A9CA5; --blue:#4F9FD4; --blue-rim:#2F6E99; --red:#D2644E; --red-rim:#963F2F;
+  --hint:#9FD3C4; --glyph:#0F1519; --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--mono);padding:20px 16px 40px;min-height:100%}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{font-size:1rem;font-weight:700;letter-spacing:.14em;margin:0}
+.why{font-size:.75rem;color:var(--muted);line-height:1.45;margin:4px 0 0}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:var(--panel);border-radius:6px;padding:10px 14px}
+.side{display:flex;align-items:center;gap:10px;font-size:.85rem}
+.side.r{justify-content:flex-end}
+.side b{font-size:1.5rem;font-variant-numeric:tabular-nums;font-weight:700}
+.dot{width:16px;height:16px;border-radius:50%;flex:none}
+.dot.blue{background:var(--blue)} .dot.red{background:var(--red)}
+.side.off{color:var(--muted)}
+.vs{color:var(--muted);font-size:.75rem}
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:2px;background:var(--line);padding:2px;border-radius:6px;border:6px solid var(--board-edge);width:100%;aspect-ratio:1}
+.cell{appearance:none;border:0;margin:0;padding:0;background:var(--board);position:relative;display:grid;place-items:center;font-family:var(--mono)}
+.cell.can{cursor:pointer}
+.cell.sel{background:#21453F}
+.cell:focus-visible{outline:2px solid var(--hint);outline-offset:-2px;z-index:1}
+.chip{width:80%;height:auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:clamp(.95rem,5.2vw,1.4rem);font-weight:700;color:var(--glyph);transition:background-color .45s ease}
+.chip.blue{background:var(--blue);box-shadow:inset 0 -3px 0 var(--blue-rim)}
+.chip.red{background:var(--red);box-shadow:inset 0 -3px 0 var(--red-rim)}
+.cell.can::after{content:"";width:24%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid var(--hint);opacity:.7}
+.cell.turn .chip{outline:2px dashed var(--hint);outline-offset:1px}
+.cell.last::before{content:"";position:absolute;right:8%;bottom:8%;width:16%;height:16%;border-radius:50%;background:var(--hint);opacity:.8;z-index:2}
+.picker{display:none;gap:8px}
+.picker.on{display:grid;grid-template-columns:repeat(3,1fr)}
+.picker button{font-family:var(--mono);font-size:.8rem;font-weight:600;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:10px 4px;cursor:pointer;line-height:1.4}
+.picker button:focus-visible{outline:2px solid var(--hint)}
+.picker button span{display:block;color:var(--muted);font-weight:400;font-size:.72rem}
+.status{min-height:2.8em;font-size:.88rem;line-height:1.4;background:var(--panel);border-radius:6px;padding:10px 14px}
+.status.end{border-left:3px solid var(--hint)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+button.act{font-family:var(--mono);font-size:.85rem;font-weight:600;letter-spacing:.06em;background:var(--ink);color:var(--ground);border:0;border-radius:4px;padding:10px 16px;cursor:pointer}
+label{font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+select{font-family:var(--mono);font-size:.8rem;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+ol.rules{margin:0;padding-left:1.3em;font-size:.78rem;color:var(--muted);line-height:1.55}
+ol.rules b{color:var(--ink)}
+.err{background:#3A1F1A;color:var(--ink);border-left:3px solid var(--red);padding:12px 14px;border-radius:6px;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.chip{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div>
+    <h1 id="title">CROSS-LINKED</h1>
+    <p class="why" id="why">Why not just Othello? Every file you write also bites the chips beside it, and every chip you own has one square that can bite it back.</p>
+  </div>
+  <div class="score" aria-live="polite">
+    <div class="side" id="sideBlue"><span class="dot blue"></span><span>DATA</span><b id="nBlue">2</b></div>
+    <span class="vs">vs</span>
+    <div class="side r" id="sideRed"><b id="nRed">2</b><span>VIRUS</span><span class="dot red"></span></div>
+  </div>
+  <div class="board" id="board" role="grid" aria-label="Disk sectors"></div>
+  <div class="picker" id="picker"></div>
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="controls">
+    <label for="level">Virus level
+      <select id="level">
+        <option value="0">0 · random</option>
+        <option value="1">1 · greedy</option>
+        <option value="2" selected>2 · looks 2 ahead</option>
+        <option value="3">3 · looks 3 ahead</option>
+      </select>
+    </label>
+    <button class="act" id="newGame" type="button">NEW SCAN</button>
+  </div>
+  <ol class="rules" id="rules">
+    <li>Write a file on an empty sector. Trapped virus lines flip, like Othello.</li>
+    <li>Pick its type: <b>▲BAT</b> beats <b>■TXT</b> beats <b>●WAV</b> beats <b>▲BAT</b>.</li>
+    <li>Cross-link: your new file also turns each virus chip it touches (up, down, left, right) whose type it beats.</li>
+    <li>A move must turn at least one chip. Types never change, only colour.</li>
+    <li>Stuck? Quiet write: place any type next to your own chips, turning nothing.</li>
+    <li>Disk full = scan over, most sectors wins. Lose every chip and you lose.</li>
+  </ol>
+</div>
+<script src="core.js"></script>
+<script src="team-c.js"></script>
+<script>
+(function(){
+  var M = window.TeamC, C = window.Core;
+  var GLYPH = ['▲','■','●'];
+  // URL options: only ?twist=0 or ?twist=1. Anything else fails loudly.
+  var q = new URLSearchParams(location.search), twist = true, bad = null;
+  q.forEach(function(v,k){
+    if (k === 'twist') { if (v === '0') twist = false; else if (v === '1') twist = true; else bad = 'twist=' + v; }
+    else bad = k + '=' + v;
+  });
+  if (bad) {
+    document.getElementById('app').innerHTML = '<div class="err">Unknown option <b>?' + bad.replace(/[<>&"]/g,'') +
+      '</b>. Use no options, <b>?twist=1</b> (Cross-Linked) or <b>?twist=0</b> (plain Othello).</div>';
+    return;
+  }
+  if (!twist) {
+    document.getElementById('title').textContent = 'CROSS-LINKED · TWIST OFF';
+    document.getElementById('why').textContent = 'Plain Othello baseline (?twist=0). No types, no cross-link; a stuck side passes.';
+    document.getElementById('rules').innerHTML = '<li>Trap virus chips in a line between your new chip and another of yours; the line flips.</li>' +
+      '<li>Every move must flip at least one chip. No move: you pass.</li><li>Nobody can move = game over. Most chips wins.</li>';
+  }
+  var boardEl = document.getElementById('board'), statusEl = document.getElementById('status'), pickEl = document.getElementById('picker');
+  var cells = [], s, sel = -1, token = 0, rnd = C.rng((Date.now() & 0xffffff) >>> 0);
+  for (var i = 0; i < 64; i++) {
+    var c = document.createElement('button'); c.type = 'button'; c.className = 'cell';
+    c.setAttribute('aria-label', 'sector row ' + ((i>>3)+1) + ' column ' + ((i&7)+1));
+    c.addEventListener('click', (function(k){ return function(){ tap(k); }; })(i));
+    var chip = document.createElement('span'); chip.className = 'chip';
+    c.appendChild(chip); boardEl.appendChild(c); cells.push(c);
+  }
+  function sqOf(mv){ if (mv === undefined || mv === M.PASS) return -1; if (!twist) return mv; var v = mv >= M.QUIET ? mv - M.QUIET : mv; return Math.floor(v / 3); }
+  function myMoves(){ return (s.turn === 1 && !M.isOver(s)) ? M.moves(s) : []; }
+  function say(t, end){ statusEl.textContent = t; statusEl.classList.toggle('end', !!end); }
+  function render(preview){
+    var legal = {}, m = myMoves(), turnSet = {};
+    for (var j = 0; j < m.length; j++) if (m[j] !== M.PASS) legal[sqOf(m[j])] = 1;
+    if (preview) preview.line.concat(preview.bite).forEach(function(n){ turnSet[n] = 1; });
+    var lastSq = sqOf(s.last);
+    for (var i = 0; i < 64; i++) {
+      var c = cells[i], chip = c.firstChild;
+      chip.className = 'chip' + (s.b[i] === 1 ? ' blue' : s.b[i] === 2 ? ' red' : '');
+      chip.textContent = (twist && s.b[i]) ? GLYPH[s.ty[i]] : '';
+      c.classList.toggle('can', !!legal[i] && !s.b[i]);
+      c.classList.toggle('sel', i === sel);
+      c.classList.toggle('turn', !!turnSet[i]);
+      c.classList.toggle('last', i === lastSq);
+    }
+    var k = C.count(s.b), over = M.isOver(s);
+    document.getElementById('nBlue').textContent = k[1];
+    document.getElementById('nRed').textContent = k[2];
+    document.getElementById('sideBlue').className = 'side ' + (s.turn === 1 && !over ? '' : 'off');
+    document.getElementById('sideRed').className = 'side r ' + (s.turn === 2 && !over ? '' : 'off');
+  }
+  function hidePicker(){ pickEl.className = 'picker'; pickEl.innerHTML = ''; }
+  function tap(i){
+    if (s.turn !== 1 || M.isOver(s)) return;
+    var m = myMoves();
+    if (!twist) { if (m.indexOf(i) >= 0) commit(i); return; }
+    var opts = m.filter(function(mv){ return sqOf(mv) === i; });
+    if (!opts.length) return;
+    sel = i; hidePicker(); pickEl.className = 'picker on';
+    opts.forEach(function(mv){
+      var d = M.decode(s, mv), b = document.createElement('button'); b.type = 'button';
+      var n = d.line.length + d.bite.length;
+      b.innerHTML = GLYPH[d.t] + ' ' + M.NAMES[d.t] + '<span>' + (d.quiet ? 'quiet write' : 'turns ' + n + (d.bite.length ? ' · bites ' + d.bite.length : '')) + '</span>';
+      b.addEventListener('mouseenter', function(){ render(d); });
+      b.addEventListener('focus', function(){ render(d); });
+      b.addEventListener('click', function(){ commit(mv); });
+      pickEl.appendChild(b);
+    });
+    render();
+    say('Sector picked. Choose a type (dashed chips show what it turns). It can be bitten later by the type that beats it.');
+  }
+  function commit(mv){ sel = -1; hidePicker(); s = M.apply(s, mv); after(); }
+  function after(note){
+    render();
+    if (M.isOver(s)) return finish();
+    var m = M.moves(s);
+    if (s.turn === 2) {
+      say('The virus is scanning…');
+      var t = ++token, lvl = parseInt(document.getElementById('level').value, 10);
+      setTimeout(function(){
+        if (t !== token) return;
+        var mv = M.botMove(s, lvl, rnd), n = '';
+        if (twist && mv >= M.QUIET) n = 'The virus was stuck and made a quiet write. ';
+        if (!twist && mv === M.PASS) n = 'The virus has no move. It passes. ';
+        s = M.apply(s, mv); after(n);
+      }, 600);
+      return;
+    }
+    note = note || '';
+    if (!twist && m.length === 1 && m[0] === M.PASS) {
+      say(note + 'You have no move. You pass.');
+      var t2 = ++token; setTimeout(function(){ if (t2 !== token) return; s = M.apply(s, M.PASS); after(); }, 1200);
+      return;
+    }
+    if (twist && m[0] >= M.QUIET) say(note + 'You are stuck: no write turns a chip. Quiet write: pick a ringed sector next to your chips and a type to plant.');
+    else say(note + (twist ? 'Your move. Tap a ring, then pick a type.' : 'Your move. Tap a ring.'));
+  }
+  function finish(){
+    render();
+    var k = C.count(s.b), msg;
+    if (k[1] > k[2]) msg = 'Data wins, ' + k[1] + ' to ' + k[2] + '.';
+    else if (k[2] > k[1]) msg = 'The virus wins, ' + k[2] + ' to ' + k[1] + '.';
+    else msg = 'Draw, ' + k[1] + ' each.';
+    say('Scan complete. ' + msg + ' Play again?', true);
+  }
+  function start(){ token++; sel = -1; hidePicker(); s = M.newGame({ twist: twist }); after(); }
+  document.getElementById('newGame').addEventListener('click', start);
+  start();
+})();
+</script>
+</body>
+</html>

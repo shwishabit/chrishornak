@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Surface Scan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --ground:#0F1519; --panel:#151E24; --board:#17302C; --board-edge:#0C1D1A; --line:#244A43;
+  --ink:#DCE6EA; --muted:#8A9CA5; --blue:#4F9FD4; --blue-rim:#2F6E99; --red:#D2644E; --red-rim:#963F2F;
+  --hint:#9FD3C4; --scan:#2A4A3F; --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--mono);padding-inline:16px;padding-block:20px 40px;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{font-size:1rem;font-weight:700;letter-spacing:.14em;margin:0}
+.sub{font-size:.75rem;color:var(--muted);letter-spacing:.04em;margin:4px 0 0;line-height:1.4}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:var(--panel);border-radius:6px;padding:10px 14px}
+.side{display:flex;align-items:center;gap:10px;font-size:.85rem}
+.side.r{justify-content:flex-end}
+.side b{font-size:1.5rem;font-variant-numeric:tabular-nums;font-weight:700}
+.dot{width:16px;height:16px;border-radius:50%;flex:none}
+.dot.blue{background:var(--blue)} .dot.red{background:var(--red)}
+.side.off{color:var(--muted)}
+.vs{color:var(--muted);font-size:.75rem}
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.types button{font-family:var(--mono);font-size:.85rem;font-weight:700;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:4px;padding:10px 4px;cursor:pointer}
+.types button[aria-pressed="true"]{border-color:var(--hint);background:#1D2A2F}
+.types small{display:block;font-weight:400;font-size:.68rem;color:var(--muted);margin-top:2px}
+.boardwrap{position:relative}
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:2px;background:var(--line);padding:2px;border-radius:6px;border:6px solid var(--board-edge);width:100%;aspect-ratio:1}
+.cell{appearance:none;border:0;margin:0;padding:0;background:var(--board);position:relative;cursor:default;display:grid;place-items:center;font-family:var(--mono)}
+.cell.scan{background:var(--scan)}
+.cell.can{cursor:pointer}
+.cell:focus-visible{outline:2px solid var(--hint);outline-offset:-2px;z-index:1}
+.chip{width:82%;height:auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:clamp(.85rem,4.4vw,1.2rem);font-weight:700;color:#0F1519;transition:background-color .45s ease}
+.chip.blue{background:var(--blue);box-shadow:inset 0 -3px 0 var(--blue-rim)}
+.chip.red{background:var(--red);box-shadow:inset 0 -3px 0 var(--red-rim)}
+.chip.risk{outline:2px dashed var(--ink);outline-offset:1px}
+.cell.can::after{content:"";width:24%;height:auto;aspect-ratio:1;border-radius:50%;border:2px solid var(--hint);opacity:.7}
+.cell.last .chip{box-shadow:inset 0 0 0 3px var(--ground)}
+.rowtag{position:absolute;left:-2px;font-size:.6rem;color:var(--hint);transform:translateX(-100%);padding-right:4px}
+.status{min-height:2.8em;font-size:.88rem;line-height:1.4;background:var(--panel);border-radius:6px;padding:10px 14px}
+.end{border-left:3px solid var(--hint)}
+.log{font-size:.72rem;line-height:1.5;color:var(--muted);background:#0B1013;border:1px solid var(--line);border-radius:6px;padding:8px 10px;height:7.5em;overflow:auto;white-space:pre-wrap}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+button.act{font-family:var(--mono);font-size:.85rem;font-weight:600;letter-spacing:.06em;background:var(--ink);color:var(--ground);border:0;border-radius:4px;padding:10px 16px;cursor:pointer}
+label{font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+select{font-family:var(--mono);font-size:.8rem;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+ol.rules{font-size:.78rem;color:var(--muted);line-height:1.5;margin:0;padding-left:1.4em}
+.err{background:#2A1614;border:1px solid var(--red);border-radius:6px;padding:12px 14px;font-size:.85rem;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.chip{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div>
+    <h1 id="title">SURFACE SCAN</h1>
+    <p class="sub" id="why">Every file is judged twice: Othello flips it now, and the scan bar comes for its row later.</p>
+  </div>
+
+  <div class="score" aria-live="polite">
+    <div class="side" id="sideBlue"><span class="dot blue"></span><span>DATA</span><b id="nBlue">2</b></div>
+    <span class="vs">vs</span>
+    <div class="side r" id="sideRed"><b id="nRed">2</b><span>VIRUS</span><span class="dot red"></span></div>
+  </div>
+
+  <div class="types" id="types" role="group" aria-label="File type to write">
+    <button type="button" data-t="0" aria-pressed="true">EXE<small>eats TXT</small></button>
+    <button type="button" data-t="1" aria-pressed="false">TXT<small>eats WAV</small></button>
+    <button type="button" data-t="2" aria-pressed="false">WAV<small>eats EXE</small></button>
+  </div>
+
+  <div class="boardwrap"><div class="board" id="board" role="grid" aria-label="Drive surface"></div></div>
+
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="log" id="log" aria-label="Scan log"></div>
+
+  <div class="controls">
+    <label for="level">Virus level
+      <select id="level">
+        <option value="0">0 · random</option>
+        <option value="1">1 · greedy</option>
+        <option value="2" selected>2 · looks 2 ahead</option>
+        <option value="3">3 · looks 3 ahead</option>
+      </select>
+    </label>
+    <button class="act" id="newGame" type="button">NEW SCAN</button>
+  </div>
+
+  <ol class="rules" id="rules"></ol>
+</div>
+
+<script src="core.js"></script>
+<script src="team-b.js"></script>
+<script>
+(function(){
+  var app=document.getElementById('app');
+  // Strict URL options: only ?twist=0 or ?twist=1. Anything else fails loudly.
+  var q=new URLSearchParams(location.search), twist=true, bad=null;
+  q.forEach(function(v,k){
+    if(k!=='twist') bad='Unknown option "?'+k+'". Only ?twist=0 or ?twist=1 are allowed.';
+    else if(v==='0') twist=false; else if(v==='1') twist=true;
+    else bad='Unknown value "?twist='+v+'". Use ?twist=0 (plain Othello) or ?twist=1.';
+  });
+  if(bad){ app.innerHTML='<h1>SURFACE SCAN</h1><div class="err" role="alert">'+bad.replace(/</g,'&lt;')+'</div>'; return; }
+
+  var RULES_TW=[
+    'Place a file so it traps red files in a line. They flip to you. Their type stays.',
+    'Pick each file\'s type: EXE eats TXT, TXT eats WAV, WAV eats EXE.',
+    'After every move the scan bar (lit row) reads that row, then moves down one.',
+    'In the scanned row, a file beside an enemy file (left/right) that eats it switches sides. Dashed ring = at risk now.',
+    'Can\'t write? You run the scan: tap any row and it\'s read right now.',
+    'Drive full, or nobody can write: most files wins.'
+  ];
+  var RULES_PLAIN=[
+    'Plain Othello (?twist=0). Trap red chips in a line to flip them.',
+    'No move? You pass. Nobody can move: most chips wins.'
+  ];
+  var rulesEl=document.getElementById('rules');
+  (twist?RULES_TW:RULES_PLAIN).forEach(function(t){ var li=document.createElement('li'); li.textContent=t; rulesEl.appendChild(li); });
+  if(!twist){
+    document.getElementById('types').style.display='none';
+    document.getElementById('log').style.display='none';
+    document.getElementById('title').textContent='SURFACE SCAN · TWIST OFF';
+    document.getElementById('why').textContent='Plain Othello baseline. Remove ?twist=0 for the scan.';
+  }
+
+  var T=TeamB, C=Core, TN=['EXE','TXT','WAV'], LET=['E','T','W'];
+  var NAMES=['LETTERS','MOM','AUTOEXEC','RECIPES','TAXES94','DOOM','MIDI','README','CONFIG','PHOTOS','GRANDPA','HOMEWORK','BUDGET','CHORES','SONGS','PAYROLL'];
+  function fname(i,t){ return NAMES[(i*7)%NAMES.length]+'.'+TN[t]; }
+  function sq(i){ return 'ABCDEFGH'[i&7]+((i>>3)+1); }
+
+  var s, sel=0, token=0, over=false, rnd=C.rng(Date.now()>>>0);
+  var boardEl=document.getElementById('board'), statusEl=document.getElementById('status'), logEl=document.getElementById('log');
+  var cells=[];
+  for(var i=0;i<64;i++){
+    var c=document.createElement('button'); c.type='button'; c.className='cell';
+    c.addEventListener('click',(function(k){return function(){tap(k);};})(i));
+    var chip=document.createElement('span'); chip.className='chip'; c.appendChild(chip);
+    boardEl.appendChild(c); cells.push(c);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#types button'),function(bt){
+    bt.addEventListener('click',function(){ sel=+bt.dataset.t; Array.prototype.forEach.call(document.querySelectorAll('#types button'),function(x){x.setAttribute('aria-pressed',String(x===bt));}); render(); });
+  });
+
+  function log(t){ logEl.textContent+=t+'\n'; logEl.scrollTop=logEl.scrollHeight; }
+  function say(t,end){ statusEl.textContent=t; statusEl.classList.toggle('end',!!end); }
+
+  function legalSet(){
+    var m=T.moves(s), sqs={}, steer=false;
+    for(var j=0;j<m.length;j++){
+      if(m[j]===T.PASS) continue;
+      if(m[j]>=T.STEER){ steer=true; continue; }
+      sqs[twist?Math.floor(m[j]/3):m[j]]=1;
+    }
+    return {m:m, sqs:sqs, steer:steer};
+  }
+
+  function render(){
+    var L=(s.turn===1&&!over)?legalSet():{sqs:{},steer:false};
+    var risk={};
+    if(twist&&!over){ var b2=s.b.slice(), sw=T.scanRow(b2,s.ty,s.scan); for(var q=0;q<sw.length;q++) risk[sw[q]]=1; }
+    for(var i=0;i<64;i++){
+      var c=cells[i], chip=c.firstChild, own=s.b[i];
+      chip.className='chip'+(own===1?' blue':own===2?' red':'')+(risk[i]?' risk':'');
+      chip.textContent=(twist&&own)?LET[s.ty[i]]:'';
+      c.classList.toggle('scan',twist&&!over&&(i>>3)===s.scan);
+      c.classList.toggle('can',!!L.sqs[i]||L.steer);
+      c.classList.toggle('last',i===s.last);
+      c.setAttribute('aria-label',sq(i)+(own?(own===1?' data ':' virus ')+(twist?TN[s.ty[i]]:''):' empty')+(risk[i]?', at risk':''));
+    }
+    var k=C.count(s.b);
+    document.getElementById('nBlue').textContent=k[1];
+    document.getElementById('nRed').textContent=k[2];
+    document.getElementById('sideBlue').className='side '+(s.turn===1&&!over?'':'off');
+    document.getElementById('sideRed').className='side r '+(s.turn===2&&!over?'':'off');
+  }
+
+  function report(prev,mv,who){
+    if(!twist) return;
+    var name=who===1?'DATA':'VIRUS';
+    if(mv>=T.STEER) log('> '+name+' is stuck. Runs the scan on row '+(mv-T.STEER+1)+'.');
+    else log('> '+name+' writes '+fname(Math.floor(mv/3),mv%3)+' at '+sq(Math.floor(mv/3)));
+    if(s.switched.length){
+      var parts=s.switched.map(function(i){return fname(i,s.ty[i])+'->'+(s.b[i]===1?'DATA':'VIRUS');});
+      log('  SCAN row '+(s.scanned+1)+': cross-linked '+parts.join(', '));
+    } else log('  SCAN row '+(s.scanned+1)+': clean');
+  }
+
+  function play(mv){ var who=s.turn; var p=s; s=T.apply(s,mv); report(p,mv,who); next(); }
+
+  function next(){
+    if(T.isOver(s)){ finish(); return; }
+    render();
+    if(s.turn===2){
+      say('The virus is thinking…');
+      var t=++token, lvl=parseInt(document.getElementById('level').value,10);
+      setTimeout(function(){ if(t!==token) return; play(T.botMove(s,lvl,rnd)); },600);
+      return;
+    }
+    var L=legalSet();
+    if(L.m[0]===T.PASS){
+      say('You have no move. You pass.');
+      var t2=++token; setTimeout(function(){ if(t2!==token) return; play(T.PASS); },1200);
+      return;
+    }
+    if(L.steer) say('You can\'t write anywhere. Run the scan: tap any square in the row you want read now.');
+    else say(twist?'Your move. Scan bar is on row '+(s.scan+1)+'. Pick a type, tap a ring.':'Your move. Tap a ring.');
+  }
+
+  function finish(){
+    over=true; render();
+    var k=C.count(s.b), msg;
+    if(k[1]>k[2]) msg='Your data wins, '+k[1]+' to '+k[2]+'.';
+    else if(k[2]>k[1]) msg='The virus wins, '+k[2]+' to '+k[1]+'.';
+    else msg='Draw, '+k[1]+' each.';
+    say('Scan complete. '+msg+' Play again?',true);
+    if(twist) log('> SCANDISK finished. '+msg);
+  }
+
+  function tap(i){
+    if(over||s.turn!==1) return;
+    var L=legalSet();
+    if(L.steer){ play(T.STEER+(i>>3)); return; }
+    if(!L.sqs[i]) return;
+    var mv=twist?i*3+sel:i;
+    if(L.m.indexOf(mv)<0) return;
+    play(mv);
+  }
+
+  function start(){
+    token++; over=false; logEl.textContent='';
+    s=T.newGame({twist:twist, seed:(Date.now()%100000)+1});
+    if(twist) log('SCANDISK surface scan started. Virus detected in cluster 0x1C.');
+    next();
+  }
+  document.getElementById('newGame').addEventListener('click',start);
+  start();
+})();
+</script>
+</body>
+</html>
