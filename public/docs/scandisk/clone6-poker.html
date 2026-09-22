@@ -14,7 +14,7 @@
   }
   body {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; padding: 16px;
+    gap: 12px; padding: 16px;
   }
   #screenWrap {
     border: 3px solid #383848; border-radius: 4px; background: #05050a;
@@ -24,7 +24,7 @@
     display: block; width: min(90vw, 440px); height: calc(min(90vw, 440px) * 144 / 160);
     image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
   }
-  #row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  #row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 440px; }
   #row button {
     font-family: monospace; font-size: 11px; letter-spacing: .06em;
     background: #14141f; border: 2px solid #383848; color: #e8f0f8;
@@ -32,26 +32,34 @@
   }
   #row button:active { filter: brightness(1.4); }
   #bFold { border-color: #901808; }
-  #bStay { border-color: #1840a0; }
+  #bA, #bB { border-color: #1840a0; }
+  #row2 { display: flex; gap: 8px; }
+  #row2 button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 8px 14px; touch-action: manipulation;
+  }
 </style>
 </head>
 <body>
   <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
   <div id="row">
+    <button id="bA">CHECK</button>
+    <button id="bB">BET</button>
     <button id="bFold">FOLD</button>
-    <button id="bStay">STAY</button>
+  </div>
+  <div id="row2">
     <button id="bHelp">HOW TO</button>
     <button id="bNew">NEW GAME</button>
   </div>
 
 <script>
 // SCANDISK — clone series, clone 6 of 10: HAND READ (Poker's rules).
-// From INSPIRATIONS.md: "judge your starting hand vs his" + "strategy over randomness in the opening" — the
-// pre-flop decision is the thing to feel, not full multi-street betting. So: two hole cards each, one
-// FOLD-or-STAY judgment call, then (if both stay) the board flips all at once and best 7-card hand wins the
-// pot. IT judges its own hand the same way, with a bit of noise so it isn't perfectly readable.
-// Look is locked (VISION.md #14): dot backdrop, palette, pixel font, blue=you/red=IT as side markers only
-// (never used for card suits, so the "one colour one meaning" rule holds).
+// v3, rebuilt 2026-09-22 per Chris ("it is supposed to be a clone" — fold/stay wasn't poker, betting is).
+// Real heads-up limit betting: CHECK/BET/CALL/RAISE(capped once per street)/FOLD, across pre-flop, flop,
+// turn, river, YOU act first each street. Cards have real shape (box + rank + suit icon), board reveals in
+// stages. Look is locked (VISION.md #14). Suit icons are the universal 4-suit convention, always drawn
+// white — colour stays reserved for "whose card" markers (blue=you, red=IT), never suit.
 
 const PAL = {
   ground: "#05050a", trace: "#383848", white: "#e8f0f8",
@@ -71,12 +79,24 @@ const FONT = {
   "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
   " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
 };
+const ICONS = {
+  S: ["00100","01110","11111","00100","01110"],
+  H: ["01010","11111","11111","01110","00100"],
+  D: ["00100","01110","11111","01110","00100"],
+  C: ["01010","11111","01110","00100","01110"],
+};
 
 const cvs = document.getElementById("gc");
 const ctx = cvs.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
 function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function dot(x,y,c){ px(x+7,y+9,1,1,c); }
+function icon(name,x,y,c){
+  const gl = ICONS[name];
+  for (let r=0;r<5;r++) for (let c2=0;c2<5;c2++) if (gl[r][c2]==="1") px(x+c2,y+r,1,1,c);
+}
 function textW(s){ return Math.max(0, s.length*4-1); }
 function text(s,x,y,c){
   const u = s.toUpperCase();
@@ -86,7 +106,17 @@ function text(s,x,y,c){
   }
 }
 
-// ─── cards ───
+// ─── card shape ───
+const CW = 16, CH = 20;
+function drawCard(x, y, card, faceDown){
+  box(x, y, CW, CH, faceDown ? PAL.trace : PAL.white);
+  if (faceDown){ dot(x, y, PAL.trace); return; }
+  const rc = rankChar(card.r);
+  text(rc, x + 2, y + 2, PAL.white);
+  icon(SUITS[card.s], x + (rc.length>1?6:5), y + 12, PAL.white);
+}
+
+// ─── deck / hand evaluation ───
 const SUITS = ["S","H","D","C"];
 function freshDeck(){
   const d = [];
@@ -95,7 +125,6 @@ function freshDeck(){
   return d;
 }
 function rankChar(r){ return r===14?"A":r===13?"K":r===12?"Q":r===11?"J":r===10?"T":String(r); }
-function cardText(c){ return rankChar(c.r) + SUITS[c.s]; }
 
 function preflopScore(hole){
   const [a,b] = hole, hi = Math.max(a.r,b.r), lo = Math.min(a.r,b.r);
@@ -105,15 +134,6 @@ function preflopScore(hole){
   if (a.r !== b.r) s -= Math.max(0, (hi-lo)-1);
   return s;
 }
-
-const COMBOS = (() => {
-  const res = [], idx = [0,1,2,3,4,5,6];
-  (function comb(start, chosen){
-    if (chosen.length === 5){ res.push(chosen.slice()); return; }
-    for (let i=start;i<7;i++){ chosen.push(idx[i]); comb(i+1, chosen); chosen.pop(); }
-  })(0, []);
-  return res;
-})();
 function evalFive(cards){
   const ranks = cards.map(c=>c.r).sort((a,b)=>b-a);
   const suits = cards.map(c=>c.s);
@@ -140,15 +160,23 @@ function cmpHand(a,b){
   for (let i=0;i<Math.max(a.length,b.length);i++){ const av=a[i]||0, bv=b[i]||0; if (av!==bv) return av-bv; }
   return 0;
 }
-function bestOf7(cards7){
+function bestHand(cards){
+  if (cards.length === 5) return evalFive(cards);
   let best = null;
-  for (const idxs of COMBOS){ const val = evalFive(idxs.map(i => cards7[i])); if (!best || cmpHand(val,best) > 0) best = val; }
+  const n = cards.length;
+  (function rec(start, chosen){
+    if (chosen.length === 5){ const val = evalFive(chosen.map(i=>cards[i])); if (!best || cmpHand(val,best)>0) best=val; return; }
+    for (let i=start;i<n;i++){ chosen.push(i); rec(i+1, chosen); chosen.pop(); }
+  })(0, []);
   return best;
 }
 const CAT_NAME = ["HIGH CARD","PAIR","TWO PAIR","TRIPS","STRAIGHT","FLUSH","FULL HOUSE","QUADS","STR FLUSH"];
 
 // ─── state ───
-let chipsYou, chipsIt, pot, youHole, itHole, community, phase, revealIt, revealBoard, lines, gameOver, showHelp;
+const YOU = 1, IT = 2, BET_UNIT = 2;
+let chipsYou, chipsIt, pot, youHole, itHole, community, streetIdx, shown;
+let youStreetBet, itStreetBet, raisesThisStreet, actionsThisStreet, actor, thinking;
+let phase, revealIt, lines, gameOver, showHelp;
 
 function newGame(){
   chipsYou = 20; chipsIt = 20;
@@ -161,39 +189,112 @@ function startHand(){
   youHole = [deck.pop(), deck.pop()];
   itHole = [deck.pop(), deck.pop()];
   community = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
-  chipsYou -= 1; chipsIt -= 1; pot = 2;
-  phase = "decide"; revealIt = false; revealBoard = false; lines = [];
+  const ante = Math.min(1, chipsYou); chipsYou -= ante;
+  const anteIt = Math.min(1, chipsIt); chipsIt -= anteIt;
+  pot = ante + anteIt;
+  streetIdx = 0; revealIt = false; lines = []; phase = "bet"; thinking = false;
+  beginStreet();
+}
+function beginStreet(){
+  youStreetBet = 0; itStreetBet = 0; raisesThisStreet = 0; actionsThisStreet = 0; actor = YOU;
+  shown = [0,3,4,5][streetIdx];
+}
+function toCallFor(side){
+  return side === YOU ? Math.max(0, itStreetBet - youStreetBet) : Math.max(0, youStreetBet - itStreetBet);
+}
+function spend(side, amt){
+  const avail = side === YOU ? chipsYou : chipsIt;
+  const s = Math.min(amt, avail);
+  if (side === YOU){ chipsYou -= s; youStreetBet += s; } else { chipsIt -= s; itStreetBet += s; }
+  pot += s;
 }
 
-function doFold(){
-  if (phase !== "decide" || showHelp) return;
-  chipsIt += pot; pot = 0;
-  revealIt = true;
-  lines = ["YOU FOLD", "IT TAKES THE POT"];
-  phase = "reveal";
+function itHandScore(cardsShown){
+  if (cardsShown === 0) return preflopScore(itHole);
+  const best = bestHand([...itHole, ...community.slice(0, cardsShown)]);
+  return best[0]*10 + (best[1]||0)/2;
 }
-function doStay(){
-  if (phase !== "decide" || showHelp) return;
-  const itScore = preflopScore(itHole) + (Math.random()*4 - 2);
-  if (itScore < 11){
-    chipsYou += pot; pot = 0;
-    revealIt = true;
-    lines = ["IT FOLDS", "YOU TAKE THE POT"];
-    phase = "reveal";
-    return;
+function itDecide(){
+  const toCall = toCallFor(IT);
+  const canRaise = raisesThisStreet < 2;
+  const score = itHandScore(shown) + (Math.random()*6 - 3);
+  const threshold = shown === 0 ? 11 : 15;
+  if (toCall > 0){
+    if (score < threshold) return "fold";
+    if (canRaise && score > threshold + 20) return "raise";
+    return "call";
   }
-  revealIt = true; revealBoard = true;
-  const yourBest = bestOf7([...youHole, ...community]);
-  const itBest = bestOf7([...itHole, ...community]);
+  if (score > threshold + 15) return "bet";
+  return "check";
+}
+
+function showdown(){
+  revealIt = true; shown = 5;
+  const yourBest = bestHand([...youHole, ...community]);
+  const itBest = bestHand([...itHole, ...community]);
   const cmp = cmpHand(yourBest, itBest);
   if (cmp > 0){ chipsYou += pot; lines = ["YOU WIN", CAT_NAME[yourBest[0]]]; }
   else if (cmp < 0){ chipsIt += pot; lines = ["IT WINS", CAT_NAME[itBest[0]]]; }
   else { chipsYou += pot/2; chipsIt += pot/2; lines = ["SPLIT POT", CAT_NAME[yourBest[0]]]; }
   pot = 0; phase = "reveal";
 }
+function foldOut(folder){
+  if (folder === YOU){ chipsIt += pot; lines = ["YOU FOLD", "IT TAKES THE POT"]; }
+  else { chipsYou += pot; lines = ["IT FOLDS", "YOU TAKE THE POT"]; }
+  pot = 0; revealIt = true; phase = "reveal";
+}
+function afterAction(){
+  if (youStreetBet === itStreetBet && actionsThisStreet >= 2){
+    streetIdx++;
+    if (streetIdx > 3) showdown(); else beginStreet();
+    return;
+  }
+  if (youStreetBet === itStreetBet && actionsThisStreet === 1){
+    actor = actor === YOU ? IT : YOU;
+    if (actor === IT) scheduleAI();
+    return;
+  }
+  actor = actor === YOU ? IT : YOU;
+  if (actor === IT) scheduleAI();
+}
+function scheduleAI(){
+  thinking = true;
+  setTimeout(aiAct, 550);
+}
+function aiAct(){
+  thinking = false;
+  const decision = itDecide();
+  const toCall = toCallFor(IT);
+  if (decision === "fold"){ foldOut(IT); return; }
+  if (decision === "check"){ actionsThisStreet++; afterAction(); return; }
+  if (decision === "call"){ spend(IT, toCall); actionsThisStreet++; afterAction(); return; }
+  if (decision === "bet"){ spend(IT, BET_UNIT); raisesThisStreet++; actionsThisStreet++; afterAction(); return; }
+  if (decision === "raise"){ spend(IT, toCall + BET_UNIT); raisesThisStreet++; actionsThisStreet++; afterAction(); return; }
+}
 
-document.getElementById("bFold").addEventListener("pointerdown", (e) => { e.preventDefault(); doFold(); });
-document.getElementById("bStay").addEventListener("pointerdown", (e) => { e.preventDefault(); doStay(); });
+// ─── player actions ───
+function pCheck(){ if (actor!==YOU || phase!=="bet" || toCallFor(YOU)!==0) return; actionsThisStreet++; afterAction(); }
+function pBet(){ if (actor!==YOU || phase!=="bet" || toCallFor(YOU)!==0) return; spend(YOU, BET_UNIT); raisesThisStreet++; actionsThisStreet++; afterAction(); }
+function pCall(){ if (actor!==YOU || phase!=="bet") return; const need = toCallFor(YOU); if (need<=0) return; spend(YOU, need); actionsThisStreet++; afterAction(); }
+function pRaise(){ if (actor!==YOU || phase!=="bet" || raisesThisStreet>=2) return; const need = toCallFor(YOU); if (need<=0) return; spend(YOU, need + BET_UNIT); raisesThisStreet++; actionsThisStreet++; afterAction(); }
+function pFold(){ if (actor!==YOU || phase!=="bet" || toCallFor(YOU)<=0) return; foldOut(YOU); }
+
+const bA = document.getElementById("bA"), bB = document.getElementById("bB"), bFold = document.getElementById("bFold");
+function updateButtons(){
+  const myTurn = actor === YOU && phase === "bet" && !gameOver && !showHelp;
+  if (!myTurn){ bA.style.visibility="hidden"; bB.style.visibility="hidden"; bFold.style.visibility="hidden"; return; }
+  const toCall = toCallFor(YOU);
+  if (toCall === 0){
+    bA.style.visibility="visible"; bA.textContent="CHECK"; bA.onclick=pCheck;
+    bB.style.visibility="visible"; bB.textContent="BET"; bB.onclick=pBet;
+    bFold.style.visibility="hidden";
+  } else {
+    bA.style.visibility="visible"; bA.textContent="CALL " + toCall; bA.onclick=pCall;
+    if (raisesThisStreet < 2){ bB.style.visibility="visible"; bB.textContent="RAISE"; bB.onclick=pRaise; }
+    else bB.style.visibility="hidden";
+    bFold.style.visibility="visible"; bFold.onclick=pFold;
+  }
+}
 document.getElementById("bNew").addEventListener("pointerdown", (e) => { e.preventDefault(); newGame(); });
 document.getElementById("bHelp").addEventListener("pointerdown", (e) => { e.preventDefault(); showHelp = !showHelp; });
 cvs.addEventListener("pointerdown", () => {
@@ -204,8 +305,9 @@ cvs.addEventListener("pointerdown", () => {
 
 // ─── draw ───
 function draw(){
+  updateButtons();
   px(0,0,160,144,PAL.ground);
-  for (let y=8;y<144;y+=16) for (let x=8;x<160;x+=16) px(x,y,1,1,PAL.trace);
+  for (let y=6;y<144;y+=16) for (let x=6;x<160;x+=16) px(x,y,1,1,PAL.trace);
 
   text("YOU", 2, 2, PAL.blue);
   text(String(chipsYou), 24, 2, PAL.white);
@@ -214,38 +316,36 @@ function draw(){
   const potLabel = "POT " + pot;
   text(potLabel, Math.floor((160 - textW(potLabel))/2), 2, PAL.orange);
 
-  px(2, 25, 4, 4, PAL.blue);
-  text(cardText(youHole[0]), 10, 24, PAL.white);
-  text(cardText(youHole[1]), 26, 24, PAL.white);
+  px(4, 14, 30, 2, PAL.blue);
+  drawCard(4, 18, youHole[0], false);
+  drawCard(22, 18, youHole[1], false);
 
-  px(2, 37, 4, 4, PAL.red);
-  text(revealIt ? cardText(itHole[0]) : "??", 10, 36, PAL.white);
-  text(revealIt ? cardText(itHole[1]) : "??", 26, 36, PAL.white);
+  px(126, 14, 30, 2, PAL.red);
+  drawCard(122, 18, itHole[0], !revealIt);
+  drawCard(140, 18, itHole[1], !revealIt);
 
-  px(2, 49, 4, 4, PAL.white);
-  for (let i=0;i<5;i++){
-    const cx = 10 + i*26;
-    text(revealBoard ? cardText(community[i]) : "--", cx, 48, PAL.white);
-  }
+  const commX = 36;
+  for (let i=0;i<5;i++) drawCard(commX + i*18, 68, community[i], i >= shown);
 
   if (!gameOver && !showHelp){
-    if (phase === "decide"){
-      const w = textW("FOLD OR STAY?");
-      text("FOLD OR STAY?", Math.floor((160-w)/2), 64, PAL.orange);
+    if (phase === "bet"){
+      const msg = actor === YOU ? "YOUR MOVE" : (thinking ? "IT IS THINKING…" : "IT IS ACTING…");
+      const w = textW(msg);
+      text(msg, Math.floor((160-w)/2), 96, PAL.orange);
     } else if (phase === "reveal"){
       lines.forEach((l, i) => {
         const w = textW(l);
-        text(l, Math.floor((160-w)/2), 64 + i*10, i===0 ? PAL.white : PAL.orange);
+        text(l, Math.floor((160-w)/2), 96 + i*10, i===0 ? PAL.white : PAL.orange);
       });
       const hint = "TAP FOR NEXT HAND";
       const w2 = textW(hint);
-      text(hint, Math.floor((160-w2)/2), 64 + lines.length*10 + 4, PAL.trace);
+      text(hint, Math.floor((160-w2)/2), 96 + lines.length*10 + 4, PAL.trace);
     }
   }
 
   if (gameOver){
     px(10, 50, 140, 40, PAL.ground);
-    px(10, 50, 140, 1, PAL.trace); px(10, 89, 140, 1, PAL.trace); px(10, 50, 1, 40, PAL.trace); px(149, 50, 1, 40, PAL.trace);
+    box(10, 50, 140, 40, PAL.trace);
     const msg = chipsYou <= 0 ? "YOU ARE BUSTED" : "IT IS BUSTED";
     const w1 = textW(msg);
     text(msg, Math.floor((160-w1)/2), 62, PAL.white);
@@ -256,7 +356,7 @@ function draw(){
 
   if (showHelp){
     px(6, 12, 148, 120, PAL.ground);
-    px(6,12,148,1,PAL.trace); px(6,131,148,1,PAL.trace); px(6,12,1,120,PAL.trace); px(153,12,1,120,PAL.trace);
+    box(6, 12, 148, 120, PAL.trace);
     const lines2 = [
       "HAND READ",
       "",
@@ -264,16 +364,18 @@ function draw(){
       "CARDS AGAINST",
       "IT'S HIDDEN TWO",
       "",
-      "FOLD TO GIVE UP",
-      "THE POT",
+      "CHECK, BET,",
+      "CALL, RAISE, OR",
+      "FOLD EACH ROUND",
       "",
-      "STAY TO SEE THE",
-      "BOARD, BEST 5",
-      "OF 7 CARDS WINS",
+      "BOARD COMES OUT",
+      "3, THEN 1, THEN",
+      "1 — BEST 5 OF 7",
+      "WINS THE POT",
       "",
       "TAP TO CLOSE",
     ];
-    lines2.forEach((line_, i) => text(line_, 14, 16 + i*8, i===0 ? PAL.blue : PAL.white));
+    lines2.forEach((line_, i) => text(line_, 14, 16 + i*7, i===0 ? PAL.blue : PAL.white));
   }
 
   requestAnimationFrame(draw);
