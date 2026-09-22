@@ -22,8 +22,8 @@
   }
   canvas {
     display: block;
-    height: min(82vh, 640px); width: calc(min(82vh, 640px) * 180 / 320);
-    max-width: 92vw;
+    height: min(84vh, 680px); width: calc(min(84vh, 680px) * 180 / 340);
+    max-width: 94vw;
     image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
   }
   #row { display: flex; gap: 8px; }
@@ -37,7 +37,7 @@
 </style>
 </head>
 <body>
-  <div id="screenWrap"><canvas id="gc" width="180" height="320"></canvas></div>
+  <div id="screenWrap"><canvas id="gc" width="180" height="340"></canvas></div>
   <div id="row">
     <button id="bWait">WAIT A TURN</button>
     <button id="bHelp">HOW TO</button>
@@ -46,14 +46,29 @@
 
 <script>
 // SCANDISK — clone series, clone 8 of 10: TICK STEP (MicRogue's rules).
-// Chris's call (2026-09-22): the point is "ENEMIES MOVE ONLY WHEN YOU MOVE." The board is frozen
-// until you act, and each enemy type moves in one readable way, like a chess piece. Everything
-// else hangs off that rule.
 //
-// APPROACH CHANGE (2026-09-22, Chris): SCANDISK is now a phone / web app, not a Game Boy game.
-// So the two GBC limits are lifted here: the screen is phone-portrait 180x320 (was 160x144) and
-// tap is the official control scheme (was a bend of VISION #11). The LOOK is untouched and still
-// locked per VISION #14 — same palette, same dot cells, same neon glow, same pixel font.
+// Chris's locked defining rule: ENEMIES MOVE ONLY WHEN YOU MOVE.
+//
+// v2, rebuilt 2026-09-22. Chris on v1: "the crawler ends up just following you. It's too simple of
+// a rule. Same with the slider. Take another look at the MicRogue enemies. You can copy their
+// movement styles." He was right — "steps toward you" is a FOLLOW rule, not a movement style.
+//
+// What the record actually says (no invention, two sources):
+//   1. Jason Pickering, 7DRL devlog: "when I add a new enemy I have a dropdown to select whether
+//      its CARDINAL, DIAGONAL, or 8 WAY movement, and also a checkbox for fireproof."
+//      → An enemy IS a movement geometry plus a flag. You read it like a chess piece.
+//   2. Temple of the Roguelike review: "Some enemies can only attack and move diagonally, where
+//      others are just impossible to defeat by your own, and you'll have to drive them into traps."
+//      → One enemy you cannot crash. The terrain is your weapon.
+//
+// The depth that gives us, for free:
+//   - A DIAGONAL enemy is parity-locked. It can only ever stand on one colour of the checkerboard.
+//     Half the board is permanently safe from it. That is something to READ, not something to flee.
+//   - A CARDINAL enemy can never take a diagonal. Standing corner-to-corner is safe from it.
+//   - The ARMORED one cannot be crashed at all. You have to walk so its own move drops it in a PIT.
+//
+// APPROACH (Chris, 2026-09-22): SCANDISK is a phone / web app, not a Game Boy game. Screen is
+// phone-portrait and controls are touch (VISION #11, updated). The LOOK is untouched (VISION #14).
 
 const PAL = {
   ground: "#05050a", trace: "#383848", white: "#e8f0f8",
@@ -73,6 +88,7 @@ const FONT = {
   "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
   " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","+":"000010111010000",
   "/":"001001010100100",".":"000000000000010",
+  "=":"000111000111000",":":"000010000010000",
 };
 
 const cvs = document.getElementById("gc");
@@ -94,35 +110,42 @@ function text(s,x,y,c,k){
 function textC(s,y,c,k){ text(s, Math.floor((180 - textW(s,k))/2), y, c, k); }
 
 // ─── board ───
-const N = 6, CELL = 28, GX = 6, GY = 78;
+const N = 6, CELL = 28, GX = 6, GY = 64;
 const cellXY = (c,r) => ({ x: GX + c*CELL, y: GY + r*CELL });
 const inB = (c,r) => c>=0 && c<N && r>=0 && r<N;
 
-// Every enemy is one readable rule. That readability IS the game.
-const TYPES = {
-  C: { name: "CRAWLER", note: "1 STEP AT YOU",    },
-  S: { name: "SLIDER",  note: "SLIDES UP TO 3",   },
-  J: { name: "JUMPER",  note: "KNIGHT HOP",       },
-};
-const ORTHO = [[0,-1],[1,0],[0,1],[-1,0]];
-const KNIGHT = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+const CARD = [[0,-1],[1,0],[0,1],[-1,0]];
+const DIAG = [[-1,-1],[1,-1],[1,1],[-1,1]];
+const WAY8 = [...CARD, ...DIAG];
 
-let walls, enemies, you, exitAt, hp, floor, log, phase, showHelp, peek, flash;
+// An enemy is a movement geometry plus a flag. That is the whole definition. (Pickering's dropdown.)
+const TYPES = {
+  P: { name: "PULSE",  note: "CARDINAL ONLY", dirs: CARD, armored: false },
+  X: { name: "SPIKE",  note: "DIAGONAL ONLY", dirs: DIAG, armored: false },
+  H: { name: "HUNTER", note: "8 WAY",         dirs: WAY8, armored: false },
+  D: { name: "DAEMON", note: "8 WAY NO CRASH",dirs: WAY8, armored: true  },
+};
+const ORDER = ["P","X","H","D"];
+
+let walls, pits, enemies, you, exitAt, hp, floor, log, phase, showHelp, peek, flash;
 const MAX_FLOOR = 5, MAX_HP = 3;
 
-function occupied(c,r){ return enemies.some(e => e.c===c && e.r===r); }
+function enemyAt(c,r){ return enemies.find(e => e.c===c && e.r===r); }
 function isWall(c,r){ return walls.some(w => w.c===c && w.r===r); }
-function blocked(c,r){ return !inB(c,r) || isWall(c,r); }
+function isPit(c,r){ return pits.some(p => p.c===c && p.r===r); }
+// Enemies may walk into a pit — that is how you kill the armored one. You may not.
+function blockedForEnemy(c,r){ return !inB(c,r) || isWall(c,r); }
+function blockedForYou(c,r){ return !inB(c,r) || isWall(c,r) || isPit(c,r); }
 
 function reachable(from, to){
   const seen = new Set([from.c+","+from.r]);
-  let q = [from];
+  const q = [from];
   while (q.length){
     const n = q.shift();
     if (n.c===to.c && n.r===to.r) return true;
-    for (const [dc,dr] of ORTHO){
+    for (const [dc,dr] of CARD){
       const c=n.c+dc, r=n.r+dr, k=c+","+r;
-      if (!blocked(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
+      if (!blockedForYou(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
     }
   }
   return false;
@@ -132,26 +155,31 @@ function genFloor(){
   let tries = 0;
   do {
     tries++;
-    walls = [];
-    const wallCount = 3 + Math.min(3, floor);
-    while (walls.length < wallCount){
-      const c = 1 + Math.floor(Math.random()*(N-2));
-      const r = 1 + Math.floor(Math.random()*(N-2));
-      if (!walls.some(w => w.c===c && w.r===r)) walls.push({ c, r });
-    }
+    walls = []; pits = [];
     you = { c: 0, r: N-1 };
     exitAt = { c: N-1, r: 0 };
-  } while (!reachable(you, exitAt) && tries < 60);
+    const taken = (c,r) => (c===you.c&&r===you.r) || (c===exitAt.c&&r===exitAt.r)
+                        || walls.some(w=>w.c===c&&w.r===r) || pits.some(p=>p.c===c&&p.r===r);
+    for (let i=0;i<2+Math.min(2,floor);i++){
+      let c,r,g=0; do { c=Math.floor(Math.random()*N); r=Math.floor(Math.random()*N); g++; } while (g<200 && taken(c,r));
+      walls.push({c,r});
+    }
+    // Pits are the weapon, so there are always enough of them to use.
+    for (let i=0;i<2+Math.floor(floor/2);i++){
+      let c,r,g=0; do { c=Math.floor(Math.random()*N); r=Math.floor(Math.random()*N); g++; } while (g<200 && taken(c,r));
+      pits.push({c,r});
+    }
+  } while (!reachable(you, exitAt) && tries < 80);
 
-  // Enemy mix gets harder each floor, but never stops being readable.
-  const mix = [["C"],["C","C"],["C","S"],["C","S","J"],["C","S","J","C"]][floor-1] || ["C"];
+  // The mix teaches one geometry at a time, then combines them.
+  const mix = [["P"], ["P","X"], ["X","H"], ["P","X","H"], ["X","H","D"]][floor-1] || ["P"];
   enemies = [];
   for (const t of mix){
-    let c, r, guard = 0;
+    let c,r,g=0;
     do {
-      c = Math.floor(Math.random()*N); r = Math.floor(Math.random()*N); guard++;
-    } while (guard < 200 && (isWall(c,r) || occupied(c,r)
-             || (Math.abs(c-you.c) + Math.abs(r-you.r)) < 3
+      c=Math.floor(Math.random()*N); r=Math.floor(Math.random()*N); g++;
+    } while (g<300 && (isWall(c,r) || isPit(c,r) || enemyAt(c,r)
+             || (Math.abs(c-you.c)+Math.abs(r-you.r)) < 3
              || (c===exitAt.c && r===exitAt.r)));
     enemies.push({ c, r, t });
   }
@@ -163,75 +191,43 @@ function newRun(){
   genFloor();
 }
 
-// ─── the one rule: nothing moves until you do ───
-function stepToward(e, allowDiag){
-  const dc = Math.sign(you.c - e.c), dr = Math.sign(you.r - e.r);
-  const opts = [];
-  if (Math.abs(you.c-e.c) >= Math.abs(you.r-e.r)){ if (dc) opts.push([dc,0]); if (dr) opts.push([0,dr]); }
-  else { if (dr) opts.push([0,dr]); if (dc) opts.push([dc,0]); }
-  return opts;
-}
-
+// ─── movement: geometry, not pursuit ───
 function enemyTargets(e){
-  // Every cell this enemy could legally end on this turn. Used for the reach peek.
+  // Every cell this piece could legally end on. Pits are included — it will walk in and die.
   const out = [];
-  if (e.t === "J"){
-    for (const [dc,dr] of KNIGHT){
-      const c=e.c+dc, r=e.r+dr;
-      if (!blocked(c,r) && !occupied(c,r)) out.push({c,r});
-    }
-    return out;
-  }
-  if (e.t === "S"){
-    for (const [dc,dr] of ORTHO){
-      for (let k=1;k<=3;k++){
-        const c=e.c+dc*k, r=e.r+dr*k;
-        if (blocked(c,r)) break;
-        out.push({c,r});
-        if (occupied(c,r)) break;
-      }
-    }
-    return out;
-  }
-  for (const [dc,dr] of ORTHO){
+  for (const [dc,dr] of TYPES[e.t].dirs){
     const c=e.c+dc, r=e.r+dr;
-    if (!blocked(c,r)) out.push({c,r});
+    if (blockedForEnemy(c,r)) continue;
+    const other = enemyAt(c,r);
+    if (other && other !== e) continue;
+    out.push({c,r});
   }
   return out;
 }
 
 function moveEnemy(e){
-  if (e.t === "J"){
-    let best = null, bestD = 99;
-    for (const [dc,dr] of KNIGHT){
-      const c=e.c+dc, r=e.r+dr;
-      if (blocked(c,r) || occupied(c,r)) continue;
-      if (c===you.c && r===you.r) return hit(e);
-      const d = Math.abs(c-you.c) + Math.abs(r-you.r);
-      if (d < bestD){ bestD = d; best = {c,r}; }
-    }
-    const now = Math.abs(e.c-you.c) + Math.abs(e.r-you.r);
-    if (best && bestD < now){ e.c = best.c; e.r = best.r; }
-    return;
+  const opts = enemyTargets(e);
+  if (!opts.length) return;
+  const here = Math.max(Math.abs(e.c-you.c), Math.abs(e.r-you.r));
+  let best = null, bestD = Infinity;
+  for (const o of opts){
+    if (o.c===you.c && o.r===you.r) return hit(e);      // it reaches you: that is its attack
+    const d = Math.max(Math.abs(o.c-you.c), Math.abs(o.r-you.r));
+    if (d < bestD){ bestD = d; best = o; }
   }
-  if (e.t === "S" && (e.c === you.c || e.r === you.r)){
-    const dc = Math.sign(you.c - e.c), dr = Math.sign(you.r - e.r);
-    let c = e.c, r = e.r;
-    for (let k=0;k<3;k++){
-      const nc = c+dc, nr = r+dr;
-      if (blocked(nc,nr) || occupied(nc,nr)) break;
-      if (nc===you.c && nr===you.r) { e.c=c; e.r=r; return hit(e); }
-      c = nc; r = nr;
-    }
-    e.c = c; e.r = r;
-    return;
+  // It closes when it can. When it cannot — a SPIKE on the wrong square colour never can — it
+  // still shuffles inside its own geometry rather than freezing into a statue. A diagonal move
+  // always keeps its parity, so shuffling never lets it cheat its way onto your colour.
+  if (!best) return;
+  if (bestD >= here){
+    const side = opts.filter(o => Math.max(Math.abs(o.c-you.c), Math.abs(o.r-you.r)) <= here);
+    if (!side.length) return;
+    best = side[Math.floor(Math.random()*side.length)];
   }
-  for (const [dc,dr] of stepToward(e)){
-    const c=e.c+dc, r=e.r+dr;
-    if (blocked(c,r) || occupied(c,r)) continue;
-    if (c===you.c && r===you.r) return hit(e);
-    e.c = c; e.r = r;
-    return;
+  e.c = best.c; e.r = best.r;
+  if (isPit(e.c, e.r)){
+    log = TYPES[e.t].name + " FELL IN A PIT";
+    enemies.splice(enemies.indexOf(e), 1);
   }
 }
 
@@ -243,7 +239,10 @@ function hit(e){
 
 function tick(){
   if (phase !== "play") return;
-  for (const e of enemies){ if (phase !== "play") break; moveEnemy(e); }
+  for (const e of [...enemies]){
+    if (phase !== "play") break;
+    if (enemies.includes(e)) moveEnemy(e);
+  }
   peek = null;
 }
 
@@ -251,19 +250,21 @@ function tryMove(c, r){
   if (phase !== "play" || showHelp) return;
   const dist = Math.abs(c - you.c) + Math.abs(r - you.r);
 
-  if (dist === 0){ log = "YOU WAIT"; tick(); return; }        // waiting is a real move
-  if (dist !== 1) {                                            // far tap = read an enemy
-    const e = enemies.find(x => x.c===c && x.r===r);
+  if (dist === 0){ log = "YOU HOLD STILL"; tick(); return; }   // waiting is a real move
+  if (dist !== 1){
+    const e = enemyAt(c,r);
     peek = (peek && peek.c===c && peek.r===r) ? null : (e ? { c, r } : null);
     if (peek) log = TYPES[e.t].name + ": " + TYPES[e.t].note;
     return;
   }
-  if (blocked(c,r)){ log = "A BLOCK IS IN THE WAY"; return; }
+  if (isPit(c,r)){ log = "THAT IS A PIT - DRIVE THEM IN"; return; }
+  if (isWall(c,r)){ log = "A BLOCK IS IN THE WAY"; return; }
 
-  const ei = enemies.findIndex(x => x.c===c && x.r===r);
-  if (ei >= 0){
-    log = "YOU CRASH THE " + TYPES[enemies[ei].t].name;
-    enemies.splice(ei, 1);
+  const e = enemyAt(c,r);
+  if (e){
+    if (TYPES[e.t].armored){ log = "THE DAEMON WILL NOT CRASH"; return; }
+    log = "YOU CRASH THE " + TYPES[e.t].name;
+    enemies.splice(enemies.indexOf(e), 1);
     you.c = c; you.r = r;
     tick();
     return;
@@ -289,38 +290,42 @@ cvs.addEventListener("pointerdown", (e) => {
   if (phase !== "play"){ newRun(); return; }
   const b = cvs.getBoundingClientRect();
   const mx = (e.clientX - b.left) / b.width  * 180;
-  const my = (e.clientY - b.top)  / b.height * 320;
+  const my = (e.clientY - b.top)  / b.height * 340;
   const c = Math.floor((mx - GX) / CELL), r = Math.floor((my - GY) / CELL);
   if (inB(c,r)) tryMove(c, r);
 });
 
 // ─── draw ───
 function cellDots(x,y){ px(x+13,y+13,2,2,PAL.trace); }
-function piece(x,y,col,letter){
+function pitMark(x,y){
+  const c = PAL.orange;
+  px(x+4,y+4,6,1,c); px(x+4,y+4,1,6,c);
+  px(x+18,y+4,6,1,c); px(x+23,y+4,1,6,c);
+  px(x+4,y+23,6,1,c); px(x+4,y+18,1,6,c);
+  px(x+18,y+23,6,1,c); px(x+23,y+18,1,6,c);
+}
+function piece(x,y,col,letter,armored){
   glow(col, 8, () => px(x+5, y+5, 18, 18, col));
+  if (armored) box(x+2, y+2, 24, 24, PAL.white);
   if (letter) text(letter, x+13, y+10, PAL.ground, 2);
 }
 
 function draw(){
-  px(0,0,180,320,PAL.ground);
+  px(0,0,180,340,PAL.ground);
 
-  // health + floor
   for (let i=0;i<MAX_HP;i++){
-    const on = i < hp;
-    if (on) glow(PAL.blue, 6, () => px(8+i*16, 10, 12, 12, PAL.blue));
+    if (i < hp) glow(PAL.blue, 6, () => px(8+i*16, 10, 12, 12, PAL.blue));
     else box(8+i*16, 10, 12, 12, PAL.trace);
   }
   const fl = "FLR " + floor + "/" + MAX_FLOOR;
   text(fl, 180 - textW(fl,2) - 8, 11, PAL.white, 2);
 
-  textC(log || "", 36, PAL.orange);
-  textC("TAP A NEXT-DOOR CELL TO STEP", 50, PAL.trace);
-  textC("TAP A FAR ENEMY TO READ IT", 60, PAL.trace);
+  textC(log || "", 34, PAL.orange);
+  textC("TAP NEXT DOOR TO STEP - FAR TO READ", 48, PAL.trace);
 
-  // peeked enemy reach
   let peekCells = [];
   if (peek){
-    const e = enemies.find(x => x.c===peek.c && x.r===peek.r);
+    const e = enemyAt(peek.c, peek.r);
     if (e) peekCells = enemyTargets(e); else peek = null;
   }
 
@@ -328,6 +333,7 @@ function draw(){
     const { x, y } = cellXY(c,r);
     if (isWall(c,r)){ px(x+3, y+3, 22, 22, PAL.trace); continue; }
     cellDots(x,y);
+    if (isPit(c,r)) pitMark(x,y);
     if (peekCells.some(p => p.c===c && p.r===r)) box(x+2, y+2, 24, 24, PAL.orange);
     if (c===exitAt.c && r===exitAt.r){
       glow(PAL.green, 6, () => box(x+3, y+3, 22, 22, PAL.green));
@@ -336,68 +342,75 @@ function draw(){
   }
   for (const e of enemies){
     const { x, y } = cellXY(e.c, e.r);
-    piece(x, y, PAL.red, e.t);
+    piece(x, y, PAL.red, e.t, TYPES[e.t].armored);
   }
   {
     const { x, y } = cellXY(you.c, you.r);
-    piece(x, y, flash > 0 && (flash % 4 < 2) ? PAL.white : PAL.blue, null);
+    piece(x, y, flash > 0 && (flash % 4 < 2) ? PAL.white : PAL.blue, null, false);
     if (flash > 0) flash--;
   }
 
-  // legend — the whole point is that each enemy is one readable rule
+  // Legend — an enemy IS its movement geometry. Only the ones on this floor.
   let ly = GY + N*CELL + 12;
-  text("EVERY ENEMY IS ONE RULE:", 8, ly, PAL.white); ly += 12;
-  for (const k of ["C","S","J"]){
+  text("AN ENEMY IS HOW IT MOVES", 8, ly, PAL.white); ly += 12;
+  const live = ORDER.filter(k => enemies.some(e => e.t === k));
+  for (const k of (live.length ? live : ORDER)){
     glow(PAL.red, 4, () => px(8, ly-2, 9, 9, PAL.red));
     text(k, 11, ly, PAL.ground);
     text(TYPES[k].name, 22, ly, PAL.white);
-    text(TYPES[k].note, 74, ly, PAL.trace);
+    text(TYPES[k].note, 62, ly, PAL.trace);
     ly += 12;
   }
-  text("NOTHING MOVES UNTIL YOU DO", 8, ly + 4, PAL.orange);
+  ly += 2;
+  text("PIT = WALK SO THEY STEP IN", 8, ly, PAL.orange); ly += 11;
+  text("NOTHING MOVES UNTIL YOU DO", 8, ly, PAL.orange);
 
   if (phase === "dead" || phase === "won"){
-    px(14, 130, 152, 60, PAL.ground);
-    box(14, 130, 152, 60, PAL.trace);
-    textC(phase === "won" ? "DISK CLEAN" : "YOU ARE WIPED", 146, PAL.white, 2);
-    textC(phase === "won" ? "ALL 5 FLOORS" : ("YOU REACHED FLOOR " + floor), 166, PAL.orange);
-    textC("TAP TO RUN AGAIN", 178, PAL.trace);
+    px(14, 140, 152, 60, PAL.ground);
+    box(14, 140, 152, 60, PAL.trace);
+    textC(phase === "won" ? "DISK CLEAN" : "YOU ARE WIPED", 156, PAL.white, 2);
+    textC(phase === "won" ? "ALL 5 FLOORS" : ("YOU REACHED FLOOR " + floor), 176, PAL.orange);
+    textC("TAP TO RUN AGAIN", 188, PAL.trace);
   }
 
   if (showHelp){
-    px(10, 30, 160, 260, PAL.ground);
-    box(10, 30, 160, 260, PAL.trace);
+    px(10, 24, 160, 292, PAL.ground);
+    box(10, 24, 160, 292, PAL.trace);
     const L = [
       "TICK STEP",
       "",
-      "THE BOARD IS",
-      "FROZEN. NOTHING",
-      "MOVES UNTIL YOU",
-      "MOVE. ONE STEP",
-      "FROM YOU = ONE",
-      "STEP FROM THEM.",
+      "NOTHING MOVES",
+      "UNTIL YOU MOVE.",
+      "ONE STEP FROM YOU",
+      "= ONE FROM THEM.",
       "",
-      "SO EVERY STEP IS",
-      "YOU CHOOSING WHO",
-      "GETS TO CLOSE IN.",
+      "EACH ENEMY IS A",
+      "SHAPE OF MOVE,",
+      "LIKE A CHESS",
+      "PIECE:",
       "",
-      "TAP A NEXT-DOOR",
-      "CELL TO STEP.",
-      "TAP YOURSELF TO",
-      "WAIT (STILL A",
-      "MOVE).",
+      "PULSE - UP DOWN",
+      "LEFT RIGHT ONLY.",
+      "SO A CORNER STEP",
+      "IS SAFE FROM IT.",
       "",
-      "STEP INTO AN",
-      "ENEMY TO CRASH",
-      "IT. IT STEPS ON",
-      "YOU = -1 HP.",
+      "SPIKE - CORNERS",
+      "ONLY. IT CAN NEVER",
+      "LEAVE ITS OWN",
+      "SQUARE COLOUR.",
+      "HALF THE BOARD IS",
+      "SAFE FROM IT.",
       "",
-      "REACH THE GREEN",
-      "E. FIVE FLOORS.",
+      "HUNTER - ALL 8.",
+      "",
+      "DAEMON - ALL 8,",
+      "AND YOU CANNOT",
+      "CRASH IT. WALK SO",
+      "IT STEPS IN A PIT.",
       "",
       "TAP TO CLOSE",
     ];
-    L.forEach((l,i) => text(l, 18, 40 + i*9, i===0 ? PAL.blue : PAL.white, i===0 ? 2 : 1));
+    L.forEach((l,i) => text(l, 18, 34 + i*9, i===0 ? PAL.blue : PAL.white, i===0 ? 2 : 1));
   }
 
   requestAnimationFrame(draw);
