@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 9: WIPE PASS</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 12px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 8px; background: #05050a;
+    box-shadow: 0 0 28px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block;
+    height: min(84vh, 680px); width: calc(min(84vh, 680px) * 180 / 340);
+    max-width: 94vw;
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 8px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 9px 14px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="180" height="340"></canvas></div>
+  <div id="row">
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW RUN</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 9 of 10: WIPE PASS (Hoplite's rules).
+//
+// Chris's pick for the defining rule: NO ATTACK BUTTON, NO WAITING.
+// Researched from source first this time (see `.agent/game-panel/hoplite-rules.md`), because
+// clone 8 v1 shipped invented enemy behaviour and Chris caught it.
+//
+// Douglas Cowley's own words:
+//   "My aim for the challenge was to create a game that avoided the 'bump-to-attack-over-and-over'
+//    and 'stand-still-and-spam-attack-spell' style combat."           (magmafortress.com)
+//   "Waiting (skipping turns) is no longer possible without taking an upgrade. I find not having
+//    Wait results in more interesting choices and gameplay."          (Hoplite 2.0 notes)
+//   "You will lunge automatically whenever moving directly toward a demon." (RULES.md)
+//
+// So here: you have no attack button. You WIPE a virus by stepping toward it in a straight line —
+// the thing directly beyond where you land gets overwritten. And you may never skip a turn. Every
+// single turn is a forced commitment to a new square.
+//
+// The three virus programs are faithful to Hoplite's demons, adapted from hex to a square grid
+// (Chris's call — keep the square grid, consistent with clones 1-8):
+//   ARCH  — fires 2..5 in a straight line, CANNOT hit next-door. So closing on it is the counter.
+//   WIZ   — beam 1..5, hits everything in the line, but WILL NOT fire if it would clip another
+//           virus. So crowding them is cover you can arrange. One-turn cooldown.
+//   BOMB  — lobs a charge up to 3 that lands NEXT turn and blasts in a PLUS. You see it first, and
+//           a diagonal step is always an escape (Hoplite lets you LEAP clear; there is no leap here).
+//
+// APPROACH (Chris, 2026-09-22): phone / web app, touch controls (VISION #11). Look locked (#14).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","+":"000010111010000",
+  "/":"001001010100100",".":"000000000000010","=":"000111000111000",":":"000010000010000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function glow(c,blur,fn){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; fn(); ctx.restore(); }
+function textW(s,k){ k=k||1; return Math.max(0, (String(s).length*4-1)*k); }
+function text(s,x,y,c,k){
+  k = k || 1;
+  const u = String(s).toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+(i*4+(b%3))*k, y+Math.floor(b/3)*k, k, k, c);
+  }
+}
+function textC(s,y,c,k){ text(s, Math.floor((180 - textW(s,k))/2), y, c, k); }
+
+// ─── board ───
+const N = 7, CELL = 24, GX = 6, GY = 62;
+const cellXY = (c,r) => ({ x: GX + c*CELL, y: GY + r*CELL });
+const inB = (c,r) => c>=0 && c<N && r>=0 && r<N;
+const DIRS = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
+// Hoplite is played on a hex board: 6 firing directions. On Chris's square grid, using all 8 makes
+// the shooters aligned with you almost every turn and the game unwinnable (measured: 0/600 wins).
+// So shots run along the 4 CARDINAL lines only. That keeps the count near hex, and it hands the
+// player a readable counter: a DIAGONAL step always breaks a shooter's line.
+const FIRE = [[0,-1],[1,0],[0,1],[-1,0]];
+// Hoplite ranges 5 on an arena ~10 across — about half the board. On a 7x7, 5 covers the entire row
+// and column, so distance stops mattering. Scaled to 4 to keep the same "about half" relationship.
+const SHOT_MAX = 4;
+
+const TYPES = {
+  F: { name: "FOOT", note: "NEXT DOOR ONLY" },
+  A: { name: "ARCH", note: "2-4 LINE NOT NEAR" },
+  W: { name: "WIZ",  note: "BEAM 1-4 NOT ALLIES" },
+  B: { name: "BOMB", note: "PLUS BLAST NEXT TURN" },
+};
+const ORDER = ["F","A","W","B"];
+
+let walls, viruses, bombs, you, exitAt, hp, floor, log, phase, showHelp, peek, flash, cornered;
+const MAX_FLOOR = 5, MAX_HP = 3;
+
+function vAt(c,r){ return viruses.find(v => v.c===c && v.r===r); }
+function isWall(c,r){ return walls.some(w => w.c===c && w.r===r); }
+function bombAt(c,r){ return bombs.find(b => b.c===c && b.r===r); }
+function freeFor(c,r){ return inB(c,r) && !isWall(c,r) && !vAt(c,r); }
+
+function reachable(from, to){
+  const seen = new Set([from.c+","+from.r]); const q=[from];
+  while (q.length){
+    const n = q.shift();
+    if (n.c===to.c && n.r===to.r) return true;
+    for (const [dc,dr] of DIRS){
+      const c=n.c+dc, r=n.r+dr, k=c+","+r;
+      if (inB(c,r) && !isWall(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
+    }
+  }
+  return false;
+}
+
+function genFloor(){
+  let tries = 0;
+  do {
+    tries++;
+    walls = [];
+    you = { c: 1, r: N-2 };      // one in from the corner: 8 neighbours, not 3
+    exitAt = { c: N-2, r: 1 };
+    const taken = (c,r) => (c===you.c&&r===you.r) || (c===exitAt.c&&r===exitAt.r)
+                        || (Math.abs(c-you.c)<=1 && Math.abs(r-you.r)<=1)   // never box the player in
+                        || walls.some(w=>w.c===c&&w.r===r);
+    for (let i=0;i<2+floor;i++){
+      let c,r,g=0; do { c=Math.floor(Math.random()*N); r=Math.floor(Math.random()*N); g++; } while (g<200 && taken(c,r));
+      walls.push({c,r});
+    }
+  } while (!reachable(you, exitAt) && tries < 80);
+
+  const mix = [["F"], ["F","A"], ["A","W"], ["F","W","B"], ["A","W","B","F"]][floor-1] || ["F"];
+  viruses = []; bombs = [];
+  for (const t of mix){
+    let c,r,g=0;
+    do { c=Math.floor(Math.random()*N); r=Math.floor(Math.random()*N); g++; }
+    while (g<300 && (isWall(c,r) || vAt(c,r)
+           || (Math.abs(c-you.c)+Math.abs(r-you.r)) < 4
+           || (c===exitAt.c && r===exitAt.r)));
+    viruses.push({ c, r, t, charge: 1 });
+  }
+}
+
+function newRun(){
+  hp = MAX_HP; floor = 1; phase = "play"; showHelp = false; peek = null; flash = 0; cornered = false;
+  log = "FLOOR 1 - NO ATTACK BUTTON";
+  genFloor();
+}
+
+// ─── line of fire ───
+function lineFrom(v, dc, dr, min, max){
+  // Returns the cells this shot covers, and what it hits first.
+  const cells = [];
+  for (let k=1;k<=max;k++){
+    const c=v.c+dc*k, r=v.r+dr*k;
+    if (!inB(c,r) || isWall(c,r)) break;
+    if (k >= min) cells.push({c,r});
+    const other = vAt(c,r);
+    if (other) return { cells, hitVirus: true };
+    if (c===you.c && r===you.r) return { cells, hitYou: k >= min };
+  }
+  return { cells };
+}
+function threatCells(v){
+  const out = [];
+  if (v.t === "F"){
+    for (const [dc,dr] of DIRS) if (inB(v.c+dc, v.r+dr)) out.push({ c:v.c+dc, r:v.r+dr });
+    return out;
+  }
+  if (v.t === "B"){
+    for (let dc=-3;dc<=3;dc++) for (let dr=-3;dr<=3;dr++){
+      if (Math.max(Math.abs(dc),Math.abs(dr)) > 3 || (!dc && !dr)) continue;
+      const c=v.c+dc, r=v.r+dr;
+      if (inB(c,r) && !isWall(c,r)) out.push({c,r});
+    }
+    return out;
+  }
+  const min = v.t === "A" ? 2 : 1, max = SHOT_MAX;
+  for (const [dc,dr] of FIRE) for (const cell of lineFrom(v, dc, dr, min, max).cells) out.push(cell);
+  return out;
+}
+
+function damageYou(why){
+  hp--; flash = 14; log = why;
+  if (hp <= 0){ phase = "dead"; log = "YOUR RUN ENDS HERE"; }
+}
+
+// ─── the virus turn ───
+function stepTo(v, want){
+  // Move one step, preferring the direction that best serves `want` (a scoring function).
+  let best = null, bestS = -Infinity;
+  for (const [dc,dr] of DIRS){
+    const c=v.c+dc, r=v.r+dr;
+    if (!freeFor(c,r)) continue;
+    if (c===you.c && r===you.r) continue;
+    const s = want(c,r);
+    if (s > bestS){ bestS = s; best = {c,r}; }
+  }
+  const now = want(v.c, v.r);
+  if (best && bestS > now){ v.c = best.c; v.r = best.r; }
+}
+const cheb = (a,b,c,d) => Math.max(Math.abs(a-c), Math.abs(b-d));
+
+function virusTurn(v){
+  const d = cheb(v.c, v.r, you.c, you.r);
+
+  if (v.t === "F"){
+    if (d === 1){ damageYou("FOOT HIT YOU"); return; }
+    stepTo(v, (c,r) => -cheb(c, r, you.c, you.r));
+    return;
+  }
+
+  if (v.t === "A"){
+    // Cannot hit next-door. If you are on top of it, it backs off.
+    if (d === 1){ stepTo(v, (c,r) => cheb(c, r, you.c, you.r)); return; }
+    for (const [dc,dr] of FIRE){
+      const res = lineFrom(v, dc, dr, 2, SHOT_MAX);
+      if (res.hitYou){ damageYou("ARCH SHOT YOU"); return; }
+    }
+    stepTo(v, (c,r) => ((c===you.c||r===you.r) ? 2 : 0) - cheb(c,r,you.c,you.r)*0.1);
+    return;
+  }
+
+  if (v.t === "W"){
+    if (v.charge <= 0){ v.charge = 1; stepTo(v, (c,r) => -cheb(c,r,you.c,you.r)); return; }
+    for (const [dc,dr] of FIRE){
+      const res = lineFrom(v, dc, dr, 1, SHOT_MAX);
+      if (res.hitVirus) continue;                 // it will not clip another virus
+      if (res.hitYou){ v.charge = 0; damageYou("WIZ BEAMED YOU"); return; }
+    }
+    stepTo(v, (c,r) => -cheb(c,r,you.c,you.r));
+    return;
+  }
+
+  if (v.t === "B"){
+    if (v.charge < 2){ v.charge++; stepTo(v, (c,r) => -cheb(c,r,you.c,you.r)); return; }
+    if (d <= 3 && !DIRS.some(([dc,dr]) => vAt(you.c+dc, you.r+dr))){
+      v.charge = 0;
+      bombs.push({ c: you.c, r: you.r, fuse: 1 });
+      log = "BOMB INCOMING";
+      return;
+    }
+    stepTo(v, (c,r) => -cheb(c,r,you.c,you.r));
+  }
+}
+
+function tickBombs(){
+  for (const b of [...bombs]){
+    b.fuse--;
+    if (b.fuse > 0) continue;
+    bombs.splice(bombs.indexOf(b), 1);
+    // In Hoplite the blast hits every adjacent tile and you LEAP clear. There is no leap here, so
+    // an 8-way blast centred on you leaves no escape square: measured 63.7% forced hits on floor 4.
+    // The blast runs in a PLUS instead, so one diagonal step is always an out. Same dodge the
+    // shooters teach, and the threat stays fully readable a turn ahead.
+    const zone = [{c:b.c,r:b.r}, ...FIRE.map(([dc,dr]) => ({c:b.c+dc, r:b.r+dr}))];
+    for (const z of zone){
+      const v = vAt(z.c, z.r);
+      if (v){ viruses.splice(viruses.indexOf(v), 1); log = "THE BLAST TOOK A VIRUS"; }
+      if (z.c===you.c && z.r===you.r) damageYou("THE BOMB CAUGHT YOU");
+    }
+  }
+}
+
+function enemyPhase(){
+  tickBombs();
+  if (phase !== "play") return;
+  for (const v of [...viruses]){
+    if (phase !== "play") break;
+    if (viruses.includes(v)) virusTurn(v);
+  }
+  peek = null;
+}
+
+// ─── your turn: move, and only move ───
+function lungeTargetFrom(nc, nr, dc, dr){
+  const tc = nc + dc, tr = nr + dr;
+  const v = vAt(tc, tr);
+  return v || null;
+}
+function legalMoves(){
+  const out = [];
+  for (const [dc,dr] of DIRS){
+    const c = you.c+dc, r = you.r+dr;
+    if (!inB(c,r) || isWall(c,r) || vAt(c,r)) continue;
+    out.push({ c, r, dc, dr, kill: lungeTargetFrom(c, r, dc, dr) });
+  }
+  return out;
+}
+
+function tryMove(c, r){
+  if (phase !== "play" || showHelp) return;
+  if (c === you.c && r === you.r){
+    // "No Wait" is the rule, but it must never freeze the board. If every step is gone, holding
+    // still is the only legal act left — and it is announced as being cornered, not as a free pass.
+    if (legalMoves().length === 0){ log = "CORNERED - YOU HOLD"; enemyPhase(); return; }
+    log = "NO WAITING - YOU MUST MOVE"; return;
+  }
+
+  const mv = legalMoves().find(m => m.c===c && m.r===r);
+  if (!mv){
+    const v = vAt(c,r);
+    if (v){
+      peek = (peek && peek.c===c && peek.r===r) ? null : { c, r };
+      if (peek) log = TYPES[v.t].name + ": " + TYPES[v.t].note;
+      return;
+    }
+    log = inB(c,r) && isWall(c,r) ? "A BLOCK IS IN THE WAY" : "";
+    return;
+  }
+
+  you.c = mv.c; you.r = mv.r;
+  if (mv.kill){
+    viruses.splice(viruses.indexOf(mv.kill), 1);
+    log = "WIPED THE " + TYPES[mv.kill.t].name;
+  } else log = "";
+
+  if (you.c === exitAt.c && you.r === exitAt.r){
+    if (floor >= MAX_FLOOR){ phase = "won"; log = "DISK CLEAN"; return; }
+    floor++;
+    if (hp < MAX_HP){ hp++; log = "FLOOR " + floor + " - PATCHED +1"; }
+    else log = "FLOOR " + floor;
+    genFloor();
+    return;
+  }
+  enemyPhase();
+  cornered = phase === "play" && legalMoves().length === 0;
+  if (cornered) log = "CORNERED - NOWHERE TO STEP";
+}
+
+document.getElementById("bHelp").addEventListener("pointerdown", e => { e.preventDefault(); showHelp = !showHelp; });
+document.getElementById("bNew").addEventListener("pointerdown", e => { e.preventDefault(); newRun(); });
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp){ showHelp = false; return; }
+  if (phase !== "play"){ newRun(); return; }
+  const b = cvs.getBoundingClientRect();
+  const mx = (e.clientX - b.left) / b.width  * 180;
+  const my = (e.clientY - b.top)  / b.height * 340;
+  const c = Math.floor((mx - GX) / CELL), r = Math.floor((my - GY) / CELL);
+  if (inB(c,r)) tryMove(c, r);
+});
+
+// ─── draw ───
+function piece(x,y,col,letter){
+  glow(col, 7, () => px(x+4, y+4, 16, 16, col));
+  if (letter) text(letter, x+11, y+9, PAL.ground, 2);
+}
+
+function draw(){
+  px(0,0,180,340,PAL.ground);
+
+  for (let i=0;i<MAX_HP;i++){
+    if (i < hp) glow(PAL.blue, 6, () => px(8+i*16, 9, 12, 12, PAL.blue));
+    else box(8+i*16, 9, 12, 12, PAL.trace);
+  }
+  const fl = "FLR " + floor + "/" + MAX_FLOOR;
+  text(fl, 180 - textW(fl,2) - 8, 10, PAL.white, 2);
+
+  textC(log || "", 32, PAL.orange);
+  textC("BLUE = A STEP THAT WIPES", 46, PAL.trace);
+
+  const moves = phase === "play" ? legalMoves() : [];
+  let peekCells = [];
+  if (peek){
+    const v = vAt(peek.c, peek.r);
+    if (v) peekCells = threatCells(v); else peek = null;
+  }
+
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++){
+    const { x, y } = cellXY(c,r);
+    if (isWall(c,r)){ px(x+2, y+2, 20, 20, PAL.trace); continue; }
+    px(x+11, y+11, 2, 2, PAL.trace);
+    if (peekCells.some(p => p.c===c && p.r===r)) box(x+1, y+1, 22, 22, PAL.orange);
+    const m = moves.find(mm => mm.c===c && mm.r===r);
+    if (m) box(x+1, y+1, 22, 22, m.kill ? PAL.blue : PAL.blueDk);
+    if (c===exitAt.c && r===exitAt.r){
+      glow(PAL.green, 6, () => box(x+2, y+2, 20, 20, PAL.green));
+      text("E", x+9, y+9, PAL.green, 2);
+    }
+  }
+  for (const b of bombs){
+    const { x, y } = cellXY(b.c, b.r);
+    glow(PAL.orange, 6, () => box(x+3, y+3, 18, 18, PAL.orange));
+    text("!", x+11, y+9, PAL.orange, 2);
+  }
+  for (const v of viruses){
+    const { x, y } = cellXY(v.c, v.r);
+    piece(x, y, PAL.red, v.t);
+  }
+  {
+    const { x, y } = cellXY(you.c, you.r);
+    piece(x, y, flash > 0 && (flash % 4 < 2) ? PAL.white : PAL.blue, null);
+    if (flash > 0) flash--;
+  }
+
+  let ly = GY + N*CELL + 10;
+  text("NO ATTACK BUTTON", 8, ly, PAL.white); ly += 10;
+  text("STEP TOWARD IT TO WIPE IT", 8, ly, PAL.trace); ly += 13;
+  const live = ORDER.filter(k => viruses.some(v => v.t === k));
+  for (const k of (live.length ? live : ORDER)){
+    glow(PAL.red, 4, () => px(8, ly-2, 9, 9, PAL.red));
+    text(k, 11, ly, PAL.ground);
+    text(TYPES[k].name, 22, ly, PAL.white);
+    text(TYPES[k].note, 52, ly, PAL.trace);
+    ly += 11;
+  }
+  ly += 3;
+  text("YOU MAY NEVER SKIP A TURN", 8, ly, PAL.orange);
+
+  if (phase === "dead" || phase === "won"){
+    px(14, 140, 152, 60, PAL.ground);
+    box(14, 140, 152, 60, PAL.trace);
+    textC(phase === "won" ? "DISK CLEAN" : "YOU ARE WIPED", 156, PAL.white, 2);
+    textC(phase === "won" ? "ALL 5 FLOORS" : ("YOU REACHED FLOOR " + floor), 176, PAL.orange);
+    textC("TAP TO RUN AGAIN", 188, PAL.trace);
+  }
+
+  if (showHelp){
+    px(10, 22, 160, 296, PAL.ground);
+    box(10, 22, 160, 296, PAL.trace);
+    const L = [
+      "WIPE PASS",
+      "",
+      "THERE IS NO",
+      "ATTACK BUTTON.",
+      "",
+      "YOU WIPE A VIRUS",
+      "BY STEPPING",
+      "TOWARD IT IN A",
+      "STRAIGHT LINE.",
+      "THE ONE DIRECTLY",
+      "BEYOND WHERE YOU",
+      "LAND IS WIPED.",
+      "",
+      "BLUE BOXES SHOW",
+      "EVERY STEP YOU",
+      "CAN TAKE. BRIGHT",
+      "BLUE = THAT STEP",
+      "WIPES SOMETHING.",
+      "",
+      "YOU MAY NEVER",
+      "SKIP A TURN. EACH",
+      "TURN YOU MUST",
+      "COMMIT SOMEWHERE.",
+      "",
+      "ARCH CANNOT HIT",
+      "NEXT DOOR - RUN",
+      "AT IT.",
+      "WIZ WONT FIRE",
+      "THROUGH ITS OWN.",
+      "BOMB LANDS NEXT",
+      "TURN AND BLASTS IN",
+      "A PLUS - STEP",
+      "DIAGONALLY OUT.",
+      "",
+      "TAP TO CLOSE",
+    ];
+    L.forEach((l,i) => text(l, 18, 30 + i*9, i===0 ? PAL.blue : PAL.white, i===0 ? 2 : 1));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newRun();
+draw();
+</script>
+</body>
+</html>
