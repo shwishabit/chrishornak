@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 3: WIRE HOP</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 16px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 4px; background: #05050a;
+    box-shadow: 0 0 24px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block; width: min(90vw, 440px); height: calc(min(90vw, 440px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 12px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 10px 18px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
+  <div id="row">
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW GAME</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 3 of 10: WIRE HOP (Checkers' rules).
+// Rule taken: diagonal moves, forced jump-captures (multi-jump chains), kinging at the far row.
+// Not taken: the real checkers look. Fiction: nodes hop diagonal wire traces; landing on the far row
+// crowns a node (it can now hop any diagonal direction). Look is locked (VISION.md #14), same as clones 1-2.
+// Tap-to-play, two taps: pick a node, then pick where it goes (bends the GBC-pad rule for this series only).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function glow(c,blur,draw){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; draw(); ctx.restore(); }
+function block(x,y,c){ glow(c,6,()=>px(x+3,y+3,10,10,c)); }
+function dots(x,y,c){ px(x+7,y+7,2,2,c); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function ring(x,y,c){ glow(c,4,()=>box(x+1,y+1,15,15,c)); }
+function corners(x,y,c){ glow(c,3,()=>box(x+2,y+2,13,13,c)); }
+function textW(s){ return Math.max(0, s.length*4-1); }
+function text(s,x,y,c){
+  const u = s.toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
+  }
+}
+
+// ─── board: 8x8, y12..140, cell 16 (same geometry as clone 1) ───
+const CELL = 16, TOP = 12;
+const cellXY = (c,r) => ({ x: c*CELL, y: TOP + r*CELL });
+const isDark = (r,c) => (r+c) % 2 === 1;
+
+const YOU = 1, IT = 2;
+const ALL_DIRS = [[-1,-1],[-1,1],[1,-1],[1,1]];
+const inb = (r,c) => r>=0 && r<8 && c>=0 && c<8;
+
+let board, current, selected, forcedFrom, lastMove, message, msgTimer, aiTimer, showHelp, gameOver, resultText, thinking;
+
+function newGame(){
+  board = Array(64).fill(null);
+  for (let r=0;r<3;r++) for (let c=0;c<8;c++) if (isDark(r,c)) board[r*8+c] = { side: IT, king: false };
+  for (let r=5;r<8;r++) for (let c=0;c<8;c++) if (isDark(r,c)) board[r*8+c] = { side: YOU, king: false };
+  current = YOU; selected = null; forcedFrom = null; lastMove = -1;
+  message = ""; msgTimer = 0; gameOver = false; resultText = "";
+  showHelp = false; thinking = false;
+  clearTimeout(aiTimer);
+}
+
+function dirsFor(p){ return p.king ? ALL_DIRS : (p.side===YOU ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]]); }
+
+function capturesFromCell(b, i){
+  const p = b[i]; if (!p) return [];
+  const r0 = Math.floor(i/8), c0 = i%8, out = [];
+  for (const [dr,dc] of dirsFor(p)){
+    const mr=r0+dr, mc=c0+dc, lr=r0+2*dr, lc=c0+2*dc;
+    if (!inb(mr,mc) || !inb(lr,lc)) continue;
+    const mi = mr*8+mc, li = lr*8+lc;
+    const mid = b[mi];
+    if (mid && mid.side !== p.side && b[li] === null) out.push({ from:i, mid:mi, to:li });
+  }
+  return out;
+}
+function simpleMovesFromCell(b, i){
+  const p = b[i]; if (!p) return [];
+  const r0 = Math.floor(i/8), c0 = i%8, out = [];
+  for (const [dr,dc] of dirsFor(p)){
+    const rr=r0+dr, cc=c0+dc;
+    if (!inb(rr,cc)) continue;
+    const ti = rr*8+cc;
+    if (b[ti] === null) out.push({ from:i, to:ti });
+  }
+  return out;
+}
+function sideHasCapture(b, side){
+  for (let i=0;i<64;i++){ const p=b[i]; if (p && p.side===side && capturesFromCell(b,i).length) return true; }
+  return false;
+}
+function canMove(b, side){
+  for (let i=0;i<64;i++){ const p=b[i]; if (p && p.side===side){ if (capturesFromCell(b,i).length || simpleMovesFromCell(b,i).length) return true; } }
+  return false;
+}
+function maybeKing(b, i){
+  const p = b[i]; if (!p || p.king) return false;
+  const r = Math.floor(i/8);
+  if ((p.side===YOU && r===0) || (p.side===IT && r===7)){ b[i] = { side:p.side, king:true }; return true; }
+  return false;
+}
+function applySimple(b, mv){ const n=b.slice(); n[mv.to]=n[mv.from]; n[mv.from]=null; maybeKing(n, mv.to); return n; }
+function applyCapture(b, cap){ const n=b.slice(); n[cap.to]=n[cap.from]; n[cap.from]=null; n[cap.mid]=null; return n; }
+function pieceCount(b, side){ let n=0; for (const p of b) if (p && p.side===side) n++; return n; }
+
+function flash(msg, ms){ message = msg; msgTimer = ms; }
+
+function afterMoveSwitch(){
+  const next = current === YOU ? IT : YOU;
+  current = next;
+  if (!canMove(board, next)){
+    gameOver = true;
+    resultText = next === IT ? "YOU CLEARED THE WIRES" : "IT CLEARED THE WIRES";
+    return;
+  }
+  if (next === IT) scheduleAI();
+}
+
+// ─── player input ───
+function tryClickCell(i){
+  if (gameOver || showHelp || current !== YOU || thinking) return;
+  const mandatory = sideHasCapture(board, YOU);
+
+  if (forcedFrom !== null){
+    const caps = capturesFromCell(board, forcedFrom);
+    const cap = caps.find(c => c.to === i);
+    if (cap) doCapture(cap);
+    return;
+  }
+
+  if (selected !== null){
+    if (mandatory){
+      const caps = capturesFromCell(board, selected);
+      const cap = caps.find(c => c.to === i);
+      if (cap){ doCapture(cap); return; }
+    } else {
+      const sm = simpleMovesFromCell(board, selected);
+      const mv = sm.find(m => m.to === i);
+      if (mv){ doSimple(mv); return; }
+    }
+    const p = board[i];
+    if (p && p.side === YOU && (!mandatory || capturesFromCell(board, i).length)){ selected = i; return; }
+    selected = null;
+    flash("NO MOVE", 25);
+    return;
+  }
+
+  const p = board[i];
+  if (p && p.side === YOU){
+    if (mandatory && !capturesFromCell(board, i).length){ flash("MUST HOP", 30); return; }
+    selected = i;
+  }
+}
+function doSimple(mv){ board = applySimple(board, mv); lastMove = mv.to; selected = null; afterMoveSwitch(); }
+function doCapture(cap){
+  let nb = applyCapture(board, cap);
+  const kinged = maybeKing(nb, cap.to);
+  board = nb; lastMove = cap.to;
+  if (!kinged){
+    const further = capturesFromCell(board, cap.to);
+    if (further.length){ selected = cap.to; forcedFrom = cap.to; return; }
+  }
+  selected = null; forcedFrom = null;
+  afterMoveSwitch();
+}
+
+function pointFromEvent(e){
+  const rect = cvs.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) / rect.width * 160;
+  const cy = (e.clientY - rect.top) / rect.height * 144;
+  const c = Math.floor(cx / CELL), r = Math.floor((cy - TOP) / CELL);
+  if (c < 0 || c > 7 || r < 0 || r > 7) return -1;
+  return r*8 + c;
+}
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp) { showHelp = false; return; }
+  if (gameOver) { newGame(); return; }
+  const i = pointFromEvent(e);
+  if (i >= 0) tryClickCell(i);
+});
+document.getElementById("bNew").addEventListener("pointerdown", (e) => { e.preventDefault(); newGame(); });
+document.getElementById("bHelp").addEventListener("pointerdown", (e) => { e.preventDefault(); showHelp = !showHelp; });
+
+// ─── AI ───
+function chainOptions(b, i, capturedSoFar){
+  const caps = capturesFromCell(b, i);
+  if (!caps.length) return [{ board: b, captured: capturedSoFar, to: i }];
+  let results = [];
+  for (const cap of caps){
+    const nb = applyCapture(b, cap);
+    const kinged = maybeKing(nb, cap.to);
+    if (kinged) results.push({ board: nb, captured: capturedSoFar+1, to: cap.to });
+    else results = results.concat(chainOptions(nb, cap.to, capturedSoFar+1));
+  }
+  return results;
+}
+function sideHasCaptureOnCell(b, side, cell){
+  for (let i=0;i<64;i++){ const p=b[i]; if (p && p.side===side){ if (capturesFromCell(b,i).some(c => c.mid===cell)) return true; } }
+  return false;
+}
+function scoreCandidate(startIndex, cand){
+  let s = cand.captured * 10;
+  const startRow = Math.floor(startIndex/8), endRow = Math.floor(cand.to/8);
+  s += (endRow - startRow) * 1;
+  const startPiece = board[startIndex], landed = cand.board[cand.to];
+  if (landed && landed.king && startPiece && !startPiece.king) s += 6;
+  if (sideHasCaptureOnCell(cand.board, YOU, cand.to)) s -= 5;
+  s += Math.random() * 1.2;
+  return s;
+}
+function scheduleAI(){
+  thinking = true; flash("IT IS THINKING…", 999);
+  clearTimeout(aiTimer);
+  aiTimer = setTimeout(aiMove, 550);
+}
+function aiMove(){
+  thinking = false; message = ""; msgTimer = 0;
+  const mandatory = sideHasCapture(board, IT);
+  let candidates = [];
+  for (let i=0;i<64;i++){
+    const p = board[i]; if (!p || p.side !== IT) continue;
+    if (mandatory){
+      if (capturesFromCell(board, i).length) for (const cand of chainOptions(board, i, 0)) candidates.push({ start:i, ...cand });
+    } else {
+      for (const mv of simpleMovesFromCell(board, i)) candidates.push({ start:i, board: applySimple(board, mv), captured:0, to: mv.to });
+    }
+  }
+  if (!candidates.length){ afterMoveSwitch(); return; }
+  let best = candidates[0], bestScore = -Infinity;
+  for (const cand of candidates){
+    const s = scoreCandidate(cand.start, cand);
+    if (s > bestScore){ bestScore = s; best = cand; }
+  }
+  board = best.board; lastMove = best.to;
+  afterMoveSwitch();
+}
+
+// ─── draw ───
+function draw(){
+  px(0,0,160,144,PAL.ground);
+
+  text("YOU", 2, 2, PAL.blue);
+  text(String(pieceCount(board, YOU)), 24, 2, PAL.white);
+  const itLabel = "IT " + pieceCount(board, IT);
+  text(itLabel, 160 - textW(itLabel) - 2, 2, PAL.red);
+
+  const mandatory = current === YOU && !gameOver && !showHelp && !thinking && sideHasCapture(board, YOU);
+  const activePiece = forcedFrom !== null ? forcedFrom : selected;
+  const highlights = (current === YOU && !gameOver && !showHelp && !thinking && activePiece !== null)
+    ? (mandatory || forcedFrom !== null ? capturesFromCell(board, activePiece).map(c => c.to) : simpleMovesFromCell(board, activePiece).map(m => m.to))
+    : [];
+
+  for (let r=0;r<8;r++) for (let c=0;c<8;c++){
+    const i = r*8+c;
+    const { x, y } = cellXY(c, r);
+    if (!isDark(r,c)) continue;
+    const p = board[i];
+    if (p){
+      block(x, y, p.side===YOU ? PAL.blue : PAL.red);
+      if (p.king) px(x+7, y+7, 2, 2, PAL.white);
+    } else {
+      dots(x, y, PAL.trace);
+      if (highlights.includes(i)) corners(x, y, PAL.blueDk);
+    }
+    if (i === lastMove && p) px(x+13, y+3, 2, 2, PAL.ground);
+  }
+  if (activePiece !== null && !gameOver && !showHelp){
+    const r = Math.floor(activePiece/8), c = activePiece%8;
+    const { x, y } = cellXY(c, r);
+    ring(x, y, PAL.white);
+  }
+
+  if (message && msgTimer > 0){
+    const w = textW(message);
+    const x = Math.floor((160 - w) / 2);
+    px(x - 2, 128, w + 4, 7, PAL.ground);
+    text(message, x, 129, PAL.orange);
+    if (msgTimer < 999) msgTimer--;
+  }
+
+  if (gameOver){
+    px(10, 50, 140, 40, PAL.ground);
+    box(10, 50, 140, 40, PAL.trace);
+    const w1 = textW(resultText);
+    text(resultText, Math.floor((160-w1)/2), 62, PAL.white);
+    const hint = "TAP TO PLAY AGAIN";
+    const w2 = textW(hint);
+    text(hint, Math.floor((160-w2)/2), 74, PAL.orange);
+  }
+
+  if (showHelp){
+    px(6, 12, 148, 120, PAL.ground);
+    box(6, 12, 148, 120, PAL.trace);
+    const lines = [
+      "WIRE HOP",
+      "",
+      "TAP A NODE THEN",
+      "TAP WHERE IT",
+      "GOES, DIAGONAL",
+      "",
+      "HOP OVER IT TO",
+      "CAPTURE IT",
+      "",
+      "A HOP IS FORCED",
+      "IF ONE IS OPEN",
+      "",
+      "REACH THE FAR",
+      "ROW TO CROWN",
+      "TAP TO CLOSE",
+    ];
+    lines.forEach((line_, i) => text(line_, 14, 16 + i*8, i===0 ? PAL.blue : PAL.white));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newGame();
+draw();
+</script>
+</body>
+</html>
