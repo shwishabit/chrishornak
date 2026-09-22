@@ -14,69 +14,39 @@
   }
   body {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; padding: 16px;
+    gap: 16px; padding: 16px;
   }
   #screenWrap {
     border: 3px solid #383848; border-radius: 4px; background: #05050a;
     box-shadow: 0 0 24px rgba(47,109,255,0.15);
   }
   canvas {
-    display: block; width: min(88vw, 420px); height: calc(min(88vw, 420px) * 144 / 160);
-    image-rendering: pixelated; image-rendering: crisp-edges;
+    display: block; width: min(90vw, 440px); height: calc(min(90vw, 440px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
   }
-  #pad {
-    width: 100%; max-width: 420px;
-    display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; gap: 10px;
+  #row { display: flex; gap: 12px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 10px 18px; touch-action: manipulation;
   }
-  .dpad { position: relative; width: 108px; height: 108px; justify-self: start; }
-  .dpad button {
-    position: absolute; width: 36px; height: 36px; background: #14141f; border: 2px solid #383848;
-    color: #e8f0f8; font-size: 14px; border-radius: 4px;
-  }
-  .dpad .up { top: 0; left: 36px; } .dpad .down { top: 72px; left: 36px; }
-  .dpad .left { top: 36px; left: 0; } .dpad .right { top: 36px; left: 72px; }
-  .abtn {
-    justify-self: end; display: flex; gap: 12px; align-items: center;
-  }
-  .abtn button {
-    width: 52px; height: 52px; border-radius: 50%; border: 2px solid #383848;
-    font-weight: bold; font-size: 18px;
-  }
-  #aBtn { background: #1840a0; color: #e8f0f8; }
-  #bBtn { background: #14141f; color: #e8f0f8; }
-  .startsel { justify-self: center; display: flex; gap: 10px; }
-  .startsel button {
-    width: 62px; height: 26px; border-radius: 12px; background: #14141f; border: 2px solid #383848;
-    color: #e8f0f8; font-size: 10px;
-  }
-  button { touch-action: manipulation; }
-  button:active { filter: brightness(1.4); }
+  #row button:active { filter: brightness(1.4); }
 </style>
 </head>
 <body>
   <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
-  <div id="pad">
-    <div class="dpad">
-      <button class="up" id="pU">▲</button>
-      <button class="down" id="pD">▼</button>
-      <button class="left" id="pL">◀</button>
-      <button class="right" id="pR">▶</button>
-    </div>
-    <div class="startsel">
-      <button id="pSel">SELECT</button>
-      <button id="pStart">START</button>
-    </div>
-    <div class="abtn">
-      <button id="bBtn">B</button>
-      <button id="aBtn">A</button>
-    </div>
+  <div id="row">
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW GAME</button>
   </div>
 
 <script>
 // SCANDISK — clone series, clone 1 of 10: NODE CLAIM (Othello's rules).
-// Look is locked (VISION.md #14, Def/Ouya reference): dim dot grid, flat neon squares with a glow halo,
-// pixel font, GBC pad controls only (no tapping the board). Fiction: you reclaim IT's corrupted nodes by
-// trapping them between two of your own — never call this "Othello" on screen.
+// Rebuilt 2026-09-22 per Chris: the earlier othello-step0.html (research/) was "better than anything else
+// built to that point" — its real look-ahead AI and tap-to-play feel. Bringing both into this clone, on top
+// of the locked look (VISION.md #14): dim dot grid, flat neon glow squares, the same pixel font as Prototype 3.
+// The GBC-pad-only control rule (VISION #11) is deliberately bent for THIS clone, by Chris's own call —
+// it still governs the real game.
 
 const PAL = {
   ground: "#05050a", trace: "#383848", white: "#e8f0f8",
@@ -94,10 +64,11 @@ const FONT = {
   Z:"111001010100111",
   "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
   "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
-  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","…":"000000000101010",
 };
 
-const ctx = document.getElementById("gc").getContext("2d");
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
 function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
@@ -115,6 +86,15 @@ function text(s,x,y,c){
     for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
   }
 }
+function wrapText(s, maxChars){
+  const words = s.split(" "); const lines = []; let cur = "";
+  for (const w of words){
+    if ((cur + " " + w).trim().length > maxChars){ lines.push(cur.trim()); cur = w; }
+    else cur = (cur + " " + w).trim();
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
 
 // ─── board: 8x8, y12..140, cell 16 ───
 const CELL = 16, TOP = 12;
@@ -123,169 +103,172 @@ const cellXY = (c,r) => ({ x: c*CELL, y: TOP + r*CELL });
 const DIRS = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
 const YOU = 1, IT = 2;
 
-let board, current, cursor, phase, message, msgTimer, aiTimer, showHelp, gameOver, resultText;
+// corner-favoring weight table — carried over from othello-step0.html, the build Chris said was the best yet
+const W = [
+  100,-20,10,5,5,10,-20,100,
+  -20,-50,-2,-2,-2,-2,-50,-20,
+   10, -2,-1,-1,-1,-1, -2, 10,
+    5, -2,-1,-1,-1,-1, -2,  5,
+    5, -2,-1,-1,-1,-1, -2,  5,
+   10, -2,-1,-1,-1,-1, -2, 10,
+  -20,-50,-2,-2,-2,-2,-50,-20,
+  100,-20,10,5,5,10,-20,100,
+];
+const DEPTH = 3;
+
+let board, current, lastMove, message, msgTimer, aiTimer, showHelp, gameOver, resultText, thinking;
 
 function newGame(){
-  board = Array.from({length:8}, () => Array(8).fill(0));
-  board[3][3] = YOU; board[4][4] = YOU;
-  board[3][4] = IT;  board[4][3] = IT;
+  board = Array(64).fill(0);
+  board[27] = YOU; board[36] = YOU;
+  board[28] = IT;  board[35] = IT;
   current = YOU;
-  cursor = { c: 3, r: 2 };
-  phase = "play";
+  lastMove = -1;
   message = ""; msgTimer = 0;
   gameOver = false; resultText = "";
-  showHelp = false;
+  showHelp = false; thinking = false;
   clearTimeout(aiTimer);
 }
 
-function inBounds(c,r){ return c>=0 && c<8 && r>=0 && r<8; }
-
-function flipsFor(b, c, r, side){
-  if (b[r][c] !== 0) return [];
+function flipsFor(b, i, side){
+  if (b[i] !== 0) return [];
+  const r = Math.floor(i/8), c = i%8;
   const other = side === YOU ? IT : YOU;
   let all = [];
   for (const [dc,dr] of DIRS){
     let cc=c+dc, rr=r+dr, line=[];
-    while (inBounds(cc,rr) && b[rr][cc]===other){ line.push([cc,rr]); cc+=dc; rr+=dr; }
-    if (line.length && inBounds(cc,rr) && b[rr][cc]===side) all = all.concat(line);
+    while (cc>=0&&cc<8&&rr>=0&&rr<8 && b[rr*8+cc]===other){ line.push(rr*8+cc); cc+=dc; rr+=dr; }
+    if (line.length && cc>=0&&cc<8&&rr>=0&&rr<8 && b[rr*8+cc]===side) all = all.concat(line);
   }
   return all;
 }
-
 function legalMoves(b, side){
   const moves = [];
-  for (let r=0;r<8;r++) for (let c=0;c<8;c++){
-    const f = flipsFor(b, c, r, side);
-    if (f.length) moves.push({ c, r, flips: f });
-  }
+  for (let i=0;i<64;i++){ const f = flipsFor(b, i, side); if (f.length) moves.push({ i, flips: f }); }
   return moves;
 }
-
-function applyMove(b, move, side){
-  b[move.r][move.c] = side;
-  for (const [fc,fr] of move.flips) b[fr][fc] = side;
+function apply(b, i, flips, side){ const n = b.slice(); n[i]=side; for (const f of flips) n[f]=side; return n; }
+function countOf(b){ let you=0, it=0; for (const v of b){ if (v===YOU) you++; else if (v===IT) it++; } return { you, it }; }
+function evalBoard(b){
+  let s = 0;
+  for (let i=0;i<64;i++){ if (b[i]===IT) s += W[i]; else if (b[i]===YOU) s -= W[i]; }
+  return s + 5 * (legalMoves(b, IT).length - legalMoves(b, YOU).length);
 }
-
-function score(){
-  let you=0, it=0;
-  for (let r=0;r<8;r++) for (let c=0;c<8;c++){ if (board[r][c]===YOU) you++; else if (board[r][c]===IT) it++; }
-  return { you, it };
+function search(b, side, depth, alpha, beta){
+  const m = legalMoves(b, side);
+  if (!m.length){
+    if (!legalMoves(b, side===YOU?IT:YOU).length){ const k = countOf(b); return (k.it - k.you) * 1000; }
+    if (depth === 0) return evalBoard(b);
+    return search(b, side===YOU?IT:YOU, depth-1, alpha, beta);
+  }
+  if (depth === 0) return evalBoard(b);
+  let v;
+  if (side === IT){
+    v = -Infinity;
+    for (const mv of m){ v = Math.max(v, search(apply(b, mv.i, mv.flips, IT), YOU, depth-1, alpha, beta)); alpha = Math.max(alpha, v); if (alpha >= beta) break; }
+  } else {
+    v = Infinity;
+    for (const mv of m){ v = Math.min(v, search(apply(b, mv.i, mv.flips, YOU), IT, depth-1, alpha, beta)); beta = Math.min(beta, v); if (alpha >= beta) break; }
+  }
+  return v;
+}
+function botPick(b){
+  const m = legalMoves(b, IT);
+  let best = -Infinity, pick = m[0];
+  for (const mv of m){
+    const v = search(apply(b, mv.i, mv.flips, IT), YOU, DEPTH-1, -Infinity, Infinity) + Math.random()*0.5;
+    if (v > best){ best = v; pick = mv; }
+  }
+  return pick;
 }
 
 function flash(msg, ms){ message = msg; msgTimer = ms; }
 
-function endTurnCheck(){
-  const youMoves = legalMoves(board, YOU);
-  const itMoves = legalMoves(board, IT);
-  if (!youMoves.length && !itMoves.length){
-    const s = score();
-    gameOver = true;
-    resultText = s.you > s.it ? "YOU RECLAIMED IT" : s.you < s.it ? "IT KEPT THE DISK" : "SECTOR TIED";
-    return true;
-  }
-  return false;
+function finish(){
+  gameOver = true;
+  const k = countOf(board);
+  resultText = k.you > k.it ? "YOU RECLAIMED IT" : k.you < k.it ? "IT KEPT THE DISK" : "SECTOR TIED";
 }
 
-function afterMove(){
-  if (endTurnCheck()) return;
-  const nextSide = current === YOU ? IT : YOU;
-  const nextMoves = legalMoves(board, nextSide);
-  if (!nextMoves.length){
-    flash(nextSide === YOU ? "YOU SKIP" : "IT SKIPS", 60);
-    // side with no move is skipped; turn stays effectively with the other side
-    if (endTurnCheck()) return;
+function next(side){
+  if (legalMoves(board, side).length){
+    current = side;
+    if (side === IT){
+      thinking = true; flash("IT IS THINKING…", 999);
+      clearTimeout(aiTimer);
+      aiTimer = setTimeout(() => {
+        const pick = botPick(board);
+        board = apply(board, pick.i, pick.flips, IT);
+        lastMove = pick.i;
+        thinking = false; message = ""; msgTimer = 0;
+        next(YOU);
+      }, 550);
+    } else {
+      message = ""; msgTimer = 0;
+    }
+    return;
+  }
+  const other = side === YOU ? IT : YOU;
+  if (!legalMoves(board, other).length){ finish(); return; }
+  if (side === YOU){
+    flash("YOU SKIP", 60);
+    next(IT);
   } else {
-    current = nextSide;
+    flash("IT SKIPS", 60);
+    next(YOU);
   }
-  if (current === IT) scheduleAI();
 }
 
-function scheduleAI(){
-  clearTimeout(aiTimer);
-  aiTimer = setTimeout(aiMove, 550);
+function tryPlace(i){
+  if (gameOver || showHelp || current !== YOU || thinking) return;
+  const f = flipsFor(board, i, YOU);
+  if (!f.length) return;
+  board = apply(board, i, f, YOU);
+  lastMove = i;
+  next(IT);
 }
 
-function aiMove(){
-  if (gameOver || current !== IT) return;
-  const moves = legalMoves(board, IT);
-  if (!moves.length) return;
-  const CORNER = new Set(["0,0","0,7","7,0","7,7"]);
-  moves.sort((a,b) => {
-    const aC = CORNER.has(a.c+","+a.r) ? 1 : 0, bC = CORNER.has(b.c+","+b.r) ? 1 : 0;
-    if (aC !== bC) return bC - aC;
-    return b.flips.length - a.flips.length;
-  });
-  const move = moves[0];
-  applyMove(board, move, IT);
-  afterMove();
+// ─── input: tap the board directly ───
+function cellFromEvent(e){
+  const rect = cvs.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) / rect.width * 160;
+  const cy = (e.clientY - rect.top) / rect.height * 144;
+  const c = Math.floor(cx / CELL), r = Math.floor((cy - TOP) / CELL);
+  if (c < 0 || c > 7 || r < 0 || r > 7) return -1;
+  return r * 8 + c;
 }
-
-function tryPlace(){
-  if (gameOver || showHelp || current !== YOU) return;
-  const moves = legalMoves(board, YOU);
-  const m = moves.find(mv => mv.c === cursor.c && mv.r === cursor.r);
-  if (!m) { flash("NO CLAIM", 30); return; }
-  applyMove(board, m, YOU);
-  afterMove();
-}
-
-function moveCursor(dc,dr){
-  cursor.c = Math.min(7, Math.max(0, cursor.c + dc));
-  cursor.r = Math.min(7, Math.max(0, cursor.r + dr));
-}
-
-// ─── input ───
-function bind(id, fn){
-  const el = document.getElementById(id);
-  el.addEventListener("pointerdown", (e) => { e.preventDefault(); fn(); });
-}
-bind("pU", () => moveCursor(0,-1));
-bind("pD", () => moveCursor(0,1));
-bind("pL", () => moveCursor(-1,0));
-bind("pR", () => moveCursor(1,0));
-bind("aBtn", () => { if (showHelp) return; if (gameOver) { newGame(); return; } tryPlace(); });
-bind("bBtn", () => { if (showHelp) showHelp = false; });
-bind("pStart", () => newGame());
-bind("pSel", () => { showHelp = !showHelp; });
-
-window.addEventListener("keydown", (e) => {
-  if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
-  if (e.key === "ArrowUp") moveCursor(0,-1);
-  if (e.key === "ArrowDown") moveCursor(0,1);
-  if (e.key === "ArrowLeft") moveCursor(-1,0);
-  if (e.key === "ArrowRight") moveCursor(1,0);
-  if (e.key === "z" || e.key === "Z") { if (showHelp) return; if (gameOver) newGame(); else tryPlace(); }
-  if (e.key === "x" || e.key === "X") { showHelp = false; }
-  if (e.key === "Enter") newGame();
-  if (e.key === "Shift") showHelp = !showHelp;
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp) { showHelp = false; return; }
+  if (gameOver) { newGame(); return; }
+  const i = cellFromEvent(e);
+  if (i >= 0) tryPlace(i);
 });
+document.getElementById("bNew").addEventListener("pointerdown", (e) => { e.preventDefault(); newGame(); });
+document.getElementById("bHelp").addEventListener("pointerdown", (e) => { e.preventDefault(); showHelp = !showHelp; });
 
 // ─── draw ───
 function draw(){
   px(0,0,160,144,PAL.ground);
 
-  const s = score();
+  const s = countOf(board);
   text("YOU", 2, 2, PAL.blue);
   text(String(s.you), 24, 2, PAL.white);
   const itLabel = "IT " + s.it;
   text(itLabel, 160 - textW(itLabel) - 2, 2, PAL.red);
 
-  const youMoves = current === YOU && !gameOver && !showHelp ? legalMoves(board, YOU) : [];
+  const youMoves = current === YOU && !gameOver && !showHelp && !thinking ? legalMoves(board, YOU) : [];
 
   for (let r=0;r<8;r++) for (let c=0;c<8;c++){
+    const i = r*8+c;
     const { x, y } = cellXY(c, r);
-    const v = board[r][c];
+    const v = board[i];
     if (v === YOU) block(x, y, PAL.blue);
     else if (v === IT) block(x, y, PAL.red);
     else {
       dots(x, y, PAL.trace);
-      if (youMoves.some(m => m.c===c && m.r===r)) corners(x, y, PAL.blueDk);
+      if (youMoves.some(m => m.i===i)) corners(x, y, PAL.blueDk);
     }
-  }
-
-  if (!gameOver && !showHelp){
-    const { x, y } = cellXY(cursor.c, cursor.r);
-    ring(x, y, PAL.white);
+    if (i === lastMove) px(x+7, y+13, 2, 2, PAL.ground);
   }
 
   if (message && msgTimer > 0){
@@ -293,7 +276,7 @@ function draw(){
     const x = Math.floor((160 - w) / 2);
     px(x - 2, 128, w + 4, 7, PAL.ground);
     text(message, x, 129, PAL.orange);
-    msgTimer--;
+    if (msgTimer < 999) msgTimer--;
   }
 
   if (gameOver){
@@ -301,14 +284,14 @@ function draw(){
     box(10, 50, 140, 40, PAL.trace);
     const w1 = textW(resultText);
     text(resultText, Math.floor((160-w1)/2), 62, PAL.white);
-    const hint = "PRESS A OR START";
+    const hint = "TAP TO PLAY AGAIN";
     const w2 = textW(hint);
     text(hint, Math.floor((160-w2)/2), 74, PAL.orange);
   }
 
   if (showHelp){
-    px(6, 20, 148, 104, PAL.ground);
-    box(6, 20, 148, 104, PAL.trace);
+    px(6, 16, 148, 112, PAL.ground);
+    box(6, 16, 148, 112, PAL.trace);
     const lines = [
       "NODE CLAIM",
       "",
@@ -317,11 +300,13 @@ function draw(){
       "YOUR OWN TO",
       "FLIP THEM BLUE",
       "",
-      "D-PAD MOVE",
-      "A PLACE NODE",
-      "SELECT CLOSE",
+      "TAP AN OPEN",
+      "CELL TO PLACE",
+      "MOST NODES WINS",
+      "",
+      "TAP TO CLOSE",
     ];
-    lines.forEach((line, i) => text(line, 14, 28 + i*9, i===0 ? PAL.blue : PAL.white));
+    lines.forEach((line, i) => text(line, 14, 24 + i*8, i===0 ? PAL.blue : PAL.white));
   }
 
   requestAnimationFrame(draw);
