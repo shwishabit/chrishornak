@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 8: TICK STEP</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 12px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 8px; background: #05050a;
+    box-shadow: 0 0 28px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block;
+    height: min(82vh, 640px); width: calc(min(82vh, 640px) * 180 / 320);
+    max-width: 92vw;
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 8px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 9px 14px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+  #bWait { border-color: #1840a0; }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="180" height="320"></canvas></div>
+  <div id="row">
+    <button id="bWait">WAIT A TURN</button>
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW RUN</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 8 of 10: TICK STEP (MicRogue's rules).
+// Chris's call (2026-09-22): the point is "ENEMIES MOVE ONLY WHEN YOU MOVE." The board is frozen
+// until you act, and each enemy type moves in one readable way, like a chess piece. Everything
+// else hangs off that rule.
+//
+// APPROACH CHANGE (2026-09-22, Chris): SCANDISK is now a phone / web app, not a Game Boy game.
+// So the two GBC limits are lifted here: the screen is phone-portrait 180x320 (was 160x144) and
+// tap is the official control scheme (was a bend of VISION #11). The LOOK is untouched and still
+// locked per VISION #14 — same palette, same dot cells, same neon glow, same pixel font.
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","+":"000010111010000",
+  "/":"001001010100100",".":"000000000000010",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function glow(c,blur,fn){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; fn(); ctx.restore(); }
+function textW(s,k){ k=k||1; return Math.max(0, (String(s).length*4-1)*k); }
+function text(s,x,y,c,k){
+  k = k || 1;
+  const u = String(s).toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+(i*4+(b%3))*k, y+Math.floor(b/3)*k, k, k, c);
+  }
+}
+function textC(s,y,c,k){ text(s, Math.floor((180 - textW(s,k))/2), y, c, k); }
+
+// ─── board ───
+const N = 6, CELL = 28, GX = 6, GY = 78;
+const cellXY = (c,r) => ({ x: GX + c*CELL, y: GY + r*CELL });
+const inB = (c,r) => c>=0 && c<N && r>=0 && r<N;
+
+// Every enemy is one readable rule. That readability IS the game.
+const TYPES = {
+  C: { name: "CRAWLER", note: "1 STEP AT YOU",    },
+  S: { name: "SLIDER",  note: "SLIDES UP TO 3",   },
+  J: { name: "JUMPER",  note: "KNIGHT HOP",       },
+};
+const ORTHO = [[0,-1],[1,0],[0,1],[-1,0]];
+const KNIGHT = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+
+let walls, enemies, you, exitAt, hp, floor, log, phase, showHelp, peek, flash;
+const MAX_FLOOR = 5, MAX_HP = 3;
+
+function occupied(c,r){ return enemies.some(e => e.c===c && e.r===r); }
+function isWall(c,r){ return walls.some(w => w.c===c && w.r===r); }
+function blocked(c,r){ return !inB(c,r) || isWall(c,r); }
+
+function reachable(from, to){
+  const seen = new Set([from.c+","+from.r]);
+  let q = [from];
+  while (q.length){
+    const n = q.shift();
+    if (n.c===to.c && n.r===to.r) return true;
+    for (const [dc,dr] of ORTHO){
+      const c=n.c+dc, r=n.r+dr, k=c+","+r;
+      if (!blocked(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
+    }
+  }
+  return false;
+}
+
+function genFloor(){
+  let tries = 0;
+  do {
+    tries++;
+    walls = [];
+    const wallCount = 3 + Math.min(3, floor);
+    while (walls.length < wallCount){
+      const c = 1 + Math.floor(Math.random()*(N-2));
+      const r = 1 + Math.floor(Math.random()*(N-2));
+      if (!walls.some(w => w.c===c && w.r===r)) walls.push({ c, r });
+    }
+    you = { c: 0, r: N-1 };
+    exitAt = { c: N-1, r: 0 };
+  } while (!reachable(you, exitAt) && tries < 60);
+
+  // Enemy mix gets harder each floor, but never stops being readable.
+  const mix = [["C"],["C","C"],["C","S"],["C","S","J"],["C","S","J","C"]][floor-1] || ["C"];
+  enemies = [];
+  for (const t of mix){
+    let c, r, guard = 0;
+    do {
+      c = Math.floor(Math.random()*N); r = Math.floor(Math.random()*N); guard++;
+    } while (guard < 200 && (isWall(c,r) || occupied(c,r)
+             || (Math.abs(c-you.c) + Math.abs(r-you.r)) < 3
+             || (c===exitAt.c && r===exitAt.r)));
+    enemies.push({ c, r, t });
+  }
+}
+
+function newRun(){
+  hp = MAX_HP; floor = 1; phase = "play"; showHelp = false; peek = null; flash = 0;
+  log = "FLOOR 1 - REACH THE EXIT";
+  genFloor();
+}
+
+// ─── the one rule: nothing moves until you do ───
+function stepToward(e, allowDiag){
+  const dc = Math.sign(you.c - e.c), dr = Math.sign(you.r - e.r);
+  const opts = [];
+  if (Math.abs(you.c-e.c) >= Math.abs(you.r-e.r)){ if (dc) opts.push([dc,0]); if (dr) opts.push([0,dr]); }
+  else { if (dr) opts.push([0,dr]); if (dc) opts.push([dc,0]); }
+  return opts;
+}
+
+function enemyTargets(e){
+  // Every cell this enemy could legally end on this turn. Used for the reach peek.
+  const out = [];
+  if (e.t === "J"){
+    for (const [dc,dr] of KNIGHT){
+      const c=e.c+dc, r=e.r+dr;
+      if (!blocked(c,r) && !occupied(c,r)) out.push({c,r});
+    }
+    return out;
+  }
+  if (e.t === "S"){
+    for (const [dc,dr] of ORTHO){
+      for (let k=1;k<=3;k++){
+        const c=e.c+dc*k, r=e.r+dr*k;
+        if (blocked(c,r)) break;
+        out.push({c,r});
+        if (occupied(c,r)) break;
+      }
+    }
+    return out;
+  }
+  for (const [dc,dr] of ORTHO){
+    const c=e.c+dc, r=e.r+dr;
+    if (!blocked(c,r)) out.push({c,r});
+  }
+  return out;
+}
+
+function moveEnemy(e){
+  if (e.t === "J"){
+    let best = null, bestD = 99;
+    for (const [dc,dr] of KNIGHT){
+      const c=e.c+dc, r=e.r+dr;
+      if (blocked(c,r) || occupied(c,r)) continue;
+      if (c===you.c && r===you.r) return hit(e);
+      const d = Math.abs(c-you.c) + Math.abs(r-you.r);
+      if (d < bestD){ bestD = d; best = {c,r}; }
+    }
+    const now = Math.abs(e.c-you.c) + Math.abs(e.r-you.r);
+    if (best && bestD < now){ e.c = best.c; e.r = best.r; }
+    return;
+  }
+  if (e.t === "S" && (e.c === you.c || e.r === you.r)){
+    const dc = Math.sign(you.c - e.c), dr = Math.sign(you.r - e.r);
+    let c = e.c, r = e.r;
+    for (let k=0;k<3;k++){
+      const nc = c+dc, nr = r+dr;
+      if (blocked(nc,nr) || occupied(nc,nr)) break;
+      if (nc===you.c && nr===you.r) { e.c=c; e.r=r; return hit(e); }
+      c = nc; r = nr;
+    }
+    e.c = c; e.r = r;
+    return;
+  }
+  for (const [dc,dr] of stepToward(e)){
+    const c=e.c+dc, r=e.r+dr;
+    if (blocked(c,r) || occupied(c,r)) continue;
+    if (c===you.c && r===you.r) return hit(e);
+    e.c = c; e.r = r;
+    return;
+  }
+}
+
+function hit(e){
+  hp--; flash = 14;
+  log = TYPES[e.t].name + " HIT YOU";
+  if (hp <= 0){ phase = "dead"; log = "YOUR RUN ENDS HERE"; }
+}
+
+function tick(){
+  if (phase !== "play") return;
+  for (const e of enemies){ if (phase !== "play") break; moveEnemy(e); }
+  peek = null;
+}
+
+function tryMove(c, r){
+  if (phase !== "play" || showHelp) return;
+  const dist = Math.abs(c - you.c) + Math.abs(r - you.r);
+
+  if (dist === 0){ log = "YOU WAIT"; tick(); return; }        // waiting is a real move
+  if (dist !== 1) {                                            // far tap = read an enemy
+    const e = enemies.find(x => x.c===c && x.r===r);
+    peek = (peek && peek.c===c && peek.r===r) ? null : (e ? { c, r } : null);
+    if (peek) log = TYPES[e.t].name + ": " + TYPES[e.t].note;
+    return;
+  }
+  if (blocked(c,r)){ log = "A BLOCK IS IN THE WAY"; return; }
+
+  const ei = enemies.findIndex(x => x.c===c && x.r===r);
+  if (ei >= 0){
+    log = "YOU CRASH THE " + TYPES[enemies[ei].t].name;
+    enemies.splice(ei, 1);
+    you.c = c; you.r = r;
+    tick();
+    return;
+  }
+
+  you.c = c; you.r = r;
+  if (c === exitAt.c && r === exitAt.r){
+    if (floor >= MAX_FLOOR){ phase = "won"; log = "DISK CLEAN"; return; }
+    floor++; log = "FLOOR " + floor;
+    genFloor();
+    return;
+  }
+  log = "";
+  tick();
+}
+
+document.getElementById("bWait").addEventListener("pointerdown", e => { e.preventDefault(); tryMove(you.c, you.r); });
+document.getElementById("bHelp").addEventListener("pointerdown", e => { e.preventDefault(); showHelp = !showHelp; });
+document.getElementById("bNew").addEventListener("pointerdown", e => { e.preventDefault(); newRun(); });
+
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp){ showHelp = false; return; }
+  if (phase !== "play"){ newRun(); return; }
+  const b = cvs.getBoundingClientRect();
+  const mx = (e.clientX - b.left) / b.width  * 180;
+  const my = (e.clientY - b.top)  / b.height * 320;
+  const c = Math.floor((mx - GX) / CELL), r = Math.floor((my - GY) / CELL);
+  if (inB(c,r)) tryMove(c, r);
+});
+
+// ─── draw ───
+function cellDots(x,y){ px(x+13,y+13,2,2,PAL.trace); }
+function piece(x,y,col,letter){
+  glow(col, 8, () => px(x+5, y+5, 18, 18, col));
+  if (letter) text(letter, x+13, y+10, PAL.ground, 2);
+}
+
+function draw(){
+  px(0,0,180,320,PAL.ground);
+
+  // health + floor
+  for (let i=0;i<MAX_HP;i++){
+    const on = i < hp;
+    if (on) glow(PAL.blue, 6, () => px(8+i*16, 10, 12, 12, PAL.blue));
+    else box(8+i*16, 10, 12, 12, PAL.trace);
+  }
+  const fl = "FLR " + floor + "/" + MAX_FLOOR;
+  text(fl, 180 - textW(fl,2) - 8, 11, PAL.white, 2);
+
+  textC(log || "", 36, PAL.orange);
+  textC("TAP A NEXT-DOOR CELL TO STEP", 50, PAL.trace);
+  textC("TAP A FAR ENEMY TO READ IT", 60, PAL.trace);
+
+  // peeked enemy reach
+  let peekCells = [];
+  if (peek){
+    const e = enemies.find(x => x.c===peek.c && x.r===peek.r);
+    if (e) peekCells = enemyTargets(e); else peek = null;
+  }
+
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++){
+    const { x, y } = cellXY(c,r);
+    if (isWall(c,r)){ px(x+3, y+3, 22, 22, PAL.trace); continue; }
+    cellDots(x,y);
+    if (peekCells.some(p => p.c===c && p.r===r)) box(x+2, y+2, 24, 24, PAL.orange);
+    if (c===exitAt.c && r===exitAt.r){
+      glow(PAL.green, 6, () => box(x+3, y+3, 22, 22, PAL.green));
+      text("E", x+11, y+10, PAL.green, 2);
+    }
+  }
+  for (const e of enemies){
+    const { x, y } = cellXY(e.c, e.r);
+    piece(x, y, PAL.red, e.t);
+  }
+  {
+    const { x, y } = cellXY(you.c, you.r);
+    piece(x, y, flash > 0 && (flash % 4 < 2) ? PAL.white : PAL.blue, null);
+    if (flash > 0) flash--;
+  }
+
+  // legend — the whole point is that each enemy is one readable rule
+  let ly = GY + N*CELL + 12;
+  text("EVERY ENEMY IS ONE RULE:", 8, ly, PAL.white); ly += 12;
+  for (const k of ["C","S","J"]){
+    glow(PAL.red, 4, () => px(8, ly-2, 9, 9, PAL.red));
+    text(k, 11, ly, PAL.ground);
+    text(TYPES[k].name, 22, ly, PAL.white);
+    text(TYPES[k].note, 74, ly, PAL.trace);
+    ly += 12;
+  }
+  text("NOTHING MOVES UNTIL YOU DO", 8, ly + 4, PAL.orange);
+
+  if (phase === "dead" || phase === "won"){
+    px(14, 130, 152, 60, PAL.ground);
+    box(14, 130, 152, 60, PAL.trace);
+    textC(phase === "won" ? "DISK CLEAN" : "YOU ARE WIPED", 146, PAL.white, 2);
+    textC(phase === "won" ? "ALL 5 FLOORS" : ("YOU REACHED FLOOR " + floor), 166, PAL.orange);
+    textC("TAP TO RUN AGAIN", 178, PAL.trace);
+  }
+
+  if (showHelp){
+    px(10, 30, 160, 260, PAL.ground);
+    box(10, 30, 160, 260, PAL.trace);
+    const L = [
+      "TICK STEP",
+      "",
+      "THE BOARD IS",
+      "FROZEN. NOTHING",
+      "MOVES UNTIL YOU",
+      "MOVE. ONE STEP",
+      "FROM YOU = ONE",
+      "STEP FROM THEM.",
+      "",
+      "SO EVERY STEP IS",
+      "YOU CHOOSING WHO",
+      "GETS TO CLOSE IN.",
+      "",
+      "TAP A NEXT-DOOR",
+      "CELL TO STEP.",
+      "TAP YOURSELF TO",
+      "WAIT (STILL A",
+      "MOVE).",
+      "",
+      "STEP INTO AN",
+      "ENEMY TO CRASH",
+      "IT. IT STEPS ON",
+      "YOU = -1 HP.",
+      "",
+      "REACH THE GREEN",
+      "E. FIVE FLOORS.",
+      "",
+      "TAP TO CLOSE",
+    ];
+    L.forEach((l,i) => text(l, 18, 40 + i*9, i===0 ? PAL.blue : PAL.white, i===0 ? 2 : 1));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newRun();
+draw();
+</script>
+</body>
+</html>
