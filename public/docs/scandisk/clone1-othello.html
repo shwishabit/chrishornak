@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 1: NODE CLAIM</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 16px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 4px; background: #05050a;
+    box-shadow: 0 0 24px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block; width: min(88vw, 420px); height: calc(min(88vw, 420px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  #pad {
+    width: 100%; max-width: 420px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; gap: 10px;
+  }
+  .dpad { position: relative; width: 108px; height: 108px; justify-self: start; }
+  .dpad button {
+    position: absolute; width: 36px; height: 36px; background: #14141f; border: 2px solid #383848;
+    color: #e8f0f8; font-size: 14px; border-radius: 4px;
+  }
+  .dpad .up { top: 0; left: 36px; } .dpad .down { top: 72px; left: 36px; }
+  .dpad .left { top: 36px; left: 0; } .dpad .right { top: 36px; left: 72px; }
+  .abtn {
+    justify-self: end; display: flex; gap: 12px; align-items: center;
+  }
+  .abtn button {
+    width: 52px; height: 52px; border-radius: 50%; border: 2px solid #383848;
+    font-weight: bold; font-size: 18px;
+  }
+  #aBtn { background: #1840a0; color: #e8f0f8; }
+  #bBtn { background: #14141f; color: #e8f0f8; }
+  .startsel { justify-self: center; display: flex; gap: 10px; }
+  .startsel button {
+    width: 62px; height: 26px; border-radius: 12px; background: #14141f; border: 2px solid #383848;
+    color: #e8f0f8; font-size: 10px;
+  }
+  button { touch-action: manipulation; }
+  button:active { filter: brightness(1.4); }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
+  <div id="pad">
+    <div class="dpad">
+      <button class="up" id="pU">▲</button>
+      <button class="down" id="pD">▼</button>
+      <button class="left" id="pL">◀</button>
+      <button class="right" id="pR">▶</button>
+    </div>
+    <div class="startsel">
+      <button id="pSel">SELECT</button>
+      <button id="pStart">START</button>
+    </div>
+    <div class="abtn">
+      <button id="bBtn">B</button>
+      <button id="aBtn">A</button>
+    </div>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 1 of 10: NODE CLAIM (Othello's rules).
+// Look is locked (VISION.md #14, Def/Ouya reference): dim dot grid, flat neon squares with a glow halo,
+// pixel font, GBC pad controls only (no tapping the board). Fiction: you reclaim IT's corrupted nodes by
+// trapping them between two of your own — never call this "Othello" on screen.
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
+};
+
+const ctx = document.getElementById("gc").getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function glow(c,blur,draw){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; draw(); ctx.restore(); }
+function block(x,y,c){ glow(c,6,()=>px(x+3,y+3,10,10,c)); }
+function dots(x,y,c){ px(x+7,y+7,2,2,c); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function ring(x,y,c){ glow(c,4,()=>box(x+1,y+1,15,15,c)); }
+function corners(x,y,c){ glow(c,3,()=>box(x+2,y+2,13,13,c)); }
+function textW(s){ return Math.max(0, s.length*4-1); }
+function text(s,x,y,c){
+  const u = s.toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
+  }
+}
+
+// ─── board: 8x8, y12..140, cell 16 ───
+const CELL = 16, TOP = 12;
+const cellXY = (c,r) => ({ x: c*CELL, y: TOP + r*CELL });
+
+const DIRS = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+const YOU = 1, IT = 2;
+
+let board, current, cursor, phase, message, msgTimer, aiTimer, showHelp, gameOver, resultText;
+
+function newGame(){
+  board = Array.from({length:8}, () => Array(8).fill(0));
+  board[3][3] = YOU; board[4][4] = YOU;
+  board[3][4] = IT;  board[4][3] = IT;
+  current = YOU;
+  cursor = { c: 3, r: 2 };
+  phase = "play";
+  message = ""; msgTimer = 0;
+  gameOver = false; resultText = "";
+  showHelp = false;
+  clearTimeout(aiTimer);
+}
+
+function inBounds(c,r){ return c>=0 && c<8 && r>=0 && r<8; }
+
+function flipsFor(b, c, r, side){
+  if (b[r][c] !== 0) return [];
+  const other = side === YOU ? IT : YOU;
+  let all = [];
+  for (const [dc,dr] of DIRS){
+    let cc=c+dc, rr=r+dr, line=[];
+    while (inBounds(cc,rr) && b[rr][cc]===other){ line.push([cc,rr]); cc+=dc; rr+=dr; }
+    if (line.length && inBounds(cc,rr) && b[rr][cc]===side) all = all.concat(line);
+  }
+  return all;
+}
+
+function legalMoves(b, side){
+  const moves = [];
+  for (let r=0;r<8;r++) for (let c=0;c<8;c++){
+    const f = flipsFor(b, c, r, side);
+    if (f.length) moves.push({ c, r, flips: f });
+  }
+  return moves;
+}
+
+function applyMove(b, move, side){
+  b[move.r][move.c] = side;
+  for (const [fc,fr] of move.flips) b[fr][fc] = side;
+}
+
+function score(){
+  let you=0, it=0;
+  for (let r=0;r<8;r++) for (let c=0;c<8;c++){ if (board[r][c]===YOU) you++; else if (board[r][c]===IT) it++; }
+  return { you, it };
+}
+
+function flash(msg, ms){ message = msg; msgTimer = ms; }
+
+function endTurnCheck(){
+  const youMoves = legalMoves(board, YOU);
+  const itMoves = legalMoves(board, IT);
+  if (!youMoves.length && !itMoves.length){
+    const s = score();
+    gameOver = true;
+    resultText = s.you > s.it ? "YOU RECLAIMED IT" : s.you < s.it ? "IT KEPT THE DISK" : "SECTOR TIED";
+    return true;
+  }
+  return false;
+}
+
+function afterMove(){
+  if (endTurnCheck()) return;
+  const nextSide = current === YOU ? IT : YOU;
+  const nextMoves = legalMoves(board, nextSide);
+  if (!nextMoves.length){
+    flash(nextSide === YOU ? "YOU SKIP" : "IT SKIPS", 60);
+    // side with no move is skipped; turn stays effectively with the other side
+    if (endTurnCheck()) return;
+  } else {
+    current = nextSide;
+  }
+  if (current === IT) scheduleAI();
+}
+
+function scheduleAI(){
+  clearTimeout(aiTimer);
+  aiTimer = setTimeout(aiMove, 550);
+}
+
+function aiMove(){
+  if (gameOver || current !== IT) return;
+  const moves = legalMoves(board, IT);
+  if (!moves.length) return;
+  const CORNER = new Set(["0,0","0,7","7,0","7,7"]);
+  moves.sort((a,b) => {
+    const aC = CORNER.has(a.c+","+a.r) ? 1 : 0, bC = CORNER.has(b.c+","+b.r) ? 1 : 0;
+    if (aC !== bC) return bC - aC;
+    return b.flips.length - a.flips.length;
+  });
+  const move = moves[0];
+  applyMove(board, move, IT);
+  afterMove();
+}
+
+function tryPlace(){
+  if (gameOver || showHelp || current !== YOU) return;
+  const moves = legalMoves(board, YOU);
+  const m = moves.find(mv => mv.c === cursor.c && mv.r === cursor.r);
+  if (!m) { flash("NO CLAIM", 30); return; }
+  applyMove(board, m, YOU);
+  afterMove();
+}
+
+function moveCursor(dc,dr){
+  cursor.c = Math.min(7, Math.max(0, cursor.c + dc));
+  cursor.r = Math.min(7, Math.max(0, cursor.r + dr));
+}
+
+// ─── input ───
+function bind(id, fn){
+  const el = document.getElementById(id);
+  el.addEventListener("pointerdown", (e) => { e.preventDefault(); fn(); });
+}
+bind("pU", () => moveCursor(0,-1));
+bind("pD", () => moveCursor(0,1));
+bind("pL", () => moveCursor(-1,0));
+bind("pR", () => moveCursor(1,0));
+bind("aBtn", () => { if (showHelp) return; if (gameOver) { newGame(); return; } tryPlace(); });
+bind("bBtn", () => { if (showHelp) showHelp = false; });
+bind("pStart", () => newGame());
+bind("pSel", () => { showHelp = !showHelp; });
+
+window.addEventListener("keydown", (e) => {
+  if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+  if (e.key === "ArrowUp") moveCursor(0,-1);
+  if (e.key === "ArrowDown") moveCursor(0,1);
+  if (e.key === "ArrowLeft") moveCursor(-1,0);
+  if (e.key === "ArrowRight") moveCursor(1,0);
+  if (e.key === "z" || e.key === "Z") { if (showHelp) return; if (gameOver) newGame(); else tryPlace(); }
+  if (e.key === "x" || e.key === "X") { showHelp = false; }
+  if (e.key === "Enter") newGame();
+  if (e.key === "Shift") showHelp = !showHelp;
+});
+
+// ─── draw ───
+function draw(){
+  px(0,0,160,144,PAL.ground);
+
+  const s = score();
+  text("YOU", 2, 2, PAL.blue);
+  text(String(s.you), 24, 2, PAL.white);
+  const itLabel = "IT " + s.it;
+  text(itLabel, 160 - textW(itLabel) - 2, 2, PAL.red);
+
+  const youMoves = current === YOU && !gameOver && !showHelp ? legalMoves(board, YOU) : [];
+
+  for (let r=0;r<8;r++) for (let c=0;c<8;c++){
+    const { x, y } = cellXY(c, r);
+    const v = board[r][c];
+    if (v === YOU) block(x, y, PAL.blue);
+    else if (v === IT) block(x, y, PAL.red);
+    else {
+      dots(x, y, PAL.trace);
+      if (youMoves.some(m => m.c===c && m.r===r)) corners(x, y, PAL.blueDk);
+    }
+  }
+
+  if (!gameOver && !showHelp){
+    const { x, y } = cellXY(cursor.c, cursor.r);
+    ring(x, y, PAL.white);
+  }
+
+  if (message && msgTimer > 0){
+    const w = textW(message);
+    const x = Math.floor((160 - w) / 2);
+    px(x - 2, 128, w + 4, 7, PAL.ground);
+    text(message, x, 129, PAL.orange);
+    msgTimer--;
+  }
+
+  if (gameOver){
+    px(10, 50, 140, 40, PAL.ground);
+    box(10, 50, 140, 40, PAL.trace);
+    const w1 = textW(resultText);
+    text(resultText, Math.floor((160-w1)/2), 62, PAL.white);
+    const hint = "PRESS A OR START";
+    const w2 = textW(hint);
+    text(hint, Math.floor((160-w2)/2), 74, PAL.orange);
+  }
+
+  if (showHelp){
+    px(6, 20, 148, 104, PAL.ground);
+    box(6, 20, 148, 104, PAL.trace);
+    const lines = [
+      "NODE CLAIM",
+      "",
+      "TRAP IT NODES",
+      "BETWEEN 2 OF",
+      "YOUR OWN TO",
+      "FLIP THEM BLUE",
+      "",
+      "D-PAD MOVE",
+      "A PLACE NODE",
+      "SELECT CLOSE",
+    ];
+    lines.forEach((line, i) => text(line, 14, 28 + i*9, i===0 ? PAL.blue : PAL.white));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newGame();
+draw();
+</script>
+</body>
+</html>
