@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 5: NODE SWEEP</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 16px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 4px; background: #05050a;
+    box-shadow: 0 0 24px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block; width: min(90vw, 440px); height: calc(min(90vw, 440px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 12px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 10px 18px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
+  <div id="row">
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW GAME</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 5 of 10: NODE SWEEP (Lights Out's rules).
+// From INSPIRATIONS.md: "one press, many cells change" — the tactile verb, readable in seconds. Research
+// warning kept in mind: order-free, undoable moves make a puzzle, not a game — this clone is honestly a
+// solo puzzle (no opponent), unlike clones 1-4. That's the point of testing it on its own.
+// Look is locked (VISION.md #14). Tap-to-play (bends the GBC-pad rule for this series only).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function glow(c,blur,draw){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; draw(); ctx.restore(); }
+function block(x,y,c){ glow(c,6,()=>px(x+4,y+4,16,16,c)); }
+function dots(x,y,c){ px(x+11,y+11,2,2,c); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function textW(s){ return Math.max(0, s.length*4-1); }
+function text(s,x,y,c){
+  const u = s.toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
+  }
+}
+
+// ─── board: 5x5, cell 24, centred ───
+const N = 5, CELL = 24, TOP = 14, OX = 20;
+const cellXY = (c,r) => ({ x: OX + c*CELL, y: TOP + r*CELL });
+
+let board, taps, gameOver, showHelp, message, msgTimer;
+
+function scramble(){
+  board = Array(N*N).fill(0);
+  const presses = 10 + Math.floor(Math.random()*5);
+  for (let k=0;k<presses;k++) toggleAt(Math.floor(Math.random()*N*N));
+  if (allClean()) toggleAt(Math.floor(Math.random()*N*N));
+}
+function newGame(){
+  taps = 0; gameOver = false; showHelp = false; message = ""; msgTimer = 0;
+  scramble();
+}
+function toggleAt(i){
+  const r = Math.floor(i/N), c = i%N;
+  const cells = [i];
+  if (r>0) cells.push(i-N);
+  if (r<N-1) cells.push(i+N);
+  if (c>0) cells.push(i-1);
+  if (c<N-1) cells.push(i+1);
+  for (const cc of cells) board[cc] = board[cc] ? 0 : 1;
+}
+function allClean(){ return board.every(v => v === 0); }
+
+function tryTap(i){
+  if (gameOver || showHelp) return;
+  toggleAt(i);
+  taps++;
+  if (allClean()) gameOver = true;
+}
+function pointFromEvent(e){
+  const rect = cvs.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) / rect.width * 160;
+  const cy = (e.clientY - rect.top) / rect.height * 144;
+  const c = Math.floor((cx - OX) / CELL), r = Math.floor((cy - TOP) / CELL);
+  if (c < 0 || c >= N || r < 0 || r >= N) return -1;
+  return r*N + c;
+}
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp) { showHelp = false; return; }
+  if (gameOver) { newGame(); return; }
+  const i = pointFromEvent(e);
+  if (i >= 0) tryTap(i);
+});
+document.getElementById("bNew").addEventListener("pointerdown", (e) => { e.preventDefault(); newGame(); });
+document.getElementById("bHelp").addEventListener("pointerdown", (e) => { e.preventDefault(); showHelp = !showHelp; });
+
+// ─── draw ───
+function draw(){
+  px(0,0,160,144,PAL.ground);
+
+  text("TAPS", 2, 2, PAL.white);
+  text(String(taps), 30, 2, PAL.white);
+  const lit = board.filter(v => v===1).length;
+  const litLabel = "LIT " + lit;
+  text(litLabel, 160 - textW(litLabel) - 2, 2, PAL.red);
+
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++){
+    const i = r*N+c;
+    const { x, y } = cellXY(c, r);
+    if (board[i] === 1) block(x, y, PAL.red);
+    else dots(x, y, PAL.trace);
+  }
+
+  if (gameOver){
+    px(10, 50, 140, 40, PAL.ground);
+    box(10, 50, 140, 40, PAL.trace);
+    const w1 = textW("SECTOR CLEAN");
+    text("SECTOR CLEAN", Math.floor((160-w1)/2), 60, PAL.green);
+    const tapsMsg = "IN " + taps + " TAPS";
+    const w2 = textW(tapsMsg);
+    text(tapsMsg, Math.floor((160-w2)/2), 70, PAL.white);
+    const hint = "TAP TO PLAY AGAIN";
+    const w3 = textW(hint);
+    text(hint, Math.floor((160-w3)/2), 80, PAL.orange);
+  }
+
+  if (showHelp){
+    px(6, 12, 148, 120, PAL.ground);
+    box(6, 12, 148, 120, PAL.trace);
+    const lines = [
+      "NODE SWEEP",
+      "",
+      "TAP A NODE",
+      "",
+      "IT AND ITS",
+      "NEIGHBORS FLIP",
+      "LIT OR CLEAN",
+      "",
+      "CLEAR EVERY",
+      "LIT NODE TO",
+      "SWEEP THE",
+      "SECTOR",
+      "",
+      "TAP TO CLOSE",
+    ];
+    lines.forEach((line_, i) => text(line_, 14, 16 + i*8, i===0 ? PAL.blue : PAL.white));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newGame();
+draw();
+</script>
+</body>
+</html>
