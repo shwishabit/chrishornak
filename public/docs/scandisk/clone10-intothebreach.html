@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 10: DEBUG VIEW</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 12px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 8px; background: #05050a;
+    box-shadow: 0 0 28px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block;
+    height: min(84vh, 680px); width: calc(min(84vh, 680px) * 180 / 340);
+    max-width: 94vw;
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 8px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 9px 14px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+  #bEnd { border-color: #ff9500; }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="180" height="340"></canvas></div>
+  <div id="row">
+    <button id="bEnd">END TURN</button>
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW RUN</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 10 of 10: DEBUG VIEW (Into the Breach's rules).
+//
+// Chris's pick for the defining rule: EVERY ATTACK IS TELEGRAPHED, AND THERE IS NO RANDOMNESS.
+// He picked it knowing it breaks his own standing "goal, never next step" rule — that trade is the
+// whole reason to build the clone, and it goes in clones/LESSONS.md.
+//
+// Sources (all already gathered in `.agent/game-panel/subset-games.md`, from Subset's own GDC 2019
+// postmortem, Davis's published AI doc, and the IGF interview):
+//   Justin Ma:     "When every enemy attack is telegraphed and there's no random chance in your
+//                   attack options, the game starts to feel like a puzzle."
+//   Matthew Davis: "Killing enemies isn't as fun as manipulating them."
+//   Justin Ma:     "We wanted to make something where every death felt like your own fault."
+//   Justin Ma:     "When you have varied goals and priorities rather than just 'kill the enemies',
+//                   you get interesting choices."
+//
+// So the one move that matters here: PUSH A VIRUS AND ITS TELEGRAPHED SHOT TRAVELS WITH IT. You do
+// not out-damage this board, you re-aim it. Shove a virus so its own beam eats another virus, or so
+// it fires into a wall instead of your DATA. Or stand in the shot yourself — a unit is a thing you
+// spend. You win by SURVIVING the turns, never by clearing the board.
+//
+// The virus "AI" is deliberately dumb, exactly as Davis describes his: a flat scoring table, no
+// planning, no teamwork. DATA 5, your unit 5, hitting a fellow virus -2, a penalty for sitting on
+// the rim. Unlike the real game it never breaks ties at random — Chris asked for zero randomness,
+// so ties break by a fixed order and the same board always plays the same way.
+//
+// APPROACH (Chris, 2026-09-22): phone / web app, touch controls (VISION #11). Look locked (#14).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","+":"000010111010000",
+  "/":"001001010100100",".":"000000000000010","=":"000111000111000",":":"000010000010000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function glow(c,blur,fn){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; fn(); ctx.restore(); }
+function textW(s,k){ k=k||1; return Math.max(0, (String(s).length*4-1)*k); }
+function text(s,x,y,c,k){
+  k = k || 1;
+  const u = String(s).toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+(i*4+(b%3))*k, y+Math.floor(b/3)*k, k, k, c);
+  }
+}
+function textC(s,y,c,k){ text(s, Math.floor((180 - textW(s,k))/2), y, c, k); }
+
+// ─── board ───
+const N = 8, CELL = 21, GX = 6, GY = 58;
+const cellXY = (c,r) => ({ x: GX + c*CELL, y: GY + r*CELL });
+const inB = (c,r) => c>=0 && c<N && r>=0 && r<N;
+const CARD = [[0,-1],[1,0],[0,1],[-1,0]];
+const MAX_TURN = 5;
+
+// Your two units are the two Into the Breach verbs: a direct shove, and a splash that shoves
+// everything outward. Neither is built to out-damage the board.
+const UNITS = {
+  RAM: { name: "RAM", note: "HIT NEXT DOOR + SHOVE IT" },
+  ARC: { name: "ARC", note: "LOB 2-3 SHOVES ALL ROUND" },
+};
+// Three attack shapes, all straight lines — the same constraint Subset kept.
+const VTYPES = {
+  BITE: { name: "BITE", note: "NEXT TILE" },
+  WAVE: { name: "WAVE", note: "A LINE OF 3" },
+  LOB:  { name: "LOB",  note: "ONE TILE AT 3" },
+};
+
+let units, viruses, datas, turn, log, phase, showHelp, sel, flash;
+
+function uAt(c,r){ return units.find(u => u.c===c && u.r===r); }
+function vAt(c,r){ return viruses.find(v => v.c===c && v.r===r); }
+function dAt(c,r){ return datas.find(d => d.c===c && d.r===r); }
+function occupant(c,r){ return uAt(c,r) || vAt(c,r) || dAt(c,r) || null; }
+function freeCell(c,r){ return inB(c,r) && !occupant(c,r); }
+
+function newRun(){
+  turn = 1; phase = "play"; showHelp = false; sel = null; flash = 0;
+  units = [
+    { id:0, t:"RAM", c:2, r:5, hp:3, moved:false, acted:false },
+    { id:1, t:"ARC", c:5, r:5, hp:3, moved:false, acted:false },
+  ];
+  datas = [ {c:2,r:3}, {c:5,r:3}, {c:3,r:6}, {c:4,r:6} ];
+  viruses = [];
+  spawn("BITE", 1, 1); spawn("WAVE", 6, 1); spawn("LOB", 3, 1);
+  aimAll();
+  log = "EVERY SHOT IS SHOWN FIRST";
+}
+
+let nextVid = 0;
+function spawn(t, c, r){
+  if (!freeCell(c,r)) { for (let k=0;k<N;k++){ if (freeCell(k,r)){ c=k; break; } } }
+  if (!freeCell(c,r)) return;
+  viruses.push({ id: nextVid++, t, c, r, hp: t === "WAVE" ? 2 : 1, dir: [0,1], lastHit: -1 });
+}
+
+// ─── telegraph ───
+// The shot is defined relative to the virus. Shove the virus and the whole shape travels with it —
+// that is the single move this clone exists to teach.
+function shotCells(v, dir, from){
+  const [dc,dr] = dir || v.dir;
+  const c0 = from ? from.c : v.c, r0 = from ? from.r : v.r;
+  const out = [];
+  if (v.t === "BITE"){ if (inB(c0+dc, r0+dr)) out.push({c:c0+dc, r:r0+dr}); return out; }
+  if (v.t === "WAVE"){
+    for (let k=1;k<=3;k++){ const c=c0+dc*k, r=r0+dr*k; if (!inB(c,r)) break; out.push({c,r}); }
+    return out;
+  }
+  const c=c0+dc*3, r=r0+dr*3;                       // LOB arcs over everything and lands at 3
+  if (inB(c,r)) out.push({c,r});
+  return out;
+}
+
+// Davis's table, flat and unclever: DATA 5, your unit 5, a fellow virus -2.
+function scoreShot(v, dir, from){
+  let s = 0;
+  for (const cell of shotCells(v, dir, from)){
+    if (dAt(cell.c, cell.r)) s += 5;
+    const u = uAt(cell.c, cell.r); if (u) s += 5;
+    const o = vAt(cell.c, cell.r); if (o && o !== v) s -= 2;
+  }
+  return s;
+}
+function edgePenalty(c,r){ return (c===0||r===0||c===N-1||r===N-1) ? -1 : 0; }
+
+function aim(v){
+  let best = null, bestS = -Infinity;
+  for (let i=0;i<CARD.length;i++){
+    const s = scoreShot(v, CARD[i]);
+    if (s > bestS){ bestS = s; best = CARD[i]; }   // fixed order breaks ties: no randomness
+  }
+  // Nothing worth shooting yet. Davis's AI has the same case and solves it the same way: fall back
+  // to the best LOCATION score and go stand somewhere useful. Without this every virus aimed at the
+  // top wall on turn 1, which reads as broken and wastes the whole point of a telegraph.
+  if (bestS <= 0){
+    const near = nearestData(v);
+    if (near){
+      let pick = null, pickD = Infinity;
+      for (let i=0;i<CARD.length;i++){
+        const [dc,dr] = CARD[i];
+        const d = Math.abs(v.c+dc-near.c) + Math.abs(v.r+dr-near.r);
+        if (d < pickD){ pickD = d; pick = CARD[i]; }
+      }
+      if (pick) best = pick;
+    }
+  }
+  v.dir = best || [0,1];
+}
+function nearestData(v){
+  let best = null, bd = Infinity;
+  for (const d of datas){
+    const dist = Math.abs(d.c-v.c) + Math.abs(d.r-v.r);
+    if (dist < bd){ bd = dist; best = d; }
+  }
+  return best;
+}
+function aimAll(){ for (const v of viruses) aim(v); }
+
+// ─── pushing ───
+function shove(ent, dc, dr){
+  const c = ent.c + dc, r = ent.r + dr;
+  if (!inB(c,r)){ hurt(ent, 1, "SLAMMED THE RIM"); return; }
+  const blocker = occupant(c,r);
+  if (blocker){ hurt(ent, 1, ""); hurt(blocker, 1, "A CRASH HURT BOTH"); return; }
+  ent.c = c; ent.r = r;
+  if (viruses.includes(ent)) aim(ent);              // its shot re-aims from the new tile
+}
+function hurt(ent, n, why){
+  if (why) log = why;
+  if (datas.includes(ent)){ datas.splice(datas.indexOf(ent), 1); log = "DATA LOST"; return; }
+  ent.hp -= n;
+  if (ent.hp <= 0){
+    if (units.includes(ent)){ units.splice(units.indexOf(ent), 1); log = "A UNIT WENT DOWN"; if (sel && sel.hp<=0) sel=null; }
+    else if (viruses.includes(ent)){ viruses.splice(viruses.indexOf(ent), 1); log = "VIRUS CRASHED"; }
+  } else if (units.includes(ent)) flash = 12;
+}
+
+// ─── your turn ───
+function moveCells(u){
+  if (u.moved) return [];
+  const out = [], seen = new Set([u.c+","+u.r]);
+  let frontier = [{c:u.c, r:u.r, d:0}];
+  while (frontier.length){
+    const n = frontier.shift();
+    if (n.d >= 3) continue;
+    for (const [dc,dr] of CARD){
+      const c=n.c+dc, r=n.r+dr, k=c+","+r;
+      if (!inB(c,r) || seen.has(k) || occupant(c,r)) continue;
+      seen.add(k); out.push({c,r}); frontier.push({c,r,d:n.d+1});
+    }
+  }
+  return out;
+}
+function attackCells(u){
+  if (u.acted) return [];
+  const out = [];
+  if (u.t === "RAM"){
+    for (const [dc,dr] of CARD){ const c=u.c+dc, r=u.r+dr; if (inB(c,r)) out.push({c,r,dc,dr}); }
+    return out;
+  }
+  for (const [dc,dr] of CARD) for (const k of [2,3]){
+    const c=u.c+dc*k, r=u.r+dr*k;
+    if (inB(c,r)) out.push({c,r,dc,dr});
+  }
+  return out;
+}
+function doAttack(u, cell){
+  if (u.t === "RAM"){
+    const tgt = occupant(cell.c, cell.r);
+    if (tgt){ hurt(tgt, 1, ""); if (tgt.hp === undefined || tgt.hp > 0) shove(tgt, cell.dc, cell.dr); log = "RAM SHOVED IT"; }
+    else log = "RAM HIT NOTHING";
+  } else {
+    const tgt = occupant(cell.c, cell.r);
+    if (tgt) hurt(tgt, 1, "");
+    for (const [dc,dr] of CARD){                     // everything around the impact is shoved outward
+      const ent = occupant(cell.c+dc, cell.r+dr);
+      if (ent && !datas.includes(ent)) shove(ent, dc, dr);
+    }
+    log = "ARC LANDED";
+  }
+  u.acted = true; u.moved = true;
+  aimAll();
+}
+
+// ─── end of turn ───
+function fireAll(){
+  for (const v of [...viruses]){
+    if (!viruses.includes(v)) continue;
+    for (const cell of shotCells(v)){
+      const ent = occupant(cell.c, cell.r);
+      if (ent) hurt(ent, 1, "");
+    }
+    v.lastHit = v.dir[0]*10 + v.dir[1];
+  }
+  if (datas.length === 0){ phase = "lost"; log = "ALL DATA IS GONE"; }
+}
+function virusesMove(){
+  for (const v of viruses){
+    let best = null, bestS = -Infinity;
+    const opts = [{c:v.c, r:v.r}];
+    const seen = new Set([v.c+","+v.r]);
+    let frontier = [{c:v.c, r:v.r, d:0}];
+    while (frontier.length){
+      const n = frontier.shift();
+      if (n.d >= 2) continue;
+      for (const [dc,dr] of CARD){
+        const c=n.c+dc, r=n.r+dr, k=c+","+r;
+        if (!inB(c,r) || seen.has(k) || occupant(c,r)) continue;
+        seen.add(k); opts.push({c,r}); frontier.push({c,r,d:n.d+1});
+      }
+    }
+    for (const o of opts){
+      for (const dir of CARD){
+        const s = scoreShot(v, dir, o) + edgePenalty(o.c, o.r);
+        if (s > bestS){ bestS = s; best = { o, dir }; }
+      }
+    }
+    if (best){ v.c = best.o.c; v.r = best.o.r; v.dir = best.dir; }
+  }
+}
+function endTurn(){
+  if (phase !== "play" || showHelp) return;
+  fireAll();
+  if (phase !== "play") return;
+  virusesMove();
+  if (turn === 1){ spawn("BITE", 0, 0); spawn("LOB", 7, 0); }
+  if (turn === 2){ spawn("WAVE", 7, 0); spawn("BITE", 2, 0); }
+  if (turn === 3){ spawn("LOB", 5, 0); spawn("BITE", 0, 0); }
+  aimAll();
+  turn++;
+  for (const u of units){ u.moved = false; u.acted = false; }
+  sel = null;
+  if (turn > MAX_TURN){ phase = "won"; log = "YOU HELD THE DISK"; return; }
+  if (units.length === 0 && datas.length === 0){ phase = "lost"; log = "NOTHING LEFT"; return; }
+  log = "TURN " + turn;
+}
+
+document.getElementById("bEnd").addEventListener("pointerdown", e => { e.preventDefault(); endTurn(); });
+document.getElementById("bHelp").addEventListener("pointerdown", e => { e.preventDefault(); showHelp = !showHelp; });
+document.getElementById("bNew").addEventListener("pointerdown", e => { e.preventDefault(); newRun(); });
+
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp){ showHelp = false; return; }
+  if (phase !== "play"){ newRun(); return; }
+  const b = cvs.getBoundingClientRect();
+  const mx = (e.clientX - b.left) / b.width  * 180;
+  const my = (e.clientY - b.top)  / b.height * 340;
+  const c = Math.floor((mx - GX) / CELL), r = Math.floor((my - GY) / CELL);
+  if (!inB(c,r)) return;
+
+  const u = uAt(c,r);
+  if (u && u !== sel){ sel = u; log = UNITS[u.t].note; return; }
+  if (!sel) return;
+
+  const atk = attackCells(sel).find(a => a.c===c && a.r===r);
+  if (atk && (occupant(c,r) || sel.t === "ARC")){ doAttack(sel, atk); return; }
+  const mv = moveCells(sel).find(m => m.c===c && m.r===r);
+  if (mv){ sel.c = c; sel.r = r; sel.moved = true; aimAll(); log = ""; return; }
+});
+
+// ─── draw ───
+function piece(x,y,col,letter){
+  glow(col, 6, () => px(x+3, y+3, 15, 15, col));
+  if (letter) text(letter, x+8, y+8, PAL.ground);
+}
+
+function draw(){
+  px(0,0,180,340,PAL.ground);
+
+  const tl = "TURN " + Math.min(turn, MAX_TURN) + "/" + MAX_TURN;
+  text(tl, 8, 8, PAL.white, 2);
+  const dl = "DATA " + datas.length;
+  text(dl, 180 - textW(dl,2) - 8, 8, PAL.green, 2);
+
+  textC(log || "", 30, PAL.orange);
+  textC("ORANGE = WHERE IT WILL HIT", 42, PAL.trace);
+
+  // every telegraphed tile, before you move
+  const doomed = new Set();
+  for (const v of viruses) for (const cell of shotCells(v)) doomed.add(cell.c+","+cell.r);
+
+  const mv = sel ? moveCells(sel) : [];
+  const atk = sel ? attackCells(sel) : [];
+
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++){
+    const { x, y } = cellXY(c,r);
+    px(x+9, y+9, 2, 2, PAL.trace);
+    if (mv.some(m => m.c===c && m.r===r)) box(x+1, y+1, CELL-2, CELL-2, PAL.blueDk);
+    if (atk.some(a => a.c===c && a.r===r)) box(x+2, y+2, CELL-4, CELL-4, PAL.blue);
+    if (doomed.has(c+","+r)) glow(PAL.orange, 5, () => box(x, y, CELL, CELL, PAL.orange));
+  }
+  for (const d of datas){
+    const { x, y } = cellXY(d.c, d.r);
+    glow(PAL.green, 5, () => box(x+3, y+3, 15, 15, PAL.green));
+    text("D", x+8, y+8, PAL.green);
+  }
+  for (const v of viruses){
+    const { x, y } = cellXY(v.c, v.r);
+    piece(x, y, PAL.red, v.t[0]);
+  }
+  for (const u of units){
+    const { x, y } = cellXY(u.c, u.r);
+    const c = (flash>0 && flash%4<2) ? PAL.white : PAL.blue;
+    piece(x, y, c, u.t[0]);
+    if (sel === u) box(x, y, CELL, CELL, PAL.white);
+    if (u.acted) px(x+CELL-5, y+2, 3, 3, PAL.trace);
+  }
+  if (flash > 0) flash--;
+
+  let ly = GY + N*CELL + 10;
+  text("PUSH IT AND ITS SHOT MOVES TOO", 8, ly, PAL.orange); ly += 12;
+  for (const u of units){
+    glow(PAL.blue, 4, () => px(8, ly-2, 9, 9, PAL.blue));
+    text(u.t[0], 11, ly, PAL.ground);
+    text(UNITS[u.t].name, 22, ly, PAL.white);
+    text(UNITS[u.t].note, 46, ly, PAL.trace);
+    text("HP" + u.hp, 160, ly, PAL.blue);
+    ly += 11;
+  }
+  ly += 2;
+  for (const k of ["BITE","WAVE","LOB"]){
+    if (!viruses.some(v => v.t === k)) continue;
+    glow(PAL.red, 4, () => px(8, ly-2, 9, 9, PAL.red));
+    text(k[0], 11, ly, PAL.ground);
+    text(VTYPES[k].name, 22, ly, PAL.white);
+    text(VTYPES[k].note, 52, ly, PAL.trace);
+    ly += 11;
+  }
+  ly += 2;
+  text("SURVIVE " + MAX_TURN + " TURNS - DO NOT CLEAR", 8, ly, PAL.orange);
+
+  if (phase === "won" || phase === "lost"){
+    px(14, 140, 152, 60, PAL.ground);
+    box(14, 140, 152, 60, PAL.trace);
+    textC(phase === "won" ? "DISK HELD" : "DISK LOST", 156, PAL.white, 2);
+    textC(phase === "won" ? ("DATA LEFT " + datas.length) : "ALL DATA GONE", 176, PAL.orange);
+    textC("TAP TO RUN AGAIN", 188, PAL.trace);
+  }
+
+  if (showHelp){
+    px(10, 20, 160, 300, PAL.ground);
+    box(10, 20, 160, 300, PAL.trace);
+    const L = [
+      "DEBUG VIEW",
+      "",
+      "EVERY VIRUS SHOWS",
+      "THE EXACT TILES IT",
+      "WILL HIT, BEFORE",
+      "YOU MOVE. ORANGE.",
+      "NOTHING IS RANDOM.",
+      "",
+      "SO IT IS A PUZZLE,",
+      "NOT A FIGHT.",
+      "",
+      "THE BIG MOVE:",
+      "SHOVE A VIRUS AND",
+      "ITS SHOT MOVES",
+      "WITH IT. AIM IT AT",
+      "A WALL, OR AT ITS",
+      "OWN KIND.",
+      "",
+      "OR STAND IN THE",
+      "SHOT YOURSELF. A",
+      "UNIT IS A THING",
+      "YOU SPEND.",
+      "",
+      "TAP A UNIT, THEN A",
+      "DARK BLUE TILE TO",
+      "MOVE, OR A BRIGHT",
+      "BLUE TILE TO HIT.",
+      "",
+      "SURVIVE 5 TURNS.",
+      "YOU DO NOT HAVE TO",
+      "CLEAR THE BOARD.",
+      "",
+      "TAP TO CLOSE",
+    ];
+    L.forEach((l,i) => text(l, 18, 28 + i*9, i===0 ? PAL.blue : PAL.white, i===0 ? 2 : 1));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newRun();
+draw();
+</script>
+</body>
+</html>
