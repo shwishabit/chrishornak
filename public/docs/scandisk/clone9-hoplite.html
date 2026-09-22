@@ -151,6 +151,7 @@ function reachable(from, to){
   return false;
 }
 
+let genGuard = 0;
 function genFloor(){
   let tries = 0;
   do {
@@ -177,9 +178,12 @@ function genFloor(){
            || (c===exitAt.c && r===exitAt.r)));
     viruses.push({ c, r, t, charge: 1 });
   }
+  // A floor must be winnable the moment it opens.
+  if (!youHaveAStep() || !youCanReachExit()){ if (genGuard++ < 40) return genFloor(); }
 }
 
 function newRun(){
+  genGuard = 0;
   hp = MAX_HP; floor = 1; phase = "play"; showHelp = false; peek = null; flash = 0; cornered = false;
   log = "FLOOR 1 - NO ATTACK BUTTON";
   genFloor();
@@ -224,6 +228,31 @@ function damageYou(why){
 }
 
 // ─── the virus turn ───
+// You can never STEP onto a virus here (you only lunge past one), so every virus is a wall that
+// walks — and walls that walk can brick you in. Measured before this guard: 6.07% of turns with no
+// legal step and 2.00% of turns with the exit sealed off, on every floor. Chris hit exactly this in
+// clone 8 ("a level started with me trapped. There was no way to win"). VISION's fair-enemy line is
+// "every loss makes sense from the screen"; a wall closing behind you explains nothing. So no virus
+// may take the move that removes your last step or cuts you off from the exit — it holds instead.
+function youHaveAStep(){
+  return DIRS.some(([dc,dr]) => {
+    const c = you.c+dc, r = you.r+dr;
+    return inB(c,r) && !isWall(c,r) && !vAt(c,r);
+  });
+}
+function youCanReachExit(){
+  const seen = new Set([you.c+","+you.r]); const q = [{c:you.c, r:you.r}];
+  while (q.length){
+    const n = q.shift();
+    if (n.c===exitAt.c && n.r===exitAt.r) return true;
+    for (const [dc,dr] of DIRS){
+      const c=n.c+dc, r=n.r+dr, k=c+","+r;
+      if (inB(c,r) && !isWall(c,r) && !vAt(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
+    }
+  }
+  return false;
+}
+
 function stepTo(v, want){
   // Move one step, preferring the direction that best serves `want` (a scoring function).
   let best = null, bestS = -Infinity;
@@ -235,7 +264,10 @@ function stepTo(v, want){
     if (s > bestS){ bestS = s; best = {c,r}; }
   }
   const now = want(v.c, v.r);
-  if (best && bestS > now){ v.c = best.c; v.r = best.r; }
+  if (!best || bestS <= now) return;
+  const oc = v.c, or_ = v.r;
+  v.c = best.c; v.r = best.r;
+  if (!youHaveAStep() || !youCanReachExit()){ v.c = oc; v.r = or_; }   // it holds rather than brick you in
 }
 const cheb = (a,b,c,d) => Math.max(Math.abs(a-c), Math.abs(b-d));
 

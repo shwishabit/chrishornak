@@ -151,6 +151,7 @@ function reachable(from, to){
   return false;
 }
 
+let genGuard = 0;
 function genFloor(){
   let tries = 0;
   do {
@@ -183,9 +184,12 @@ function genFloor(){
              || (c===exitAt.c && r===exitAt.r)));
     enemies.push({ c, r, t });
   }
+  // A floor must be winnable the moment it opens, with armored viruses counted as walls.
+  if (!youHaveAStep() || !youCanReachExit()){ if (genGuard++ < 40) return genFloor(); }
 }
 
 function newRun(){
+  genGuard = 0;
   hp = MAX_HP; floor = 1; phase = "play"; showHelp = false; peek = null; flash = 0;
   log = "FLOOR 1 - REACH THE EXIT";
   genFloor();
@@ -203,6 +207,39 @@ function enemyTargets(e){
     out.push({c,r});
   }
   return out;
+}
+
+// You cannot crash an ARMORED virus, so to you it is a wall that walks. That makes it the one piece
+// on the board that can seal you in — measured: 71 unwinnable floor-5 boards in 12,556 turns, which
+// is what Chris hit ("a level started with me trapped. There was no way to win"). VISION's fair-enemy
+// line is "every loss makes sense from the screen", and being walled in explains nothing. So an
+// armored virus is forbidden from making the move that closes the last door.
+function passableForYou(c,r){
+  if (blockedForYou(c,r)) return false;
+  const e = enemyAt(c,r);
+  return !(e && TYPES[e.t].armored);
+}
+function youHaveAStep(){
+  return CARD.some(([dc,dr]) => passableForYou(you.c+dc, you.r+dr));
+}
+function youCanReachExit(){
+  const seen = new Set([you.c+","+you.r]); const q = [{c:you.c, r:you.r}];
+  while (q.length){
+    const n = q.shift();
+    if (n.c===exitAt.c && n.r===exitAt.r) return true;
+    for (const [dc,dr] of CARD){
+      const c=n.c+dc, r=n.r+dr, k=c+","+r;
+      if (passableForYou(c,r) && !seen.has(k)){ seen.add(k); q.push({c,r}); }
+    }
+  }
+  return false;
+}
+function wouldSealYouIn(e, to){
+  const oc = e.c, or_ = e.r;
+  e.c = to.c; e.r = to.r;
+  const bad = !youHaveAStep() || !youCanReachExit();
+  e.c = oc; e.r = or_;
+  return bad;
 }
 
 function moveEnemy(e){
@@ -224,6 +261,7 @@ function moveEnemy(e){
     if (!side.length) return;
     best = side[Math.floor(Math.random()*side.length)];
   }
+  if (TYPES[e.t].armored && wouldSealYouIn(e, best)) return;   // it holds rather than wall you in
   e.c = best.c; e.r = best.r;
   if (isPit(e.c, e.r)){
     log = TYPES[e.t].name + " FELL IN A PIT";
