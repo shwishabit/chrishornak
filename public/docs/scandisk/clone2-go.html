@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 2: GRID LOCK</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 16px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 4px; background: #05050a;
+    box-shadow: 0 0 24px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block; width: min(90vw, 440px); height: calc(min(90vw, 440px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row { display: flex; gap: 10px; }
+  #row button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 10px 16px; touch-action: manipulation;
+  }
+  #row button:active { filter: brightness(1.4); }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
+  <div id="row">
+    <button id="bHelp">HOW TO</button>
+    <button id="bPass">PASS</button>
+    <button id="bNew">NEW GAME</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 2 of 10: GRID LOCK (Go's rules).
+// Takes from Go (INSPIRATIONS.md): surround to capture, territory, depth from very few rules.
+// Leaves out: Go's look, and its slow scoring/counting endgame — score here is just captures + live nodes,
+// read instantly, no dead-stone marking. Board shrunk to 7x7 (pocket-sized, per the clone-1 lesson: don't
+// borrow a big board to fill). Look is locked (VISION.md #14): same palette, glow squares, pixel font as
+// clone 1. Tap-to-play controls, same as clone 1 (Chris's call, bends the GBC-pad rule for this series only).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function line(x0,y0,x1,y1,c){
+  if (x0===x1) px(x0,Math.min(y0,y1),1,Math.abs(y1-y0)+1,c);
+  else px(Math.min(x0,x1),y0,Math.abs(x1-x0)+1,1,c);
+}
+function glow(c,blur,draw){ ctx.save(); ctx.shadowColor=c; ctx.shadowBlur=blur; draw(); ctx.restore(); }
+function stone(x,y,c){ glow(c,6,()=>px(x-5,y-5,10,10,c)); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function markRing(x,y,c){ glow(c,4,()=>box(x-6,y-6,12,12,c)); }
+function textW(s){ return Math.max(0, s.length*4-1); }
+function text(s,x,y,c){
+  const u = s.toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
+  }
+}
+
+// ─── board: 7x7 intersections, spacing 18, centred ───
+const N = 7, SP = 18, OX = 26, OY = 14;
+const ptXY = (c,r) => ({ x: OX + c*SP, y: OY + r*SP });
+const YOU = 1, IT = 2;
+const NEI = [[0,-1],[0,1],[-1,0],[1,0]];
+
+let board, current, lastMove, captures, message, msgTimer, aiTimer, showHelp, gameOver, resultText, thinking, koBoard, passStreak;
+
+function newGame(){
+  board = Array(N*N).fill(0);
+  current = YOU;
+  lastMove = -1;
+  captures = { you: 0, it: 0 };
+  message = ""; msgTimer = 0;
+  gameOver = false; resultText = "";
+  showHelp = false; thinking = false;
+  koBoard = null; passStreak = 0;
+  clearTimeout(aiTimer);
+}
+
+function neighborsOf(i){
+  const c = i % N, r = Math.floor(i / N), out = [];
+  for (const [dc,dr] of NEI){ const cc=c+dc, rr=r+dr; if (cc>=0&&cc<N&&rr>=0&&rr<N) out.push(rr*N+cc); }
+  return out;
+}
+function findGroup(b, start){
+  const color = b[start], seen = new Set([start]), stack = [start];
+  let liberties = 0;
+  while (stack.length){
+    const i = stack.pop();
+    for (const n of neighborsOf(i)){
+      if (b[n] === 0) liberties++;
+      else if (b[n] === color && !seen.has(n)){ seen.add(n); stack.push(n); }
+    }
+  }
+  return { cells: seen, liberties };
+}
+function tryMove(b, i, side, ko){
+  if (b[i] !== 0) return null;
+  const nb = b.slice(); nb[i] = side;
+  const opp = side === YOU ? IT : YOU;
+  const captured = new Set();
+  for (const n of neighborsOf(i)){
+    if (nb[n] === opp){
+      const grp = findGroup(nb, n);
+      if (grp.liberties === 0) for (const c of grp.cells) captured.add(c);
+    }
+  }
+  for (const c of captured) nb[c] = 0;
+  const own = findGroup(nb, i);
+  if (own.liberties === 0 && captured.size === 0) return null;
+  if (ko && nb.join(",") === ko) return null;
+  return { board: nb, captured: [...captured] };
+}
+function legalMoves(b, side, ko){
+  const moves = [];
+  for (let i=0;i<N*N;i++){ const r = tryMove(b, i, side, ko); if (r) moves.push({ i, result: r }); }
+  return moves;
+}
+
+function flash(msg, ms){ message = msg; msgTimer = ms; }
+
+function liveScore(){
+  let youStones=0, itStones=0;
+  for (const v of board){ if (v===YOU) youStones++; else if (v===IT) itStones++; }
+  return { you: captures.you + youStones, it: captures.it + itStones };
+}
+
+function finish(){
+  gameOver = true;
+  const s = liveScore();
+  resultText = s.you > s.it ? "YOU LOCKED THE GRID" : s.you < s.it ? "IT LOCKED THE GRID" : "GRID TIED";
+}
+
+function afterMove(side){
+  passStreak = 0;
+  const next = side === YOU ? IT : YOU;
+  current = next;
+  if (next === IT) scheduleAI();
+}
+
+function scheduleAI(){
+  thinking = true; flash("IT IS THINKING…", 999);
+  clearTimeout(aiTimer);
+  aiTimer = setTimeout(aiMove, 550);
+}
+
+function aiMove(){
+  thinking = false; message = ""; msgTimer = 0;
+  const moves = legalMoves(board, IT, koBoard);
+  const emptyCount = board.filter(v => v===0).length;
+  if (!moves.length){ doPass(IT); return; }
+
+  let best = null, bestScore = -Infinity;
+  for (const mv of moves){
+    let s = mv.result.captured.length * 10;
+    const ownGrp = findGroup(mv.result.board, mv.i);
+    if (ownGrp.liberties === 1) s -= 8;
+    s += Math.min(ownGrp.liberties, 4);
+    for (const n of neighborsOf(mv.i)){
+      if (board[n] === YOU){
+        const g = findGroup(mv.result.board, n);
+        if (g.liberties === 1) s += 4;
+      }
+    }
+    let adjacent = neighborsOf(mv.i).some(n => board[n] !== 0);
+    if (adjacent) s += 1;
+    s += Math.random() * 1.5;
+    if (s > bestScore){ bestScore = s; best = mv; }
+  }
+
+  if (bestScore <= 0 && emptyCount < 6){ doPass(IT); return; }
+
+  const prev = board.join(",");
+  board = best.result.board;
+  captures.it += best.result.captured.length;
+  koBoard = best.result.captured.length === 1 ? prev : null;
+  lastMove = best.i;
+  afterMove(IT);
+}
+
+function doPass(side){
+  flash(side === YOU ? "YOU PASS" : "IT PASSES", 60);
+  passStreak++;
+  koBoard = null;
+  if (passStreak >= 2){ finish(); return; }
+  const next = side === YOU ? IT : YOU;
+  current = next;
+  if (next === IT) scheduleAI();
+}
+
+function tryPlace(i){
+  if (gameOver || showHelp || current !== YOU || thinking) return;
+  const r = tryMove(board, i, YOU, koBoard);
+  if (!r){
+    flash(board[i] !== 0 ? "TAKEN" : "NO LIBERTY", 30);
+    return;
+  }
+  const prev = board.join(",");
+  board = r.board;
+  captures.you += r.captured.length;
+  koBoard = r.captured.length === 1 ? prev : null;
+  lastMove = i;
+  afterMove(YOU);
+}
+
+// ─── input: tap an intersection ───
+function pointFromEvent(e){
+  const rect = cvs.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) / rect.width * 160;
+  const cy = (e.clientY - rect.top) / rect.height * 144;
+  let best = -1, bestD = 999;
+  for (let i=0;i<N*N;i++){
+    const c = i % N, r = Math.floor(i / N);
+    const p = ptXY(c, r);
+    const d = Math.hypot(cx - p.x, cy - p.y);
+    if (d < bestD){ bestD = d; best = i; }
+  }
+  return bestD <= SP * 0.6 ? best : -1;
+}
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp) { showHelp = false; return; }
+  if (gameOver) { newGame(); return; }
+  const i = pointFromEvent(e);
+  if (i >= 0) tryPlace(i);
+});
+document.getElementById("bNew").addEventListener("pointerdown", (e) => { e.preventDefault(); newGame(); });
+document.getElementById("bHelp").addEventListener("pointerdown", (e) => { e.preventDefault(); showHelp = !showHelp; });
+document.getElementById("bPass").addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  if (gameOver || showHelp || current !== YOU || thinking) return;
+  doPass(YOU);
+});
+
+// ─── draw ───
+function draw(){
+  px(0,0,160,144,PAL.ground);
+
+  const s = liveScore();
+  text("YOU", 2, 2, PAL.blue);
+  text(String(s.you), 24, 2, PAL.white);
+  const itLabel = "IT " + s.it;
+  text(itLabel, 160 - textW(itLabel) - 2, 2, PAL.red);
+
+  for (let r=0;r<N;r++){ const a = ptXY(0,r), b = ptXY(N-1,r); line(a.x,a.y,b.x,b.y,PAL.trace); }
+  for (let c=0;c<N;c++){ const a = ptXY(c,0), b = ptXY(c,N-1); line(a.x,a.y,b.x,b.y,PAL.trace); }
+
+  const youMoves = current === YOU && !gameOver && !showHelp && !thinking ? legalMoves(board, YOU, koBoard) : [];
+
+  for (let r=0;r<N;r++) for (let c=0;c<N;c++){
+    const i = r*N+c;
+    const p = ptXY(c, r);
+    const v = board[i];
+    if (v === YOU) stone(p.x, p.y, PAL.blue);
+    else if (v === IT) stone(p.x, p.y, PAL.red);
+    else if (youMoves.some(m => m.i===i)) markRing(p.x, p.y, PAL.blueDk);
+    if (i === lastMove && v !== 0) px(p.x-1, p.y-1, 2, 2, PAL.ground);
+  }
+
+  if (message && msgTimer > 0){
+    const w = textW(message);
+    const x = Math.floor((160 - w) / 2);
+    px(x - 2, 128, w + 4, 7, PAL.ground);
+    text(message, x, 129, PAL.orange);
+    if (msgTimer < 999) msgTimer--;
+  }
+
+  if (gameOver){
+    px(10, 50, 140, 40, PAL.ground);
+    box(10, 50, 140, 40, PAL.trace);
+    const w1 = textW(resultText);
+    text(resultText, Math.floor((160-w1)/2), 62, PAL.white);
+    const hint = "TAP TO PLAY AGAIN";
+    const w2 = textW(hint);
+    text(hint, Math.floor((160-w2)/2), 74, PAL.orange);
+  }
+
+  if (showHelp){
+    px(6, 12, 148, 120, PAL.ground);
+    box(6, 12, 148, 120, PAL.trace);
+    const lines = [
+      "GRID LOCK",
+      "",
+      "TAP A JUNCTION",
+      "TO PLACE A NODE",
+      "",
+      "SURROUND A NODE",
+      "ON ALL SIDES TO",
+      "CAPTURE IT",
+      "",
+      "NO OPEN SIDE = ",
+      "ILLEGAL MOVE",
+      "",
+      "PASS IF STUCK",
+      "TAP TO CLOSE",
+    ];
+    lines.forEach((line_, i) => text(line_, 14, 18 + i*8, i===0 ? PAL.blue : PAL.white));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newGame();
+draw();
+</script>
+</body>
+</html>
