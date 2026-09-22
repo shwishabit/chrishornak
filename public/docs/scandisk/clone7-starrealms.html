@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SCANDISK — Clone 7: BOOT STACK</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; background: #05050a; color: #e8f0f8;
+    font-family: monospace; overflow: hidden; touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 16px;
+  }
+  #screenWrap {
+    border: 3px solid #383848; border-radius: 4px; background: #05050a;
+    box-shadow: 0 0 24px rgba(47,109,255,0.15);
+  }
+  canvas {
+    display: block; width: min(92vw, 460px); height: calc(min(92vw, 460px) * 144 / 160);
+    image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer;
+  }
+  #row, #row2 { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 460px; }
+  #row button, #row2 button {
+    font-family: monospace; font-size: 11px; letter-spacing: .06em;
+    background: #14141f; border: 2px solid #383848; color: #e8f0f8;
+    border-radius: 14px; padding: 9px 14px; touch-action: manipulation;
+  }
+  #row button:active, #row2 button:active { filter: brightness(1.4); }
+  #bPlay { border-color: #1840a0; }
+  #bEnd { border-color: #ff9500; }
+</style>
+</head>
+<body>
+  <div id="screenWrap"><canvas id="gc" width="160" height="144"></canvas></div>
+  <div id="row">
+    <button id="bPlay">PLAY ALL</button>
+    <button id="bEnd">END TURN</button>
+  </div>
+  <div id="row2">
+    <button id="bHelp">HOW TO</button>
+    <button id="bNew">NEW GAME</button>
+  </div>
+
+<script>
+// SCANDISK — clone series, clone 7 of 10: BOOT STACK (Star Realms' rules).
+// Chris's call (2026-09-22): build THE WHOLE LOOP, do not flatten it to just the ally chain.
+// That means: a shared TRADE ROW you buy from, bought cards go to your DISCARD, your deck reshuffles
+// and comes back stronger, ally combos fire when you play two of the same faction in one turn, and you
+// grind the other side's AUTHORITY to 0. Look is locked (VISION.md #14). Tap controls (clone series only).
+
+const PAL = {
+  ground: "#05050a", trace: "#383848", white: "#e8f0f8",
+  blue: "#2f6dff", blueDk: "#1840a0",
+  red: "#ff2a2a", redDk: "#901808",
+  orange: "#ff9500", green: "#39ff6a",
+};
+
+const FONT = {
+  A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
+  F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
+  K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",
+  P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",
+  U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",
+  Z:"111001010100111",
+  "0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001011001111","4":"101101111001001",
+  "5":"111100111001111","6":"111100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001111",
+  " ":"000000000000000","!":"010010010000010","?":"111001011000010","-":"000000111000000","+":"000010111010000",
+};
+
+const cvs = document.getElementById("gc");
+const ctx = cvs.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function box(x,y,w,h,c){ px(x,y,w,1,c); px(x,y+h-1,w,1,c); px(x,y,1,h,c); px(x+w-1,y,1,h,c); }
+function textW(s){ return Math.max(0, s.length*4-1); }
+function text(s,x,y,c){
+  const u = String(s).toUpperCase();
+  for (let i=0;i<u.length;i++){
+    const gl = FONT[u[i]]; if (gl===undefined) continue;
+    for (let b=0;b<15;b++) if (gl[b]==="1") px(x+i*4+(b%3), y+Math.floor(b/3), 1, 1, c);
+  }
+}
+function textC(s,y,c,x0,w0){ const x = (x0||0) + Math.floor(((w0||160) - textW(s))/2); text(s,x,y,c); }
+
+// ─── factions ───
+// Stripe colours come from the locked palette only. Blue and red stay reserved for YOU / IT.
+const FAC = {
+  NEU: { tag: "",    stripe: PAL.trace  },
+  KRN: { tag: "KRN", stripe: PAL.orange },  // kernel — raw damage
+  CSH: { tag: "CSH", stripe: PAL.green  },  // cache  — trade power
+  FWL: { tag: "FWL", stripe: PAL.white  },  // firewall — authority
+  WRM: { tag: "WRM", stripe: PAL.trace  },  // worm   — damage + draw
+};
+
+// name, cost, trade, damage, authority, draw, faction, ally effect
+function C(n,cost,t,d,a,dr,f,ally){ return { n, cost, t, d, a, dr, f, ally }; }
+
+const STARTER_BIT   = C("BIT",   0, 1, 0, 0, 0, "NEU", null);
+const STARTER_PULSE = C("PULSE", 0, 0, 1, 0, 0, "NEU", null);
+const CHIP          = C("CHIP",  2, 2, 0, 0, 0, "NEU", null);   // always buyable, like the Explorer
+
+const TRADE_DECK_SPEC = [
+  [2, C("KERNEL", 5, 0, 4, 0, 0, "KRN", { d: 3 })],
+  [3, C("STRIKE", 3, 0, 3, 0, 0, "KRN", { d: 2 })],
+  [3, C("PATCH",  2, 0, 2, 0, 0, "KRN", { a: 2 })],
+  [3, C("CACHE",  3, 3, 0, 0, 0, "CSH", { t: 2 })],
+  [3, C("BUFFER", 2, 2, 0, 0, 0, "CSH", { dr: 1 })],
+  [2, C("VAULT",  6, 4, 2, 0, 0, "CSH", { t: 3 })],
+  [3, C("WALL",   2, 0, 0, 3, 0, "FWL", { a: 2 })],
+  [2, C("SHIELD", 4, 0, 1, 4, 0, "FWL", { a: 3 })],
+  [2, C("GUARD",  5, 0, 3, 3, 0, "FWL", { d: 2 })],
+  [3, C("WORM",   3, 0, 2, 0, 1, "WRM", { d: 2 })],
+  [2, C("SPIDER", 4, 0, 3, 0, 1, "WRM", { dr: 1 })],
+  [2, C("ROOTKIT",7, 0, 6, 0, 0, "WRM", { d: 4 })],
+];
+
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function starterDeck(){
+  const d = [];
+  for (let i=0;i<7;i++) d.push({ ...STARTER_BIT });
+  for (let i=0;i<3;i++) d.push({ ...STARTER_PULSE });
+  return shuffle(d);
+}
+function buildTradeDeck(){
+  const d = [];
+  for (const [n, card] of TRADE_DECK_SPEC) for (let i=0;i<n;i++) d.push({ ...card });
+  return shuffle(d);
+}
+
+// ─── state ───
+const START_AUTH = 25;
+let you, it, tradeDeck, row, turn, trade, dmg, playedFac, log, phase, winner, showHelp, busy;
+
+function mkSide(){ return { auth: START_AUTH, deck: starterDeck(), disc: [], hand: [], played: [] }; }
+
+function newGame(){
+  you = mkSide(); it = mkSide();
+  tradeDeck = buildTradeDeck();
+  row = [];
+  for (let i=0;i<5;i++) row.push(tradeDeck.pop() || null);
+  turn = "you"; trade = 0; dmg = 0; playedFac = {}; log = ["YOUR MOVE"];
+  phase = "play"; winner = null; showHelp = false; busy = false;
+  drawUp(you, 3);              // first player draws 3, same as the real game
+}
+
+function drawUp(side, n){
+  for (let i=0;i<n;i++){
+    if (side.deck.length === 0){
+      if (side.disc.length === 0) return;
+      side.deck = shuffle(side.disc); side.disc = [];
+    }
+    side.hand.push(side.deck.pop());
+  }
+}
+
+function applyAlly(side, eff){
+  if (!eff) return;
+  if (eff.t) trade += eff.t;
+  if (eff.d) dmg += eff.d;
+  if (eff.a) side.auth += eff.a;
+  if (eff.dr) drawUp(side, eff.dr);
+}
+
+function playCard(side, idx){
+  const card = side.hand.splice(idx, 1)[0];
+  if (!card) return;
+  trade += card.t; dmg += card.d; side.auth += card.a;
+  if (card.dr) drawUp(side, card.dr);
+  if (card.f !== "NEU"){
+    const before = playedFac[card.f] || 0;
+    if (before >= 1){
+      applyAlly(side, card.ally);                       // this card allies
+      if (before === 1){                                // and so does the first one it matched
+        const first = side.played.find(c => c.f === card.f);
+        if (first) applyAlly(side, first.ally);
+      }
+    }
+    playedFac[card.f] = before + 1;
+  }
+  side.played.push(card);
+}
+
+function buy(card, idx){
+  if (!card || trade < card.cost) return false;
+  trade -= card.cost;
+  const side = turn === "you" ? you : it;
+  side.disc.push({ ...card });
+  if (idx >= 0){ row[idx] = tradeDeck.pop() || null; }
+  return true;
+}
+
+function endTurn(){
+  const side = turn === "you" ? you : it;
+  const foe  = turn === "you" ? it  : you;
+  if (dmg > 0){
+    foe.auth -= dmg;
+    log = [ (turn === "you" ? "YOU HIT IT " : "IT HITS YOU ") + dmg ];
+  } else {
+    log = [ (turn === "you" ? "YOU HIT FOR 0" : "IT HITS FOR 0") ];
+  }
+  side.disc.push(...side.played, ...side.hand);
+  side.played = []; side.hand = [];
+  trade = 0; dmg = 0; playedFac = {};
+  if (foe.auth <= 0){ winner = turn; phase = "over"; return; }
+  drawUp(side, 5);
+  turn = turn === "you" ? "it" : "you";
+  if (turn === "it") { busy = true; setTimeout(itTurn, 600); }
+}
+
+// ─── the bot ───
+function itTurn(){
+  // Play everything, grouped by faction so ally chains actually fire.
+  it.hand.sort((a,b) => (a.f < b.f ? -1 : a.f > b.f ? 1 : 0));
+  while (it.hand.length) playCard(it, 0);
+
+  // Buy the strongest thing it can pay for, preferring a faction it already runs.
+  const owned = {};
+  for (const c of [...it.deck, ...it.disc, ...it.played]) if (c.f !== "NEU") owned[c.f] = (owned[c.f]||0)+1;
+  let bought = true;
+  while (bought){
+    bought = false;
+    let bestI = -1, bestScore = -1;
+    for (let i=0;i<5;i++){
+      const c = row[i];
+      if (!c || c.cost > trade) continue;
+      const score = c.cost * 10 + (owned[c.f] || 0) * 3;
+      if (score > bestScore){ bestScore = score; bestI = i; }
+    }
+    if (bestI >= 0){ buy(row[bestI], bestI); bought = true; }
+    else if (trade >= CHIP.cost){ buy(CHIP, -1); bought = true; }
+  }
+  busy = false;
+  endTurn();
+}
+
+// ─── player input ───
+function playAll(){
+  if (turn !== "you" || phase !== "play" || busy || showHelp) return;
+  while (you.hand.length) playCard(you, 0);
+}
+document.getElementById("bPlay").addEventListener("pointerdown", e => { e.preventDefault(); playAll(); });
+document.getElementById("bEnd").addEventListener("pointerdown", e => {
+  e.preventDefault();
+  if (turn !== "you" || phase !== "play" || busy || showHelp) return;
+  endTurn();
+});
+document.getElementById("bHelp").addEventListener("pointerdown", e => { e.preventDefault(); showHelp = !showHelp; });
+document.getElementById("bNew").addEventListener("pointerdown", e => { e.preventDefault(); newGame(); });
+
+const ROW_Y = 10, HAND_Y = 70, CW = 30, CH = 34, PITCH = 32;
+cvs.addEventListener("pointerdown", (e) => {
+  if (showHelp){ showHelp = false; return; }
+  if (phase === "over"){ newGame(); return; }
+  if (turn !== "you" || busy) return;
+  const r = cvs.getBoundingClientRect();
+  const mx = (e.clientX - r.left) / r.width  * 160;
+  const my = (e.clientY - r.top)  / r.height * 144;
+
+  // CHIP button
+  if (my >= 45 && my <= 56 && mx >= 1 && mx <= 45){ buy(CHIP, -1); return; }
+  // trade row
+  if (my >= ROW_Y && my <= ROW_Y + CH){
+    const i = Math.floor(mx / PITCH);
+    if (i >= 0 && i < 5 && mx - i*PITCH <= CW && row[i]) buy(row[i], i);
+    return;
+  }
+  // your hand
+  if (my >= HAND_Y && my <= HAND_Y + CH){
+    const i = Math.floor(mx / PITCH);
+    if (i >= 0 && i < you.hand.length && mx - i*PITCH <= CW) playCard(you, i);
+  }
+});
+
+// ─── draw ───
+function drawCardFace(x, y, card, live){
+  const edge = live ? PAL.white : PAL.trace;
+  box(x, y, CW, CH, edge);
+  px(x+1, y+1, 2, CH-2, FAC[card.f].stripe);
+  text(card.n, x + 4, y + 3, live ? PAL.white : PAL.trace);
+  text("C" + card.cost, x + 4, y + 11, live ? PAL.orange : PAL.trace);
+  const tag = FAC[card.f].tag;
+  if (tag) text(tag, x + CW - textW(tag) - 3, y + 11, live ? PAL.white : PAL.trace);
+  let ex = x + 4;
+  if (card.t){ text("T" + card.t, ex, y + 19, live ? PAL.orange : PAL.trace); ex += 12; }
+  if (card.d){ text("D" + card.d, ex, y + 19, live ? PAL.white  : PAL.trace); ex += 12; }
+  if (card.a){ text("A" + card.a, ex, y + 19, live ? PAL.green  : PAL.trace); ex += 12; }
+  if (card.dr) text("DRAW", x + 4, y + 26, live ? PAL.blue : PAL.trace);
+  else if (card.ally){
+    const e = card.ally;
+    const s = e.t ? "T+" + e.t : e.d ? "D+" + e.d : e.a ? "A+" + e.a : "DRAW";
+    text(s, x + 4, y + 26, live ? PAL.blue : PAL.trace);
+  }
+}
+
+function draw(){
+  px(0,0,160,144,PAL.ground);
+  for (let y=6;y<144;y+=16) for (let x=6;x<160;x+=16) px(x,y,1,1,PAL.trace);
+
+  // header
+  text("YOU " + you.auth, 2, 1, PAL.blue);
+  const il = "IT " + it.auth;
+  text(il, 160 - textW(il) - 2, 1, PAL.red);
+  textC(turn === "you" ? "YOUR TURN" : "IT MOVES", 1, PAL.orange, 40, 80);
+
+  // trade row
+  for (let i=0;i<5;i++){
+    const c = row[i];
+    if (!c){ box(i*PITCH, ROW_Y, CW, CH, PAL.trace); continue; }
+    drawCardFace(i*PITCH, ROW_Y, c, turn === "you" && trade >= c.cost);
+  }
+
+  // CHIP button + pools
+  const chipLive = turn === "you" && trade >= CHIP.cost;
+  box(1, 45, 44, 11, chipLive ? PAL.orange : PAL.trace);
+  text("CHIP C2", 4, 48, chipLive ? PAL.orange : PAL.trace);
+  text("TRD " + trade, 52, 48, PAL.orange);
+  text("DMG " + dmg, 92, 48, PAL.white);
+
+  // log line
+  textC(log[0] || "", 59, PAL.white);
+
+  // your hand
+  for (let i=0;i<you.hand.length && i<5;i++) drawCardFace(i*PITCH, HAND_Y, you.hand[i], turn === "you");
+  if (turn === "you" && you.hand.length === 0) textC("HAND EMPTY - END TURN", HAND_Y + 14, PAL.trace);
+
+  // footer
+  text("DECK " + you.deck.length, 2, 110, PAL.trace);
+  const dl = "DISC " + you.disc.length;
+  text(dl, 160 - textW(dl) - 2, 110, PAL.trace);
+  textC("TAP A CARD TO PLAY OR BUY", 120, PAL.trace);
+
+  if (phase === "over"){
+    px(10, 50, 140, 40, PAL.ground);
+    box(10, 50, 140, 40, PAL.trace);
+    textC(winner === "you" ? "IT IS WIPED" : "YOU ARE WIPED", 62, PAL.white);
+    textC("TAP TO PLAY AGAIN", 74, PAL.orange);
+  }
+
+  if (showHelp){
+    px(6, 8, 148, 128, PAL.ground);
+    box(6, 8, 148, 128, PAL.trace);
+    const L = [
+      "BOOT STACK",
+      "",
+      "YOUR STACK IS 10",
+      "WEAK CARDS. TAP",
+      "THEM TO PLAY.",
+      "",
+      "SPEND TRD ON THE",
+      "TOP ROW. BOUGHT",
+      "CARDS GO IN YOUR",
+      "STACK AND COME",
+      "BACK STRONGER.",
+      "",
+      "TWO CARDS OF ONE",
+      "TAG IN ONE TURN =",
+      "ALLY BONUS (BLUE)",
+      "",
+      "END TURN FIRES",
+      "DMG AT IT. 0 = WIN",
+      "",
+      "TAP TO CLOSE",
+    ];
+    L.forEach((l,i) => text(l, 12, 12 + i*6, i===0 ? PAL.blue : PAL.white));
+  }
+
+  requestAnimationFrame(draw);
+}
+
+newGame();
+draw();
+</script>
+</body>
+</html>
