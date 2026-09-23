@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Make Small Games Well</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--paper:#fffdf8;--ink:#1d1a16;--soft:#6b645a;--rule:#e2dccf;--accent:#0f766e;--accent-2:#b45309;--code:#efe9dc;}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}}
+:root[data-theme=dark]{--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "Source Serif 4",Georgia,serif}
+header.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+header.top .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;font-family:Inter,system-ui,sans-serif;font-size:13px}
+header.top .brand{font-weight:700;letter-spacing:.02em;color:var(--ink);text-decoration:none}
+header.top nav{display:flex;gap:6px;margin-left:auto}
+header.top nav a{color:var(--soft);text-decoration:none;padding:6px 10px;border-radius:6px}
+header.top nav a.on{background:var(--accent);color:#fff}
+header.top button{font:inherit;background:none;border:1px solid var(--rule);color:var(--soft);border-radius:6px;padding:5px 9px;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+main{min-width:0;overflow-wrap:anywhere}
+header.top .in{flex-wrap:wrap}
+@media(max-width:520px){header.top .brand{font-size:11px}header.top nav a{padding:6px 7px}}
+@media(min-width:1000px){.wrap{grid-template-columns:270px minmax(0,1fr)}}
+aside.toc{display:none}
+@media(min-width:1000px){aside.toc{display:block;position:sticky;top:56px;align-self:start;max-height:calc(100vh - 70px);overflow:auto;padding:22px 8px 22px 0;font-family:Inter,system-ui,sans-serif;font-size:12.5px;line-height:1.4}}
+aside.toc ul{list-style:none;margin:0;padding:0}
+aside.toc li{margin:0 0 4px}
+aside.toc li.d1{margin-top:12px;font-weight:600}
+aside.toc li.d2{padding-left:10px}
+aside.toc a{color:var(--soft);text-decoration:none}
+aside.toc a:hover{color:var(--accent)}
+details.mtoc{margin:18px 0 6px;font-family:Inter,system-ui,sans-serif;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:10px 14px;background:var(--paper)}
+@media(min-width:1000px){details.mtoc{display:none}}
+details.mtoc ul{list-style:none;padding:0;margin:8px 0 0}
+details.mtoc li{margin:4px 0}
+details.mtoc li.d1{font-weight:600;margin-top:10px}
+details.mtoc li.d2{padding-left:12px}
+details.mtoc a{color:var(--soft);text-decoration:none}
+main{max-width:720px;padding:26px 0 80px}
+.lede{font-family:Inter,system-ui,sans-serif;color:var(--soft);font-size:13px;margin:0 0 4px}
+h1,h2,h3,h4{font-family:Inter,system-ui,sans-serif;line-height:1.2;letter-spacing:-.01em;scroll-margin-top:64px}
+h1{font-size:clamp(26px,4vw,34px);margin:2.2em 0 .6em;padding-top:.6em;border-top:2px solid var(--ink)}
+main > h1:first-of-type{border-top:0;margin-top:.3em;padding-top:0;font-size:clamp(32px,5vw,44px)}
+h2{font-size:clamp(20px,3vw,25px);margin:2em 0 .5em;color:var(--accent)}
+h3{font-size:17px;margin:1.6em 0 .4em}
+h4{font-size:15px;margin:1.3em 0 .3em;color:var(--soft)}
+.anchor{color:inherit;text-decoration:none}
+p{margin:0 0 1em}
+a{color:var(--accent)}
+blockquote{margin:1.2em 0;padding:.2em 0 .2em 1em;border-left:3px solid var(--accent-2);color:var(--soft);font-style:italic}
+ul,ol{padding-left:1.4em;margin:0 0 1em}
+li{margin:.25em 0}
+li > ul,li > ol{margin:.3em 0}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86em;background:var(--code);padding:.1em .35em;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--rule);border-radius:8px;padding:14px;overflow:auto;font-size:13px;line-height:1.5;margin:1.2em 0}
+pre code{background:none;padding:0;font-size:inherit}
+table{width:100%;border-collapse:collapse;font-family:Inter,system-ui,sans-serif;font-size:13.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--soft);border-bottom:2px solid var(--rule)}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5em 0}
+input[type=checkbox]{margin-right:.5em;accent-color:var(--accent)}
+li:has(> input[type=checkbox]){list-style:none;margin-left:-1.3em}
+em{font-style:italic}
+strong{font-weight:600}
+footer{font-family:Inter,system-ui,sans-serif;font-size:12.5px;color:var(--soft);border-top:1px solid var(--rule);padding:18px 0 40px;margin-top:40px}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="/docs/gamedev-handbook/">GAMEDEV HANDBOOK</a>
+  <nav><a href="/docs/gamedev-handbook/" class="on">Handbook</a><a href="/docs/gamedev-handbook/gameplan.html" class="">Gameplan</a><a href="/docs/gamedev-handbook/retros.html" class="">Retros</a></nav>
+  <button id="theme" title="Toggle theme">◐</button>
+</div></header>
+<div class="wrap">
+  <aside class="toc"><ul><li class="d1"><a href="#make-small-games-well">Make Small Games Well</a></li>
+<li class="d2"><a href="#an-indie-game-development-handbook-for-the-solo-developer">An Indie Game Development Handbook for the Solo Developer</a></li>
+<li class="d2"><a href="#how-this-book-was-built-and-how-to-read-it">How this book was built, and how to read it</a></li>
+<li class="d1"><a href="#part-0-the-whole-book-in-two-pages">Part 0 — The whole book in two pages</a></li>
+<li class="d2"><a href="#the-ten-rules-that-every-source-agreed-on">The ten rules that every source agreed on</a></li>
+<li class="d2"><a href="#the-pipeline-on-one-page">The pipeline on one page</a></li>
+<li class="d2"><a href="#the-five-documents-a-solo-developer-actually-needs">The five documents a solo developer actually needs</a></li>
+<li class="d1"><a href="#part-i-before-you-start">Part I — Before you start</a></li>
+<li class="d2"><a href="#chapter-1-why-small">Chapter 1 — Why small</a></li>
+<li class="d2"><a href="#chapter-2-learning-how-to-learn">Chapter 2 — Learning how to learn</a></li>
+<li class="d2"><a href="#chapter-3-discipline-deadlines-and-finishing">Chapter 3 — Discipline, deadlines, and finishing</a></li>
+<li class="d1"><a href="#part-ii-ideas">Part II — Ideas</a></li>
+<li class="d2"><a href="#chapter-4-where-ideas-come-from">Chapter 4 — Where ideas come from</a></li>
+<li class="d2"><a href="#chapter-5-testing-an-idea-before-you-build-it">Chapter 5 — Testing an idea before you build it</a></li>
+<li class="d2"><a href="#chapter-6-genre-mode-and-mood">Chapter 6 — Genre, mode, and mood</a></li>
+<li class="d1"><a href="#part-iii-design">Part III — Design</a></li>
+<li class="d2"><a href="#chapter-7-what-fun-is-and-how-to-choose-yours">Chapter 7 — What fun is, and how to choose yours</a></li>
+<li class="d2"><a href="#chapter-8-loops-chains-and-repetition-with-variety">Chapter 8 — Loops, chains, and repetition with variety</a></li>
+<li class="d2"><a href="#chapter-9-challenge-versus-difficulty">Chapter 9 — Challenge versus difficulty</a></li>
+<li class="d2"><a href="#chapter-10-feel-juice-and-visual-communication">Chapter 10 — Feel, juice, and visual communication</a></li>
+<li class="d2"><a href="#chapter-11-level-design-for-one-person">Chapter 11 — Level design for one person</a></li>
+<li class="d2"><a href="#chapter-12-story-only-if-it-earns-its-place">Chapter 12 — Story, only if it earns its place</a></li>
+<li class="d1"><a href="#part-iv-process">Part IV — Process</a></li>
+<li class="d2"><a href="#chapter-13-the-pipeline-prototype-slice-produce-polish">Chapter 13 — The pipeline: prototype, slice, produce, polish</a></li>
+<li class="d2"><a href="#chapter-14-documents">Chapter 14 — Documents</a></li>
+<li class="d2"><a href="#chapter-15-playtesting-methodology">Chapter 15 — Playtesting methodology</a></li>
+<li class="d2"><a href="#chapter-16-production-habits">Chapter 16 — Production habits</a></li>
+<li class="d1"><a href="#part-v-business">Part V — Business</a></li>
+<li class="d2"><a href="#chapter-17-the-market-is-a-design-input">Chapter 17 — The market is a design input</a></li>
+<li class="d2"><a href="#chapter-18-the-steam-playbook">Chapter 18 — The Steam playbook</a></li>
+<li class="d2"><a href="#chapter-19-audience-without-a-devlog">Chapter 19 — Audience without a devlog</a></li>
+<li class="d2"><a href="#chapter-20-money-honestly">Chapter 20 — Money, honestly</a></li>
+<li class="d1"><a href="#part-vi-tools-and-ai">Part VI — Tools and AI</a></li>
+<li class="d2"><a href="#chapter-21-the-toolkit-and-the-2026-engine-landscape">Chapter 21 — The toolkit and the 2026 engine landscape</a></li>
+<li class="d2"><a href="#chapter-22-ai-code-yes-shipped-content-carefully-creativity-never">Chapter 22 — AI: code yes, shipped content carefully, creativity never</a></li>
+<li class="d1"><a href="#appendices">Appendices</a></li>
+<li class="d2"><a href="#appendix-a-the-gates-checklists-the-skill-enforces">Appendix A — The gates (checklists the skill enforces)</a></li>
+<li class="d2"><a href="#appendix-b-reading-list">Appendix B — Reading list</a></li>
+<li class="d2"><a href="#appendix-c-source-index-the-61-transcripts">Appendix C — Source index (the 61 transcripts)</a></li>
+<li class="d2"><a href="#appendix-d-claims-not-verified-kept-out-of-the-body-or-flagged">Appendix D — Claims not verified (kept out of the body or flagged)</a></li></ul></aside>
+  <main>
+    <p class="lede">Indie game development handbook · draft v0.1 · for Chris's review</p>
+    <details class="mtoc"><summary>Contents</summary><ul><li class="d1"><a href="#make-small-games-well">Make Small Games Well</a></li>
+<li class="d2"><a href="#an-indie-game-development-handbook-for-the-solo-developer">An Indie Game Development Handbook for the Solo Developer</a></li>
+<li class="d2"><a href="#how-this-book-was-built-and-how-to-read-it">How this book was built, and how to read it</a></li>
+<li class="d1"><a href="#part-0-the-whole-book-in-two-pages">Part 0 — The whole book in two pages</a></li>
+<li class="d2"><a href="#the-ten-rules-that-every-source-agreed-on">The ten rules that every source agreed on</a></li>
+<li class="d2"><a href="#the-pipeline-on-one-page">The pipeline on one page</a></li>
+<li class="d2"><a href="#the-five-documents-a-solo-developer-actually-needs">The five documents a solo developer actually needs</a></li>
+<li class="d1"><a href="#part-i-before-you-start">Part I — Before you start</a></li>
+<li class="d2"><a href="#chapter-1-why-small">Chapter 1 — Why small</a></li>
+<li class="d2"><a href="#chapter-2-learning-how-to-learn">Chapter 2 — Learning how to learn</a></li>
+<li class="d2"><a href="#chapter-3-discipline-deadlines-and-finishing">Chapter 3 — Discipline, deadlines, and finishing</a></li>
+<li class="d1"><a href="#part-ii-ideas">Part II — Ideas</a></li>
+<li class="d2"><a href="#chapter-4-where-ideas-come-from">Chapter 4 — Where ideas come from</a></li>
+<li class="d2"><a href="#chapter-5-testing-an-idea-before-you-build-it">Chapter 5 — Testing an idea before you build it</a></li>
+<li class="d2"><a href="#chapter-6-genre-mode-and-mood">Chapter 6 — Genre, mode, and mood</a></li>
+<li class="d1"><a href="#part-iii-design">Part III — Design</a></li>
+<li class="d2"><a href="#chapter-7-what-fun-is-and-how-to-choose-yours">Chapter 7 — What fun is, and how to choose yours</a></li>
+<li class="d2"><a href="#chapter-8-loops-chains-and-repetition-with-variety">Chapter 8 — Loops, chains, and repetition with variety</a></li>
+<li class="d2"><a href="#chapter-9-challenge-versus-difficulty">Chapter 9 — Challenge versus difficulty</a></li>
+<li class="d2"><a href="#chapter-10-feel-juice-and-visual-communication">Chapter 10 — Feel, juice, and visual communication</a></li>
+<li class="d2"><a href="#chapter-11-level-design-for-one-person">Chapter 11 — Level design for one person</a></li>
+<li class="d2"><a href="#chapter-12-story-only-if-it-earns-its-place">Chapter 12 — Story, only if it earns its place</a></li>
+<li class="d1"><a href="#part-iv-process">Part IV — Process</a></li>
+<li class="d2"><a href="#chapter-13-the-pipeline-prototype-slice-produce-polish">Chapter 13 — The pipeline: prototype, slice, produce, polish</a></li>
+<li class="d2"><a href="#chapter-14-documents">Chapter 14 — Documents</a></li>
+<li class="d2"><a href="#chapter-15-playtesting-methodology">Chapter 15 — Playtesting methodology</a></li>
+<li class="d2"><a href="#chapter-16-production-habits">Chapter 16 — Production habits</a></li>
+<li class="d1"><a href="#part-v-business">Part V — Business</a></li>
+<li class="d2"><a href="#chapter-17-the-market-is-a-design-input">Chapter 17 — The market is a design input</a></li>
+<li class="d2"><a href="#chapter-18-the-steam-playbook">Chapter 18 — The Steam playbook</a></li>
+<li class="d2"><a href="#chapter-19-audience-without-a-devlog">Chapter 19 — Audience without a devlog</a></li>
+<li class="d2"><a href="#chapter-20-money-honestly">Chapter 20 — Money, honestly</a></li>
+<li class="d1"><a href="#part-vi-tools-and-ai">Part VI — Tools and AI</a></li>
+<li class="d2"><a href="#chapter-21-the-toolkit-and-the-2026-engine-landscape">Chapter 21 — The toolkit and the 2026 engine landscape</a></li>
+<li class="d2"><a href="#chapter-22-ai-code-yes-shipped-content-carefully-creativity-never">Chapter 22 — AI: code yes, shipped content carefully, creativity never</a></li>
+<li class="d1"><a href="#appendices">Appendices</a></li>
+<li class="d2"><a href="#appendix-a-the-gates-checklists-the-skill-enforces">Appendix A — The gates (checklists the skill enforces)</a></li>
+<li class="d2"><a href="#appendix-b-reading-list">Appendix B — Reading list</a></li>
+<li class="d2"><a href="#appendix-c-source-index-the-61-transcripts">Appendix C — Source index (the 61 transcripts)</a></li>
+<li class="d2"><a href="#appendix-d-claims-not-verified-kept-out-of-the-body-or-flagged">Appendix D — Claims not verified (kept out of the body or flagged)</a></li></ul></details>
+    <h1 id="make-small-games-well"><a class="anchor" href="#make-small-games-well">Make Small Games Well</a></h1>
+<h2 id="an-indie-game-development-handbook-for-the-solo-developer"><a class="anchor" href="#an-indie-game-development-handbook-for-the-solo-developer">An Indie Game Development Handbook for the Solo Developer</a></h2>
+<p><em>Draft v0.1 · 2026-09-22 · Built from 61 YouTube transcripts and four rounds of outside research. Written to be the knowledge base for a game-dev skill and its agents.</em></p>
+<hr>
+<h2 id="how-this-book-was-built-and-how-to-read-it"><a class="anchor" href="#how-this-book-was-built-and-how-to-read-it">How this book was built, and how to read it</a></h2>
+<p>Two bodies of video were transcribed and read in full.</p>
+<p><strong>Indie Game Clinic</strong> (25 unique videos). The channel of Dr Joe Baxter-Webb, a UK game designer and former university lecturer with about ten years in studios (first credit: narrative on <em>Amateur Surgeon 4</em>). He reviews viewer-submitted works in progress every week, which means his advice is calibrated against hundreds of real half-finished indie games rather than against hits. His recurring frame: design is an activity you do <em>with</em> players, and most indie failures are craft failures the developer could not see.</p>
+<p><strong>A curated &quot;learn game dev&quot; playlist</strong> (36 videos from many channels). Mark Brown of Game Maker&#39;s Toolkit, Rafalsky (nine years AAA and indie), Bite Me Games, Juniper (a game-design student), Isto Inc., Ben Bonk, Razbuten, Brandon, Rascal, and several unnamed creators. Eleven of these videos were about AI tools, YouTube growth, or productivity apps. Three were off-topic and are omitted; eight were adjacent and appear in Part VI.</p>
+<p><strong>Outside research</strong> (four briefs, roughly 250 sources). GDC talks, developer postmortems, Chris Zukowski&#39;s Steam data, Valve documentation, and the standard design texts. Every number in this book that did not come from a transcript carries a source in the Reading List. Claims that could not be verified are listed in Appendix D rather than silently dropped or silently kept.</p>
+<p><strong>A note on citations.</strong> The transcript files had broken headers (one URL copied into every file), so videos are cited by creator and title, not by URL. Timestamps inside the transcripts were reliable. Where a quote is given, it is verbatim from the transcript.</p>
+<p><strong>How to read it.</strong> Part 0 is the whole book on two pages. If you read nothing else, read that. Parts I through VI go in the order a project goes: mindset, idea, design, process, business, tools. The appendices are the checklists the skill will actually enforce.</p>
+<hr>
+<h1 id="part-0-the-whole-book-in-two-pages"><a class="anchor" href="#part-0-the-whole-book-in-two-pages">Part 0 — The whole book in two pages</a></h1>
+<h2 id="the-ten-rules-that-every-source-agreed-on"><a class="anchor" href="#the-ten-rules-that-every-source-agreed-on">The ten rules that every source agreed on</a></h2>
+<ol>
+<li><p><strong>Small means fewer parts, not shorter.</strong> A game with fewer parts gets more polish per part. Players compare every part of your game to the best game in its category and give a solo developer no slack. (Indie Game Clinic; Chris Zukowski; Derek Yu.)</p>
+</li>
+<li><p><strong>Prototype the unknown, not the whole game.</strong> A prototype is an object you use to run a test. It answers a question you wrote down first. If you already know a system works, you do not need to prototype it. (Indie Game Clinic; Rami Ismail; Mark Cerny.)</p>
+</li>
+<li><p><strong>Validate the repetitive core with strangers before you build content.</strong> Two or three testers on the first playable. Ten to twenty before you make more than one level or half an hour of play. If you cannot find testers, that is data about the idea. (Indie Game Clinic; Tom Francis; Valve.)</p>
+</li>
+<li><p><strong>Design is testing.</strong> If you make something in isolation and never test it, you are not designing. You are messing around in software. (Indie Game Clinic.) Watch what testers do, not what they say, and act only on what you hear consistently.</p>
+</li>
+<li><p><strong>Marketing is the product.</strong> Genre, platform, audience, art direction and price are the marketing decisions. Tweets are the eggshell. You cannot overexpose a game on Steam; the limiting factor is appeal. (Chris Zukowski; Indie Game Clinic.)</p>
+</li>
+<li><p><strong>Constraints are the idea.</strong> Audit what you can do, cannot do, and want to learn. Pick a constraint that cuts scope, then marry it to a player-facing theme that makes the constraint look like a choice. (Indie Game Clinic; Mark Rosewater; Downwell; Thomas Was Alone.)</p>
+</li>
+<li><p><strong>Fix barriers to play before you touch difficulty.</strong> &quot;Too hard&quot; usually means &quot;confused.&quot; Controls, legibility, colour, and tooltips come before balance. Balance comes near the end, with data. (Indie Game Clinic; Derek Yu.)</p>
+</li>
+<li><p><strong>Repetition with variety.</strong> Repetition makes it a game. Variety makes it a good game. Prove the repeating unit first, then run a bounded messy phase to find where variety comes from, then produce. (Indie Game Clinic; Jaime Griesemer.)</p>
+</li>
+<li><p><strong>Discipline beats motivation.</strong> Motivation starts projects; a process finishes them. Manufacture external deadlines where you must show a build to real people. Finishing is a skill. (Indie Game Clinic; Derek Yu.)</p>
+</li>
+<li><p><strong>Keep the creativity human.</strong> Use AI for code, tooling, placeholders, and research. Shipped AI art and audio carry a measured review penalty, a disclosure requirement on Steam, and no copyright. The idea, the design, and the taste stay with you. (Rafalsky; Valve; GDC 2026 survey; US Copyright Office.)</p>
+</li>
+</ol>
+<h2 id="the-pipeline-on-one-page"><a class="anchor" href="#the-pipeline-on-one-page">The pipeline on one page</a></h2>
+<pre><code>IDEA  ──►  GATE 1: one sentence (goal + 2–3 actions) and a 300-character store description.
+           Can&#39;t write them? You have a setting, not a game.
+
+PROTOTYPE  ──►  Ugly. One repeating unit of play. Built to answer a written question.
+                Time-box: if the prototype takes 1–2 days, the game takes 1–2 years.
+           ──►  GATE 2: 2–3 strangers play. Do they say &quot;one more go&quot;? Do they ask for the next build?
+
+VARIETY EXPERIMENTS  ──►  A bounded messy phase (weeks, not months). Over-scope on purpose.
+                          Find where variety comes from and what tools you need to make it.
+
+VERTICAL SLICE  ──►  One level, at ship quality, ~60% genre standards / ~40% your innovations.
+                ──►  GATE 3: 10–20 testers. Three waves. Fix all feedback tasks before adding content.
+                     Only now: Steam page, demo, content plan, balance pipeline.
+
+PRODUCTION  ──►  Content plan grid. Graybox first, beautify last. First level built last.
+                 Playtest every two weeks. Data-driven balance near the end.
+
+LAUNCH  ──►  Page up 6+ months. Demo months before Next Fest. 5,000–7,000 wishlists minimum.
+             Trailer shows gameplay in the first 2 seconds. Launch on a Monday.
+             Early Access is the launch, not a rehearsal.
+
+NEXT GAME  ──►  Slightly bigger, slightly less sloppy. If you quit, scale down, not up.
+</code></pre>
+<h2 id="the-five-documents-a-solo-developer-actually-needs"><a class="anchor" href="#the-five-documents-a-solo-developer-actually-needs">The five documents a solo developer actually needs</a></h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Size</th>
+<th>When</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>One-sentence pitch + 300-char description</td>
+<td>2 lines</td>
+<td>Day one</td>
+<td>Indie Game Clinic; Bite Me Games</td>
+</tr>
+<tr>
+<td>Design pillars</td>
+<td>2–3 forms of fun, one thematic</td>
+<td>Before the prototype</td>
+<td>Indie Game Clinic; Max Pears</td>
+</tr>
+<tr>
+<td>One-page design</td>
+<td>One page, one image, callouts</td>
+<td>Before the vertical slice</td>
+<td>Stone Librande; Game Dev Beginner</td>
+</tr>
+<tr>
+<td>Feature backlog</td>
+<td>Sheet: feature · pillar · category · status</td>
+<td>From the first idea you reject</td>
+<td>Indie Game Clinic</td>
+</tr>
+<tr>
+<td>Content plan grid</td>
+<td>Rows: environment · theme · difficulty · mechanics</td>
+<td>Before production</td>
+<td>Ed Key via Indie Game Clinic</td>
+</tr>
+</tbody></table>
+<p>Everything else is written after the prototype has shown you what the game is.</p>
+<hr>
+<h1 id="part-i-before-you-start"><a class="anchor" href="#part-i-before-you-start">Part I — Before you start</a></h1>
+<h2 id="chapter-1-why-small"><a class="anchor" href="#chapter-1-why-small">Chapter 1 — Why small</a></h2>
+<p>&quot;Make small games&quot; is the most repeated advice in indie development and the most misunderstood. Every source in this book says it. Almost none of them mean &quot;make short games.&quot;</p>
+<h3 id="11-the-quality-argument"><a class="anchor" href="#11-the-quality-argument">1.1 The quality argument</a></h3>
+<p>The usual justification is that you will finish. Indie Game Clinic makes a stronger case in <em>Develop Better Games, Faster, with Design by Constraint</em>: the smaller the game, the higher the quality of every part. A big game divides your attention across story, interface, inventory, levels, enemies, and audio. Players do not grade on effort. They compare each part of your game to the best game in its category. A 300-hour RPG competes with <em>Baldur&#39;s Gate 3</em>. &quot;If any one of those parts of your game is not up to the standard of another game in the market, that game is going to be a failure.&quot;</p>
+<p>The reaction videos on the same channel show what this looks like in practice. Post-mortems from failed indies list art style and character design as the causes. The footage shows enemies that flash instead of flinch, all-caps UI text, grey palettes, and combat with no impact. The developers never mention these because they could not see them. Nobody outside had played the game early enough to say so.</p>
+<p>Two numbers to keep in your head:</p>
+<ul>
+<li>Estimates double. A six-month game takes a year. A one-month game takes two. (Indie Game Clinic; Bite Me Games says 4–8 months becomes &quot;over a year plus&quot;; the unnamed creator of <em>Every step to actually make your dream game</em> says multiply by 1.5 to 2.)</li>
+<li>Roughly 3% of Steam releases reach 1,000 reviews. In 2025 that was 608 of 20,282. Nearly half of all releases got fewer than 10 reviews. (Zukowski, January 2026; SteamDB via TechSpot.)</li>
+</ul>
+<h3 id="12-small-means-focused"><a class="anchor" href="#12-small-means-focused">1.2 Small means focused</a></h3>
+<p>In <em>Indie Game Genres &amp; Subtractive Design</em>, the same channel reframes the advice: &quot;The advice to make smaller games is about focus.&quot; A small game has fewer parts, so the same hours buy more polish per part. The successful indie genres exist because indies applied deliberate subtractions:</p>
+<ul>
+<li><strong>Fewer characters, or none.</strong> Characters cost animation, dialogue, and behaviour. <em>Gone Home</em>, <em>Portal</em>, <em>The Talos Principle</em> make the absence of people the story. <em>Pacific Drive</em> and <em>Dredge</em> give you a car or a boat. <em>Papers, Please</em>, <em>Reigns</em>, and <em>80 Days</em> are dialogue-rich but played through an interface. &quot;Cars and boats are easier to animate than people.&quot;</li>
+<li><strong>Less level design.</strong> Levels exist for exploration and encounters. Combat does not need exploration (arena games, boss rush). One environment can be replayed through mechanics (anomaly games like <em>Exit 8</em>), through difficulty (star ratings, corpse runs), or through documents (<em>Papers, Please</em>). Some genres have no traversal at all (<em>Coffee Talk</em>, <em>VA-11 Hall-A</em>).</li>
+<li><strong>Fewer systems.</strong> Take one enjoyable element of a large genre and make it the whole game. Tower defence came from RTS by removing unit control. <em>Backpack Hero</em> is Diablo&#39;s inventory without Diablo.</li>
+</ul>
+<p>The test for a good subtraction comes from Miyamoto: a good idea solves two problems. Here, it makes the game smaller <em>and</em> adds something for the player, usually focus or mood. &quot;A good idea is one which allows you to take stuff away from the game without taking anything away from the game.&quot;</p>
+<h3 id="13-players-do-not-cut-you-slack"><a class="anchor" href="#13-players-do-not-cut-you-slack">1.3 Players do not cut you slack</a></h3>
+<p>The trap in design-by-constraint is announcing the constraint as an apology. &quot;I made a game with no characters because I can&#39;t draw characters&quot; is not a selling point. The justification must be front-of-mind for the player, something you would see on the Steam splash page: the character only has one gun because the gun is their arm. <em>Dredge</em> is a boat because the toy-like world contrasts with the horror. <em>Mini Metro</em> is abstract because it is a transit map.</p>
+<p>Indie Game Clinic&#39;s blunt version: &quot;Players don&#39;t care about what&#39;s easier for you as a developer to do; they care about their own experience.&quot;</p>
+<h3 id="14-the-ladder"><a class="anchor" href="#14-the-ladder">1.4 The ladder</a></h3>
+<p>Derek Yu, who made <em>Spelunky</em> alone in GameMaker, gives the cleanest version of the path (GameMaker interview, November 2024): &quot;Release one sloppy, fun little game quickly and then make a game that&#39;s slightly bigger and slightly less sloppy.&quot; His 2010 essay <em>Finishing a Game</em> adds the rule for failure: &quot;If you do quit, scale down, not up.&quot;</p>
+<p>The counter-example everyone cites is Eric Barone and <em>Stardew Valley</em>: four and a half years, ten hours a day, seven days a week, no jams, one huge goal. Barone himself says he is the exception. Treat him as a known exception with a known cost, not as the template.</p>
+<p>The developers who finished fast all shipped something small first or put a public build in front of players within a year:</p>
+<table>
+<thead>
+<tr>
+<th>Game</th>
+<th>Team</th>
+<th>Elapsed</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vampire Survivors</td>
+<td>1</td>
+<td>~1 year to Early Access</td>
+</tr>
+<tr>
+<td>FTL</td>
+<td>2</td>
+<td>~18 months</td>
+</tr>
+<tr>
+<td>Celeste</td>
+<td>2 core</td>
+<td>4-day jam + ~2 years</td>
+</tr>
+<tr>
+<td>Balatro</td>
+<td>1</td>
+<td>~26 months (13 hobby, 13 full-time)</td>
+</tr>
+<tr>
+<td>Undertale</td>
+<td>1 + contract art</td>
+<td>32 months</td>
+</tr>
+<tr>
+<td>Buckshot Roulette</td>
+<td>1</td>
+<td>~2 months</td>
+</tr>
+<tr>
+<td>Braid</td>
+<td>1 + artist</td>
+<td>~3.5 years</td>
+</tr>
+<tr>
+<td>Into the Breach</td>
+<td>2 + contractors</td>
+<td>~4 years</td>
+</tr>
+<tr>
+<td>Stardew Valley</td>
+<td>1</td>
+<td>~4.5 years at ~70 hrs/week</td>
+</tr>
+</tbody></table>
+<p>Sources for each row are in the Reading List.</p>
+<hr>
+<h2 id="chapter-2-learning-how-to-learn"><a class="anchor" href="#chapter-2-learning-how-to-learn">Chapter 2 — Learning how to learn</a></h2>
+<p>The single most useful reframe in the beginner material comes from an unnamed narrative-game developer who shipped a 96%-positive first game after 35 years of trying (<em>The ONE Thing You Need to Learn to Start Making Games</em>): you cannot &quot;learn to make games&quot; as a finite skill, because solo development spans a dozen disciplines. The one thing to learn is <strong>how to learn how to make games</strong>: move toward a concrete goal, hit a gap, learn only that gap, get back to work.</p>
+<h3 id="21-tutorial-hell-and-the-antidote"><a class="anchor" href="#21-tutorial-hell-and-the-antidote">2.1 Tutorial hell and the antidote</a></h3>
+<p>Every beginner-focused creator names the same disease. You follow tutorials, copy code, and &quot;trick your noggin into thinking that you learned how to code.&quot; Then you open an empty project and cannot start.</p>
+<p>The antidote has three parts.</p>
+<p><strong>Interrogate every copied line.</strong> For each line: what is it doing, what does this variable hold now, what does this built-in function do? If you cannot answer, open the documentation. Indie Game Clinic frames the whole discipline in <em>Why You Struggle to Learn Game Coding</em>: &quot;Learning the language is really a matter of using the language and constantly looking things up.&quot; Experienced programmers never stop looking things up. Research is a programming skill.</p>
+<p><strong>Decompose before you code.</strong> Write the feature in plain English, then split each line into what the computer needs told, until each sub-task is a single lookup. Indie Game Clinic&#39;s worked example is a single dialogue box: show a sprite (position, scale), draw a box (two corners), put text in it (a string), animate it letter by letter (a timer, the full string, an index), play a sound. Then add a choice, and you need clickable boxes, stored choices, and branching. Beginners expect a five-step process and meet a thirty-step one. &quot;The programming language isn&#39;t complicated. The software isn&#39;t complicated. What you are asking the computer to do is complicated.&quot;</p>
+<p><strong>Modify what you copied.</strong> Rascal (<em>How To ACTUALLY Start Making Games</em>): remake two classics from tutorials, then change them until you own the code. His Pong got a tiltable paddle and power-ups. &quot;I cannot stress enough that you cannot skip this step.&quot;</p>
+<h3 id="22-the-remake-twist-original-ladder"><a class="anchor" href="#22-the-remake-twist-original-ladder">2.2 The remake → twist → original ladder</a></h3>
+<p>The ladder appears in some form in eight of the transcripts and in the 20 Games Challenge community project. The steps:</p>
+<ol>
+<li><strong>Remake something tiny from a tutorial.</strong> Pong, Flappy Bird, Breakout, Snake, the Chrome dinosaur. Mark Brown&#39;s Unity tutorial rebuilds Flappy Bird in forty minutes precisely because it forces spawning, input, collision, UI, and a fail state. Time-box: &quot;a week or two, a month tops. Brickbreaker is not the goal. Learning how to learn is the goal.&quot;</li>
+<li><strong>Polish it for a day or two.</strong> Sound, particles, a squash on landing. &quot;Polishing a game is much harder than making a game.&quot;</li>
+<li><strong>Twist it.</strong> One design experiment: the paddle shoots, the bricks move, the paddle shrinks. Most experiments fail. &quot;The only way to discover the good ones is to try them.&quot; Juniper&#39;s <em>Tiny Games</em> class did exactly this: Flappy Bird, then a spin; Lunar Lander, then a spin; then a jam prompt with no tutorial.</li>
+<li><strong>Playtest it on someone else, silently.</strong> &quot;An hour spent play testing will teach you more about game development than 100 hours working on your game in engine.&quot;</li>
+<li><strong>Design your first original on a quarter sheet of paper.</strong> Rascal&#39;s constraint: fold a sheet twice; that is all the room the idea gets. Simple shapes, no pixel art, a main menu, sent to friends.</li>
+<li><strong>Cap each new project at one or two new skills.</strong> Everything else built on what you already do easily. This is how Rascal survived what he calls the jump from tiny to medium games, &quot;where I think most new developers end up giving up forever.&quot;</li>
+</ol>
+<p>The 20 Games Challenge formalises this as a six-step base ladder (Pong or Flappy Bird → Breakout → Space Invaders → Asteroids → Pac-Man → a tile platformer), about 20 development hours each, no step-by-step tutorials, targeted lookups allowed, with a written Definition of Done per game.</p>
+<h3 id="23-engines-one-week-then-stop-deliberating"><a class="anchor" href="#23-engines-one-week-then-stop-deliberating">2.3 Engines: one week, then stop deliberating</a></h3>
+<p>Every creator says the same three things. There is no best engine. Pick by 2D or 3D fit. People quit at this step by never choosing.</p>
+<p>The method from <em>The ONE Thing</em>: spend one week doing the official intro tutorial for each of Unity, Godot, and Unreal. At the end of the week you must choose. Brandon (<em>How to Start Gamedev in 2026</em>) adds the rule that saves months: learn the engine and its language at the same time, never the language first. &quot;You can make a game with just two things: your engine and your programming.&quot;</p>
+<p>Do not build your own engine. &quot;You don&#39;t know how to make games yet. How are you going to build a framework for making games?&quot;</p>
+<p>The 2026 landscape, with numbers, is in Chapter 21. The short version: below $200,000 in revenue, every major engine is free. Godot leads game jams (47% of GMTK 2026 entries). Unity still ships about half of Steam releases. Unreal is for high-fidelity 3D. GameMaker is a one-time $99.99 for commercial 2D. Pico-8 teaches constraint. Plain web canvas or Phaser is the fastest way to a shareable link.</p>
+<h3 id="24-art-and-audio-are-deferred-borrowed-or-bought"><a class="anchor" href="#24-art-and-audio-are-deferred-borrowed-or-bought">2.4 Art and audio are deferred, borrowed, or bought</a></h3>
+<p>The student creator of <em>Everything You Need To Start Making Games</em> puts it plainly: art &quot;is a finishing touch that&#39;s very often mistaken to be a fundamental step.&quot; Time spent learning art is time taken from the game. The anti-pattern: &quot;suddenly you have an entire sprite sheet made for a game that doesn&#39;t exist yet.&quot;</p>
+<p>Rafalsky, with nine years in the industry: &quot;Most solo game developers that succeed with a commercial title use assets from various sources.&quot; Rascal&#39;s <em>Choo Choo Charles</em> example: the solo developer retextured existing 3D assets and spent the saved hundreds of hours on the things that mattered, like the train. The rule against asset-flip perception: transform. Retexture, palette-swap, unify with a shader. Hand-make only the signature pieces: the main character, the core mechanic&#39;s visuals, the key VFX.</p>
+<p>Free and near-free sources named across the transcripts and verified in research: Kenney (CC0), OpenGameArt (check licence per asset), itch.io asset packs, Mixamo (rigged characters and animation), Polyhaven (textures, skyboxes), Freesound and Sonniss (SFX; avoid BY-NC clips in a paid game), Lospec (palettes), jsfxr/Bfxr/ChipTone (retro SFX), Aseprite ($19.99), Tiled and LDtk (free level editors), Blender, Audacity, Reaper.</p>
+<h3 id="25-the-mindset-of-quothave-you-really-triedquot"><a class="anchor" href="#25-the-mindset-of-quothave-you-really-triedquot">2.5 The mindset of &quot;have you really tried?&quot;</a></h3>
+<p>Indie Game Clinic&#39;s reality check: trying means setting aside the equivalent of a whole working day, four to eight hours, and genuinely working at it. &quot;Trying for less than a day is not really trying very hard to do something.&quot; A realistic first-month target is &quot;a few things moving around on a screen,&quot; not the illusion of a world.</p>
+<p>And the permission slip, from the same channel&#39;s <em>You Can Make Other Things</em>: most of what a game needs (story, art, music) are generic skills learnable faster in other media. Only programming and interaction design are game-specific. If what you want is a world, a tabletop campaign gets you there faster than a game. If what you want is characters, start in Ren&#39;Py. Judge yourself on whether you enjoy the daily process, not the finished-game fantasy.</p>
+<hr>
+<h2 id="chapter-3-discipline-deadlines-and-finishing"><a class="anchor" href="#chapter-3-discipline-deadlines-and-finishing">Chapter 3 — Discipline, deadlines, and finishing</a></h2>
+<h3 id="31-motivation-versus-discipline"><a class="anchor" href="#31-motivation-versus-discipline">3.1 Motivation versus discipline</a></h3>
+<p>Indie Game Clinic&#39;s <em>Why &quot;Motivation&quot; is Overrated</em> separates two forces. Motivation is &quot;unstable energy, comes in drips and drabs, like inspiration.&quot; It is good for starting. Discipline is &quot;flat consistent habits, what do you do every day or a certain amount of times a week.&quot; It is what finishes. &quot;You need both of these forces acting on you if you&#39;re ever going to make anything good.&quot;</p>
+<p>The practical shift is from goals to processes. Goals are easy (&quot;release a game&quot;). Processes are the hard part (&quot;we practice Tuesday and Thursday nights&quot;). His own evidence: one hour of art per day for five days produced more than an attempted eight-hour day, because &quot;the process often doesn&#39;t need to be the best process. You just need to have it there.&quot;</p>
+<p>The beginner creator of <em>How to Make Games When You&#39;re Bad at Everything</em> says it from the other end of the experience curve: &quot;Motivation is when you watch something inspirational and are like, &#39;Woo, I&#39;m going to do this.&#39; Willpower is when you do it and fail, but keep going.&quot; His eight-month lesson: share every discipline&#39;s output early, even when it is bad. Art shared from day one grew; music kept private for seven months after one harsh critique did not.</p>
+<h3 id="32-manufacture-external-commitments"><a class="anchor" href="#32-manufacture-external-commitments">3.2 Manufacture external commitments</a></h3>
+<p>The hack, from the same Indie Game Clinic video: create internal discipline through external commitments. Not &quot;tell people your plans,&quot; which can backfire, but &quot;commit to showing people something at a given deadline.&quot; Commercial studios have this built in: agile sprints, a testable build every two weeks, whatever is in the build is in the build. Hobbyists have none of it and must create it.</p>
+<p>Three places to manufacture deadlines:</p>
+<ol>
+<li><strong>Classes.</strong> Email a local college tutor: &quot;In September I&#39;d like to give a talk to your students about game development, and in exchange I&#39;d like them to playtest my game.&quot;</li>
+<li><strong>Conventions.</strong> Small local geek-culture events are happy to have a developer with a laptop. Team up with four or five local devs for an indie corner. The event&#39;s usefulness is a bonus; &quot;the meta goal is giving yourself a deadline to have a build ready by.&quot;</li>
+<li><strong>Clubs.</strong> If no gamedev club exists, start the one you would want to join. Monthly meetups, each one a deadline.</li>
+</ol>
+<p>Worked example: estimate the work, conclude &quot;I could have a vertical slice ready in three months,&quot; find the convention three months out, take the slice there, record the biggest comprehension and frustration problems, and base the public beta six months later on data.</p>
+<p>Every deadline in this scheme doubles as an external playtest, which you should be running anyway (Chapter 15). Derek Yu&#39;s <em>Finishing a Game</em> tip 8 says the same: &quot;Use awards, competitions, and other events as real deadlines.&quot; Supergiant printed the next update date on <em>Hades</em>&#39; main menu for the same reason.</p>
+<h3 id="33-quitting-on-evidence-not-boredom"><a class="anchor" href="#33-quitting-on-evidence-not-boredom">3.3 Quitting on evidence, not boredom</a></h3>
+<p>Creatives are driven by novelty and &quot;enjoy starting projects more than finishing them,&quot; so they convince themselves the project is bad. The show-review-build loop gives you data to decide pause, quit, or continue, &quot;rather than if the game is any good being judged by boredom.&quot;</p>
+<p>Goodgis (via Juniper&#39;s advice compilation) gives the commitment rule: prototype and experiment early, &quot;but once you decide on your game, just stick with it. There&#39;s so many skills that you&#39;ll learn just by finishing a game that you&#39;ll never encounter if you just keep abandoning your projects.&quot; And: &quot;I&#39;ve never regretted finishing a project.&quot;</p>
+<h3 id="34-derek-yu39s-fifteen"><a class="anchor" href="#34-derek-yu39s-fifteen">3.4 Derek Yu&#39;s fifteen</a></h3>
+<p>Yu&#39;s 2010 essay is the canonical text on finishing and every solo dev should read it once a year. The headings, in his words:</p>
+<ol>
+<li>Choose an idea with potential (the Venn of games I want to make, want to have made, and am good at making).</li>
+<li>Actually start the damn game. (&quot;Writing your idea down is not starting the damn game.&quot;)</li>
+<li>Don&#39;t roll your own tech if you don&#39;t have to.</li>
+<li>Prototype.</li>
+<li>Make sure the core mechanics are fun. (&quot;It should be fun to execute the most basic interactions, because that&#39;s what players will be doing the most.&quot;)</li>
+<li>Choose good partners, or work alone as long as you can.</li>
+<li>Grind is normal. Factor it into your plan.</li>
+<li>Use awards, competitions, and other events as real deadlines.</li>
+<li>Push forward.</li>
+<li>Take care of your mental and physical health.</li>
+<li>Stop making excuses for starting over. (&quot;Your code will always be a mess.&quot;)</li>
+<li>Save it for the next game.</li>
+<li>Cut. It. Out.</li>
+<li>If you do quit, scale down, not up.</li>
+<li>The last 10 percent. (&quot;The last 10 percent is really 90 percent.&quot;)</li>
+</ol>
+<p>Tip 10 is not decoration. LocalThunk&#39;s <em>Balatro</em> timeline records anxiety and sleep problems from August 2023 to launch and an anxiety attack that sent him to a doctor. Barone&#39;s 70-hour weeks were supported by a partner working two jobs. The finish line has a body count if you let it.</p>
+<h3 id="35-small-daily-habits-from-working-developers"><a class="anchor" href="#35-small-daily-habits-from-working-developers">3.5 Small daily habits from working developers</a></h3>
+<p>From Juniper&#39;s <em>The Game Dev Advice You Actually Need</em> and the <em>every step</em> blueprint:</p>
+<ul>
+<li><strong>End every day by writing tomorrow&#39;s list</strong>, with one short easy item at the top to knock off first. (Luke Muscat, designer of <em>Fruit Ninja</em> and <em>Jetpack Joyride</em>.)</li>
+<li><strong>Show the game before it is ready.</strong> &quot;&#39;It&#39;s not ready&#39; or &#39;I know it&#39;s not fun yet.&#39; Those are all excuses. The later you leave showing the game, the easier it is to be like, &#39;Well, now it&#39;s too late to change things.&#39;&quot; (Muscat.) &quot;Do not let your game be in the darkness.&quot;</li>
+<li><strong>Log invisible progress daily.</strong> A lot of game development has no visible output. A daily line in OneNote or Obsidian keeps it real. (The <em>Everything You Need</em> creator.)</li>
+<li><strong>Take breaks.</strong> Burnout is the common cause of abandoned projects, not difficulty.</li>
+<li><strong>Version control from day one of anything longer than a week.</strong> Git via GitHub Desktop is a sixty-second setup. Multiple creators have watched people in their Discords lose months of work. It is &quot;100% non-negotiable.&quot;</li>
+</ul>
+<hr>
+<h1 id="part-ii-ideas"><a class="anchor" href="#part-ii-ideas">Part II — Ideas</a></h1>
+<h2 id="chapter-4-where-ideas-come-from"><a class="anchor" href="#chapter-4-where-ideas-come-from">Chapter 4 — Where ideas come from</a></h2>
+<p>Creative people have plenty of ideas. The real problems, per Indie Game Clinic&#39;s <em>The Secret to GOOD Game Ideas</em>, are assessing them systematically and generating ideas you can actually execute. Mark Brown&#39;s Game Maker&#39;s Toolkit <em>How to find amazing game ideas</em> covers the same ground from the other direction. Between them there are about a dozen reliable methods.</p>
+<h3 id="41-four-sources-game-maker39s-toolkit"><a class="anchor" href="#41-four-sources-game-maker39s-toolkit">4.1 Four sources (Game Maker&#39;s Toolkit)</a></h3>
+<ol>
+<li><strong>An existing game as the jumping-off point.</strong> Change perspective (<em>Satisfactory</em> is first-person <em>Factorio</em>), theme (<em>Subnautica</em> pitched as &quot;<em>Minecraft</em> but underwater&quot;), medium (<em>Among Us</em> from Werewolf), or resurrect a dead series (<em>Stardew Valley</em> from <em>Harvest Moon</em>). Terry Cavanagh: &quot;Everything is a remix.&quot;</li>
+<li><strong>A genre as a recipe.</strong> Fix a problem in the genre (Ryan Clark: roguelikes were too random → <em>Crypt of the NecroDancer</em>). Combine genres (Derek Yu: Mario platforming plus NetHack minus the parts he disliked → <em>Spelunky</em>). Take something away (<em>Captain Toad</em> cannot jump). Swap the metaphor (crosshair alignment with a camera instead of a gun → <em>Pokémon Snap</em>; a pressure washer → <em>PowerWash Simulator</em>). Brown&#39;s rule: &quot;Boil the genre down to the absolute DNA, and then build outwards from there.&quot;</li>
+<li><strong>A new mechanic, bottom-up.</strong> Real-world activities (Lucas Pope&#39;s passport control → <em>Papers, Please</em>; Miyamoto&#39;s gardening → <em>Pikmin</em>). Input and controls (a touchscreen swipe as a sword slice → <em>Fruit Ninja</em>). Isolate one mechanic from another game (<em>Braid</em> from <em>Prince of Persia</em>&#39;s rewind; <em>Shovel Knight</em> from <em>Zelda II</em>&#39;s down-thrust).</li>
+<li><strong>An experience, top-down.</strong> A fantasy (FTL: &quot;Captain Picard yelling at engineers to get the shields back online&quot;). A theme (<em>Into the Breach</em>: collateral damage in superhero films). A personal experience (<em>That Dragon, Cancer</em>).</li>
+</ol>
+<h3 id="42-eight-methods-indie-game-clinic"><a class="anchor" href="#42-eight-methods-indie-game-clinic">4.2 Eight methods (Indie Game Clinic)</a></h3>
+<ol>
+<li><strong>Inspiration from life.</strong> Menial jobs, local culture, mundane slice-of-life. Be one in a hundred people who made a game about bakeries, not one in a thousand who made a game about goblins. Bonus: mundane themes force real design, because you cannot copy the combat.</li>
+<li><strong>Look at non-games for interaction design.</strong> <em>Reigns</em> is kingdom management via Tinder&#39;s swipe. <em>Mini Metro</em> is a toy train set. <em>Angry Birds</em> is a slingshot whose physics everyone already understands. Keep a notebook of real-world objects and apps that feel good to use.</li>
+<li><strong>Start with your own limitations.</strong> The skills audit: list what you can do, cannot do, and what is in the middle. Treat it as a resource inventory. Restrictions &quot;cut out 90% of ideas,&quot; leaving executable ones. An artist who cannot animate a walk cycle makes a game with talking portraits. <em>Dredge</em> has no animated characters and sold over a million. <em>Mini Metro</em> has no characters and sold over five million.</li>
+<li><strong>Find the fun, then re-theme.</strong> Gabe Cuzzillo started a top-down ninja stealth game, found that grabbing and pushing was the fun part, made the player big and heavy and the enemies small and ranged, and re-themed to a gorilla. That is <em>Ape Out</em>. Do not be too wedded to your theme.</li>
+<li><strong>Fix a perceived problem with a genre.</strong> Take a genre you <em>don&#39;t</em> like and work out what would need to change for you to like it. You do not need the solution; the problem statement narrows focus and points at an underserved market.</li>
+<li><strong>The single-sentence pitch: goal plus a couple of actions.</strong> <em>Into the Breach</em>: save the human cities; destroy the Kaiju, upgrade my mechs. <em>Stardew Valley</em>: create a prospering farm; raise livestock, grow crops, befriend townsfolk. &quot;If you can&#39;t write a single sentence that describes the main goal and some of the actions, you probably don&#39;t really have a game idea.&quot; You have a setting.</li>
+<li><strong>Design for moments.</strong> Board-game designer Eric Lang imagines players in a game store recounting what happened, then designs the game that creates those memories. Tie-break between ten ideas: &quot;the one where you can imagine the joy that players will get out of it.&quot;</li>
+<li><strong>SCAMPER</strong> on a stuck idea: Substitute (re-theme, swap a mechanic) · Combine (merge two systems into one currency, as Dark Souls does with XP and gold) · Adapt (Resident Evil for kids) · Modify/Magnify (zoom in on one element: a vampire game that is entirely about avoiding sunlight) · Put to another use (what if it ended up in a classroom?) · Eliminate (generate ideas as &quot;[game] without [X]&quot;: Skyrim without magic, a platformer without lives) · Rearrange/Reverse (play the villain, start with an elderly hero).</li>
+</ol>
+<h3 id="43-ten-rapid-fire-habits-game-maker39s-toolkit"><a class="anchor" href="#43-ten-rapid-fire-habits-game-maker39s-toolkit">4.3 Ten rapid-fire habits (Game Maker&#39;s Toolkit)</a></h3>
+<p>Break games into atomic elements and keep &quot;a periodic table of game mechanics&quot; in your head. Interrogate the games you play; flaws are opportunities. Challenge conventions (Rob Daviau asked why board games reset every session and made <em>Risk Legacy</em>). Play everything (Toby Fox brought bullet-hell dodging into an RPG). Impose a limitation. Enter jams with good themes. Open your editor and noodle (<em>A Short Hike</em> began as a cosy Unity scene). Surround yourself with music and art. Do literally anything else; brainstorming sessions and idea notebooks are &quot;terrible for idea generation,&quot; showers work. Keep the idea small: &quot;Think of a game idea as a seed.&quot;</p>
+<h3 id="44-design-by-constraint-the-full-method"><a class="anchor" href="#44-design-by-constraint-the-full-method">4.4 Design by constraint, the full method</a></h3>
+<p>This is Indie Game Clinic&#39;s core method and the one most worth turning into a skill step.</p>
+<ol>
+<li><strong>Answer the craftsperson&#39;s three questions in writing.</strong> What do I already know how to do? What do I want to learn how to do? What am I so bad at that it should not be in this project? The weakest part of most submitted games is a skill the developer does not have.</li>
+<li><strong>Build your reference set.</strong> Most people cannot imagine small games because they do not play enough of them. Play <em>Minit</em>, <em>Rymdkapsel</em>, <em>Downwell</em>, <em>Mini Metro</em>. Daydreaming about <em>The Witcher</em> is &quot;the point of view of a gamer, not a craftsperson.&quot;</li>
+<li><strong>Pick one cascading constraint</strong> that does not stop the game being good but stops it growing. No story (&quot;pick a lane&quot; for your first few games: mechanics or narrative, not both). Single screen (no camera, no levels; arenas). No characters (vehicles, buildings, interfaces). One weapon. One level until people ask for more.</li>
+<li><strong>Mood-board games that share the constraint</strong> and note their in-world framing. Single-screen games (Overcooked, Bomberman, Puzzle Bobble) share a wall or border that explains why you cannot leave.</li>
+<li><strong>Rub the theme against the constraint.</strong> Pirates plus single screen gives an island bounded by sea, or a side-view ship cross-section. Let the interactions come out of the mood board rather than from genre.</li>
+<li><strong>Write the Steam-splash-page reason</strong> a player would find each constraint cool. This is the blue-box/green-box pairing: every developer constraint coupled with an appealing player-facing theme.</li>
+</ol>
+<p>Mark Rosewater&#39;s GDC lesson 18 says it in five words: &quot;Restrictions breed creativity.&quot; Celeste&#39;s core was built in four days inside Pico-8&#39;s limits. Downwell shipped with three inputs because Ojiro Fumoto noticed more on-screen buttons made mobile games harder to control.</p>
+<hr>
+<h2 id="chapter-5-testing-an-idea-before-you-build-it"><a class="anchor" href="#chapter-5-testing-an-idea-before-you-build-it">Chapter 5 — Testing an idea before you build it</a></h2>
+<p>An idea is not a game. Three separate sources give three separate tests, and a good idea passes all of them.</p>
+<h3 id="51-the-five-ways-an-idea-sucks-bite-me-games"><a class="anchor" href="#51-the-five-ways-an-idea-sucks-bite-me-games">5.1 The five ways an idea sucks (Bite Me Games)</a></h3>
+<p>From <em>Your game idea (probably) sucks</em>:</p>
+<ol>
+<li><strong>Too big.</strong> A solo developer at five hours a week pitching an open-world MMO. Small means &quot;development cycles of 4 to 8 months, and that generally already inflates to over a year.&quot; The hidden costs of big scope: it will not get made; feedback latency (two years before anyone can react instead of two weeks); and you cannot market it early (a Steam page that is only aerial landscape shots). The discipline test: &quot;What have you done in your life for seven years non-stop that you weren&#39;t forced to by society?&quot;</li>
+<li><strong>Too vague.</strong> &quot;Kind of like <em>Return of the Obra Dinn</em> but with more meaningful choices.&quot; Diagnostic: what is the perspective, what are the main actions, what is the end goal? Without a clear vision you start a new game every three months inside the same project and end up with &quot;this Lovecraftian mess.&quot;</li>
+<li><strong>Too derivative.</strong> &quot;<em>Among Us</em> but everyone&#39;s a pirate.&quot; The self-test they ran on their own automation game: &quot;Why would anyone want to play our scrappy little game compared to <em>Factorio</em>?&quot; Also a marketing problem: content creators have already covered that exact pitch.</li>
+<li><strong>Too personal.</strong> Your D&amp;D campaign, a Touhou tribute, a pure-text RPG. Not &quot;don&#39;t make it.&quot; Ask whether it belongs on Steam or whether you are just learning Godot.</li>
+<li><strong>Too late.</strong> The three-circle Venn: the game you want to make, the game you can make, the game people want to play. Desktop idlers were blowing up; by the time you ship, &quot;you missed the boat, buddy.&quot; A seven-year project can miss an entire wave.</li>
+</ol>
+<p><strong>The universal diagnostic</strong>, repeated as their number-one advice: write the Steam short description on day one. Three hundred characters or fewer, two sentences, lots of verbs for the player&#39;s actions, the main goal, the environment, the genre, the perspective. If you cannot write it, the idea is not clear yet.</p>
+<h3 id="52-hook-anchor-appeal-game-maker39s-toolkit"><a class="anchor" href="#52-hook-anchor-appeal-game-maker39s-toolkit">5.2 Hook, anchor, appeal (Game Maker&#39;s Toolkit)</a></h3>
+<p>Three evaluation questions:</p>
+<p><strong>Can you make it?</strong> Jonas Tyroller&#39;s rule of thumb: &quot;If you can make the gameplay prototype in one or two days, then you can make the game in one or two years.&quot; A two-week prototype is a very long project. Are you passionate enough to work on it for years? Tyroller made his first idea without testing: &quot;like playing Russian roulette.&quot;</p>
+<p><strong>Will it stand out?</strong> Only matters if you want money. A <em>hook</em> is &quot;some interesting bit of information about the game that compels people to try it, or to discuss it&quot; (Ryan Clark). The headline test: &quot;<em>Darkest Dungeon</em> is a new dungeon crawler&quot; gets no clicks; &quot;a Lovecraftian dungeon crawler about the psychological toll of adventuring&quot; gets &quot;tell me more.&quot; &quot;If you can&#39;t write a catchy headline for your game idea, it probably doesn&#39;t have a hook.&quot; Warning from Zukowski: too original reads as &quot;looks cool but I don&#39;t trust it.&quot; <em>Arco</em> was well reviewed and flopped; its developer said, &quot;We&#39;d get more sales copying an already well established genre.&quot; So pair every hook with an <em>anchor</em>: familiar mechanics, a known genre, a comparable game. Zachary Richman&#39;s formula: &quot;Simple gets people in the door, unexpected gets them hooked.&quot; Tyroller&#39;s alternative lens is <em>appeal</em>, everything that draws you in before you play: fantasy appeal (&quot;I want to be this&quot;), exploration appeal (&quot;I want to explore this&quot;), toy appeal (&quot;I want to touch this&quot;).</p>
+<p><strong>Is it actually fun?</strong> &quot;Our brains are terrible video game simulators.&quot; Only a prototype answers this.</p>
+<p>Two pre-build tests from working developers: Lucas Pope will not pursue an idea if he cannot imagine a cool trailer for it. Tom Francis tries to write the game&#39;s name and draw its Steam capsule before spending resources.</p>
+<h3 id="53-the-idea-iceberg-isto-inc"><a class="anchor" href="#53-the-idea-iceberg-isto-inc">5.3 The Idea Iceberg (Isto Inc.)</a></h3>
+<p>From <em>The Game Dev Advice That Took 10 Years to Discover</em>, by a studio whose first game got near-perfect reviews and earned about seven cents an hour. Ideas look alike on the surface; depth reveals whether it is a million-dollar idea or a flop.</p>
+<ul>
+<li><strong>Level 1: Experience.</strong> Do you have the context to know what &quot;automation game&quot; means to buyers? Every developer is a gamer, so this is table stakes.</li>
+<li><strong>Level 2: Skill.</strong> &quot;An idea is only good if you can actually make it.&quot; Skills expand the pool of good ideas.</li>
+<li><strong>Level 3: Market research.</strong> They transcribed Steam&#39;s yearly top-seller list into a spreadsheet and graphed genres. Simulation, strategy, base-building were hot; puzzle was not. Zukowski&#39;s data showed the top 1% puzzle game earned $1.1M against $4.6M for simulation. &quot;The first step into objectivity.&quot; Still: &quot;You need to love your idea. It&#39;s the fuel. But the data doesn&#39;t lie. Why stack the odds against you?&quot;</li>
+<li><strong>Level 4: External validation.</strong> One question: would people buy this? &quot;Impossibly hard to accurately measure,&quot; and AAA misses too.</li>
+<li><strong>Level 5: Intuition.</strong> Only improved by making games.</li>
+</ul>
+<p>Two tools from the same video:</p>
+<p><strong>The &quot;work back&quot; exercise.</strong> What evidence at each earlier stage would give you certainty? A million copies in week one (too late). A million wishlists the day before (too late). Topping Next Fest (too late; feedback only tweaks bugs). A viral trailer (too late; they had two years of sunk cost). The real answer is early playtesting, where evidence is weaker but &quot;the ability to turn around increases.&quot;</p>
+<p><strong>&quot;The gap.&quot;</strong> &quot;What people say and what they do are completely different.&quot; The gap between &quot;oh yeah, this is cool&quot; and &quot;oh my god, I need to play this&quot; is the gap between a wishlist and a purchase. Their <em>Get to Work</em> testers &quot;would bug us to get new builds.&quot; That noticeable increase in effort is the signal. Calibrate on yourself: notice how you behave when a game is a day-one no-brainer, and look for those signs in testers.</p>
+<p><strong>Pitch decks for games that do not exist.</strong> &quot;The biggest game-changer for our studio.&quot; Brainstorm, vote to the top seven, try to explain each game&#39;s loop (the weak ones fall apart), expand survivors into cheap decks, share with friends. People are great at picking the best option and terrible at telling you how to improve one. &quot;It&#39;s easy to scrap a pitch deck that took you an hour versus a prototype that took you a week.&quot; Caveat: some games (<em>Balatro</em>) must be played to be understood.</p>
+<p>Their meta-lesson: &quot;The earlier we started validating our idea, the better the game has done.&quot;</p>
+<h3 id="54-the-learning-project-fork"><a class="anchor" href="#54-the-learning-project-fork">5.4 The learning-project fork</a></h3>
+<p>Indie Game Clinic&#39;s reaction videos keep finding the same origin story: a hobby project built to learn an engine &quot;suddenly becomes an indie game, suddenly becomes a commercial project.&quot; Decide at kick-off which one you are making. Both are legitimate. Drifting from one to the other is how a Roblox-style dance game ends up on Steam competing with <em>VRChat</em>.</p>
+<hr>
+<h2 id="chapter-6-genre-mode-and-mood"><a class="anchor" href="#chapter-6-genre-mode-and-mood">Chapter 6 — Genre, mode, and mood</a></h2>
+<h3 id="61-define-genre-strictly"><a class="anchor" href="#61-define-genre-strictly">6.1 Define genre strictly</a></h3>
+<p>Gamers argue about genre for fun. Designers need it to make better games. Indie Game Clinic&#39;s <em>Game Genres: a Design Perspective</em> borrows film theory (Rick Altman&#39;s semantic, syntactic, and pragmatic genres) and literary theory (genre versus mode: <em>Dracula</em> is horror in epistolary mode) to arrive at a strict definition:</p>
+<p><strong>Genre</strong> is what the player does moment to moment, usually described by the <strong>three Cs: character, camera, controls</strong>. &quot;Platformer&quot; and &quot;RTS&quot; tell you all three immediately.</p>
+<p><strong>Mode</strong> is structure and progression: roguelike, Metroidvania, Soulslike, deckbuilder. These tell you how the game is framed, not what you do for thirty seconds. <em>Hollow Knight</em> is a platformer (genre) in Metroidvania and Soulslike modes.</p>
+<p><strong>Mood</strong> is aesthetic and theme: cosy, horror.</p>
+<p>They stack as a pyramid. Core mechanics (genre) at the base. Progression (mode) in the middle. Aesthetic and theme on top. &quot;If people don&#39;t enjoy the main activity that they&#39;re doing over and over again, then the rest of the pyramid falls down.&quot; Aesthetic can sell a copy but &quot;is not going to save a game where the bottom and middle of the pyramid are not strong.&quot;</p>
+<h3 id="62-start-at-the-bottom"><a class="anchor" href="#62-start-at-the-bottom">6.2 Start at the bottom</a></h3>
+<p>Starting from mood leaves you &quot;in limbo&quot; with beautiful art you are too attached to throw away. Mechanics-first and theme-first designers are both fine. What is wrong is delaying the core-mechanic decision.</p>
+<p>Four common failures the pyramid catches:</p>
+<ol>
+<li>Mashups without a design reason.</li>
+<li><strong>Premature procedural generation.</strong> &quot;You do not need a level generator to make the game fun to play 100 times until you know that it is fun to play once.&quot;</li>
+<li>Premature content: levels, enemies, weapons, story, before the core is proven.</li>
+<li>Starting from a mood or mode you are not equipped to make. Starting from the core mechanic reveals early whether you have the art and code for it, and whether you enjoy programming &quot;a little guy who runs around.&quot;</li>
+</ol>
+<h3 id="63-the-roguelike-warning"><a class="anchor" href="#63-the-roguelike-warning">6.3 The roguelike warning</a></h3>
+<p>&quot;Every time someone tells me their game is a roguelike, what they really mean is that something in the game is randomized.&quot; Indie Game Clinic&#39;s <em>Making a ROGUELIKE? Watch This First</em> argues that procedural generation is not what makes the genre compelling. The heart of the genre is <strong>engine building</strong>: making strategic decisions to build a thing (a character, a deck, a vehicle), then piloting it through a test so every prior decision pays off. Runs compress a 200-hour RPG into an hour so players can experiment: be the rogue, then the wizard, then the fighter. <em>Ape Out</em> has random levels and is not a roguelike because &quot;monkey is just monkey, monkey no change.&quot;</p>
+<p>The prototype recipe that follows:</p>
+<ol>
+<li>Pick the two extremes of your engine (aggro and control; the wizard and the thief).</li>
+<li>Design those two first. <em>Hearthstone</em> was prototyped for two or three years with only two classes.</li>
+<li>Test them in a fixed, hand-made dungeon with no procedural generation.</li>
+<li>Add generation and more classes later, because generation&#39;s design function is already known.</li>
+</ol>
+<p>&quot;The engine building is the thing that you need to design first because that is what your game actually is.&quot;</p>
+<h3 id="64-a-reasoned-mashup"><a class="anchor" href="#64-a-reasoned-mashup">6.4 A reasoned mashup</a></h3>
+<p>Derek Yu&#39;s four questions, from his <em>Spelunky</em> book, are the model for combining two things on purpose rather than because you like both. What do I like about platformers? What do I dislike? What do I like about roguelikes? What do I dislike? He used &quot;the strengths of each one to counter or fix some of the problems with the other.&quot; In pyramid terms, <em>Spelunky</em> is a platformer in roguelike mode. Play it once and you would never know it was a roguelike.</p>
+<h3 id="65-genre-standards-versus-innovations"><a class="anchor" href="#65-genre-standards-versus-innovations">6.5 Genre standards versus innovations</a></h3>
+<p>For a systems-heavy game where &quot;everything is available from the start,&quot; Indie Game Clinic&#39;s <em>Prototyping, Vertical Slices, and Planning a Complex Game</em> gives a list-based method. Put every planned feature in one of two columns: <strong>genre standards</strong> (what a hardcore player of the genre expects: roads, resource buildings, healthcare) or <strong>innovations</strong> (what is unique: <em>Frostpunk</em>&#39;s heat radius, its expedition narratives).</p>
+<ul>
+<li>All standards means &quot;basically just <em>Cities: Skylines</em> but not very good.&quot; It tests nothing.</li>
+<li>Aim for about 60% standards and 40% innovations in the slice.</li>
+<li>Leave out proven, unexciting standards (underground plumbing).</li>
+<li>Any omitted standard must be for a design reason, &quot;not just because you don&#39;t have time.&quot;</li>
+<li>Pick about three innovations. Show them to people. If nobody gets excited, swap them.</li>
+<li>&quot;If you don&#39;t have any innovations, stop making the game now because it&#39;s pointless.&quot;</li>
+</ul>
+<p>Innovations should come from theme. <em>Pacific Drive</em> and <em>Frostpunk</em> both get their unique mechanics from their fiction. Exercise: &quot;<em>Prison Architect</em>, but a prison on the moon.&quot; What does the theme let you twist?</p>
+<h3 id="66-zukowski39s-numbers-on-genre"><a class="anchor" href="#66-zukowski39s-numbers-on-genre">6.6 Zukowski&#39;s numbers on genre</a></h3>
+<p>Genre is the biggest marketing decision you make, and the data is stable. Zukowski&#39;s 2025 analysis: nine of the ten genres at the top of the 1,000-review list were the same as the years before. Top by hit count: narrative (51), simulation (43), horror (39), RPG (28), idle/incremental (27), roguelike (22). &quot;Steam fans really really like simulating a job, particularly if it is blue collar.&quot; Absent from the hit list: platformers, Metroidvanias, puzzle games, 4X, traditional city builders. In 2024 the odds ranged from about 24% for open-world survival craft down to 0.25% for 2D platformers.</p>
+<p>This does not mean never make a platformer. It means know the odds, and if you make one, know exactly why yours is the one in four hundred.</p>
+<h1 id="part-iii-design"><a class="anchor" href="#part-iii-design">Part III — Design</a></h1>
+<h2 id="chapter-7-what-fun-is-and-how-to-choose-yours"><a class="anchor" href="#chapter-7-what-fun-is-and-how-to-choose-yours">Chapter 7 — What fun is, and how to choose yours</a></h2>
+<h3 id="71-why-the-word-quotfunquot-is-useless"><a class="anchor" href="#71-why-the-word-quotfunquot-is-useless">7.1 Why the word &quot;fun&quot; is useless</a></h3>
+<p>Raph Koster&#39;s <em>A Theory of Fun</em> (2004) explains why humans have fun: &quot;Fun is just another word for learning.&quot; The brain rewards recognising and mastering a pattern; once the pattern is fully learned, boredom follows. &quot;A game is destined to become boring, automated, cheated, and exploited. Your sole responsibility is to know what the game is about.&quot;</p>
+<p>Indie Game Clinic&#39;s <em>What is Fun?</em> accepts the theory and points out its limit: it does not tell a designer how to build anything. &quot;If you&#39;re going to use the word fun exclusively to refer to dopamine, then you might as well just use the term dopamine.&quot; Taxonomies are more useful, because they let you pick two or three types and evaluate every decision against them.</p>
+<h3 id="72-the-taxonomies"><a class="anchor" href="#72-the-taxonomies">7.2 The taxonomies</a></h3>
+<p><strong>Newbury&#39;s three types.</strong> Type 1 is fun while doing it (eating a meal). Type 2 is not fun during but fun to remember, because of achievement, exertion, or peril (climbing a mountain; <em>Dark Souls</em>). Type 3 is fun gone wrong. One person&#39;s Type 2 is another&#39;s Type 3.</p>
+<p><strong>Caillois&#39;s four types of play (1961).</strong> Agôn (competition and skill). Alea (luck and chance). Mimicry (role-playing). Ilinx (vertigo: &quot;whooshy, dizzying things&quot;). Modern games mix them; &quot;it&#39;s less a question of which type of play and more the ratios.&quot; Indie Game Clinic&#39;s spider-graph method comes from school cookery taste tests: put four or five axes on a chart, plot your game, compare iterations. &quot;A game usually can&#39;t push in every direction at once.&quot;</p>
+<p><strong>Bartle&#39;s four player types.</strong> Achievers, explorers, socialisers, killers. MMOs serve all four. Indies pick one or two.</p>
+<p><strong>Lazzaro&#39;s four keys (2004).</strong> Hard Fun (fiero, &quot;in the moment personal triumph over adversity&quot;). Easy Fun (curiosity). Serious Fun (relaxation and excitement). People Fun (amusement with others). Best-selling games offer at least three of the four.</p>
+<p><strong>The MDA framework&#39;s eight kinds of fun (Hunicke, LeBlanc, Zubek, 2004).</strong> Sensation, Fantasy, Narrative, Challenge, Fellowship, Discovery, Expression, Submission. The framework&#39;s other gift is the direction of reading: the designer builds Mechanics that produce Dynamics that evoke Aesthetics; the player experiences it the other way round.</p>
+<p><strong>Garneau&#39;s fourteen forms of fun (2001).</strong> Application of an ability · Advancement · Beauty · Creation · Comedy · Competition · Discovery · Immersion · Intellectual problem solving · Love · Physical activity · Power · Social interaction · Thrill of danger. Indie Game Clinic uses this list as the standard tool for pillars because it answers &quot;why would someone play the game I&#39;m making rather than something that already exists that is quite similar to it?&quot;</p>
+<p><strong>Self-Determination Theory (Ryan, Rigby, Przybylski, 2006).</strong> Three needs that independently predict enjoyment: competence (feeling effective), autonomy (meaningful choice), relatedness (connection). Rafalsky&#39;s <em>10 Game Design Tricks</em> video builds on this: most games are naturally good at competence; relatedness can come from co-op, asynchronous messages, or a narrative bond; autonomy is the trickiest, because &quot;the moment a player feels they are forced to make some decision is the moment that this gets completely destroyed.&quot; Extrinsic rewards (XP, loot) are easier and overused; Deci&#39;s 1971 study showed people who enjoyed puzzles lost interest once paid for them.</p>
+<p><strong>Sid Meier&#39;s interesting decisions (1989, restated GDC 2012).</strong> &quot;A game is a series of interesting decisions.&quot; Decisions are interesting when they involve trade-offs, are situational, express play-style, come with enough information, and produce visible consequences. &quot;The worst thing you can do is just move on. There&#39;s nothing more paranoia-inducing than having made a decision and the game just kind of goes on.&quot; Harvey Smith&#39;s extension: &quot;in an emotionally meaningful context.&quot;</p>
+<h3 id="73-design-pillars-the-tool-that-makes-the-taxonomies-useful"><a class="anchor" href="#73-design-pillars-the-tool-that-makes-the-taxonomies-useful">7.3 Design pillars: the tool that makes the taxonomies useful</a></h3>
+<p>A pillar is &quot;a set of concepts which hold up a design, what the game is about and how it&#39;s meant to make players feel.&quot; The method: pick two or three terms describing the type of fun you want players to have, then weigh every decision against whether it fits. &quot;If you&#39;ve decided creation and beauty, then why are you putting so many puzzles in?&quot;</p>
+<p>What is <strong>not</strong> a pillar: genre, camera, art style (&quot;third-person shooter&quot; and &quot;low-poly 3D&quot; are descriptions of a camera configuration and how things look), or givens of the form (jumping in a platformer). Those are constraints on the design, not the design.</p>
+<p>Examples: <em>God of War</em> (2018) had exploration, combat, and the father-son dynamic. Frictional&#39;s <em>SOMA</em> had &quot;everything is story&quot; and &quot;trust the player.&quot; Indie Game Clinic&#39;s own rule: two pillars about gameplay and one thematic. &quot;I personally can&#39;t stay inspired to work on a game unless at least one of my design pillars is something a bit more heavy and thematic.&quot;</p>
+<p>Max Pears&#39; version for larger teams: three to five elements or emotions, written where everyone can see them, with one cut test: &quot;Does this mechanic serve or fit into the pillars? If the answer is no, remove it.&quot; Sandering Emily&#39;s horror game has no monsters and no jump scares, because its one pillar is &quot;the unsettling, invasive feeling of looking at something you shouldn&#39;t be,&quot; and every feature must reinforce it. Juniper&#39;s generalisation: &quot;Usually the best design is the most intentional design.&quot; Exercise: list the adjectives that describe your game&#39;s atmosphere and check every feature against them.</p>
+<h3 id="74-the-self-audit"><a class="anchor" href="#74-the-self-audit">7.4 The self-audit</a></h3>
+<p>From the close of <em>What is Fun?</em>: Which two or three forms of fun dominate your current game? If five or six, which matter most? Are any fighting for priority? Across your career, which forms do you lean toward and avoid? Have you been &quot;trying to force yourself to work in genres that you fundamentally don&#39;t understand the appeal of&quot;?</p>
+<p>Game design requires emotional literacy: play a game, note how it makes you feel, then reverse-engineer which systems caused it.</p>
+<hr>
+<h2 id="chapter-8-loops-chains-and-repetition-with-variety"><a class="anchor" href="#chapter-8-loops-chains-and-repetition-with-variety">Chapter 8 — Loops, chains, and repetition with variety</a></h2>
+<h3 id="81-the-loop-and-its-limits"><a class="anchor" href="#81-the-loop-and-its-limits">8.1 The loop, and its limits</a></h3>
+<p>The basic game loop is anticipation → challenge → reward. The player must see the challenge coming; gameplay &quot;is also what&#39;s happening in the player&#39;s head.&quot; Loops nest: clear a room, inside clear a dungeon, inside explore a region, inside unlock the next. Jaime Griesemer&#39;s famous line about Halo is usually misquoted. The full version: &quot;In Halo 1, there was maybe 30 seconds of fun that happened over and over,&quot; <em>but</em> &quot;you have a 3-second loop inside of a 30-second loop inside of a 3-minute loop that is always different.&quot; No thirty-second stretch of Halo is ever repeated. Intro-level theory remembers the repetition and forgets the variety.</p>
+<p>Indie Game Clinic&#39;s <em>Gameplay Loops Are Out, Chains Are In</em> accepts loops as a lens and says they mostly tell you &quot;games are repetitive.&quot; A useful trick from the same channel: view loops from the side, like a digital audio workstation. Four bars of drums, sixteen of piano, stacked and starting at different times. Games are the same, and the overlaps alone produce organic variation before you add any content.</p>
+<h3 id="82-chains"><a class="anchor" href="#82-chains">8.2 Chains</a></h3>
+<p>Chains map onto emotion better than loops. Three kinds:</p>
+<p><strong>The execution chain (combo).</strong> Commit to an ordered string of actions; each success raises the stakes. Failing on link one is a shrug. Failing on link five is &quot;I almost had it.&quot; Rising emotional investment with each action.</p>
+<p><strong>The value chain</strong> (Dan Cook). What you <em>use</em> resources for gives the collecting meaning. &quot;Picking up sticks is not inherently fun. It&#39;s not enough to carry a game.&quot; <em>Fallout 4</em>&#39;s settlement building made copper wiring in telephones a decision. &quot;The destination of the chain that we know we&#39;re working towards changes the feel of engaging with mechanics earlier on.&quot; Rule: for any gather mechanic, define the destination first.</p>
+<p><strong>The secret chain.</strong> A chain the player does not know is a chain. <em>Spelunky</em>&#39;s path to the true ending. Trivial-to-trigger events whose cause the player discovers only after many accidental triggers. Works best in systemic and roguelike games because many runs raise the odds of stumbling on the trigger. &quot;You walk past something dozens of times before you realise that it&#39;s significant, and then you put the pieces together.&quot; This is where a game with simple controls gets its depth.</p>
+<h3 id="83-repetition-with-variety"><a class="anchor" href="#83-repetition-with-variety">8.3 Repetition with variety</a></h3>
+<p>From Indie Game Clinic&#39;s <em>How (and Why) to Design for Repetition With Variety</em>, the most complete process video in the set.</p>
+<p><strong>Repetition</strong> makes the game learnable (&quot;operate them consistently to even consider what they&#39;re doing to be a game and not just button bashing&quot;) and gives comfort. <strong>Variation</strong> provides surprise and delight, and mechanically it provides new tests of the core skill. Bullet-sponge enemies and shorter timers test the same skill harder; varied enemies that <em>do different things</em> make the player think differently.</p>
+<p>Two failure modes: absolute repetition (grind) and absolute variation (incoherent mishmash; <em>WarioWare</em> does it on purpose as a joke). The target is the Goldilocks state: &quot;70% repetition, 30% variation, or 90/10 even.&quot; Song structure is the shape to aim for: &quot;repetition, repetition, repetition, oh something different.&quot;</p>
+<p>Be generous where the genre&#39;s fans care. Popular games in any genre are generous with the kinds of variety <em>that</em> audience values. <em>Vampire Survivors</em>&#39; clones &quot;do the bare minimum of the repetitive stuff&quot; and skip the second column: non-standard loadouts, hidden unlocks, levels with gimmicks. If the genre normally ships 100 enemies and you ship 10, you need a hook, and you cannot &quot;charge half as much and have half as much stuff.&quot;</p>
+<p>Flow theory (Csikszentmihalyi) applies with a caveat: the ideal channel is &quot;more wobbly and up and down&quot; than the textbook diagonal. Occasional over-challenge and downtime are features. No GDC balancing talk aims for smooth.</p>
+<h3 id="84-the-composition-model-by-stage"><a class="anchor" href="#84-the-composition-model-by-stage">8.4 The composition model by stage</a></h3>
+<p>This is the process the whole book is built around.</p>
+<ol>
+<li><strong>Mechanical prototype.</strong> Simple, repetitive, &quot;a single unit of fun.&quot; Think about variety; do not implement it. Test with two or three people. Most submitted games would have caught their control problems here. &quot;A prototype is for testing. That&#39;s what prototyping means.&quot; If you moved on without testing, go back.</li>
+<li><strong>Variety experiments.</strong> After validation, &quot;let yourself get messy, let yourself overscope temporarily&quot; for a few weeks. Try every direction. Identify where variety emerges and what tools you need to produce it (level editors, data pipelines).</li>
+<li><strong>Full production.</strong> Now you have a blueprint: known-fun core, known sources of variety, known tools. Know what each kind of variety is <em>for</em>. No Steam page or public dates before this point.</li>
+</ol>
+<p>Two closing observations from the same video. &quot;When people have a clear idea of what their game is, they speed through their projects.&quot; And: &quot;The coherence of your game is the closest thing that we have to a universal quality metric for games.&quot;</p>
+<h3 id="85-the-ethics-line"><a class="anchor" href="#85-the-ethics-line">8.5 The ethics line</a></h3>
+<p>John Hopson introduced reinforcement schedules to game design in 2001 and answered the Skinner-box critics in 2012: &quot;Contingencies in games are ethical if the designer believes the player will have more fun by fulfilling the contingency than they would otherwise.&quot; Jonathan Blow&#39;s 2007 critique is the other pole: reward drips bolted on to a weak core show &quot;a lack of faith in the core game.&quot; Rafalsky&#39;s <em>10 Game Design Tricks</em> ends on the same question after cataloguing the persuasion techniques games borrow (lowball, foot in the door, door in the face, fear then relief): &quot;When does clever design cross the line into manipulation?&quot; Run Hopson&#39;s test on every retention hook. If it exists to extend session time rather than fun, players will smell it.</p>
+<hr>
+<h2 id="chapter-9-challenge-versus-difficulty"><a class="anchor" href="#chapter-9-challenge-versus-difficulty">Chapter 9 — Challenge versus difficulty</a></h2>
+<h3 id="91-the-definitions"><a class="anchor" href="#91-the-definitions">9.1 The definitions</a></h3>
+<p>Indie Game Clinic&#39;s <em>Challenge &amp; Difficulty in Game Design</em> draws the distinction that the rest of the chapter depends on.</p>
+<p><strong>Difficulty is quantitative.</strong> How much. Numbers, sliders, &quot;technically a global variable modifying other variables.&quot; Served by difficulty screens and accessibility settings.</p>
+<p><strong>Challenge is qualitative.</strong> What kind of thing is this? What skills are tested, what type of thinking or reaction the player exercises. &quot;Challenge is basically what type of game are you making.&quot;</p>
+<p>&quot;Very often we see developers focusing prematurely on the difficulty side of things.&quot; They ask &quot;how do I balance my game?&quot; during pre-production, before they have found the fun, removed barriers to play, or decided what the challenge even is.</p>
+<h3 id="92-barriers-to-play-come-first"><a class="anchor" href="#92-barriers-to-play-come-first">9.2 Barriers to play come first</a></h3>
+<p>Derek Yu&#39;s story from the <em>Spelunky</em> book: a tester asked for more health and weaker enemies. The real problem was over-complicated controls. &quot;It&#39;s as though this player asked me to remove the net because he was having trouble hitting the ball over it, neither of us realising that the real problem was that I gave him a racket with broken strings.&quot;</p>
+<p>Barriers to play are things players struggle with that you did not intend as the challenge: controls, colour as the only information channel, illegible text, missing tooltips. &quot;You cannot start thinking about difficulty and tuning the difficulty of your game while it still has barriers to play.&quot; Rocky Mullet (<em>Storm Settlers</em>) saw the same thing in the playtest guide: &quot;too hard&quot; usually means confused and not ready to be challenged.</p>
+<h3 id="93-design-levers-and-the-goblin-dungeon"><a class="anchor" href="#93-design-levers-and-the-goblin-dungeon">9.3 Design levers and the goblin dungeon</a></h3>
+<p>The levers are the things you change to modify the challenge and create variety. The worked example: rooms of five dagger goblins, 10 HP, 1 damage. Three ways to raise difficulty, each testing a different skill:</p>
+<ol>
+<li><strong>More of the same goblins.</strong> Barely tests skills more. Fine if the section should feel effortless.</li>
+<li><strong>Five deadlier goblins</strong> (20 HP, 5 damage). Twice as long to kill; more blocking and dodging. Tests existing skills harder.</li>
+<li><strong>More varieties</strong> (rangers, wizards, healers). Tests situational awareness and prioritisation; uses space; raises cognitive load. A new skill set.</li>
+</ol>
+<p>None is better. The choice depends on knowing what game you are making. The core question: &quot;What skills is the player being tested on? And if the player gets good at those skills, how does my game gradually change the context so they don&#39;t get bored?&quot;</p>
+<p><strong>Cognitive load</strong>: new skills take conscious focus, then become automatic. High load is not bad (too low is boring). The learning curve is about matching complexity to the player&#39;s stage. Never introduce many new things at once.</p>
+<h3 id="94-the-retry-loop-before-the-curve"><a class="anchor" href="#94-the-retry-loop-before-the-curve">9.4 The retry loop before the curve</a></h3>
+<p>Edmund McMillen on <em>Super Meat Boy</em> (2010): &quot;Difficulty in a platformer is usually established by a very simple formula: (Percent chance the player will die) × (Penalty for dying) = Difficulty.&quot; Remove lives, make respawn instant, keep the goal visible, and you can make levels brutally hard while keeping the game fair. &quot;When you are trying to teach someone something, you don&#39;t punish them when they make a mistake.&quot;</p>
+<p>Design the retry loop before the difficulty curve. Cheap death, instant restart, visible goal, readable hazards.</p>
+<h3 id="95-two-axes-two-vocabularies"><a class="anchor" href="#95-two-axes-two-vocabularies">9.5 Two axes, two vocabularies</a></h3>
+<p><strong>Skill floor, skill ceiling, expression range.</strong> Casual games have a very low floor. Hardcore games have a moderate floor (control complexity alone can set it). Rage games like <em>Getting Over It</em> have a narrow expression range: you are progressing or failing, with no degrees of success, and that is part of the frustration. Degrees of success are a design tool: <em>Hotline Miami</em>&#39;s end-of-level grade, <em>Overcooked</em>&#39;s stars. Two tiers (complete; complete well) let weaker players progress and create an economy that sends strong players back.</p>
+<p><strong>Continuous versus aspirational difficulty.</strong> Continuous is how hard the game is trying to make you lose. Aspirational is how hard it is to succeed <em>well</em>: a better route, a hidden puzzle, a higher score, fewer resources lost. <em>Celeste</em>&#39;s strawberries are aspirational difficulty chosen in the moment rather than a hard mode chosen up front. Continuous difficulty produces stress and relief. Aspirational difficulty produces achievement.</p>
+<p>Placing genres on the map: digital toys bottom-left; punishing action games and bullet hells top-right; roguelites slightly lower because grind currencies reduce continuous difficulty; cosy life sims and idlers bottom-right, where difficulty is hours in the day and &quot;the game isn&#39;t trying to kill you.&quot;</p>
+<p><strong>Casual versus hardcore as technical terms</strong> (Jesper Juul, 2012). Casual: intuitive, low floor, interruptible, non-threatening in fiction. Hardcore: assumes genre knowledge, demanding of time and attention, edgy in fiction. The design links to the emotional promise: &quot;punishing, cruel and hostile but rewarding&quot; versus &quot;relaxing, kind, welcoming, forgiving, respectful of your time.&quot; Neither is good or bad. You must choose. &quot;People play games to feel feelings. And if you don&#39;t understand what feelings your game is meant to make people feel, then your game isn&#39;t for anyone.&quot;</p>
+<h3 id="96-accessibility-options-are-cheap-and-legitimate"><a class="anchor" href="#96-accessibility-options-are-cheap-and-legitimate">9.6 Accessibility options are cheap and legitimate</a></h3>
+<p><em>Celeste</em>&#39;s Assist Mode: game speed, infinite stamina, extra dashes, invincibility. Maddy Thorson initially felt it &quot;felt like a betrayal&quot; of hours of tuning, then came to see difficulty as &quot;unique to everyone who plays a game, rather than something the designer is carving into stone.&quot; In 2019 the wording changed from &quot;we believe its difficulty is essential&quot; to &quot;Celeste is intended to be a challenging and rewarding experience,&quot; after speedrunner Clint Lexa pointed out the original text undermined the mode&#39;s purpose. His line: &quot;A wheelchair ramp doesn&#39;t ruin stairs, braille doesn&#39;t ruin a book, and assist mode doesn&#39;t ruin a game.&quot;</p>
+<p><em>Hades</em>&#39; God Mode stacks a little damage resistance every death, so dying stays central to the story while the curve bends toward the player.</p>
+<p>FromSoftware&#39;s single difficulty is a legitimate authored choice. Miyazaki: &quot;We want everyone to feel that sense of accomplishment and to join that discussion on the same level.&quot; It is an identity decision, not a default you fall into by not building options.</p>
+<p>The Game Accessibility Guidelines list three tiers (Basic, Intermediate, Advanced). The Basic tier is a day of work and includes remappable controls, adjustable game speed, colour that is never the only channel, and text the player advances at their own pace.</p>
+<h3 id="97-when-to-balance"><a class="anchor" href="#97-when-to-balance">9.7 When to balance</a></h3>
+<p>Data-driven balancing is the goal, but late. <em>Amateur Surgeon 4</em> rebalanced every level from a spreadsheet exported to CSV. Build the pipeline after the prototype has produced positive signals, after you have passed what HeartBeast calls the &quot;production point&quot; or green light: enough prototypes, tested with people, art direction checked. Keep one global progression variable (level index, stars, customers served) and gate content and hazards off it. Then tune near the end.</p>
+<p>Luke Muscat&#39;s tuning rule from the advice compilation: change the number by ten or a hundred times first, &quot;just to make sure that changing it is having the impact that you would expect. At least you know you&#39;re tweaking the right thing.&quot;</p>
+<hr>
+<h2 id="chapter-10-feel-juice-and-visual-communication"><a class="anchor" href="#chapter-10-feel-juice-and-visual-communication">Chapter 10 — Feel, juice, and visual communication</a></h2>
+<h3 id="101-mechanics-only-exist-if-the-player-can-see-them"><a class="anchor" href="#101-mechanics-only-exist-if-the-player-can-see-them">10.1 Mechanics only exist if the player can see them</a></h3>
+<p>Indie Game Clinic&#39;s <em>Visual Communication: Why Game Art Matters</em> separates two jobs of game art. Beauty and mood depend on art skill. Visual communication is required in every game from the first prototype, because &quot;game mechanics only work if the player understands they&#39;re there. Otherwise those are just rules operating under the hood.&quot;</p>
+<p>The broken-prototype test: if your treasure is red, spiky, and flashing, players avoid it, and your playtest data is wrong before you read it. Beginners get caught up in what is realistic. The right early question is what is readable.</p>
+<h3 id="102-two-borrowed-sciences"><a class="anchor" href="#102-two-borrowed-sciences">10.2 Two borrowed sciences</a></h3>
+<p><strong>Gestalt psychology → visual hierarchy.</strong> Humans take in the whole context. Developers are zoomed in on one thing. Decide the information hierarchy (what matters most now), then encode it with size, position, and contrast. Group HUD elements by meaning: lose-states together, currencies together. Adjacent pairs read as related.</p>
+<p><strong>Affordance theory → how things say what they do.</strong> Gibson (1979) and Don Norman: how something looks provides information about how it functions. A mug&#39;s handle and empty space tell you its use. A welded door tells you it will not open. Players bring two knowledge sets: the real world and video-game conventions. Choose object silhouettes for what they imply about acquisition and use; polish shine later.</p>
+<p>Three concrete rules from the same video:</p>
+<ul>
+<li>Give the player character and the single most important pickup a colour used nowhere else. <em>Dirt World</em>&#39;s player is &quot;very obnoxious bright teal,&quot; used only for the player and for keys.</li>
+<li>Movement is the cheapest attention grab. Lerp counters up instead of jumping. Flash a lost health segment before draining it.</li>
+<li>Write down why each HUD element sits where it does, so you can change it later without breaking the logic.</li>
+</ul>
+<h3 id="103-colour-needs-a-neutral"><a class="anchor" href="#103-colour-needs-a-neutral">10.3 Colour needs a neutral</a></h3>
+<p>From <em>Deckbuilder Devs! Please Pay Attention</em>: when a whole text block is red, &quot;the red is not doing its job of drawing attention, because it&#39;s now an area of red rather than an area of information where some of it is red.&quot; The card-correction method, live on stream: neutralise the frame, strip colour from everything except the elements that carry information, let one banner and one key object carry the theme colour, share the neutral between world and interface. Colour is a function. Colour your icons too. Prefer small high-value tweaks to existing assets over redesign.</p>
+<p>The same diagnosis appears in the reaction videos: &quot;It&#39;s grey. It&#39;s a grey game. And you throw stuff at things and they don&#39;t really react.&quot; A frenetic game wants a <em>Doom</em> or <em>Diablo</em> palette, &quot;more acidic and vibrant.&quot;</p>
+<h3 id="104-juice"><a class="anchor" href="#104-juice">10.4 Juice</a></h3>
+<p>Enemies must flinch. The single most-missed diagnosis across Indie Game Clinic&#39;s reviews is missing game feel, and it is absent from the developers&#39; own post-mortems every time. &quot;Just give me some juice.&quot;</p>
+<p>Martin Jonasson and Petri Purho&#39;s <em>Juice It or Lose It</em> (2012) demonstrates the idea with a flat Breakout clone progressively given tweening, particles, trails, screen shake, and sound. Jan Willem Nijman&#39;s <em>The Art of Screenshake</em> (2013) layers about thirty tweaks onto a bare shooter: sound, more enemies, higher fire rate, less accuracy, impact effects, hit animation, knockback, permanence (casings, corpses), camera lerp, screen shake, hit-stop, gun kick, muzzle flash, bigger and faster bullets, and finally meaning. Steve Swink&#39;s <em>Game Feel</em> names the three building blocks: real-time control, simulated space, polish.</p>
+<p>The dev-log <em>I Tried to Add Every Movement Ability to My Indie Game</em> shows the small mechanical details feel comes from: debounce jump on key release, because a key press lasts about four frames; a two-layer animation system where one-shot &quot;juice&quot; animations (landing squash, as in <em>Ori</em>) sit on top of state animations and clear themselves; probe hitboxes before any state change that grows the collider; a written override matrix once you have three or more movement abilities.</p>
+<p>Juice is the cheapest quality multiplier a solo developer has. A week of feel work changes how a game reads more than a month of content. Folmer Kelly&#39;s caveat: juice can erode immersion when it is not contextual.</p>
+<h3 id="105-typography"><a class="anchor" href="#105-typography">10.5 Typography</a></h3>
+<p>From Indie Game Clinic&#39;s <em>Typography Basics Every Game Dev Should Know</em>, the rules that matter:</p>
+<ul>
+<li><strong>Two fonts.</strong> A display face for titles and one clean sans-serif for anything the player must read to play. Every new text style (bold, italic, colour) needs a logical, consistent reason. Hearthstone and Magic use very few fonts.</li>
+<li><strong>Never set full sentences in all caps.</strong> Caps for headings of five words or fewer and single emphasised words. &quot;The font I used is only capital letters&quot; → &quot;Get a different font then.&quot;</li>
+<li><strong>Keep gameplay text in a narrow size range.</strong> Only credits may be tiny.</li>
+<li><strong>Put an outline, drop shadow, or vignette behind text over moving backgrounds.</strong></li>
+<li><strong>Match era.</strong> Serifs read old because they come from printing. Blackletter reads medieval. Stencil reads military. For a period game, find the real style guides (<em>Mini Metro</em> used New York transit signage).</li>
+<li>Illegibility has a cost beyond looks: Susan Weinschenk cites a study where harder-to-read instructions produced worse physical performance at the task described.</li>
+</ul>
+<h3 id="106-options-menus"><a class="anchor" href="#106-options-menus">10.6 Options menus</a></h3>
+<p>The player-side graphics glossary in the transcripts translates into one rule for a developer: expose render scale separately from resolution, split motion blur into per-object and camera toggles, and make chromatic aberration and film grain individually switchable. Players use these as their first performance and comfort levers.</p>
+<hr>
+<h2 id="chapter-11-level-design-for-one-person"><a class="anchor" href="#chapter-11-level-design-for-one-person">Chapter 11 — Level design for one person</a></h2>
+<h3 id="111-the-solo-developer39s-actual-job"><a class="anchor" href="#111-the-solo-developer39s-actual-job">11.1 The solo developer&#39;s actual job</a></h3>
+<p>Indie Game Clinic&#39;s <em>Level Design Approaches for Solo Devs</em> points out that most level-design content trains AAA level designers. A solo developer has three different jobs before serious level design:</p>
+<ol>
+<li>Experiment with the game to establish what the level-design requirements even are.</li>
+<li>Work out a top-level content plan.</li>
+<li>Decide what to build in which order.</li>
+</ol>
+<p>Level design is about functionality in the gameplay. Environment art is about making it coherent and attractive. Videos about occlusion culling are art and tech content mislabelled as level design.</p>
+<h3 id="112-graybox-beautiful-corners-first-level-last"><a class="anchor" href="#112-graybox-beautiful-corners-first-level-last">11.2 Graybox, beautiful corners, first level last</a></h3>
+<p><strong>Graybox before beautify.</strong> If you beautify before thorough playtesting, every later change is harder because you are dealing with far more objects. &quot;One of the most important rules in game development is that you want to keep your iteration cycles as short as possible.&quot; Anything that slows iteration before you know the game is good is a problem: emotional attachment, extra objects, art.</p>
+<p><strong>Beautiful corners.</strong> One tiny area built to final art quality while the rest stays grey. A micro vertical slice. &quot;Controlled mess.&quot;</p>
+<p><strong>Finish your first level last</strong> (John Romero). Mario&#39;s World 1 was built last. Make the middle first; build the early levels once you know what you need to onboard people into.</p>
+<p><strong>The 2:1 ratio.</strong> Do two or three things the game needs for every one thing you are doing for fun. If the fun thing is premature polish, &quot;maybe do something else for fun.&quot;</p>
+<h3 id="113-the-content-plan-grid"><a class="anchor" href="#113-the-content-plan-grid">11.3 The content plan grid</a></h3>
+<p>Ed Key&#39;s plan for <em>Hangline</em>, shown at GDC: a grid with rows for environment variation (sand, warm, cool, warm, sand, cool, so the game never looks visually boring), general level theme, rising difficulty, and features or mechanics per level. &quot;This is what I would expect to see in the planning of any game with lots of levels.&quot; The content plan is also where deadlines come from: enumerate how many levels, enemies, and abilities, and the schedule falls out.</p>
+<h3 id="114-write-your-own-rules"><a class="anchor" href="#114-write-your-own-rules">11.4 Write your own rules</a></h3>
+<p>Romero&#39;s eight rules for Doom levels are presented not as universal rules but as the model of a designer writing project rules and mapping each to a player-experience goal:</p>
+<ol>
+<li>Change floor height when changing floor textures.</li>
+<li>Use border textures between wall segments and doorways.</li>
+<li>Be strict about texture alignment; unalign slightly to hint a secret.</li>
+<li>Use contrast everywhere: light and dark, open and cramped.</li>
+<li>If a player can see outside, they should be able to get there.</li>
+<li>Several secret areas on every level.</li>
+<li>Flow so the player revisits areas and understands the 3D space.</li>
+<li>Recognisable landmarks for navigation.</li>
+</ol>
+<p>Each serves achievement, legibility, interest, or world-building. &quot;Be the person who makes the rules for your project rather than following other rules.&quot; The only universal truths are about human psychology: players flow like water, curving through space, trying every nook until the game teaches them there is never anything there.</p>
+<p>A level is four things at once: a place, an experience (emotions in sequence), a goal the player can see (hide and reveal it for rhythm), and a language (inconsistent with itself or with convention means confusion).</p>
+<h3 id="115-kishtenketsu-and-teach-test-twist"><a class="anchor" href="#115-kishtenketsu-and-teach-test-twist">11.5 Kishōtenketsu and teach, test, twist</a></h3>
+<p>Koichi Hayashida (director of <em>Super Mario 3D Land</em> and <em>3D World</em>) described the four-panel manga structure Nintendo applies to levels: introduce a mechanic in safety (ki); develop it in a slightly harder context (shō); twist it, something unexpected that makes you think about it differently (ten); a final test of mastery, then discard it (ketsu). Mark Brown&#39;s video made the structure famous: &quot;four-part, self-contained showcases for new ideas, where a mechanic can be taught, developed, twisted and then thrown away in about five minutes flat.&quot; Miyamoto, who drew comics as a boy, always asked what the third panel would be.</p>
+<p>The Level Design Book&#39;s compression: teach, test, twist. Valve&#39;s beat categories (explore, combat, choreo, puzzle) alternate to control intensity; rests re-sensitise.</p>
+<h3 id="116-guiding-without-markers"><a class="anchor" href="#116-guiding-without-markers">11.6 Guiding without markers</a></h3>
+<p>David Shaver (Naughty Dog) and Robert Yang&#39;s GDC 2018 workshop: waypoints and buddy call-outs are everywhere, &quot;but can it be done without them?&quot; The toolkit: landmarks visible from afar (Disney&#39;s &quot;weenie&quot;); light the goal and dim the rest; one consistent colour for interactables (Naughty Dog&#39;s yellow); leading lines in the blockmesh; consistent lighting language. Kim Swift on <em>Portal</em>: &quot;Players are going to want to go towards the light.&quot;</p>
+<h3 id="117-procedural-generation-is-handmade-rooms-plus-one-rule"><a class="anchor" href="#117-procedural-generation-is-handmade-rooms-plus-one-rule">11.7 Procedural generation is handmade rooms plus one rule</a></h3>
+<p>Derek Yu&#39;s <em>Spelunky</em> generator, as reverse-engineered by Darius Kazemi: a 4×4 grid of 10×8 rooms; a guaranteed solution path rolled from the top row (left, right, or drop); room templates hand-authored per exit type; off-path cells filled with variety. Generation is not free content. It is handmade pieces plus a rule that never breaks the critical path. And per Chapter 6, do not build it until you know one hand-made level is fun.</p>
+<hr>
+<h2 id="chapter-12-story-only-if-it-earns-its-place"><a class="anchor" href="#chapter-12-story-only-if-it-earns-its-place">Chapter 12 — Story, only if it earns its place</a></h2>
+<h3 id="121-five-things-to-consider-before-deciding-your-game-has-a-story"><a class="anchor" href="#121-five-things-to-consider-before-deciding-your-game-has-a-story">12.1 Five things to consider before deciding your game has a story</a></h3>
+<p>From Indie Game Clinic&#39;s <em>Story in Games: Characters &amp; Dialogue</em> workshop:</p>
+<ol>
+<li>Characters players will care about or hate, &quot;not a bunch of beige characters.&quot;</li>
+<li>Locations and environmental storytelling.</li>
+<li>Non-character narrative devices unique to games: flavour text, mechanics, interface.</li>
+<li><strong>Implementation workload.</strong> Characters speak → you answer → they remember and respond. Each layer is a system, possibly middleware.</li>
+<li><strong>Your storytelling track record.</strong> &quot;How many times have you written down a story?&quot; A new skill may be fun, but you may lack the judgement to know whether it is good, and it can make the game worse.</li>
+</ol>
+<p>The constraint chapter&#39;s &quot;pick a lane&quot; applies: learn to tell stories or learn to make fun mechanics in your first few games, not both. Story can be layered in once the core is proven.</p>
+<h3 id="122-four-player-character-types-each-with-a-cost"><a class="anchor" href="#122-four-player-character-types-each-with-a-cost">12.2 Four player-character types, each with a cost</a></h3>
+<ol>
+<li><strong>Cipher.</strong> No personality; the player&#39;s voice fills the space (<em>Tunic</em>, Gordon Freeman). Cost: heavy weight on visual appeal.</li>
+<li><strong>Fixed character.</strong> Authored (Max Payne). &quot;You probably need to be a really good writer.&quot; Cost: must be entertaining enough to justify stopping play.</li>
+<li><strong>Customisable.</strong> Everything is player choice. Cost: customisation systems instead of writing.</li>
+<li><strong>Customisable with fixed background</strong> (Mass Effect). Cost: background trees plus dialogue systems.</li>
+</ol>
+<p>Rule of thumb: &quot;If you can already write, write a game with a fixed character. If you can&#39;t write but you can make cool looking stuff, maybe make a game with a cipher.&quot; Hovering between types makes the game confusing.</p>
+<h3 id="123-craft-rules"><a class="anchor" href="#123-craft-rules">12.3 Craft rules</a></h3>
+<ul>
+<li><strong>Tutorial voice stays functional.</strong> Giving tutorial text a character voice &quot;makes the game confusing because you can&#39;t tell when it&#39;s being tutorialised.&quot; <em>Darkest Dungeon</em> separates dramatic narration from plain combat tips.</li>
+<li><strong>Directionality is a budget decision.</strong> One-way dialogue (silent protagonist, NPCs talk at you) is cheap. Two-way with choice is expensive.</li>
+<li><strong>The redaction test.</strong> Redact the names; can you still tell who is speaking? If yes, the characters have voices.</li>
+<li><strong>Density check.</strong> In a twelve-box dialogue, how many boxes do more than one thing (character plus relationship plus world)?</li>
+<li><strong>The argument exercise.</strong> &quot;Write a disagreement between two characters in your fictional world about your fictional world.&quot; Not pineapple on pizza; something that defines the world as different from ours. It is the writing equivalent of concept art, and it works because &quot;one of the best ways to make players care about your fictional world is to show how it matters to the characters.&quot; Xavier versus Magneto, not mutants versus humans.</li>
+</ul>
+<h3 id="124-two-outside-checks"><a class="anchor" href="#124-two-outside-checks">12.4 Two outside checks</a></h3>
+<p><strong>Ludonarrative dissonance</strong> (Clint Hocking, 2007). Write down what your rules reward and what your story asks the player to want. Fix any gap before writing more dialogue. <em>BioShock</em>&#39;s mechanics rewarded self-interest while its story asked for altruism, and then mocked the player for obeying the rules.</p>
+<p><strong>Environmental storytelling</strong> (Harvey Smith and Matthias Worch, GDC 2010). The player as detective. Design for <em>pull</em>, not <em>push</em>. &quot;It has to be possible to miss some things to make finding them meaningful.&quot; Set dressing and lighting cost less than voice acting and branching scripts, and they scale down to one person. <em>Journey</em> and <em>Inside</em> carry entire stories with no text.</p>
+<h3 id="125-build-the-world-from-the-interactions"><a class="anchor" href="#125-build-the-world-from-the-interactions">12.5 Build the world from the interactions</a></h3>
+<p>From the reaction videos: Mario&#39;s mushrooms are platforms, enemies, and collectibles; &quot;the gameplay and the world building are directly built in parallel.&quot; Ask of every world element: is there anything about the gameplay that justifies this? Emily Short&#39;s bar for conversation systems is the same test from the other side: conversation counts as gameplay only when it has &quot;systematic mechanics that the player can learn and manipulate.&quot;</p>
+<h1 id="part-iv-process"><a class="anchor" href="#part-iv-process">Part IV — Process</a></h1>
+<h2 id="chapter-13-the-pipeline-prototype-slice-produce-polish"><a class="anchor" href="#chapter-13-the-pipeline-prototype-slice-produce-polish">Chapter 13 — The pipeline: prototype, slice, produce, polish</a></h2>
+<h3 id="131-what-a-prototype-is"><a class="anchor" href="#131-what-a-prototype-is">13.1 What a prototype is</a></h3>
+<p>Every source that discusses prototyping arrives at the same definition, and the definition is the most abused word in indie development.</p>
+<p>&quot;A prototype is an object that you use for a test. That&#39;s it.&quot; (Indie Game Clinic, <em>Why These 2 Indies REALLY Failed</em>.) It is not a name you give an early demo. &quot;Prototyping isn&#39;t just a sloppy early version of a game. It is a test product where you specifically focus on the things that you&#39;re not sure about.&quot; (<em>Making a ROGUELIKE?</em>) &quot;You need to test the unknowns.&quot; If you already know a system works (procedural levels solve a content problem; that is solved), you do not need to prototype it.</p>
+<p>Rami Ismail: prototypes exist &quot;to answer the question marks in your idea&quot;; they should be &quot;fast, cheap, and precise&quot;; and &quot;do not use the code or content of your prototypes after the prototyping phase.&quot; Jesse Schell&#39;s prototyping tips say the same: answer a question, forget quality, don&#39;t get attached, prioritise by risk, build the toy first.</p>
+<p>Your prototype should be ugly. Pretty prototypes lock in art you are reluctant to change and blind testers to mechanical flaws. It is a <em>gameplay</em> prototype; story and art develop in parallel documents.</p>
+<p>The time-box, from Jonas Tyroller: one or two days of prototype means one or two years of game.</p>
+<h3 id="132-the-gate-everyone-uses"><a class="anchor" href="#132-the-gate-everyone-uses">13.2 The gate everyone uses</a></h3>
+<p>Mark Cerny&#39;s &quot;Method&quot; (D.I.C.E. 2002) split development into pre-production (freeform, unschedulable) and production (scheduled milestones), with one deliverable between them: a &quot;publishable first playable,&quot; a polished consumer-testable slice. If it does not excite testers, kill or rethink before the heavy spend. His line, as relayed: &quot;Production is easy, but pre-production is hard.&quot;</p>
+<p>Valve&#39;s version (Ken Birdwell, <em>The Cabal</em>, 1999) is the cautionary one. Half-Life&#39;s first near-complete version was scrapped: &quot;As a whole the game just wasn&#39;t working.&quot; A small group pulled the working ideas into one prototype level, then expanded what worked and cut what did not. The 200-page design document was written <em>after</em> that level proved the vision, not before.</p>
+<p>HeartBeast&#39;s term for the same gate is the <strong>production point</strong>: enough prototypes, tested with people, art direction checked even as concept art. Indie Game Clinic&#39;s observation is that hobbyists moving to release &quot;don&#39;t really have a good idea of where they are on this timeline.&quot; Pre-production answers three questions: what game am I making, what would it take to finish, is it worth it? &quot;It&#39;s not actually about making the game.&quot;</p>
+<p>Jonathan Blow on the continuity that a working prototype buys: &quot;Braid was a playable game from the first week and there&#39;s a direct continuity from that to the final thing that was shipped.&quot; Miyamoto on what happens when the core drifts: halfway through <em>Super Mario 64</em> &quot;it was getting boring,&quot; because Mario&#39;s turning had sped up without anyone noticing. &quot;Super Mario 64 was a project that started from that turning movement.&quot;</p>
+<h3 id="133-the-stages"><a class="anchor" href="#133-the-stages">13.3 The stages</a></h3>
+<ol>
+<li><strong>Gameplay prototype.</strong> Proves fun and technical feasibility. One repeating unit. Tested with two or three people (Chapter 8.4).</li>
+<li><strong>Variety experiments.</strong> A bounded messy phase. Discover where variety comes from and what tools you need.</li>
+<li><strong>Vertical slice.</strong> A slice of the player&#39;s timeline, not necessarily the tutorial, &quot;could be five minutes, it could be an hour,&quot; typically thirty to sixty minutes, showing final quality and style. Fed by the prototype, the design document, and a separate art bible. For systems games, about 60% genre standards and 40% innovations (Chapter 6.5). Ismail: the slice answers &quot;can we make this?&quot; at ship quality and takes months. It is a production prototype, not a design prototype.</li>
+<li><strong>Production.</strong> Content plan, graybox first, beautiful corners, first level last, playtest every two weeks, data-driven balance near the end.</li>
+<li><strong>Polish.</strong> The last ten percent is ninety percent.</li>
+</ol>
+<p>Rafalsky&#39;s solo-pipeline video adds two useful artefacts between prototype and slice: a <strong>showcase demo</strong> (&quot;a single moody hallway with flickering lights, a shadow passing in the distance, and one well-timed scary event can be enough to sell the vision&quot;) whose purpose is a high-quality video to test appetite on social channels; and the rule that core mechanics <strong>lock</strong> at the vertical slice, after which you only add levels and content.</p>
+<h3 id="134-production-maxims"><a class="anchor" href="#134-production-maxims">13.4 Production maxims</a></h3>
+<ul>
+<li>&quot;The more fun you can get out of the least work for you, that&#39;s the best approach.&quot; (Indie Game Clinic.)</li>
+<li>Prototype the core mechanic first. For a platformer, movement and jumping before anything else.</li>
+<li>In a learning project it is easy to think everything you do is good because you spent time on it. &quot;If players understand it and they find it fun, then it&#39;s good. It doesn&#39;t matter how much time it took.&quot;</li>
+<li>Structure as tutorial: <em>Dungeon Keeper</em>, <em>Warcraft</em>, and <em>Starcraft</em> campaigns introduced buildings gradually and &quot;tricked you into learning it.&quot; Early-access <em>Prison Architect</em> was a sandbox with no structure. Hardcore &quot;give me everything&quot; players are never representative.</li>
+<li>For economy-heavy games, balance in a spreadsheet or paper prototype before the engine, &quot;because when you&#39;re programming it puts you in a very different mindset to sitting there imagining being a player.&quot;</li>
+</ul>
+<hr>
+<h2 id="chapter-14-documents"><a class="anchor" href="#chapter-14-documents">Chapter 14 — Documents</a></h2>
+<h3 id="141-why-write-anything"><a class="anchor" href="#141-why-write-anything">14.1 Why write anything</a></h3>
+<p>Game Dev Beginner&#39;s <em>How to write a Game Design Document</em> gives the single reason: &quot;They allow you to explain your game idea to someone else. That&#39;s it.&quot; For a solo developer, &quot;the other person is probably going to be you,&quot; because your vision is incomplete, things change, and iteration pushes development in new directions. If the game is small enough to keep in your head, you do not need a document. If you will forget direction-critical information, you do.</p>
+<p>Indie Game Clinic&#39;s minimalist approach agrees and adds the biggest hidden benefit: a document that covers every area briefly forces you into &quot;the areas of the game that you are not naturally drawn to.&quot; Story people write the Lord of the Rings and forget level design, monetisation, and art.</p>
+<p>Ninety percent of detailed early writing becomes irrelevant. Valve&#39;s 200 pages were written after the prototype. Cerny&#39;s macro design is a pre-production output, but it is a map of the whole game, not a spec for each part.</p>
+<h3 id="142-the-one-pager"><a class="anchor" href="#142-the-one-pager">14.2 The one-pager</a></h3>
+<p>Stone Librande&#39;s GDC 2010 talk <em>One-Page Designs</em>: &quot;Why create a document with more than one page if most people only read the first page anyway?&quot; The format is an annotated diagram, not prose. A focused illustration, map, or chart, with callouts describing how each part works. Poster-sized, hung on the wall, with white space for notes. &quot;The goal of design, of any designer and their design, is to communicate an idea.&quot;</p>
+<p>How to make one: decide the page&#39;s single titled objective (a combat system, a level, the whole loop); build it as a main illustration plus callouts; everything added must support and link to the objective. &quot;Your one page doesn&#39;t have to be a small page.&quot; Put the pillars at the centre and expand outward.</p>
+<p>Ian Schreiber&#39;s GDC 2025 talk names the four one-pagers most projects need: game vision, pillars, loops, resource flow.</p>
+<h3 id="143-the-minimalist-gdd-ten-short-sections"><a class="anchor" href="#143-the-minimalist-gdd-ten-short-sections">14.3 The minimalist GDD (ten short sections)</a></h3>
+<p>Indie Game Clinic&#39;s worked example, in order, general to specific, each section as short as it can be:</p>
+<ol>
+<li><strong>Broad description / elevator pitch.</strong> No superlatives; reference other games with pictures. This paragraph is your Steam page. <em>Ape Out</em>&#39;s Devolver blurb is the model: one paragraph that covers aesthetics, the player&#39;s goal, and moment-to-moment actions.</li>
+<li><strong>Design pillars.</strong> Three, from the fourteen forms of fun; explain why they exist and how they reinforce each other.</li>
+<li><strong>Audience and market.</strong> &quot;Never design something that is for everyone. If you can&#39;t work out who it&#39;s for, work out who it&#39;s not for.&quot; Match genre to platform.</li>
+<li><strong>Core gameplay</strong> (the biggest section). Controls, the verbs, the lists with a lead sentence. Mark the <strong>MVP boundary</strong> explicitly (&quot;other follower types might be developed later but this list is the MVP&quot;).</li>
+<li><strong>Balance and pacing.</strong> Broad approach only, no spreadsheet yet. Use modal verbs deliberately: <em>will</em> &gt; <em>should</em> &gt; <em>could</em>.</li>
+<li><strong>Character designs.</strong> Only where art influences gameplay.</li>
+<li><strong>Setting and world.</strong> Use a fixed map for the prototype even if the final game is procedural.</li>
+<li><strong>Tone and aesthetics.</strong> A mini mood board.</li>
+<li><strong>Narrative.</strong> Possibly &quot;not doing one.&quot; If narrative-heavy, a separate document.</li>
+<li><strong>Business model.</strong> Platform, price, demo, funding.</li>
+</ol>
+<p>Plus a <strong>content plan</strong>: how many levels, enemies, abilities. This is where deadlines come from.</p>
+<p>Rules of the form: respect the reader (diagrams, images, tables; &quot;making game design documents is very similar to making learning materials&quot;); every bullet list has a lead sentence; concision is &quot;one of the core most important skills that a game designer can have.&quot; It is a working document; split it into a folder as the project grows. Before it, write a one-pager: one page, one image, what and why it would succeed.</p>
+<p>The gate that governs when to expand the document: &quot;Don&#39;t make more than a level&#39;s worth of content, don&#39;t make more than half an hour&#39;s worth of gameplay, until your game has been tested by 10 or 20 people.&quot;</p>
+<h3 id="144-the-feature-backlog"><a class="anchor" href="#144-the-feature-backlog">14.4 The feature backlog</a></h3>
+<p>From Indie Game Clinic&#39;s stream on scope creep. A Google Sheet with four columns:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Rationale / pillar</th>
+<th>Category</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Player can click items to trigger them</td>
+<td>Immersion</td>
+<td>Core gameplay</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Items have unique click sounds</td>
+<td>Immersion</td>
+<td>Feedback and juice</td>
+<td>On hold</td>
+</tr>
+</tbody></table>
+<p>Capture every idea the moment it is made, including ideas you dislike. &quot;Your idea has been heard. I&#39;ve recorded and stored your idea.&quot; Never argue scope in the moment; &quot;yes, and&quot; from improv keeps ideas flowing. Fix a cadence (two-week sprints, or three weeks build plus one week playtest and review) and only pull from the backlog at boundaries. Alternate focus sprints (one pillar) with balanced sprints (a few from each). Tag every feature to a pillar; drop features that serve none.</p>
+<p>The active-voice rule from the reaction videos: &quot;The scope of the game is coming from you. So own that. Don&#39;t say &#39;the scope kept getting bigger.&#39; That&#39;s the passive voice.&quot; Scope creep is a discipline failure, and the backlog is the discipline.</p>
+<h3 id="145-tools"><a class="anchor" href="#145-tools">14.5 Tools</a></h3>
+<p>Any of: a Google Sheet, Trello with three columns (backlog, doing, done), Miro as a whiteboard for design notes and mood boards, Notion or Obsidian for a wiki, Milanote for boards. Multiple creators warn against one giant notepad and against obsessive note-taking: &quot;It&#39;s really hard to tell if a game mechanic is fun until you implement and test it.&quot; Develop first, note along the way, tidy only when collaborating.</p>
+<hr>
+<h2 id="chapter-15-playtesting-methodology"><a class="anchor" href="#chapter-15-playtesting-methodology">Chapter 15 — Playtesting methodology</a></h2>
+<h3 id="151-why"><a class="anchor" href="#151-why">15.1 Why</a></h3>
+<p>&quot;It&#39;s literally impossible to give yourself the experience of a first-time player.&quot; Playtesting answers: is it fun, do players understand it, what trips them up, can they finish, do they like it. &quot;Games are perfect in our heads and in the dev environment, but they&#39;re real in front of our players.&quot; (Indie Game Clinic, <em>The ULTIMATE Playtest Guide</em>.)</p>
+<p>The other secret sauce is motivation: watching delight, or watching someone <em>not</em> get lost.</p>
+<p>And the design definition that underlies the whole book: &quot;In order to be actually designing something, you kind of need to work with the person it&#39;s for. If you&#39;re making something in isolation and you&#39;re never testing it, you&#39;re not actually designing. You&#39;re just messing around in software.&quot;</p>
+<h3 id="152-method-versus-methodology"><a class="anchor" href="#152-method-versus-methodology">15.2 Method versus methodology</a></h3>
+<p>&quot;A method is a way of doing something. A methodology is the reasoning behind doing it that way.&quot; There is no one-size-fits-all playtest method. Researchers design their own experiments; so should you. Every method below comes with its reasoning so you can adapt it. If you adopt a method and cannot say why, you have been given a method but not the methodology.</p>
+<h3 id="153-goal-driven-tests"><a class="anchor" href="#153-goal-driven-tests">15.3 Goal-driven tests</a></h3>
+<p>Before every test, write one line: what needs validating or clarifying at this stage. Then define <strong>indicators</strong>: things you want to see happen or not happen during the session. Indicators are more informative than surveys. Frame it as an experiment: &quot;this moment or system will make this type of player think, feel, or do X.&quot;</p>
+<p>Example from <em>Escape from MW</em>: deciding whether to remove the jump. Indicators: does the player try to jump repeatedly; do they realise there is no jump; do they report jump as &quot;not working.&quot; Two builds. Result: the jump was &quot;more annoying than useful,&quot; and many no-jump testers never noticed.</p>
+<p>Keep written playtesting guidelines: what to say and do before, during, and after, down to &quot;say thank you and ask if they have questions.&quot;</p>
+<h3 id="154-test-early-and-read-the-recruiting-signal"><a class="anchor" href="#154-test-early-and-read-the-recruiting-signal">15.4 Test early, and read the recruiting signal</a></h3>
+<p>Chris of Hilfort Games: <em>10 Bells</em> barely tested and succeeded (&quot;we count ourselves very lucky&quot;). <em>Orbs Orbs Orbs</em> flopped, and he attributes it to not validating early. It was hard even to find testers, &quot;and that should have been the huge red flag.&quot; Indie Game Clinic&#39;s rule: <strong>if you cannot find any playtesters, the idea itself may not be appealing.</strong></p>
+<p>Dryden (<em>Disinherited</em>): the fear is that an unrealised vision cannot get quality feedback, or feedback will corrupt it. Reality: the vision is &quot;foggy and malleable&quot; and feedback is &quot;a wet stone that you can sharpen it against.&quot; His first game went a year before anyone played; the opening was too long, too hard, too easy to get lost in. In a pass-the-game jam he uploaded to a private itch page almost daily and shipped in a week.</p>
+<p>Brief testers that it is a prototype. Put a box on the title screen explaining what pre-alpha means. Leave placeholders, janky animations, headless models, &quot;nothing that breaks atmosphere, but constant reminders it&#39;s open to change.&quot; Testers who think a game is finished stay quiet about problems.</p>
+<h3 id="155-the-three-waves-rocky-mullet"><a class="anchor" href="#155-the-three-waves-rocky-mullet">15.5 The three waves (Rocky Mullet)</a></h3>
+<ol>
+<li><strong>Wave 1: two or three people.</strong> Find the problems that are &quot;obvious for everyone but me,&quot; so the big test is not dominated by one annoying thing.</li>
+<li><strong>Wave 2: everyone.</strong> Volume, so patterns emerge over any single opinion. Change things between waves.</li>
+<li><strong>Wave 3: selective, trusted testers.</strong> Confirm the fixes. &quot;Tackling some feedback can take three, four, five iterations.&quot;</li>
+</ol>
+<p>Observation: on the second run he got far more late-game feedback for features that had not changed, because early fixes let players get further. Biggest impact of playtesting: UX and onboarding. Planning rule: tackle all feedback-derived tasks before adding new content. &quot;No point adding new content most players would simply never see.&quot;</p>
+<p>The deduction-game developer&#39;s variant: <strong>road test before stress test.</strong> Twenty testers all found the same game-breaking bug, &quot;soul crushing&quot; and unmanageable. Early on, &quot;two corroborating accounts on how much it sucks&quot; is all you can cope with. Find the highest-quality testers first; plan a hundred for metrics only once the slice is done.</p>
+<h3 id="156-rite-adam-alchemist39s-alcove"><a class="anchor" href="#156-rite-adam-alchemist39s-alcove">15.6 RITE (Adam, <em>Alchemist&#39;s Alcove</em>)</a></h3>
+<p>Rapid Iterative Testing and Evaluation, borrowed from UX:</p>
+<ol>
+<li>Watch one person play.</li>
+<li>Write down everything even slightly noteworthy. Keep communication to an absolute minimum. Intervene only at an unpassable roadblock.</li>
+<li>Ask them beforehand to narrate thoughts and feelings.</li>
+<li>Afterwards, review notes and watch the recording.</li>
+<li>Fix each serious problem the tester hit.</li>
+<li>Repeat with a new tester. Ideally they will not hit the previous problems; if they do, find another solution.</li>
+</ol>
+<p>&quot;RITE testing isn&#39;t meant to make your game easy to play. It&#39;s meant to make your game easy to <em>want</em> to play.&quot; One change (spells with multiple finite uses instead of one) &quot;vastly improved&quot; reception.</p>
+<h3 id="157-valve39s-rules"><a class="anchor" href="#157-valve39s-rules">15.7 Valve&#39;s rules</a></h3>
+<p>Ken Birdwell&#39;s account of Half-Life: more than 200 two-hour sessions, about half with repeat players. &quot;Other than starting the game for them and resetting it if it crashed, the observers from Valve were not allowed to say anything. They had to sit there quietly taking notes.&quot; Each session produced about 100 action items. &quot;Nothing is quite so humbling as being forced to watch in silence as some poor play-tester stumbles around your level for 20 minutes, unable to figure out the &#39;obvious&#39; answer.&quot;</p>
+<p>Kim Swift on <em>Portal</em>: &quot;We playtested our game every single week.&quot; Test Friday, discuss Monday, apply during the week, test again Friday. Erik Wolpaw&#39;s story-retell test: at the end, ask them to tell the story back. Whatever nobody picked up on, they did not care about; cut it.</p>
+<p>Rule one, per Mark Brown&#39;s summary: shut up and watch. Swift: &quot;They may tell you later that they like the game but you&#39;ll really tell by their body language.&quot;</p>
+<h3 id="158-watch-what-they-do-not-what-they-say"><a class="anchor" href="#158-watch-what-they-do-not-what-they-say">15.8 Watch what they do, not what they say</a></h3>
+<p>In person: tensed or relaxed, eyes on screen or wandering, controller grip, sweating. Remotely: vocal reactions are unguarded. Behavioural signals: wandering in confusion; reading dialogue or skipping it; pushing movement mechanics immediately or waiting for the tutorial; on failure, retry or put it down.</p>
+<p>Moderated small-scale script: &quot;I&#39;m making this cool new game. It would really help me out to watch someone play it. You got 30 minutes next week?&quot; Screen and audio. Open with &quot;You&#39;re not going to hurt my feelings.&quot; Ask them to think out loud. Do not jump in unless completely stuck or a blocking bug. Let them struggle through the tutorial; &quot;it&#39;s important to see the friction.&quot; Probe at the moment of friction or success: &quot;How did that feel?&quot; End with a standard question set.</p>
+<p>Rafalsky&#39;s UX-lab trick: open the debrief with questions about aspects you are sure are good, so testers get comfortable before critiquing the combat. The <em>every step</em> blueprint&#39;s four: what did you enjoy most, what frustrated you, any bugs, any suggestions. Schell Games&#39; six: most frustrating moment; favourite moment; anything you wanted to do that you couldn&#39;t; magic wand; what were you doing (tests understanding); how would you describe this to friends.</p>
+<p>The observer effect is real, so also release widely for a &quot;cloud of data.&quot; Individual data points are lower quality; repeated themes beat any single piece of feedback.</p>
+<h3 id="159-the-consistency-rule-and-the-symptom-rule"><a class="anchor" href="#159-the-consistency-rule-and-the-symptom-rule">15.9 The consistency rule and the symptom rule</a></h3>
+<p>&quot;Only pay attention to things that you hear consistently,&quot; and from people you trust. One developer implemented a single piece of feedback he knew was wrong because it nagged him.</p>
+<p>AIA (<em>Mana Valley</em>): &quot;Players don&#39;t always understand the game&#39;s design, so their feedback often comes out as suggestions that may not be the best fix. It&#39;s your job to find the real problem behind what they&#39;re saying and solve it in a way that fits your vision.&quot; Players asked for HP regeneration; he wanted potions to matter; the fix was regeneration only after thirty seconds out of combat. &quot;Make the character faster&quot; may really be friction, gravity, or a hidden modifier.</p>
+<p>Valve, Rafalsky, Juniper, and the <em>every step</em> blueprint all say it as an imperative: <strong>do not talk to them while they are playing.</strong></p>
+<h3 id="1510-who-to-test-with"><a class="anchor" href="#1510-who-to-test-with">15.10 Who to test with</a></h3>
+<p>Ask every tester two things first: their favourite games and why (reveals motivation), and the closest game to yours they have played (reveals the lens).</p>
+<p><strong>Genre veterans</strong> understand the language but bring preconceptions to un-teach (<em>Disinherited</em>&#39;s intentionally weak main attack; <em>Dead Cells</em> players stand and whack). <strong>Inexperienced players</strong> test onboarding; their questions reveal the narrative promises your game is making, intended or not. <em>10 Bells</em> was tested by the developer&#39;s fiancée and her friend, mobile gamers who do not play horror; their questions improved telegraphing.</p>
+<p>Warning on top players: in competitive genres they &quot;have ulterior motives&quot; and hide what they find. &quot;High-level players don&#39;t give good advice.&quot; Take their behaviour, not their proposed changes.</p>
+<p>Where to find testers: Discord servers (including engine servers), itch.io game jams (&quot;gold&quot;), your own channel even at 83 followers, r/playmygame, Steam&#39;s Playtest feature (free, no key management, requires a Coming Soon page), friends and family for the first moderated sessions.</p>
+<h3 id="1511-scaling-up"><a class="anchor" href="#1511-scaling-up">15.11 Scaling up</a></h3>
+<p>The Steam Playtest path from the guide: friends and family until it goes okay → newsletter sign-ups with Steam keys, and <strong>add analytics</strong> now because you are no longer watching → first public playtest marketed as a beta (Zukowski: make it a marketing beat; one developer got a Rock Paper Shotgun article and 1,000+ testers, then added a wait list) → scale back down to closed tests for focused balance questions → release the demo once positive feedback is consistent.</p>
+<p>Tom Francis&#39;s 2026 rule for the finish line: at least 100 players in multiple rounds. &quot;Nothing is as expensive as launching without it.&quot;</p>
+<p>Thank testers: credits, future builds, money. They will test your next game.</p>
+<h3 id="1512-you-are-the-director"><a class="anchor" href="#1512-you-are-the-director">15.12 You are the director</a></h3>
+<p>Testing is not carte blanche for players to dictate the game. &quot;As the designer and director of my game, I decide what&#39;s important, but playtesters help me decide what&#39;s more urgent.&quot; You are the creative director, project manager, and expert, and that expertise is precisely why you cannot judge first-time UX. Near launch, a hardcore few will find strategies and exploits you never considered because you play &quot;the proper way.&quot; Success requires a group who find the game initially appealing <em>and</em> then learnable and engaging; playtesting shows both.</p>
+<hr>
+<h2 id="chapter-16-production-habits"><a class="anchor" href="#chapter-16-production-habits">Chapter 16 — Production habits</a></h2>
+<h3 id="161-version-control-day-one"><a class="anchor" href="#161-version-control-day-one">16.1 Version control, day one</a></h3>
+<p>Git plus GitHub Desktop is a sixty-second setup (Juniper walks through it: new repository, path to the project, .gitignore for your engine, publish, commit with a message, push). Name commits so future-you knows what to go back to. Multiple creators have watched people in their Discords lose months of progress. Rascal: &quot;the most underrated tool for a solo developer.&quot; Perforce or Plastic for large binary assets or Unreal. Branch per person when collaborating.</p>
+<h3 id="162-one-to-two-new-skills-per-project"><a class="anchor" href="#162-one-to-two-new-skills-per-project">16.2 One to two new skills per project</a></h3>
+<p>Rascal&#39;s rule for surviving the tiny-to-medium jump. Everything else in a new project is built on what you already do easily. His examples: a 48-hour <em>Peak</em> remake to learn Unreal&#39;s Gameplay Ability System; a simple Unity project to learn a new engine; the Boulder game to learn art, sound, and Steam prep.</p>
+<h3 id="163-estimates-and-time"><a class="anchor" href="#163-estimates-and-time">16.3 Estimates and time</a></h3>
+<p>Multiply every estimate by 1.5 to 2. &quot;There&#39;s usually always a bug or something that just throws off the project.&quot; &quot;Twenty-four hours make a game&quot; videos are planned ahead, heavily edited, made by people with years of experience, and &quot;usually filled to the brim with bugs that you won&#39;t see in the video.&quot; Aim to complete your first solo project within a year part-time (Rafalsky); target one to three months for the first &quot;bigger&quot; game and expect double.</p>
+<h3 id="164-clean-code-where-you-will-extend"><a class="anchor" href="#164-clean-code-where-you-will-extend">16.4 Clean code where you will extend</a></h3>
+<p>Jordan Carter (<em>Choppy Waters</em>): &quot;You do not need clean code to release a great game, but the cleaner your code is, the more capable you are of adding content.&quot; After playtesting he had fifty ability ideas; refactoring the ability system to be data-driven cost the same as brute-forcing them and paid off after. Refactor the system you will be adding to most. Brandon&#39;s caveat for beginners: you cannot value architecture until &quot;you&#39;ve felt the pain of spaghetti.&quot; Simple is best early.</p>
+<p>Mark Brown&#39;s programming maxims from the Unity tutorial hold at any scale: expose tuning values as public variables and tune in play mode (&quot;changing numbers back and forth: honey, that&#39;s game design!&quot;); multiply movement by delta time (Dark Souls 2&#39;s weapon durability doubled at 60 fps); put repeated code in a function; make things less rigid and open to future ideas.</p>
+<h3 id="165-debug-with-tools-not-by-staring"><a class="anchor" href="#165-debug-with-tools-not-by-staring">16.5 Debug with tools, not by staring</a></h3>
+<p>From the Unity AI video and the engine-less platformer dev-log: when something is wrong, build a debug overlay or visualisation before asking for a fix. Suspect your own inputs (a baked texture, a vague prompt) before the tool. Profile before optimising. Keep a &quot;Bug Detective&quot; habit: write down the symptom, the wrong assumption, and the fix.</p>
+<h3 id="166-ask-for-help-properly"><a class="anchor" href="#166-ask-for-help-properly">16.6 Ask for help properly</a></h3>
+<p>&quot;Ask the question directly. Don&#39;t ask to ask. State your issue, the code or details you&#39;re having trouble with, and mention solutions that you&#39;ve already tried.&quot; Format code as code. Google and YouTube first; ChatGPT after you can read code, because &quot;until you get a good grasp of how the engine works, it could just be plain wrong.&quot; Solve things yourself when you can: &quot;you will remember that solution so much better than if AI just spoon-feeds you.&quot;</p>
+<h3 id="167-the-optimisation-checklist-only-when-you-need-it"><a class="anchor" href="#167-the-optimisation-checklist-only-when-you-need-it">16.7 The optimisation checklist (only when you need it)</a></h3>
+<p>Use the profiler first. Compress assets. Level of detail. Simplify collision shapes; use layers to restrict interactions. Occlusion culling and level streaming for big maps. Watch draw calls: batching, texture atlases, fewer materials. Object pools for bullets. Test on every target device. These are &quot;not right now problems&quot; until they are.</p>
+<h3 id="168-the-end-of-day-list-and-the-ten-times-tune"><a class="anchor" href="#168-the-end-of-day-list-and-the-ten-times-tune">16.8 The end-of-day list and the ten-times tune</a></h3>
+<p>Luke Muscat&#39;s two habits are worth repeating because they cost nothing. Write tomorrow&#39;s list as the last act of today, with an easy item on top. When tuning, change the value by ten or a hundred times first, so you know you are tweaking the right variable.</p>
+<h1 id="part-v-business"><a class="anchor" href="#part-v-business">Part V — Business</a></h1>
+<h2 id="chapter-17-the-market-is-a-design-input"><a class="anchor" href="#chapter-17-the-market-is-a-design-input">Chapter 17 — The market is a design input</a></h2>
+<h3 id="171-marketing-is-not-advertising"><a class="anchor" href="#171-marketing-is-not-advertising">17.1 Marketing is not advertising</a></h3>
+<p>Indie Game Clinic&#39;s reaction videos keep finding the same confusion. Advertising is &quot;there is a product, I&#39;m telling people about the product.&quot; Marketing is &quot;every decision you make before that about what to make, who is it for, where are you going to sell it.&quot; Choosing a genre because it is popular is a marketing decision. Choosing Steam is a marketing decision. &quot;Working out who your game is for and tweaking the design to better serve that group of people, that&#39;s all marketing.&quot;</p>
+<p>Chris Zukowski, in the hour-long interview on the same channel: &quot;Marketing is the product, everything about it, the look and feel, the price, whether it&#39;s a premium product or a cheap discount product.&quot; Tweeting and content creators are &quot;like 10% of what matters.&quot; &quot;It&#39;s the eggshell that is the &#39;oh what do I tweet today.&#39;&quot;</p>
+<h3 id="172-you-cannot-overexpose-your-game"><a class="anchor" href="#172-you-cannot-overexpose-your-game">17.2 You cannot overexpose your game</a></h3>
+<p>Steam has around eleven million people playing at its daily peak. A developer of a multi-million-selling game told Zukowski at a GDC bar: &quot;We have sold to 1% of Steam.&quot; The algorithm works by sampling: &quot;Steam sees if there&#39;s interest in a small sample size, and if they see that interest, then they expand you to everyone.&quot; A game that converts poorly is not promoted, because promoting it would sap an audience Steam could show to a game that converts well.</p>
+<p>&quot;You cannot overexpose your game. That is not the problem. The limiting factor is that your game is not fun enough.&quot;</p>
+<p>The Dream Warrior postmortem, a $486 jam-to-Steam release, puts it from the bottom: &quot;Games that do well on Steam are promoted by Steam. Games that do not do well on Steam are not promoted by Steam.&quot;</p>
+<h3 id="173-steam-is-a-hardcore-market-with-rules"><a class="anchor" href="#173-steam-is-a-hardcore-market-with-rules">17.3 Steam is a hardcore market with rules</a></h3>
+<p>Mobile is casual; whatever ad hits them. Steam players are &quot;super fans, hobbyists. They study every game and every company. They run boycotts.&quot; Steam is not a file repository. The 30% cut pays for an ecosystem and an algorithm, and you have to understand the rules like a sport.</p>
+<p>Rules that follow from this, all from Zukowski:</p>
+<ul>
+<li><strong>Never target casual.</strong> &quot;When indies target casual, I think that&#39;s a big mistake, a big red flag.&quot; It is a defence mechanism against depth criticism. &quot;The casuals are not there for your game. They will not find it. They&#39;re not on Twitter. They don&#39;t listen to podcasts.&quot; You are now competing against Nintendo and you will not win.</li>
+<li><strong>Never pitch &quot;a Dark Souls game.&quot;</strong> Decades of combat perfection you cannot match. Indies win on &quot;highly replayable, really fun,&quot; not &quot;beautiful perfect graphics and perfect controls.&quot; One AAA feature done fully beats five done halfway (<em>Florence</em> and <em>Unpacking</em> are narrative games with no dialogue).</li>
+<li><strong>Be a local bakery, not McDonald&#39;s.</strong> Bolded studio names and trademarks on an indie page read as &quot;trying to present yourself as a corporation.&quot; The audience wants the person.</li>
+</ul>
+<h3 id="174-genre-knowledge-is-the-historian39s-job"><a class="anchor" href="#174-genre-knowledge-is-the-historian39s-job">17.4 Genre knowledge is the historian&#39;s job</a></h3>
+<p>&quot;The game designers that are most active and are really good, they&#39;re almost historians.&quot; Successful developers play fifty demos every Next Fest. Red flags: a roguelike developer whose first roguelike was <em>Hades</em>; a horror developer who has never seen <em>Jaws</em>. Derek Yu&#39;s puzzle-box analogy: every game you play is a piece the designer can reassemble. Indie Game Clinic&#39;s version: play research is part of the job, every studio he has worked in budgets for it, and building in an unfamiliar genre &quot;is going to waste far more of your time than the 10, 20, 30 hours you might have spent play researching similar games.&quot;</p>
+<p>Two positioning tools from the interview:</p>
+<p><strong>30% new.</strong> &quot;I think a game has to be 30% new.&quot; MAYA: most acceptable yet advanced. &quot;Here&#39;s the genre. I know the genre inside and out and this is what I&#39;m going to bring to it.&quot; Trends do not change much; &quot;they&#39;re just right there. There&#39;s no chasing.&quot;</p>
+<p><strong>The law of the opposites.</strong> A Don&#39;t-Starve-like whose Steam copy read &quot;You will never starve.&quot; Ninety percent the same game, one thing removed. &quot;You go to your competition, you find one little weak spot in their armour and your marketing says I am not that thing.&quot; Lead the trend by removing what people are sick of.</p>
+<p>Both descend from Derek Yu&#39;s four questions in Chapter 6: fix genre problems, do not mash likes.</p>
+<h3 id="175-the-base-rates"><a class="anchor" href="#175-the-base-rates">17.5 The base rates</a></h3>
+<p>From Zukowski&#39;s January 2026 post and the research brief:</p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Number</th>
+<th>Year</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Steam releases</td>
+<td>20,282</td>
+<td>2025</td>
+</tr>
+<tr>
+<td>Reached 1,000 reviews</td>
+<td>608 (2.99%)</td>
+<td>2025</td>
+</tr>
+<tr>
+<td>Fewer than 10 reviews</td>
+<td>~9,300 (nearly half)</td>
+<td>2025 (SteamDB)</td>
+</tr>
+<tr>
+<td>Games earning $100k+</td>
+<td>5,863 (a record)</td>
+<td>2025 (Valve, GDC 2026)</td>
+</tr>
+<tr>
+<td>Studios with two releases vs one</td>
+<td>7,920 vs 38,000</td>
+<td>2024</td>
+</tr>
+<tr>
+<td>Blended Steam cut</td>
+<td>24% across all tiers; 30% for you</td>
+<td>2025</td>
+</tr>
+</tbody></table>
+<p>Zukowski&#39;s framing of the 2.99% is that it is the <em>highest</em> hit rate in his dataset. Steam is &quot;in a golden age&quot; for small games, if you make the kind of small game Steam players want and ship more than one.</p>
+<p>Two numbers on saturation. Indie Game Clinic: release-count stats are &quot;an inflationary manoeuvre&quot;; if your game is genuinely at pay-for quality, &quot;you&#39;re probably already in the top 10%, and 90% of those games are not your competition because they&#39;re just hobby projects.&quot; Zukowski: post-launch updating is worth it only if you clear roughly $150,000 in six to nine months; otherwise move to the next game.</p>
+<h3 id="176-the-platform-competitor-test"><a class="anchor" href="#176-the-platform-competitor-test">17.6 The platform-competitor test</a></h3>
+<p>Before blaming discoverability, answer three questions (Indie Game Clinic, on the <em>Dance Assembly</em> postmortem): Was there an audience on Steam for this in the first place? If so, what are they already playing that is similar? Is that thing better than yours, and what does yours do to knock it off the top spot? A Roblox-style social dance game with fewer features than <em>VRChat</em> has no reason to exist on Steam.</p>
+<p>The fish-market rule: &quot;We can&#39;t control the market but we can know about the market and we can decide what we do based on what we know about the market.&quot; Bringing bananas to a fish market is your decision.</p>
+<hr>
+<h2 id="chapter-18-the-steam-playbook"><a class="anchor" href="#chapter-18-the-steam-playbook">Chapter 18 — The Steam playbook</a></h2>
+<h3 id="181-the-game-plan-in-one-list"><a class="anchor" href="#181-the-game-plan-in-one-list">18.1 The game plan in one list</a></h3>
+<p>Zukowski&#39;s high-level rules, as given in the Indie Game Clinic interview and expanded in his ten-step plan:</p>
+<ol>
+<li>Make the type of game Steam players want (Chapter 6.6).</li>
+<li>Steam page up &quot;nice and early,&quot; at least six months before launch. Valve&#39;s own data, as relayed by Zukowski: pages up six-plus months correlated with about three times the sales of pages posted thirty days out.</li>
+<li>Demo up early, months before any festival.</li>
+<li>Reach out to content creators.</li>
+<li>Enter festivals; promote around the demo.</li>
+<li>Gather 5,000 to 7,000 wishlists minimum before launch.</li>
+<li>Launch: aim for ten reviews and about $8,000 in the first 24 hours to hit New &amp; Trending.</li>
+<li>Manage post-launch. Prepare the next game.</li>
+</ol>
+<h3 id="182-the-page-ready-gate"><a class="anchor" href="#182-the-page-ready-gate">18.2 The page-ready gate</a></h3>
+<p>Do not publish a Steam page until: genre and sub-genre confirmed; art direction finalised; in-engine screenshots of three or more distinct environments; a thirty-second real-gameplay trailer. Time the announcement to a festival beat. Indie Game Clinic adds: no Steam page before the core is validated and the variety strategy exists (Chapter 8.4). Light pre-marketing to recruit testers is fine.</p>
+<p>The store description is your pitch paragraph from the GDD (Chapter 14.3) and your 300-character test from Chapter 5. Study other pages for structure. Translate the page; 66% of Steam players have a non-English primary language, and Valve calls localisation &quot;the single most obvious and impactful investment a developer can make.&quot;</p>
+<h3 id="183-trailer-and-capsule"><a class="anchor" href="#183-trailer-and-capsule">18.3 Trailer and capsule</a></h3>
+<p>Derek Lieu: the hook goes &quot;within the first third of the trailer and certainly no later than the first half. Ideally it&#39;s within the first 10–15 seconds.&quot; Structure: genre, hook, anchors, content. The failure mode is genre, anchors, hook: &quot;the longer the trailer goes without showing a hook, the more it will seem like the game is a lesser version of an old game.&quot; &quot;The first 6 seconds of a video are critical.&quot; The <em>every step</em> blueprint&#39;s blunter version: &quot;No one cares about your name, about your studio name. You have 2 seconds to impress people.&quot; Zukowski: &quot;Gamers on Steam don&#39;t want to watch cinematics.&quot; Show combat and interactions, never a character walking around (Indie Game Clinic&#39;s &quot;walking around&quot; alarm bell).</p>
+<p>Valve&#39;s capsule rules: title plus one key visual; &quot;do not include quotes or other strings of text beyond the title&quot;; the logo should nearly fill the small capsule; the art must read at 120 pixels wide and match what players see after clicking.</p>
+<p>Lucas Pope&#39;s and Tom Francis&#39;s pre-build tests (imagine the trailer; draw the capsule) exist because these two assets decide whether anyone clicks.</p>
+<h3 id="184-wishlists-what-they-are-and-are-not"><a class="anchor" href="#184-wishlists-what-they-are-and-are-not">18.4 Wishlists: what they are and are not</a></h3>
+<p>Zukowski&#39;s benchmark tiers by lifetime revenue:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Revenue</th>
+<th>Launch wishlists</th>
+<th>Week-one conversion</th>
+<th>Demo median playtime</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bronze</td>
+<td>&lt;$10K</td>
+<td>~5,000</td>
+<td>15%</td>
+<td>7 min</td>
+</tr>
+<tr>
+<td>Silver</td>
+<td>$10K–$249K</td>
+<td>~8,000</td>
+<td>20%</td>
+<td>18 min</td>
+</tr>
+<tr>
+<td>Gold</td>
+<td>$250K–$999K</td>
+<td>~50,000</td>
+<td>23%</td>
+<td>38 min</td>
+</tr>
+<tr>
+<td>Diamond</td>
+<td>$1M+</td>
+<td>~90,000</td>
+<td>25%</td>
+<td>65 min</td>
+</tr>
+</tbody></table>
+<p>Why 7,000: it was the threshold for the ten-slot Popular Upcoming chart. As of mid-2026 Valve&#39;s Personal Calendar surface matters more, converting at 31–34% click-through against roughly 1% for Popular Upcoming. Ben Bonk&#39;s <em>Slime Keep</em> shows the mechanism: about 17,000 wishlists a week out; a Monday launch put it at number two on Popular Upcoming for the weekend; about two million impressions, 56,000 page visits, 4,000 new wishlists; 21,000 at launch.</p>
+<p>Wishlists do not go stale: an 18-month cohort study showed no conversion difference by age. But they are a catalyst, not the engine. Post-launch revenue drives the algorithm. Your first two weeks of announce wishlists (median 111) are &quot;a signal of your pace, not a prediction of your revenue.&quot; And Alinea&#39;s 2026 warning: some Next Fest games converted at 1.3 to 3.8% in week one; &quot;wishlist quality is the metric that contributes to keeping the lights on.&quot;</p>
+<p>If you are within a thousand of the threshold, blitz: streamers, Reddit, paid ads at roughly a dollar a wishlist, festivals worth one to three thousand each. If you are far below, consider releasing anyway and starting the next game.</p>
+<h3 id="185-demos-and-next-fest"><a class="anchor" href="#185-demos-and-next-fest">18.5 Demos and Next Fest</a></h3>
+<p>Valve&#39;s July 2024 update gave demos their own store pages, their own reviews, wishlist notifications when a demo launches, and placement in New &amp; Trending. Demos launched a month or more before a Next Fest earned about 2.5 times the wishlists of demos that debuted at it.</p>
+<p>Next Fest medians are around 800 to 1,100 wishlists. What you bring in predicts what you take out (Spearman r = 0.825): under a thousand pre-fest wishlists means a median gain of about 300; over a hundred thousand means about 13,000. Enter the <em>last</em> fest before launch, with at least 2,000 wishlists. Track demo conversion (target around 20% of players wishlisting) and median playtime.</p>
+<p>Demo playtime separated the hits from the misses in every postmortem the research found. <em>Dome Keeper</em>&#39;s demo held players ninety minutes and added 40,000 wishlists in a month. <em>Peglin</em>&#39;s held 67 minutes. <em>Forge Industry</em>&#39;s held nine minutes and sold 104 copies in week one.</p>
+<p>Zukowski&#39;s two Next Fest recommendations, verbatim: &quot;Make a good game.&quot; &quot;Release your demo way before Steam Next Fest and make sure it is a good demo.&quot;</p>
+<h3 id="186-pricing"><a class="anchor" href="#186-pricing">18.6 Pricing</a></h3>
+<p>&quot;Nobody on Steam buys games at full price,&quot; because Steam only emails wishlisters at 20% off or more, so price with the discount in mind. Find ten comparable games from the last three years and &quot;charge 20% more than games that you think are &#39;equal to mine.&#39;&quot; &quot;If nobody complains about your price, you priced it too low.&quot; Median indie price fell from $8.70 in 2012 to $7.30 in 2020 while AAA rose; indies are underpriced. Set regional pricing with Valve&#39;s tools. (A literal &quot;never price under $10&quot; could not be verified as a Zukowski quote; the verifiable position is comps plus 20%.)</p>
+<h3 id="187-early-access-is-the-launch"><a class="anchor" href="#187-early-access-is-the-launch">18.7 Early Access is the launch</a></h3>
+<p>&quot;Once somebody can lay money down and get your game, the die is cast, the concrete is set.&quot; GameDiscoverCo&#39;s 2025 data on 225 Early Access graduates: only 20% earned more in their first month at 1.0 than in their first Early Access month; the median 1.0 month was 40% of the EA month. &quot;The concept that a slow launch can be &#39;redeemed by a 1.0 release&#39; is increasingly out of step with reality.&quot; Rafalsky: &quot;Your game only gets one big launch.&quot; Update every three weeks if you do go Early Access.</p>
+<h3 id="188-launch-week"><a class="anchor" href="#188-launch-week">18.8 Launch week</a></h3>
+<p>Launch on a Monday so the weekend chart works for you. Discount 20% or more to trigger the wishlist email. Watch first-run completion rates; <em>Slime Keep</em> was too easy and needed a difficulty patch within days. Do not hand out keys at events beforehand; key-activated copies can be excluded from the review score you need on day one. Expect a flood of bug reports and do not &quot;abandon your project the moment you click that release button and pop a champagne.&quot;</p>
+<hr>
+<h2 id="chapter-19-audience-without-a-devlog"><a class="anchor" href="#chapter-19-audience-without-a-devlog">Chapter 19 — Audience without a devlog</a></h2>
+<h3 id="191-devlogs-make-an-audience-of-developers"><a class="anchor" href="#191-devlogs-make-an-audience-of-developers">19.1 Devlogs make an audience of developers</a></h3>
+<p>Zukowski: &quot;Most devlog videos attract fellow game developers, not players.&quot; Indie Game Clinic: &quot;You&#39;ve made your audience game developers. That doesn&#39;t necessarily mean they&#39;re interested in playing your game.&quot; If he started a game channel today, &quot;it would purely be about gameplay features and world building, aimed at gamers, not at game developers.&quot;</p>
+<p>The data. Jonas Tyroller&#39;s <em>Will You Snail</em> launched with about 60,000 wishlists after four years of devlogs; <em>Thronefall</em> launched with 200,000 and Tyroller said his videos made no measurable dent in that. His own words: &quot;If you imagine you can post one video and get 10K wishlists from it, you are probably mistaken. Instead of building a YouTube channel yourself, use the channels of other creators who are already popular.&quot; Ben Bonk, after five years of devlogs: &quot;I just thought my YouTube channel might have a bigger influence than it actually ended up having.&quot;</p>
+<p>A devlog is still worth having for morale, network, and testers (even 83 followers yields testers, and &quot;devs are great playtesters&quot;). It is not a wishlist machine. If you do it, the <em>Start a YouTube Channel</em> playbook is the honest one: weekly cadence over quality, iterate from data, the Discord is the asset, find your angle in your constraints, and start with the phone you own.</p>
+<h3 id="192-itchio-as-the-market-test"><a class="anchor" href="#192-itchio-as-the-market-test">19.2 itch.io as the market test</a></h3>
+<p>Zukowski&#39;s benchmark survey (169 games): median lifetime page views 1,582; median browser plays 590. Browser-playable games convert far better (about 45% of views play, against 10% download). Under 5,000 views is &quot;nothing.&quot; A spike of 5,000 to 10,000 means minor featuring. 10,000 plus is &quot;magic,&quot; and usually means streamers are sharing you.</p>
+<p>The method from the interview: take a jam game, upload it free and in-browser, spend one or two months on it, and look for the spike before committing to Steam. &quot;Don&#39;t commit to an idea too fast.&quot; Games that went itch to Steam: <em>The Roottrees Are Dead</em>, <em>Die in the Dungeon</em>, <em>Peglin</em>, <em>Dome Keeper</em>. &quot;If you do well on itch, you&#39;re probably going to do well on Steam. Very similar audiences.&quot; Indie Game Clinic&#39;s caveat: itch feedback is from &quot;friendly fellow game developers rather than angry consumer feedback,&quot; so treat it as a floor. Zukowski: &quot;The absolute worst thing you can do is spend years and hundreds of thousands of dollars on an idea that nobody is interested in. Itch.io solves this problem for you.&quot;</p>
+<h3 id="193-streamers-not-press"><a class="anchor" href="#193-streamers-not-press">19.3 Streamers, not press</a></h3>
+<p>&quot;I don&#39;t think the press matters as much as it used to.&quot; Playstack&#39;s <em>Balatro</em> campaign pitched 300 smaller streamers of adjacent games rather than a few large outlets: &quot;If you pitch to 300 smaller streamers you&#39;ll get the same kind of numbers and a lot more word of mouth. Once community members are talking about it, I can go to media outlets and say &#39;look at the traction it&#39;s getting.&#39;&quot;</p>
+<p>LocalThunk&#39;s own wishlist ledger shows where the numbers came from: 48 at the end of May 2023; 183 on June 10; 2,440 by the end of June after Dan Gheesling streamed it; 28,661 by the end of July after Northernlion; 208,401 on launch day.</p>
+<p>Ben Bonk&#39;s zero-budget campaign is the realistic baseline. A curated list of about 250 creators who play similar games (Twitch via SullyGnome, YouTube via &quot;[similar game] let&#39;s play&quot; searches). An email with logo, personal note, why it fits their channel, trailer, free key, gameplay GIF. Twenty emails a day starting 2.5 weeks out, to stay under spam limits. Results: 237 emails, 30 keys claimed, 9 pieces of content, about 25,000 views. Ten press emails got one article. Sixty-six curators got six reviews. Plan for a roughly 4% content rate and zero big-YouTuber pickup.</p>
+<p>Zukowski&#39;s introvert playbook: a demo that holds players 30 to 45 minutes, cold emails to creators and festivals, cross-promotion with other developers, planned &quot;beats&quot; rather than daily posts. &quot;You don&#39;t need to be an extrovert.&quot; &quot;The tweets are what the successful people do when they&#39;re procrastinating.&quot;</p>
+<h3 id="194-festivals-and-the-two-email-story"><a class="anchor" href="#194-festivals-and-the-two-email-story">19.4 Festivals and the two-email story</a></h3>
+<p>Festival ranges (GameDiscoverCo, approximate): small shows 250 to 1,500 wishlists on show day; mid-size (Day of the Devs, PC Gaming Show) 3,000 to 7,000; majors 15,000 to 50,000. Valve&#39;s 2021 stat: a median wishlist lift of 421% for demo-festival participants. Zukowski keeps a festival directory with deadlines and costs.</p>
+<p>The marketing-is-strategic story from the interview: David Wehle (<em>The First Tree</em>) tracked down Geoff Keighley&#39;s email and sent one email with a trailer for <em>We Harvest Shadows</em>. Keighley wanted thirty seconds; Wehle had made ninety; he went to IGN with &quot;Geoff Keighley just approved this trailer, you all want the uncut version.&quot; Two emails, about 200,000 wishlists in two months. &quot;Geoff Keighley needs cool trailers for his show otherwise he looks dumb.&quot; Pitch to what the gatekeeper needs. Pick five targets and tailor; thirty generic emails read like generic job applications. You are not working for Gabe.</p>
+<h3 id="195-newsletter-discord-and-scenes"><a class="anchor" href="#195-newsletter-discord-and-scenes">19.5 Newsletter, Discord, and scenes</a></h3>
+<p>Zukowski: &quot;If they all fail, the core is the newsletter.&quot; Discord is where superfans live and where the tester waves in Chapter 15 come from. And scenes are made of friends: &quot;This dev is friends with this journalist&quot; complaints miss that &quot;that is just how scenes happen.&quot; If you are the only developer in your town, make other developers in your town. Indie Game Clinic&#39;s compounding argument: testing early builds an audience before launch, &quot;and there might be one person in that group who is a games journalist, a YouTuber.&quot;</p>
+<h3 id="196-publishers"><a class="anchor" href="#196-publishers">19.6 Publishers</a></h3>
+<p>Deal data from thirty indie contracts (Voyer Law via GameDiscoverCo): average split 60/40; 71% to the developer with no advance, 55% with one; average advance $318,000; 42% of deals require full recoup before the developer sees revenue. Zukowski&#39;s test for whether a publisher is worth 40%: do they bring a back catalogue audience in your genre? &quot;Publishers don&#39;t really want to discuss game ideas if there is no demo on the table.&quot; What Playstack delivered for <em>Balatro</em>: localisation, day-one console ports, a streamer tournament timed before Next Fest, and an embargo LocalThunk called &quot;truly exceptional.&quot;</p>
+<hr>
+<h2 id="chapter-20-money-honestly"><a class="anchor" href="#chapter-20-money-honestly">Chapter 20 — Money, honestly</a></h2>
+<h3 id="201-the-revenue-chain"><a class="anchor" href="#201-the-revenue-chain">20.1 The revenue chain</a></h3>
+<p>Ben Bonk&#39;s <em>Slime Keep</em> breakdown is the most transparent in the transcripts. 1,751 copies at $15 looks like $25,000. Then: about 17% refunded (&quot;typical for games on Steam to have 10 to 20% of copies refunded&quot;); a 20% launch discount covering most sales; regional pricing (about 5%); VAT (about 9%); Steam&#39;s 30%; then $6,000 to $7,000 in expenses over five years (composers, art, legal). Effective wage: ten to twenty cents an hour. Isto Inc.&#39;s <em>Disjoint</em>, with near-perfect reviews, paid about seven cents an hour. &quot;Great reviews, terrible sales. A weak idea just doesn&#39;t convert a lot of people.&quot;</p>
+<p>Model net revenue as: gross − refunds − discount − regional − VAT − 30% − costs, before you decide whether a project is a business or a hobby.</p>
+<h3 id="202-what-the-postmortems-share"><a class="anchor" href="#202-what-the-postmortems-share">20.2 What the postmortems share</a></h3>
+<table>
+<thead>
+<tr>
+<th>Game</th>
+<th>Team</th>
+<th>Time</th>
+<th>Price</th>
+<th>Result</th>
+<th>The tell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Balatro</td>
+<td>1</td>
+<td>~26 mo</td>
+<td>$14.99</td>
+<td>208K wishlists; $600K in 2 hours; 5M+ copies</td>
+<td>Streamers in June and July 2023</td>
+</tr>
+<tr>
+<td>Buckshot Roulette</td>
+<td>1</td>
+<td>~2 mo</td>
+<td>$2.99</td>
+<td>1M in 2 weeks; 6M+</td>
+<td>itch first; &quot;gambling is very fun&quot;</td>
+</tr>
+<tr>
+<td>Dome Keeper</td>
+<td>2</td>
+<td>~14 mo</td>
+<td>—</td>
+<td>189K wishlists; $1M day one</td>
+<td>Demo held players 90 min</td>
+</tr>
+<tr>
+<td>Peglin</td>
+<td>small</td>
+<td>—</td>
+<td>$19.99</td>
+<td>$1.05M week one; 38% conversion</td>
+<td>Demo held 67 min; 1,126 Twitter followers</td>
+</tr>
+<tr>
+<td>Vampire Survivors</td>
+<td>1</td>
+<td>~1 yr to EA</td>
+<td>low</td>
+<td>itch → Steam; YouTubers</td>
+<td>Cheap, streamable, replayable</td>
+</tr>
+<tr>
+<td>Slime Keep</td>
+<td>1</td>
+<td>5 yrs</td>
+<td>$15</td>
+<td>1,751 copies; 94% positive</td>
+<td>Popular Upcoming did the work; devlog did not</td>
+</tr>
+<tr>
+<td>Forge Industry</td>
+<td>4</td>
+<td>18 mo part-time</td>
+<td>$16.99</td>
+<td>104 copies week one</td>
+<td>2,500 wishlists; demo held 9 min</td>
+</tr>
+<tr>
+<td>Dream Warrior</td>
+<td>1</td>
+<td>jam</td>
+<td>$4.99</td>
+<td>$486 gross</td>
+<td>167 wishlists; no Steam promotion</td>
+</tr>
+<tr>
+<td>Crumbling World</td>
+<td>1</td>
+<td>3 yrs</td>
+<td>$10.99</td>
+<td>141 copies; $1,381</td>
+<td>$10K marketing on 1,900 wishlists; launch crash</td>
+</tr>
+</tbody></table>
+<p>The hits and the flops used the same tools. The difference showed up early, in demo playtime and wishlist velocity, both of which a solo developer can measure before spending more. Three of the biggest solo wins were made as hobbies or in months. The failures that hurt most were multi-year projects with marketing budgets and 2,000 wishlists.</p>
+<h3 id="203-learning-versus-commercial-again"><a class="anchor" href="#203-learning-versus-commercial-again">20.3 Learning versus commercial, again</a></h3>
+<p>Indie Game Clinic&#39;s fork from Chapter 5 is also a money decision. Bite Me Games&#39; version: before spinning up a company, paying the $100 Steam fee, and making capsule art, ask whether the game belongs on Steam or whether you are learning Godot. The fee is refunded at $1,000 in revenue. Dream Warrior&#39;s $140 in costs was mostly that fee.</p>
+<h3 id="204-the-success-story-bias"><a class="anchor" href="#204-the-success-story-bias">20.4 The success-story bias</a></h3>
+<p>Indie Game Clinic on failure content: it is loss-aversion bait, and the algorithm rewards it. Prescription: one failure post-mortem per success GDC talk. Ben Bonk on the other side: the &quot;top 1% of the top 1%&quot; stories create unrealistic expectations. Zukowski on <em>Wordle</em>: its &quot;success&quot; was an acquisition by the New York Times, not sales. &quot;It&#39;s a couple leaps before you actually realise why it&#39;s successful.&quot; Dig for the real mechanism every time.</p>
+<hr>
+<h1 id="part-vi-tools-and-ai"><a class="anchor" href="#part-vi-tools-and-ai">Part VI — Tools and AI</a></h1>
+<h2 id="chapter-21-the-toolkit-and-the-2026-engine-landscape"><a class="anchor" href="#chapter-21-the-toolkit-and-the-2026-engine-landscape">Chapter 21 — The toolkit and the 2026 engine landscape</a></h2>
+<h3 id="211-a-complete-stack-for-0"><a class="anchor" href="#211-a-complete-stack-for-0">21.1 A complete stack for $0</a></h3>
+<p>Godot (engine, MIT). Blender (3D, 2D animation via Grease Pencil). GIMP or Krita (raster). Aseprite ($19.99) or Piskel (free) for pixel art. Audacity (SFX, voice). Reaper (free trial that keeps working; buy a licence when you can) or LMMS for music. OBS (capture for trailers and devlogs). DaVinci Resolve (trailer edit). Obsidian (notes, GDD). HandBrake (compress captures). Tiled or LDtk (levels). Kenney (CC0 assets). jsfxr, Bfxr, ChipTone (retro SFX). GitHub Desktop (version control). The trade-off &quot;is mostly time. Free software usually asks you to learn a little more instead of paying to make things simpler.&quot;</p>
+<h3 id="212-engines-with-numbers"><a class="anchor" href="#212-engines-with-numbers">21.2 Engines, with numbers</a></h3>
+<table>
+<thead>
+<tr>
+<th>Engine</th>
+<th>Cost at solo scale</th>
+<th>Share</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Godot 4.x</td>
+<td>Free, MIT</td>
+<td>47% of GMTK Jam 2026 entries (first year ahead of Unity); 7.1% of 2025 Steam releases; Steam count up 22× since 2019</td>
+<td>2D, jams, web export via GDScript</td>
+</tr>
+<tr>
+<td>Unity 6</td>
+<td>Free below $200K revenue; Pro $2,200/seat</td>
+<td>49.4% of 2025 Steam releases; 53.7% of 2025 games passing $500K</td>
+<td>Deepest tutorial base; 2D and 3D; mobile and VR</td>
+</tr>
+<tr>
+<td>Unreal 5</td>
+<td>5% royalty above $1M per product (3.5% with Epic Store day-and-date)</td>
+<td>~20% of 2025 Steam releases; top-50 revenue leader</td>
+<td>High-fidelity 3D; Blueprints; &quot;hard mode&quot; for a first 2D game</td>
+</tr>
+<tr>
+<td>GameMaker</td>
+<td>Free non-commercial; $99.99 once for commercial</td>
+<td>~6% of 2025 Steam releases</td>
+<td>Proven 2D (Spelunky Classic, Undertale, Hotline Miami)</td>
+</tr>
+<tr>
+<td>Phaser 4 / PixiJS / canvas</td>
+<td>Free</td>
+<td>—</td>
+<td>Instant shareable links; browser-first games</td>
+</tr>
+<tr>
+<td>PICO-8 / TIC-80</td>
+<td>$14.99 / free</td>
+<td>—</td>
+<td>Constraint as teacher; a game in a week; Celeste&#39;s origin</td>
+</tr>
+<tr>
+<td>Construct 3 / GDevelop</td>
+<td>$129.99/yr / free</td>
+<td>—</td>
+<td>No-code</td>
+</tr>
+</tbody></table>
+<p>Unity cancelled the Runtime Fee in September 2024 and raised the free ceiling to $200,000. Godot&#39;s GDScript is &quot;usually the shortest route to learning Godot&#39;s scene and node model&quot;; official Godot builds cannot export C# to the web, so pick GDScript if browser builds matter. Unreal 5.8 ships an experimental Model Context Protocol plugin for connecting Claude and similar models directly to a project.</p>
+<p>Brandon&#39;s rule stands: ignore pricing until you are earning $200,000 a year or $1M a project. Most indies never pay any engine anything.</p>
+<h3 id="213-learning-ladders"><a class="anchor" href="#213-learning-ladders">21.3 Learning ladders</a></h3>
+<p>The 20 Games Challenge (Pong or Flappy Bird → Breakout → Space Invaders → Asteroids → Pac-Man → a tile platformer; about 20 hours each; no step-by-step tutorials; a Definition of Done per game). The tool ladder: Scratch → PICO-8 → Godot → C# or C++ only when a job or platform demands it. The math ladder (Freya Holmér): vectors, length, normalise, dot product for 2D; cross products, matrices, lerp, and derivatives when you touch 3D cameras, physics, or shaders. &quot;You don&#39;t need math beyond vectors&quot; is a 2D floor, and Holmér teaches that floor in one afternoon.</p>
+<hr>
+<h2 id="chapter-22-ai-code-yes-shipped-content-carefully-creativity-never"><a class="anchor" href="#chapter-22-ai-code-yes-shipped-content-carefully-creativity-never">Chapter 22 — AI: code yes, shipped content carefully, creativity never</a></h2>
+<h3 id="221-the-line-valve-drew"><a class="anchor" href="#221-the-line-valve-drew">22.1 The line Valve drew</a></h3>
+<p>Steam requires disclosure of AI-generated content in two categories: pre-generated (assets made with AI during development) and live-generated. In January 2026 Valve clarified that the disclosure targets content that &quot;ships with your game and is consumed by players&quot; (art, sound, narrative, localisation, marketing). Code assistants, concept-art helpers, and office tools that give &quot;efficiency gains&quot; are &quot;not the focus.&quot;</p>
+<p>That clarification is the whole policy for a solo developer: AI for the work players never see; disclosure and caution for anything they do.</p>
+<h3 id="222-the-measured-penalty"><a class="anchor" href="#222-the-measured-penalty">22.2 The measured penalty</a></h3>
+<ul>
+<li>GDC&#39;s 2026 survey (2,300+ professionals): 36% use generative AI at work; 52% say it is having a negative impact, up from 18% in 2024. Artists 64% negative, designers 63%, programmers 59%.</li>
+<li>About 20% of 2025 Steam releases carried an AI disclosure, rising to about 31% of 2026 releases so far. AI-flagged games account for most of the growth in monthly releases and &quot;almost none of them make money&quot; (Sulka Haro, 53,597 releases).</li>
+<li>AI-disclosing games got about 53% fewer reviews than comparable titles and scored 84.6% positive against 88.3% (Game Oracle, ~10,000 releases, 2026).</li>
+<li>Just over 25% of US players say AI content makes them less likely to buy (Circana, December 2025). Among Steam users, 31% negative, 8% would never buy (GameDiscoverCo, 2026). The majority are neutral or unsure.</li>
+<li>The US Copyright Office (January 2025): &quot;prompts alone do not provide sufficient human control to make users of an AI system the authors of the output.&quot; Pure prompt output has no copyright. Competitors can lift it.</li>
+</ul>
+<h3 id="223-what-the-transcripts-say"><a class="anchor" href="#223-what-the-transcripts-say">22.3 What the transcripts say</a></h3>
+<p>Rafalsky built an entire top-down shooter with AI tools (Meshy for models, Ludus inside Unreal, ElevenLabs, Suno) while keeping the idea and level design human. Verdict: &quot;AI tools are amazing for prototyping and helping with areas outside your expertise&quot;; for a finished product &quot;it still lacks the quality and creative touch of a skilled artist or a developer&quot;; the surprising benefit was that step-by-step guidance became &quot;a personalised tutorial tailored to your project.&quot; His ground rule: &quot;Creativity itself shouldn&#39;t be outsourced to AI.&quot; And: keep AI assets to the prototype phase.</p>
+<p>Brandon: &quot;It is a mistake to not utilise AI to help you with your code,&quot; but reach basic competency first; models hallucinate; do not use it as a crutch for learning. Solve it yourself when you can, because you will remember the solution.</p>
+<p>The Unity AI test drive gives the working pattern for an agent inside an engine: read the plan before approving it (&quot;it said right there in the plan that it was going to remove tiles within a certain radius, and I approved that plan&quot;); ask for a debug visualisation before asking for a fix; suspect your own inputs first; ask it to profile before you optimise; treat generated audio and sprites as placeholders and tag them for replacement; keep permissions on &quot;ask&quot; and checkpoints on. A fire simulation budgeted at three days took three hours.</p>
+<p>The Anthropic engineers&#39; four rules for Claude Code, from the skills video, translate directly to a game project: skills not prompts; scripts inside skills (&quot;trading AI tokens for code compute&quot;); small composable skills, one per job (<code>/export-itch</code>, <code>/sprite-sheet</code>, <code>/devlog-draft</code>), not one giant one; and update the skill after every use (&quot;Is this a one-time fix or should this be in the skill forever?&quot;). Mark destructive skills (publish, push to main) human-only.</p>
+<p>The DRAG sidebar from the productivity video is a decent sorting rule: delegate Drafting, Research, Analysis, and Grunt work; keep anything that needs judgement, intuition, or taste. In a game that means the core loop, the feel, the pricing, and the one screenshot stay yours.</p>
+<h3 id="224-ai-art-if-you-must"><a class="anchor" href="#224-ai-art-if-you-must">22.4 AI art, if you must</a></h3>
+<p>The ComfyUI material teaches the literacy: workflows are JSON graphs; learn the link colour code and the KSampler settings (seed, steps, CFG, sampler, scheduler, denoise); use native model resolutions; fix a seed only to A/B a change; prefer safetensors over .ckpt files. The Claude-Code-drives-ComfyUI video shows the delegation pattern: give the agent a domain skill first, describe outcomes not node wiring, use a runner script for anything with many prompt boxes, validate with small test generations, and ask for explicit status after every job because it silently skipped a scene. The print-shop video&#39;s simplify-then-vectorise recipe (cap at six to ten colours, smooth the shapes, keep the palette, then trace) is the one practical path from an AI concept image to a usable logo or capsule mark.</p>
+<p>All of it sits behind the disclosure rule and the copyright finding. Concept art that never ships is free. Anything a player sees is a business decision with a measured cost.</p>
+<h3 id="225-the-rational-position"><a class="anchor" href="#225-the-rational-position">22.5 The rational position</a></h3>
+<p>Spend the AI budget on the unglamorous programming, the tooling, the research, and the placeholders. Keep the visible craft human, and say so on the store page. Which is also Indie Game Clinic&#39;s whole argument from a different direction: design is what you do with the player, and taste is what you bring to it.</p>
+<hr>
+<h1 id="appendices"><a class="anchor" href="#appendices">Appendices</a></h1>
+<h2 id="appendix-a-the-gates-checklists-the-skill-enforces"><a class="anchor" href="#appendix-a-the-gates-checklists-the-skill-enforces">Appendix A — The gates (checklists the skill enforces)</a></h2>
+<p><strong>Gate 1: Is it a game idea?</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> One sentence: player goal plus two or three actions.</li>
+<li><input disabled="" type="checkbox"> A 300-character store description with verbs, goal, environment, genre, perspective.</li>
+<li><input disabled="" type="checkbox"> A news-headline hook, paired with an anchor (a known genre or comparable).</li>
+<li><input disabled="" type="checkbox"> Which of the five ways it might suck (too big, vague, derivative, personal, late) have you answered?</li>
+<li><input disabled="" type="checkbox"> Learning project or commercial project? Decided and written down.</li>
+<li><input disabled="" type="checkbox"> Skills audit done: can / can&#39;t / want to learn. Nothing from the &quot;can&#39;t&quot; list in scope.</li>
+<li><input disabled="" type="checkbox"> One cascading constraint chosen and its player-facing reason written.</li>
+<li><input disabled="" type="checkbox"> Two or three pillars from the fourteen forms of fun, one thematic.</li>
+<li><input disabled="" type="checkbox"> Genre, mode, mood written as &quot;[genre] in [mode] with [mood]&quot;; genre names character, camera, controls.</li>
+<li><input disabled="" type="checkbox"> The Venn: want to make, can make, people want to play. Honest about circle three.</li>
+</ul>
+<p><strong>Gate 2: Has the prototype answered its question?</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> The question was written before building.</li>
+<li><input disabled="" type="checkbox"> Prototype is ugly, one repeating unit, built in days not weeks.</li>
+<li><input disabled="" type="checkbox"> Two or three strangers played it. You watched silently. Recorded.</li>
+<li><input disabled="" type="checkbox"> They said &quot;one more go&quot; or asked for the next build. If not, change or kill.</li>
+<li><input disabled="" type="checkbox"> Treasure, enemies, and hazards were visually distinct before the test.</li>
+<li><input disabled="" type="checkbox"> Barriers to play (controls, legibility, colour, tooltips) logged separately from difficulty.</li>
+</ul>
+<p><strong>Gate 3: Is the vertical slice ready for production?</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> One level, ship quality, 30 to 60 minutes, ~60% standards / ~40% innovations.</li>
+<li><input disabled="" type="checkbox"> Three innovations shown to people; any that did not excite were swapped.</li>
+<li><input disabled="" type="checkbox"> Ten to twenty testers in three waves; all feedback-derived tasks done before new content.</li>
+<li><input disabled="" type="checkbox"> Core mechanics locked. Only content is added from here.</li>
+<li><input disabled="" type="checkbox"> One-page design, minimal GDD, content plan grid, feature backlog exist.</li>
+<li><input disabled="" type="checkbox"> Global progression variable exists; balance pipeline planned, not built.</li>
+<li><input disabled="" type="checkbox"> Version control, playtest cadence (every two weeks), and an external deadline are all in place.</li>
+</ul>
+<p><strong>Gate 4: Is the store page ready?</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Genre and sub-genre confirmed; art direction final.</li>
+<li><input disabled="" type="checkbox"> Screenshots of three or more distinct environments, in-engine.</li>
+<li><input disabled="" type="checkbox"> Thirty-second trailer; gameplay in the first two seconds; hook by fifteen.</li>
+<li><input disabled="" type="checkbox"> Capsule: title plus one key visual, legible at 120 px, no text.</li>
+<li><input disabled="" type="checkbox"> Description is the pitch paragraph; page translated.</li>
+<li><input disabled="" type="checkbox"> Announced on a festival beat; six-plus months before launch.</li>
+</ul>
+<p><strong>Gate 5: Is it ready to launch?</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Demo live for months; median playtime known; conversion around 20%.</li>
+<li><input disabled="" type="checkbox"> Last Next Fest before launch entered with 2,000+ wishlists.</li>
+<li><input disabled="" type="checkbox"> 5,000 to 7,000 wishlists minimum, or a decision to ship anyway and start the next game.</li>
+<li><input disabled="" type="checkbox"> 100+ testers across multiple rounds; retest done.</li>
+<li><input disabled="" type="checkbox"> Creator list built; 20 emails a day scheduled from 2.5 weeks out.</li>
+<li><input disabled="" type="checkbox"> Monday launch; 20%+ discount; keys not handed out early.</li>
+<li><input disabled="" type="checkbox"> Post-launch patch plan for difficulty and bugs in week one.</li>
+</ul>
+<p><strong>Every playtest session</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> One-line goal and two or three indicators written.</li>
+<li><input disabled="" type="checkbox"> Tester asked their favourite games and the closest game to yours.</li>
+<li><input disabled="" type="checkbox"> &quot;You&#39;re not going to hurt my feelings.&quot; Think aloud. Screen and audio recorded.</li>
+<li><input disabled="" type="checkbox"> You did not talk. You did not help unless blocked.</li>
+<li><input disabled="" type="checkbox"> Body language and behaviour noted with timestamps.</li>
+<li><input disabled="" type="checkbox"> Debrief: frustrating moment first, then favourite, then the standard set.</li>
+<li><input disabled="" type="checkbox"> Feedback logged as symptoms; acted on only when consistent.</li>
+<li><input disabled="" type="checkbox"> Tester thanked.</li>
+</ul>
+<h2 id="appendix-b-reading-list"><a class="anchor" href="#appendix-b-reading-list">Appendix B — Reading list</a></h2>
+<p><strong>Books.</strong> Derek Yu, <em>Spelunky</em> (Boss Fight Books, 2016). Jesse Schell, <em>The Art of Game Design: A Book of Lenses</em> (3rd ed. 2019). Raph Koster, <em>A Theory of Fun for Game Design</em> (2004). Steve Swink, <em>Game Feel</em> (2008). Jesper Juul, <em>A Casual Revolution</em> (2010). Rami Ismail, <em>Levelling The Playing Field</em> (free online). Chris Zukowski, <em>60 Game Marketing Mistakes</em> (free PDF, 2023). <em>The Level Design Book</em> (free web).</p>
+<p><strong>Essential essays.</strong> Derek Yu, &quot;Finishing a Game&quot; (2010) — makegames.tumblr.com/post/1136623767/finishing-a-game. Ken Birdwell, &quot;The Cabal: Valve&#39;s Design Process for Creating Half-Life&quot; (1999). Tom Francis, &quot;15 Years of Indie Dev In 4 Bits of Advice&quot; (2026) — pentadact.com. LocalThunk, &quot;The Balatro Timeline&quot; — localthunk.com. Max Pears, &quot;Design Pillars: The Core of Your Game&quot; (2017). Clint Hocking, &quot;Ludonarrative Dissonance in Bioshock&quot; (2007). Edmund McMillen, &quot;Why So Hard?&quot; (2010). John Hopson, &quot;Behavioral Game Design&quot; (2001) and &quot;There is no Skinner Box&quot; (2012).</p>
+<p><strong>Talks.</strong> Mark Cerny, &quot;Method&quot; (D.I.C.E. 2002). Stone Librande, &quot;One-Page Designs&quot; (GDC 2010). Ian Schreiber, &quot;The Four One-Page Design Docs You Need&quot; (GDC 2025). Jonathan Blow, &quot;Indie Prototyping&quot; (IGS 2007). Sid Meier, &quot;Interesting Decisions&quot; (GDC 2012). Koichi Hayashida, &quot;Thinking in 3D&quot; (GDC 2012). Ojiro Fumoto, &quot;Polishing the Boots: Designing Downwell Around One Key Mechanic&quot; (GDC 2016). Jonasson and Purho, &quot;Juice It or Lose It&quot; (2012). Jan Willem Nijman, &quot;The Art of Screenshake&quot; (2013). Anthony Giovannetti, &quot;Slay the Spire: Metrics Driven Design&quot; (GDC 2019). Matthew Davis, &quot;Into the Breach Design Postmortem&quot; (GDC 2019). Mark Rosewater, &quot;Twenty Years, Twenty Lessons&quot; (GDC 2016). Smith and Worch, &quot;What Happened Here? Environmental Storytelling&quot; (GDC 2010). Shaver and Yang, &quot;Invisible Intuition&quot; (GDC 2018). Nicole Lazzaro, &quot;Why We Play Games&quot; (2004). Hunicke, LeBlanc, Zubek, &quot;MDA&quot; (2004). Ryan, Rigby, Przybylski, &quot;The Motivational Pull of Video Games&quot; (2006).</p>
+<p><strong>Data.</strong> howtomarketagame.com (benchmarks page; &quot;What the hell happened in 2025?&quot;; Next Fest benchmarks; &quot;Do wishlists get old?&quot;; itch.io traffic benchmark; pricing tips; the 10-step plan). GameDiscoverCo newsletter (Early Access graduates 2025; engine share 2026; publishing agreements). Valve Steamworks docs (store assets; Playtest; AI content). GDC State of the Game Industry 2025 and 2026. Godot growth stats (May 2026). US Copyright Office, <em>Copyright and AI Part 2</em> (2025). Game Accessibility Guidelines.</p>
+<p><strong>Video channels used as sources.</strong> Indie Game Clinic (Dr Joe Baxter-Webb). Game Maker&#39;s Toolkit (Mark Brown). Rafalsky. Bite Me Games. Juniper. Isto Inc. Ben Bonk. Razbuten. Game Dev Beginner. Brandon. Rascal.</p>
+<p>Full URLs for every claim are in the four research briefs that accompany this draft.</p>
+<h2 id="appendix-c-source-index-the-61-transcripts"><a class="anchor" href="#appendix-c-source-index-the-61-transcripts">Appendix C — Source index (the 61 transcripts)</a></h2>
+<p><strong>Indie Game Clinic (25 unique; 7 files were duplicates).</strong> Why You Struggle to Learn Game Coding · You Can Make Other Things · The Secret to GOOD Game Ideas · Stopping Scope Creep without Crushing Creativity · Develop Better Games, Faster, with Design by Constraint · 3 Projects for Beginners · Game Design Documents: a Minimalist Approach · Game Genres: a Design Perspective · Prototyping, Vertical Slices, and Planning a Complex Game · How (and Why) to Design for Repetition With Variety · Their Games &quot;Failed&quot;: What Did They Learn · Why &quot;Motivation&quot; is Overrated · Why These 2 Indies REALLY Failed · Deckbuilder Devs! Please Pay Attention · Game Design Theory: A Guided Tour · What is Fun? · Game Marketing Advice with Chris Z · Story in Games: Characters &amp; Dialogue · Visual Communication: Why Game Art Matters · Level Design Approaches for Solo Devs · Indie Game Genres &amp; Subtractive Design · Gameplay Loops Are Out, Chains Are In · Typography Basics Every Game Dev Should Know · Making a ROGUELIKE? Watch This First · Challenge &amp; Difficulty in Game Design · The ULTIMATE Playtest Guide.</p>
+<p><strong>Curated playlist (36).</strong> Core: Everything You Need To Start Making Games (unnamed student) · How To Make A Game Alone (Rafalsky) · How to find amazing game ideas (GMTK) · The Unity Tutorial For Complete Beginners (GMTK) · How to write a Game Design Document (Game Dev Beginner, inferred) · The Game Dev Advice That Took 10 Years to Discover (Isto Inc., inferred) · 10 Game Design Tricks (Rafalsky) · How to Start Gamedev in 2026 (Brandon) · How To ACTUALLY Start Making Games (Rascal, probable) · How Much Money my Indie Game Made (Ben Bonk) · I Tried to Add Every Movement Ability (unnamed) · The ONE Thing You Need to Learn (unnamed) · Your game idea (probably) sucks (Bite Me Games) · Make Tiny Games (Juniper) · How to Make Games When You&#39;re Bad at Everything (unnamed) · I Made a TURN BASED COMBAT Game in Scratch (Juniper) · The Game Dev Advice You Actually Need (Juniper, with AIA, Luke Muscat, Goodgis, Challacade, Sandering Emily, Jordan Carter) · every step to actually make your dream game (unnamed). Adjacent: I Made a Game using Only AI (Rafalsky) · How I Would Become a Game Developer (Rafalsky; actually a getting-hired video) · Every Graphics Setting Explained · Loot Loop Review · Automating the Hardest Parts of Game Dev (Unity AI) · The Best Mechanics From Bad Games (Razbuten) · How to use ComfyUI for beginners (Sebastian Kamph) · Claude Code just made ComfyUI 10x more powerful · How Anthropic Engineers ACTUALLY Prompt Claude Code · Start a YouTube Channel in 6 Months · Give Me 18 Minutes (DRAG) · Learn 97% of Claude (Dan Martell) · Clean Up AI Art for Print (Fireprint) · Every Free App You Actually Need. Omitted as off-topic: Top 7 Prompt Libraries · Stop Prompting AI (Claude Cowork) · If you have a Job, Start a YouTube Channel.</p>
+<h2 id="appendix-d-claims-not-verified-kept-out-of-the-body-or-flagged"><a class="anchor" href="#appendix-d-claims-not-verified-kept-out-of-the-body-or-flagged">Appendix D — Claims not verified (kept out of the body or flagged)</a></h2>
+<ul>
+<li>Rami Ismail &quot;make ten small games before your big one&quot;: no primary source found.</li>
+<li>Jonathan Blow &quot;you just sit down and do the work&quot;: exact wording not located on a primary page.</li>
+<li>Schell&#39;s Rule of the Loop exact sentence: confirm against the book.</li>
+<li>&quot;The player should always feel it was their fault&quot; as a quote from a named designer: community paraphrase.</li>
+<li>Zukowski &quot;never price under $10&quot;: not found; his verifiable position is comps plus 20%.</li>
+<li>Median Steam gross revenue of $249 in 2025: aggregator figure without a linked dataset.</li>
+<li>&quot;70% of indie games fail&quot;: no traceable methodology. Do not cite.</li>
+<li>Extra Credits naming a Pong → Breakout → Asteroids ladder: unconfirmed; the sourced ladder is the 20 Games Challenge.</li>
+<li>Nintendo&#39;s &quot;Kyoto method&quot; / &quot;nobody knows what the game is about until it&#39;s fun&quot;: no primary source; paraphrase as Nintendo&#39;s prototype-until-it&#39;s-fun habit.</li>
+<li>Stanford Digital Economy Lab 18% AI sales penalty: paper not retrieved.</li>
+<li>Nijman&#39;s exact on-screen tip list in <em>The Art of Screenshake</em>: reconstructed, not transcribed.</li>
+<li>MDA paper verbatim definitions: PDF unreadable in this pass; paraphrased from secondary sources.</li>
+<li>Dr Joe Baxter-Webb&#39;s surname spelling: from audio; confirm on the channel&#39;s About page.</li>
+<li>Per-video YouTube URLs for all 61 transcripts: the export copied one URL into every header. Re-resolve from the two playlists before publishing citations.</li>
+</ul>
+<p><em>End of draft v0.1.</em></p>
+
+    <footer>Private review page · noindex · built 2026-09-23</footer>
+  </main>
+</div>
+<script>
+(function(){var b=document.getElementById('theme'),r=document.documentElement;try{var s=localStorage.getItem('gdh-theme');if(s)r.setAttribute('data-theme',s);}catch(e){}
+b.addEventListener('click',function(){var cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;var n=dark?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('gdh-theme',n);}catch(e){}});})();
+</script>
+</body>
+</html>

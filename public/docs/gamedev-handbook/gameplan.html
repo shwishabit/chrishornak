@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Game-Dev Skill Gameplan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--paper:#fffdf8;--ink:#1d1a16;--soft:#6b645a;--rule:#e2dccf;--accent:#0f766e;--accent-2:#b45309;--code:#efe9dc;}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}}
+:root[data-theme=dark]{--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "Source Serif 4",Georgia,serif}
+header.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+header.top .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;font-family:Inter,system-ui,sans-serif;font-size:13px}
+header.top .brand{font-weight:700;letter-spacing:.02em;color:var(--ink);text-decoration:none}
+header.top nav{display:flex;gap:6px;margin-left:auto}
+header.top nav a{color:var(--soft);text-decoration:none;padding:6px 10px;border-radius:6px}
+header.top nav a.on{background:var(--accent);color:#fff}
+header.top button{font:inherit;background:none;border:1px solid var(--rule);color:var(--soft);border-radius:6px;padding:5px 9px;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+main{min-width:0;overflow-wrap:anywhere}
+header.top .in{flex-wrap:wrap}
+@media(max-width:520px){header.top .brand{font-size:11px}header.top nav a{padding:6px 7px}}
+@media(min-width:1000px){.wrap{grid-template-columns:270px minmax(0,1fr)}}
+aside.toc{display:none}
+@media(min-width:1000px){aside.toc{display:block;position:sticky;top:56px;align-self:start;max-height:calc(100vh - 70px);overflow:auto;padding:22px 8px 22px 0;font-family:Inter,system-ui,sans-serif;font-size:12.5px;line-height:1.4}}
+aside.toc ul{list-style:none;margin:0;padding:0}
+aside.toc li{margin:0 0 4px}
+aside.toc li.d1{margin-top:12px;font-weight:600}
+aside.toc li.d2{padding-left:10px}
+aside.toc a{color:var(--soft);text-decoration:none}
+aside.toc a:hover{color:var(--accent)}
+details.mtoc{margin:18px 0 6px;font-family:Inter,system-ui,sans-serif;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:10px 14px;background:var(--paper)}
+@media(min-width:1000px){details.mtoc{display:none}}
+details.mtoc ul{list-style:none;padding:0;margin:8px 0 0}
+details.mtoc li{margin:4px 0}
+details.mtoc li.d1{font-weight:600;margin-top:10px}
+details.mtoc li.d2{padding-left:12px}
+details.mtoc a{color:var(--soft);text-decoration:none}
+main{max-width:720px;padding:26px 0 80px}
+.lede{font-family:Inter,system-ui,sans-serif;color:var(--soft);font-size:13px;margin:0 0 4px}
+h1,h2,h3,h4{font-family:Inter,system-ui,sans-serif;line-height:1.2;letter-spacing:-.01em;scroll-margin-top:64px}
+h1{font-size:clamp(26px,4vw,34px);margin:2.2em 0 .6em;padding-top:.6em;border-top:2px solid var(--ink)}
+main > h1:first-of-type{border-top:0;margin-top:.3em;padding-top:0;font-size:clamp(32px,5vw,44px)}
+h2{font-size:clamp(20px,3vw,25px);margin:2em 0 .5em;color:var(--accent)}
+h3{font-size:17px;margin:1.6em 0 .4em}
+h4{font-size:15px;margin:1.3em 0 .3em;color:var(--soft)}
+.anchor{color:inherit;text-decoration:none}
+p{margin:0 0 1em}
+a{color:var(--accent)}
+blockquote{margin:1.2em 0;padding:.2em 0 .2em 1em;border-left:3px solid var(--accent-2);color:var(--soft);font-style:italic}
+ul,ol{padding-left:1.4em;margin:0 0 1em}
+li{margin:.25em 0}
+li > ul,li > ol{margin:.3em 0}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86em;background:var(--code);padding:.1em .35em;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--rule);border-radius:8px;padding:14px;overflow:auto;font-size:13px;line-height:1.5;margin:1.2em 0}
+pre code{background:none;padding:0;font-size:inherit}
+table{width:100%;border-collapse:collapse;font-family:Inter,system-ui,sans-serif;font-size:13.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--soft);border-bottom:2px solid var(--rule)}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5em 0}
+input[type=checkbox]{margin-right:.5em;accent-color:var(--accent)}
+li:has(> input[type=checkbox]){list-style:none;margin-left:-1.3em}
+em{font-style:italic}
+strong{font-weight:600}
+footer{font-family:Inter,system-ui,sans-serif;font-size:12.5px;color:var(--soft);border-top:1px solid var(--rule);padding:18px 0 40px;margin-top:40px}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="/docs/gamedev-handbook/">GAMEDEV HANDBOOK</a>
+  <nav><a href="/docs/gamedev-handbook/" class="">Handbook</a><a href="/docs/gamedev-handbook/gameplan.html" class="on">Gameplan</a><a href="/docs/gamedev-handbook/retros.html" class="">Retros</a></nav>
+  <button id="theme" title="Toggle theme">◐</button>
+</div></header>
+<div class="wrap">
+  <aside class="toc"><ul><li class="d1"><a href="#gameplan-the-indie-game-dev-skill-and-agents">Gameplan: the indie game-dev skill and agents</a></li>
+<li class="d2"><a href="#1-what-the-retrospectives-found">1. What the retrospectives found</a></li>
+<li class="d2"><a href="#2-design-principle-for-the-new-system">2. Design principle for the new system</a></li>
+<li class="d2"><a href="#3-what-to-build">3. What to build</a></li>
+<li class="d2"><a href="#4-build-order">4. Build order</a></li>
+<li class="d2"><a href="#5-decisions-only-you-can-make">5. Decisions only you can make</a></li>
+<li class="d2"><a href="#6-what-this-does-not-do">6. What this does not do</a></li></ul></aside>
+  <main>
+    <p class="lede">The skill and agents to build · draft · for Chris's review</p>
+    <details class="mtoc"><summary>Contents</summary><ul><li class="d1"><a href="#gameplan-the-indie-game-dev-skill-and-agents">Gameplan: the indie game-dev skill and agents</a></li>
+<li class="d2"><a href="#1-what-the-retrospectives-found">1. What the retrospectives found</a></li>
+<li class="d2"><a href="#2-design-principle-for-the-new-system">2. Design principle for the new system</a></li>
+<li class="d2"><a href="#3-what-to-build">3. What to build</a></li>
+<li class="d2"><a href="#4-build-order">4. Build order</a></li>
+<li class="d2"><a href="#5-decisions-only-you-can-make">5. Decisions only you can make</a></li>
+<li class="d2"><a href="#6-what-this-does-not-do">6. What this does not do</a></li></ul></details>
+    <h1 id="gameplan-the-indie-game-dev-skill-and-agents"><a class="anchor" href="#gameplan-the-indie-game-dev-skill-and-agents">Gameplan: the indie game-dev skill and agents</a></h1>
+<p><em>Draft for Chris&#39;s review · 2026-09-22 · Built from the handbook, two candid retrospectives (Rafter and SCANDISK), and the current <code>.agent/</code> system.</em></p>
+<p>The goal you set: be more efficient, make better games, and make sure your guidance and vision drive the final product. This plan is organised around that last clause, because the retrospectives show it is where the current system fails most.</p>
+<hr>
+<h2 id="1-what-the-retrospectives-found"><a class="anchor" href="#1-what-the-retrospectives-found">1. What the retrospectives found</a></h2>
+<p>Two read-only agents read both game folders end to end: every Session State, every CHANGELOG entry, the briefs, the memory files, and the dispositions ledger. The full reports are on the Retros page. The short version:</p>
+<h3 id="rafter-game-1-2026-08-27-to-09-01-idle-since"><a class="anchor" href="#rafter-game-1-2026-08-27-to-09-01-idle-since">Rafter (game 1, 2026-08-27 to 09-01, idle since)</a></h3>
+<p><strong>Good.</strong></p>
+<ul>
+<li>The gym. You rejected a random layout and the signed 11-zone gym replaced it in one commit. Every later milestone reused it. It became a standing rule.</li>
+<li>The on-screen controls strip, updated in the same commit as any button change.</li>
+<li><code>tune.ts</code> as your file. Live tuning happened where it mattered.</li>
+<li>You designed in play and it landed the same session: the two-timing fight, dead-stays-dead, the spawn-facing fix. Three gates passed in 90 minutes on 09-01.</li>
+<li>Hard rules held once written: no Shift, greybox only, stealth spine never re-proposed.</li>
+</ul>
+<p><strong>Poor.</strong></p>
+<ul>
+<li>Paper outran play. Roughly 8,500 words of brief against 1,315 lines of code. Eleven brief revisions before a guard had been played. Four competing design documents.</li>
+<li>The AI built the wrong game once (wrong genre, wrong repo, wrong palette, Shift bound) because a cloud session could not read the brief, and two invented mechanics were restated back as yours.</li>
+<li>Gates were softer than written. Milestone 01&#39;s gate was &quot;two minutes and you don&#39;t want to stop.&quot; It passed on &quot;a good start with the basics.&quot; The kill switch was never evaluated.</li>
+<li>The 09-01 sprint ended with an unplanned behaviour tree and a speed retune shipped at 1 a.m., unplayed. Still unplayed 21 days later.</li>
+<li>Milestone 05, the actual MVP level, never started. Nothing pulled the game back.</li>
+<li>You have never played Rafter on a phone. No ship script exists.</li>
+</ul>
+<h3 id="scandisk-game-2-2026-09-17-to-09-22"><a class="anchor" href="#scandisk-game-2-2026-09-17-to-09-22">SCANDISK (game 2, 2026-09-17 to 09-22)</a></h3>
+<p><strong>Good.</strong></p>
+<ul>
+<li>Verbatim capture of your words: <code>VISION.md</code>, <code>LOCKED-PLAN.md</code>, <code>INSPIRATIONS.md</code> with &quot;Not:&quot; lines. When the system wrote your words down, it caught drift.</li>
+<li>Step 0 (plain Othello) gave the clearest signal in the project in ten minutes.</li>
+<li>Ask-the-defining-rule-first: clones 7, 9, and 10 needed zero rebuilds after this gate; clones 1 and 6 needed three before it.</li>
+<li>Research to source before building: the Hoplite clone read the rules file first and shipped clean; the MicRogue clone built from one line and invented enemies.</li>
+<li>Thresh <em>playing</em> Prototype 1 found what sims and audits missed.</li>
+<li>The Grill Me diagnosis of Prototype 2 found the structural cause after two patches had missed it.</li>
+<li>Contract-first parallel builds, adversarial cross-play, and engineered team diversity all worked in their narrow formats.</li>
+</ul>
+<p><strong>Poor.</strong></p>
+<ul>
+<li>About 44 playable builds in six days. You played about 22. You approved nine, and none of the nine is SCANDISK. Every SCANDISK prototype was shelved.</li>
+<li>No <code>VISION.md</code> until day five, after about 30 builds. The source-of-truth pointer moved four times.</li>
+<li>Builds outran your hands. &quot;Chris has still not played&quot; appears six times in the CHANGELOG. Jam 2 alone: 16 builds, 12 review reports, zero plays.</li>
+<li>The AI&#39;s taste filled the gaps. About eight rules per version marked &quot;(my call)&quot;. Prototype 1 used five of roughly 25 inspirations &quot;each at its most basic.&quot; Prototype 2 repeated the failure and deliberately cut the Alien: Isolation dread that the vision names.</li>
+<li>Your recurring asks went unbuilt: &quot;a real opponent I can out-read&quot; asked seven times, &quot;buildings and units&quot; five times. Neither was ever built.</li>
+<li>Measuring tools lied three times (sims passed builds that failed on screen; a fairness metric reported a crisis that did not exist).</li>
+<li>Thresh&#39;s role was renegotiated on four different days. When he directed, output missed gates. When he played, he found the truth.</li>
+<li>The team machinery cost whole days you never played. Prototype 3 and all ten clones were built solo and were the most productive 24 hours of the project.</li>
+<li>State bloat: a 108 KB <code>agent.md</code>, a 222 KB dispositions file. Sessions past 4 a.m. on three days.</li>
+</ul>
+<h3 id="the-one-pattern-under-both"><a class="anchor" href="#the-one-pattern-under-both">The one pattern under both</a></h3>
+<p>The system is excellent at <strong>recording</strong> your vision and poor at <strong>carrying it through a build</strong>. The gap opens at every merge, every &quot;buildable&quot; simplification, every rule the AI fills in, and every round you do not play. And the handbook&#39;s most repeated rule is the one the system broke most: validate the core with the player before building more.</p>
+<hr>
+<h2 id="2-design-principle-for-the-new-system"><a class="anchor" href="#2-design-principle-for-the-new-system">2. Design principle for the new system</a></h2>
+<p><strong>You are the designer and the only judge. The AI is the studio: it builds, tests, researches, and reports. It never decides what the game is.</strong></p>
+<p>Everything below follows from four commitments that come straight from the evidence:</p>
+<ol>
+<li><strong>One unplayed build at a time.</strong> The system may not start build N+1 until you have played build N and left a note. Sims, Thresh, audits, and cross-play can fail a build. Only your play note can pass one.</li>
+<li><strong>Your words are the spec.</strong> A locked vision document exists before the first line of code, in your words, with a hard-rules block, an inspiration map, a look reference, and &quot;Not:&quot; lines. Every rule or number the AI fills in is tagged &quot;(my call)&quot; and shown to you in one short block before it is treated as locked.</li>
+<li><strong>Ask the defining question, then build exactly that.</strong> One question, one answer, no verification detour, no independent taste pass. When a complaint has been patched twice, stop tuning and grill for the root cause.</li>
+<li><strong>Sessions are sized to &quot;you have something to play.&quot;</strong> One build per sitting by default, a hard stop offered before the next system starts, a written &quot;next sitting starts with&quot; line, and a phone-playable link from the first gym.</li>
+</ol>
+<hr>
+<h2 id="3-what-to-build"><a class="anchor" href="#3-what-to-build">3. What to build</a></h2>
+<h3 id="31-one-skill-indie-gamedev"><a class="anchor" href="#31-one-skill-indie-gamedev">3.1 One skill: <code>indie-gamedev</code></a></h3>
+<p>A single harness skill at <code>.agent/skills/indie-gamedev/SKILL.md</code> (junctioned into <code>~/.claude/skills/</code>), shaped like the workspace&#39;s process gates (<code>verification-before-completion</code>, <code>diagnose</code>). Composable references, not one giant prompt.</p>
+<p><strong>Triggers.</strong> &quot;new game&quot;, &quot;let&#39;s make a game&quot;, &quot;game idea&quot;, &quot;prototype&quot;, &quot;play-test&quot;, &quot;let&#39;s work on [game]&quot;, any work request under <code>Games/</code>. It absorbs and replaces <code>.agent/workflows/new-game.md</code>, which gets rewritten to point at the skill.</p>
+<p><strong>Structure.</strong></p>
+<pre><code>indie-gamedev/
+  SKILL.md                      the gates and the rules of engagement (short)
+  references/
+    00-two-pages.md             Part 0 of the handbook (the ten rules, the pipeline, the five docs)
+    01-idea-gate.md             Ch 4–6 distilled: sources, five-sucks test, skills audit, constraint, genre pyramid
+    02-prototype-and-slice.md   Ch 8.4 + 13: prototype = test of an unknown; variety phase; 60/40 slice
+    03-playtest.md              Ch 15: goal + indicators, three waves, RITE, watch don&#39;t talk, consistency rule
+    04-challenge-feel.md        Ch 9–10: barriers before difficulty, levers, juice, colour needs a neutral, typography
+    05-level-and-story.md       Ch 11–12: graybox, content grid, own rules, kishōtenketsu, story cost
+    06-ship-and-market.md       Ch 17–20: itch test, page-ready gate, demo, wishlists, honest money
+    07-ai-line.md               Ch 22: code yes, shipped content disclosed, creativity stays human
+    handbook.md                 the full handbook, for deep reads
+  templates/
+    VISION.md                   verbatim quotes · numbered checklist · Not: lines · HARD RULES · look reference · inspiration map · acceptance asks
+    ONE-PAGER.md                Librande one-page: objective, illustration slot, callouts, pillars at centre
+    PLAY-LOG.md                 date · build · zone · verbatim words · PASS/HOLD/KILL · the one change · learning-line answer
+    INSPIRATION-MAP.md          inspiration → exact mechanic → where on screen → felt together with
+    BACKLOG-SHEET.md            feature · pillar · category · status
+    POSTMORTEM.md               one page per shelved build; feeds LESSONS.md
+    SESSION-CLOSE.md            unplayed-build count · next sitting starts with · model + effort used
+  scripts/
+    game-state.ps1              reads agent.md; prints unplayed-build count, pending dispositions, last play note
+    ship.mjs                    static build → chrishornak /play/&lt;slug&gt;/ or /docs/scandisk/… with absolute paths, cache-busted, live-verified
+    grid-test-kit.mjs           skill ladder (random &lt; greedy &lt; 2-ply), fair-enemy check, no-seal at spawn and per turn, phone-width screenshot, metric validation against a known-good and known-bad case
+</code></pre>
+<p><strong>The gates the skill enforces</strong> (blocking, per the SkillsProtocol rule that process skills are gates, not advice):</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Blocks until</th>
+<th>Evidence it exists</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vision lock</td>
+<td><code>VISION.md</code> from the template is in the game repo, with your words, hard rules, look reference, inspiration map</td>
+<td>SCANDISK retro §4.1, D227, D238</td>
+</tr>
+<tr>
+<td>Idea gate</td>
+<td>One sentence + 300-char description + pillars + constraint + the five-sucks answers</td>
+<td>Handbook Ch 4–6; Rafter 08-29 six-round grill</td>
+</tr>
+<tr>
+<td>Learning line</td>
+<td>Every build states &quot;this build should tell us ___&quot; before code</td>
+<td>Rafter §4.11; new-game.md step 4</td>
+</tr>
+<tr>
+<td>Defining question</td>
+<td>One <code>AskUserQuestion</code> naming the rule that is &quot;the point&quot; before any clone, prototype, or look pass</td>
+<td>SCANDISK D241</td>
+</tr>
+<tr>
+<td>Author tags</td>
+<td>Every rule and number tagged (Chris) / (my call) / (panel: seat); the (my call) block shown once before build</td>
+<td>Rafter D142; SCANDISK D202</td>
+</tr>
+<tr>
+<td>WIP limit</td>
+<td>Unplayed builds = 0 before a new build or a retune starts</td>
+<td>Rafter 09-01; SCANDISK §4.2</td>
+</tr>
+<tr>
+<td>Play note</td>
+<td>A verbatim quote scored against the gate&#39;s own wording, verdict PASS / HOLD / KILL, with the kill switch offered as a live option</td>
+<td>Rafter m01</td>
+</tr>
+<tr>
+<td>Two-patch rule</td>
+<td>Same complaint patched twice → grill for root cause, no third patch</td>
+<td>SCANDISK P2, the look spiral</td>
+</tr>
+<tr>
+<td>Session cap</td>
+<td>One gate or about 90 minutes; no retunes in the last 15 minutes; <code>SESSION-CLOSE.md</code> written</td>
+<td>Rafter 01:31, SCANDISK past 4 a.m.</td>
+</tr>
+<tr>
+<td>Phone check</td>
+<td>Live link played on a phone at every gate, from the first gym</td>
+<td>Rafter §4.8; SCANDISK Jam 4 rebuild</td>
+</tr>
+</tbody></table>
+<p><strong>Two slash commands</strong> (in <code>.agent/commands/</code>, junctioned): <code>/game-play</code> opens the play-log entry for the current build and asks the one verdict question; <code>/game-close</code> runs the session close (unplayed count, next sitting line, model log, landscape update to <code>Games/README.md</code> and memory).</p>
+<h3 id="32-agents"><a class="anchor" href="#32-agents">3.2 Agents</a></h3>
+<p>The mastermind&#39;s rule: agents are audit-runners or watchers, read-only, added on the third repeat. Two changes and one addition.</p>
+<p><strong>Thresh, role fixed in writing.</strong> Tester, coordinator, tie-breaker. Plays every build before you do and writes the first play note. Never holds the pen, never directs a round, never proposes a framework. His agent file gets a &quot;Never&quot; block. This was renegotiated four times on SCANDISK; it stops being negotiable.</p>
+<p><strong>The five teams, demoted from default to on-demand.</strong> They stay in <code>.agent/agents/</code> but the skill only spins them up for the three formats that produced value: adversarial cross-play review of a build, a contract-first parallel build from a merged design you have approved, and a pitch contest with engineered diversity (own practice, a banned-obvious list, no shared reading, a different model per team). Never as a substitute for you playing. Agent count per session is capped and reported in <code>SESSION-CLOSE.md</code>. Solo build plus Thresh-plays becomes the default, because it produced every build you approved.</p>
+<p><strong>New: <code>game-vision-auditor</code></strong> (read-only). Given a design, a merged plan, or a build, it returns three lists: the inspiration map with depth scored (each named inspiration, the exact mechanic, where it appears on screen, what it is felt together with); every &quot;(my call)&quot; rule; and your standing acceptance asks from <code>VISION.md</code> with a met / not-met mark per build. It runs before you see anything. It exists because &quot;a real opponent&quot; went unbuilt seven times and nothing made that visible.</p>
+<p><strong>Not adding:</strong> a playtest-observer agent. You are the tester. Thresh is the pre-tester. An agent watching an agent play is the loop that produced Jam 2.</p>
+<h3 id="33-system-plumbing"><a class="anchor" href="#33-system-plumbing">3.3 System plumbing</a></h3>
+<ul>
+<li><strong>Welcome Mat line.</strong> <code>game-state.ps1</code> output joins the session brief: <code>GAME: &lt;name&gt; · unplayed builds: N · last play note: &lt;date&gt; · next: &lt;line&gt;</code>. This is the pull mechanism Rafter lacked.</li>
+<li><strong>Spiral detection extended to design.</strong> The same open question re-answered twice, or the same complaint patched twice, halts the loop with the existing <code>⚠️ SPIRAL DETECTED</code> block. Today&#39;s detector counts file edits and did not fire on the look spiral.</li>
+<li><strong>Stop-safe agents.</strong> A launch-time line in every background-agent call: &quot;pressing stop kills this round.&quot; Taste-driven work stays in the foreground by default.</li>
+<li><strong>State caps.</strong> <code>agent.md</code> archives superseded Session States automatically past a size cap. A <code>LESSONS.md</code> per game is what the next session reads instead of the full history. The memory curator runs at each game session close.</li>
+<li><strong>Dispositions.</strong> D141, D142, D144 (Rafter) and the open D2xx range (SCANDISK) get a disposition in the first build session: built into the skill, or closed.</li>
+</ul>
+<hr>
+<h2 id="4-build-order"><a class="anchor" href="#4-build-order">4. Build order</a></h2>
+<p><strong>Phase 1: the skill and the vision lock (one session, about two hours).</strong></p>
+<ol>
+<li>Write <code>SKILL.md</code> and the eight references (split from the handbook, not rewritten).</li>
+<li>Write the seven templates.</li>
+<li>Rewrite <code>new-game.md</code> to point at the skill and remove the duplicated steps.</li>
+<li>Fix Thresh&#39;s agent file. Add the &quot;on-demand only&quot; block to the five team files.</li>
+<li>Add the <code>game-state.ps1</code> line to the Welcome Mat.</li>
+<li>Run <code>/game-close</code> on both Rafter and SCANDISK so each has an unplayed-build count, a <code>LESSONS.md</code>, and a next line.</li>
+</ol>
+<p><strong>Phase 2: tooling (one session).</strong>
+7. <code>ship.mjs</code> with phone-first output and a live check. Retro-fit Rafter so you can play it on your phone.
+8. <code>grid-test-kit.mjs</code> from the SCANDISK sims, with the metric-validation step.
+9. <code>game-vision-auditor</code> agent file.
+10. Spiral-detection extension and the stop-safe launch line.</p>
+<p><strong>Phase 3: use it (the next game session).</strong>
+11. Run Prototype 4 of SCANDISK (or game 3) through the gates end to end. One build, you play it, one note, next build.
+12. After every use, fold the corrections back into the skill (the Anthropic rule: &quot;Is this a one-time fix or should this be in the skill forever?&quot;).</p>
+<p>Phase 1 does not touch any game code. Phase 2 does not touch game design. Nothing in this plan builds a prototype until you have approved the plan.</p>
+<hr>
+<h2 id="5-decisions-only-you-can-make"><a class="anchor" href="#5-decisions-only-you-can-make">5. Decisions only you can make</a></h2>
+<p>Each of these changes what Phase 1 writes. Two options each, with my pick first.</p>
+<p><strong>Unplayed builds: hard block or warn?</strong></p>
+<ul>
+<li>Hard block (my pick). The skill refuses to start a new build until a play note exists. Every &quot;still not played&quot; line in both CHANGELOGs happened under a warning.</li>
+<li>Warn. The skill says so and continues if you tell it to. Faster on a roll, and the retros say the roll is where the damage happens.</li>
+</ul>
+<p><strong>The five teams: on-demand or retired?</strong></p>
+<ul>
+<li>On-demand (my pick). Kept for cross-play, contract builds, and engineered pitch contests, which each worked once. Default is solo build plus Thresh.</li>
+<li>Retired. Delete the team files; keep only Thresh and the new auditor. Simpler, and you lose the cross-play format that found three real defects in four minutes per reviewer.</li>
+</ul>
+<p><strong>Rafter: resume under the new system or park it?</strong></p>
+<ul>
+<li>Park it deliberately (my pick). Write its <code>LESSONS.md</code>, mark milestone 05 as the resume point, and let game 3 or SCANDISK Prototype 4 be the first run of the skill. Rafter&#39;s brief is bigger than its game and would need the vision lock redone.</li>
+<li>Resume it. The gym and controls strip are the best-proven pieces you have, and you have never played it on a phone.</li>
+</ul>
+<p><strong>SCANDISK Prototype 3: approved base for Prototype 4, or not?</strong></p>
+<ul>
+<li>Not yet (my pick). Its design is recorded as &quot;not challenged,&quot; never approved, and <code>SYNTHESIS.md</code> rests on three clones you have not played. Prototype 4 starts from the vision lock and the defining-question gate, with P3 available as a reference.</li>
+<li>Yes. Treat the bare Into the Breach board as the base and layer one inspiration at a time.</li>
+</ul>
+<hr>
+<h2 id="6-what-this-does-not-do"><a class="anchor" href="#6-what-this-does-not-do">6. What this does not do</a></h2>
+<p>It does not make the games for you. The handbook is clear that design is what you do with the player, and the retros are clear that every approved build came from your play. The system&#39;s job is to stop building while it waits for you, to carry your words through every merge without simplifying them, and to make every gap between the vision and the build visible before you see the build.</p>
+<p><em>End of gameplan draft.</em></p>
+
+    <footer>Private review page · noindex · built 2026-09-23</footer>
+  </main>
+</div>
+<script>
+(function(){var b=document.getElementById('theme'),r=document.documentElement;try{var s=localStorage.getItem('gdh-theme');if(s)r.setAttribute('data-theme',s);}catch(e){}
+b.addEventListener('click',function(){var cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;var n=dark?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('gdh-theme',n);}catch(e){}});})();
+</script>
+</body>
+</html>

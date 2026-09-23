@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Game Retrospectives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--paper:#fffdf8;--ink:#1d1a16;--soft:#6b645a;--rule:#e2dccf;--accent:#0f766e;--accent-2:#b45309;--code:#efe9dc;}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}}
+:root[data-theme=dark]{--bg:#121110;--paper:#1a1816;--ink:#ece6da;--soft:#a39b8e;--rule:#2c2824;--accent:#2dd4a8;--accent-2:#f59e0b;--code:#231f1b;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "Source Serif 4",Georgia,serif}
+header.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+header.top .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;font-family:Inter,system-ui,sans-serif;font-size:13px}
+header.top .brand{font-weight:700;letter-spacing:.02em;color:var(--ink);text-decoration:none}
+header.top nav{display:flex;gap:6px;margin-left:auto}
+header.top nav a{color:var(--soft);text-decoration:none;padding:6px 10px;border-radius:6px}
+header.top nav a.on{background:var(--accent);color:#fff}
+header.top button{font:inherit;background:none;border:1px solid var(--rule);color:var(--soft);border-radius:6px;padding:5px 9px;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+main{min-width:0;overflow-wrap:anywhere}
+header.top .in{flex-wrap:wrap}
+@media(max-width:520px){header.top .brand{font-size:11px}header.top nav a{padding:6px 7px}}
+@media(min-width:1000px){.wrap{grid-template-columns:270px minmax(0,1fr)}}
+aside.toc{display:none}
+@media(min-width:1000px){aside.toc{display:block;position:sticky;top:56px;align-self:start;max-height:calc(100vh - 70px);overflow:auto;padding:22px 8px 22px 0;font-family:Inter,system-ui,sans-serif;font-size:12.5px;line-height:1.4}}
+aside.toc ul{list-style:none;margin:0;padding:0}
+aside.toc li{margin:0 0 4px}
+aside.toc li.d1{margin-top:12px;font-weight:600}
+aside.toc li.d2{padding-left:10px}
+aside.toc a{color:var(--soft);text-decoration:none}
+aside.toc a:hover{color:var(--accent)}
+details.mtoc{margin:18px 0 6px;font-family:Inter,system-ui,sans-serif;font-size:13px;border:1px solid var(--rule);border-radius:8px;padding:10px 14px;background:var(--paper)}
+@media(min-width:1000px){details.mtoc{display:none}}
+details.mtoc ul{list-style:none;padding:0;margin:8px 0 0}
+details.mtoc li{margin:4px 0}
+details.mtoc li.d1{font-weight:600;margin-top:10px}
+details.mtoc li.d2{padding-left:12px}
+details.mtoc a{color:var(--soft);text-decoration:none}
+main{max-width:720px;padding:26px 0 80px}
+.lede{font-family:Inter,system-ui,sans-serif;color:var(--soft);font-size:13px;margin:0 0 4px}
+h1,h2,h3,h4{font-family:Inter,system-ui,sans-serif;line-height:1.2;letter-spacing:-.01em;scroll-margin-top:64px}
+h1{font-size:clamp(26px,4vw,34px);margin:2.2em 0 .6em;padding-top:.6em;border-top:2px solid var(--ink)}
+main > h1:first-of-type{border-top:0;margin-top:.3em;padding-top:0;font-size:clamp(32px,5vw,44px)}
+h2{font-size:clamp(20px,3vw,25px);margin:2em 0 .5em;color:var(--accent)}
+h3{font-size:17px;margin:1.6em 0 .4em}
+h4{font-size:15px;margin:1.3em 0 .3em;color:var(--soft)}
+.anchor{color:inherit;text-decoration:none}
+p{margin:0 0 1em}
+a{color:var(--accent)}
+blockquote{margin:1.2em 0;padding:.2em 0 .2em 1em;border-left:3px solid var(--accent-2);color:var(--soft);font-style:italic}
+ul,ol{padding-left:1.4em;margin:0 0 1em}
+li{margin:.25em 0}
+li > ul,li > ol{margin:.3em 0}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86em;background:var(--code);padding:.1em .35em;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--rule);border-radius:8px;padding:14px;overflow:auto;font-size:13px;line-height:1.5;margin:1.2em 0}
+pre code{background:none;padding:0;font-size:inherit}
+table{width:100%;border-collapse:collapse;font-family:Inter,system-ui,sans-serif;font-size:13.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--soft);border-bottom:2px solid var(--rule)}
+hr{border:0;border-top:1px solid var(--rule);margin:2.5em 0}
+input[type=checkbox]{margin-right:.5em;accent-color:var(--accent)}
+li:has(> input[type=checkbox]){list-style:none;margin-left:-1.3em}
+em{font-style:italic}
+strong{font-weight:600}
+footer{font-family:Inter,system-ui,sans-serif;font-size:12.5px;color:var(--soft);border-top:1px solid var(--rule);padding:18px 0 40px;margin-top:40px}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="/docs/gamedev-handbook/">GAMEDEV HANDBOOK</a>
+  <nav><a href="/docs/gamedev-handbook/" class="">Handbook</a><a href="/docs/gamedev-handbook/gameplan.html" class="">Gameplan</a><a href="/docs/gamedev-handbook/retros.html" class="on">Retros</a></nav>
+  <button id="theme" title="Toggle theme">◐</button>
+</div></header>
+<div class="wrap">
+  <aside class="toc"><ul><li class="d1"><a href="#game-retrospectives">Game Retrospectives</a></li>
+<li class="d1"><a href="#rafter-process-retrospective">RAFTER — Process Retrospective</a></li>
+<li class="d2"><a href="#0-the-shape-of-the-project-in-numbers">0. The shape of the project in numbers</a></li>
+<li class="d2"><a href="#1-timeline">1. Timeline</a></li>
+<li class="d2"><a href="#2-how-the-process-actually-worked">2. How the process actually worked</a></li>
+<li class="d2"><a href="#3-what-went-well-evidence">3. What went well (evidence)</a></li>
+<li class="d2"><a href="#4-what-went-poorly-evidence">4. What went poorly (evidence)</a></li>
+<li class="d2"><a href="#5-where-chris39s-vision-was-honoured-vs-lost">5. Where Chris&#39;s vision was honoured vs. lost</a></li>
+<li class="d2"><a href="#6-compare-with-the-workflow-doc-new-gamemd-as-of-2026-09-22">6. Compare with the workflow doc (new-game.md as of 2026-09-22)</a></li>
+<li class="d2"><a href="#7-lessons-system-requirements">7. Lessons → system requirements</a></li>
+<li class="d2"><a href="#8-open-questions-for-chris">8. Open questions for Chris</a></li>
+<li class="d1"><a href="#scandisk-process-retrospective">SCANDISK — Process Retrospective</a></li>
+<li class="d2"><a href="#1-timeline-1">1. Timeline</a></li>
+<li class="d2"><a href="#2-how-the-process-worked">2. How the process worked</a></li>
+<li class="d2"><a href="#3-what-went-well">3. What went well</a></li>
+<li class="d2"><a href="#4-what-went-poorly">4. What went poorly</a></li>
+<li class="d2"><a href="#5-where-chris39s-vision-was-honoured-vs-lost-1">5. Where Chris&#39;s vision was honoured vs. lost</a></li>
+<li class="d2"><a href="#6-lessons-system-requirements">6. Lessons → system requirements</a></li>
+<li class="d2"><a href="#7-open-questions-for-chris">7. Open questions for Chris</a></li></ul></aside>
+  <main>
+    <p class="lede">Rafter and SCANDISK · process retrospectives · 2026-09-22</p>
+    <details class="mtoc"><summary>Contents</summary><ul><li class="d1"><a href="#game-retrospectives">Game Retrospectives</a></li>
+<li class="d1"><a href="#rafter-process-retrospective">RAFTER — Process Retrospective</a></li>
+<li class="d2"><a href="#0-the-shape-of-the-project-in-numbers">0. The shape of the project in numbers</a></li>
+<li class="d2"><a href="#1-timeline">1. Timeline</a></li>
+<li class="d2"><a href="#2-how-the-process-actually-worked">2. How the process actually worked</a></li>
+<li class="d2"><a href="#3-what-went-well-evidence">3. What went well (evidence)</a></li>
+<li class="d2"><a href="#4-what-went-poorly-evidence">4. What went poorly (evidence)</a></li>
+<li class="d2"><a href="#5-where-chris39s-vision-was-honoured-vs-lost">5. Where Chris&#39;s vision was honoured vs. lost</a></li>
+<li class="d2"><a href="#6-compare-with-the-workflow-doc-new-gamemd-as-of-2026-09-22">6. Compare with the workflow doc (new-game.md as of 2026-09-22)</a></li>
+<li class="d2"><a href="#7-lessons-system-requirements">7. Lessons → system requirements</a></li>
+<li class="d2"><a href="#8-open-questions-for-chris">8. Open questions for Chris</a></li>
+<li class="d1"><a href="#scandisk-process-retrospective">SCANDISK — Process Retrospective</a></li>
+<li class="d2"><a href="#1-timeline-1">1. Timeline</a></li>
+<li class="d2"><a href="#2-how-the-process-worked">2. How the process worked</a></li>
+<li class="d2"><a href="#3-what-went-well">3. What went well</a></li>
+<li class="d2"><a href="#4-what-went-poorly">4. What went poorly</a></li>
+<li class="d2"><a href="#5-where-chris39s-vision-was-honoured-vs-lost-1">5. Where Chris&#39;s vision was honoured vs. lost</a></li>
+<li class="d2"><a href="#6-lessons-system-requirements">6. Lessons → system requirements</a></li>
+<li class="d2"><a href="#7-open-questions-for-chris">7. Open questions for Chris</a></li></ul></details>
+    <h1 id="game-retrospectives"><a class="anchor" href="#game-retrospectives">Game Retrospectives</a></h1>
+<p><em>Written 2026-09-22 by two read-only review agents from the game folders, CHANGELOGs, memory files, and the dispositions ledger. These fed the Gameplan. Candid by instruction.</em></p>
+<hr>
+<h1 id="rafter-process-retrospective"><a class="anchor" href="#rafter-process-retrospective">RAFTER — Process Retrospective</a></h1>
+<blockquote>
+<p>Purpose: feed the design of a reusable indie-game-dev skill + agent system. Game #1, Chris Hornak. Written 2026-09-22 from <code>Games/Rafter/</code> (agent.md, CHANGELOG.md, backlog.md, git log, src), <code>RAFTER-BUILD-BRIEF.md</code>, <code>RAFTER-GAME-BRIEF.html</code>, <code>.agent/workflows/new-game.md</code>, <code>.agent/game-panel/</code>, the memory files, <code>dispositions.md</code> (D141–D145, D192, D194, D235), the workspace CHANGELOG and <code>_archive/session-state/2026-08.md</code> (the original <code>[PLAN] 2026-08-27</code> block).</p>
+<p>Chris&#39;s stated goal for the new system: more efficient, better games, and <strong>his</strong> guidance drives the final product. This retro is written against that bar, not against &quot;did the code work&quot;.</p>
+</blockquote>
+<hr>
+<h2 id="0-the-shape-of-the-project-in-numbers"><a class="anchor" href="#0-the-shape-of-the-project-in-numbers">0. The shape of the project in numbers</a></h2>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Calendar span</td>
+<td>2026-08-27 (grill) → 2026-09-01 (last code) → idle since</td>
+<td>git log, CHANGELOG</td>
+</tr>
+<tr>
+<td>Sessions</td>
+<td>7 (08-27 grill · 08-29 s1 phone/cloud · 08-29 s2 brief · 08-30 build · 08-31 s1 design · 08-31 s2 build · 09-01 build)</td>
+<td>archive + CHANGELOG</td>
+</tr>
+<tr>
+<td>Sessions that produced code that survived</td>
+<td><strong>3</strong> (08-30, 08-31 s2, 09-01)</td>
+<td>git log</td>
+</tr>
+<tr>
+<td>Sessions that were paper-only</td>
+<td><strong>3</strong> (08-27, 08-29 s2, 08-31 s1) + 1 whose code was deleted (08-29 s1)</td>
+<td>archive</td>
+</tr>
+<tr>
+<td>Commits</td>
+<td>23, all between 08-30 02:36 and 09-01 01:31</td>
+<td>git log</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>1,315 lines TS in 9 files (<code>guard.ts</code> 363 · <code>player.ts</code> 225 · <code>render.ts</code> 164 · <code>level.ts</code> 161 · <code>tune.ts</code> 102 · <code>main.ts</code> 94 · <code>input.ts</code> 62 · <code>font.ts</code> 61 · <code>noise.ts</code> 34 · <code>camera.ts</code> 26). One version, one folder. <code>dist/</code> built once on 08-30 and stale since.</td>
+<td><code>wc -l</code>, <code>ls</code></td>
+</tr>
+<tr>
+<td>Design documents</td>
+<td>4 competing: <code>[PLAN] 2026-08-27</code> block · <code>RAFTER-BUILD-BRIEF.md</code> (10.5 KB) · <code>RAFTER-GAME-BRIEF.html</code> (135 KB, ~50k chars of text ≈ 8.5k words, 15 sections) · <code>project_rafter.md</code> memory. Plus 3 live artifacts (style board, build plan, test-render) and a <code>.pre-merge.bak</code> of the brief.</td>
+<td><code>ls</code>, archive</td>
+</tr>
+<tr>
+<td>Brief revisions</td>
+<td>≥ 13 (rev 1, 2, 3, 4, 5, 5b on 08-29; 6 → 6e on 08-31 s1; 6f on 08-31 s2; 6g, 6h on 09-01)</td>
+<td>brief rev history, CHANGELOG</td>
+</tr>
+<tr>
+<td>Ratio</td>
+<td>roughly <strong>6.5 words of design prose per line of code</strong></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>Milestones planned</td>
+<td>8 (00–07), est. 6–9 sessions</td>
+<td><code>[PLAN]</code> 08-27</td>
+</tr>
+<tr>
+<td>Milestones passed by play</td>
+<td>00–04</td>
+<td>agent.md</td>
+</tr>
+<tr>
+<td>Milestone that IS the MVP (05, the Training Village level)</td>
+<td><strong>never started</strong> — 21 days idle</td>
+<td>agent.md, backlog</td>
+</tr>
+<tr>
+<td>Largest single build (guard behavior tree, 7 files, +286/−102)</td>
+<td><strong>shipped unplayed on 09-01 01:12; still unplayed</strong></td>
+<td>CHANGELOG heading &quot;gate not played&quot;, backlog &quot;Now&quot;</td>
+</tr>
+<tr>
+<td>Ship script / phone play</td>
+<td>do not exist; Chris has never played Rafter outside <code>localhost:3100</code></td>
+<td>agent.md &quot;script not written yet&quot;, package.json</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-timeline"><a class="anchor" href="#1-timeline">1. Timeline</a></h2>
+<h3 id="2026-08-27-00500220-games-category-grill-plan-paper-only"><a class="anchor" href="#2026-08-27-00500220-games-category-grill-plan-paper-only">2026-08-27 · 00:50–02:20 — Games category + grill + <code>[PLAN]</code> (paper only)</a></h3>
+<ul>
+<li>00:50: &quot;Games = new top-level category&quot; wired: <code>Games/</code>, <code>.gitignore</code>, <code>new-game.md</code> with the skip table, port band 3100–3199, lexicon rows.</li>
+<li>01:22: grill locked the <code>[PLAN]</code>: name Rafter, TS+canvas, 160×144/4 colours, D-pad + 2 buttons, <strong>Super Mario 3 camera</strong>, <strong>stealth spine (Chris overrode Claude&#39;s &quot;fluid movement first&quot;)</strong>, hiding = above + behind, <strong>alert = MGS tier 1 + &quot;calms 3 s after he can&#39;t see you&quot;</strong>, <strong>sword only</strong>, reach-the-exit win, ship to itch + chrishornak.com/play.</li>
+<li>01:56: art direction &quot;Night Watch&quot; LOCKED after Chris rejected the first palette pass as &quot;tinted DMG, not GBC&quot;.</li>
+<li>02:20: build plan LOCKED — 8 milestones with a &quot;Must answer&quot; and a behavioural gate each, kill switch on 01, 7 working rules. Chris chose &quot;Stop here for now&quot;.</li>
+<li><strong>Iterations: 1 grill, 2 art passes (1 rejected).</strong></li>
+</ul>
+<h3 id="2026-08-29-session-1-phone-cloud-container-opus-5-the-wrong-build"><a class="anchor" href="#2026-08-29-session-1-phone-cloud-container-opus-5-the-wrong-build">2026-08-29 · session 1 (phone, cloud container, Opus 5) — the wrong build</a></h3>
+<ul>
+<li>Container had cloned only <code>f0rmless</code>; <code>project_rafter.md</code>, the <code>[PLAN]</code>, <code>new-game.md</code> all unreadable. Flagged; Chris said go ahead.</li>
+<li>Grill closed the plan&#39;s one red hole (&quot;getting caught has no teeth&quot;) over <strong>six rounds</strong>; Chris said &quot;we&#39;re making this more complicated than it needs to be&quot; <strong>twice</strong>.</li>
+<li>Built m00/01 <strong>top-down</strong>, <strong>inside the f0rmless repo</strong>, on a <strong>single DMG green ramp</strong>, with <strong>Shift bound to sneak</strong>; sent Chris to <code>localhost:3100</code> for a server in the sandbox (3 round-trips). All code deleted. Two Claude-invented mechanics (alarm-panel race, noise radius) were restated back as Chris&#39;s and each survived a round.</li>
+<li>Output: <code>RAFTER-BUILD-BRIEF.md</code> (ruleset, 8 traps, m00/01 specs). D141–D143.</li>
+<li><strong>Iterations: 1 build, 100% discarded.</strong></li>
+</ul>
+<h3 id="2026-08-29-session-2-opus-5-the-html-game-brief-rev-1-5b-in-one-night"><a class="anchor" href="#2026-08-29-session-2-opus-5-the-html-game-brief-rev-1-5b-in-one-night">2026-08-29 · session 2 (Opus 5) — the HTML game brief, rev 1 → 5b in one night</a></h3>
+<ul>
+<li><code>RAFTER-GAME-BRIEF.html</code> written &quot;to hand to an outside designer&quot;. Chris&#39;s four design changes: <strong>Legend of Kage</strong> camera, <strong>two-rule detection (cone + fight-noise/hearing)</strong>, <strong>Tenchu-as-side-scroller, three acts woods→village→palace + final boss</strong>, three high-route manoeuvres.</li>
+<li>Same night: rev 2 (six-expert imagined panel — Team Cherry, Thorson, Blow, McMillen, Sabotage, Mechanical Head — escape rule, checkpoints, assist toggle, star-lure; <strong>story locked: warlord is your father, mercy ending</strong>), rev 3 (art re-keyed to Chris&#39;s real <em>Return of the Ninja</em> screenshots after <strong>two more wrong palette guesses</strong>), rev 4 (<strong>seven-surface traversal system</strong>), rev 5 (art model &quot;generated world, drawn heroes&quot;), rev 5b (five live-canvas reference screens).</li>
+<li>The R1–R8 rule list shipped with a broken CSS grid layout, was described as done, survived a second revision pass; <strong>Chris found it by reading the page</strong> (D144/D145).</li>
+<li><strong>Still zero code.</strong> Iterations: 6 brief revisions, 3 publishes.</li>
+</ul>
+<h3 id="2026-08-30-02360259-m00-m01-built-sonnet-per-plan-model-not-recorded"><a class="anchor" href="#2026-08-30-02360259-m00-m01-built-sonnet-per-plan-model-not-recorded">2026-08-30 · 02:36–02:59 — m00 + m01 built (Sonnet per plan; model not recorded)</a></h3>
+<ul>
+<li>One commit scaffolds + greybox movement (1,710 lines incl. lockfile). Controls strip added as a standing rule (Chris). <strong>Random layout rejected by Chris</strong> (&quot;it doesn&#39;t offer the right environment for the test&quot;) → rebuilt as an <strong>11-zone signed gym</strong> in 15 minutes. Verdict: <strong>&quot;a good start with the basics.&quot;</strong> Changelog: &quot;Feel not yet tuned. Next: tune live.&quot;</li>
+<li><strong>Iterations: 2 layouts; gate 01 passed on a lukewarm quote; the plan&#39;s gate was &quot;2 minutes and doesn&#39;t want to stop&quot;.</strong></li>
+</ul>
+<h3 id="2026-08-31-session-1-design-no-code-mvp-re-scoped"><a class="anchor" href="#2026-08-31-session-1-design-no-code-mvp-re-scoped">2026-08-31 · session 1 (design, no code) — MVP re-scoped</a></h3>
+<ul>
+<li>Scope audit with &quot;game-dev panel + core panel&quot;. <strong>MVP = Level 1 &quot;The Training Village&quot;</strong> (Chris&#39;s framing), 12-zone progression, staged safety, pictogram signs, §12 blocking numbers answered (cone 40°×6t, noise 4/hearing 4, star 2). Live artifact had drifted <strong>ahead</strong> of local; merged (<code>.pre-merge.bak</code>) → rev 6 → 6e. Repo pushed to GitHub (first remote, 4 days after first commit).</li>
+<li><strong>Iterations: 5 brief revisions in one session, 0 builds.</strong></li>
+</ul>
+<h3 id="2026-08-31-session-2-18311905-m02-built"><a class="anchor" href="#2026-08-31-session-2-18311905-m02-built">2026-08-31 · session 2 · 18:31–19:05 — m02 built</a></h3>
+<ul>
+<li><code>guard.ts</code> (patrol, cone, chase, R6 beam-escape). Camera look-ahead tuned live to 40 px (the <strong>only</strong> movement-feel tuning ever recorded). Star input and Down family re-locked as notes; <strong>Down + B = slide &quot;button locked, job open&quot;</strong> (a button for a verb that doesn&#39;t exist). Rev 6f. Gate unplayed at end of session.</li>
+<li><strong>Iterations: 1 build.</strong></li>
+</ul>
+<h3 id="2026-09-01-00010131-the-90-minute-day-gates-02-03-04-a-fifth-system"><a class="anchor" href="#2026-09-01-00010131-the-90-minute-day-gates-02-03-04-a-fifth-system">2026-09-01 · 00:01–01:31 — the 90-minute day: gates 02, 03, 04 + a fifth system</a></h3>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Commit</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00:01</td>
+<td><code>11b1542</code></td>
+<td>m02 gate PASSED in play (&quot;feels good&quot;, no dials changed) · duck + duck-walk built + played (&quot;looks good&quot;)</td>
+</tr>
+<tr>
+<td>00:14</td>
+<td><code>641cb33</code></td>
+<td>m03 built: sword, block window, stagger, noise, duel pen (10 files, +230)</td>
+</tr>
+<tr>
+<td>00:32</td>
+<td><code>24fdd81</code></td>
+<td>after first play: duel <strong>unreadable</strong> — invisible win, instant restart, mash beats timing. Legibility pass (3 changes at once)</td>
+</tr>
+<tr>
+<td>00:40</td>
+<td><code>acd34d8</code></td>
+<td><strong>fight re-locked by Chris mid-play</strong>: Z at the peak = kill, Z as it falls = block</td>
+</tr>
+<tr>
+<td>00:46</td>
+<td><code>c9d2e0e</code></td>
+<td>combat refactored to frame data + hit/hurt boxes (+174/−138)</td>
+</tr>
+<tr>
+<td>00:50</td>
+<td><code>035d468</code></td>
+<td>m03 gate PASSED (&quot;Feels right — gate passes&quot;), brief rev 6g</td>
+</tr>
+<tr>
+<td>00:53</td>
+<td><code>bbeffdf</code></td>
+<td>m04 backstab + zone-select screen (Chris&#39;s ask)</td>
+</tr>
+<tr>
+<td>00:57</td>
+<td><code>b0e36ab</code></td>
+<td>fix: partner spawned facing the sign, turned the drill into a chase (Chris caught it) → m04 PASSED</td>
+</tr>
+<tr>
+<td>01:12</td>
+<td><code>d4b7202</code></td>
+<td><strong>guard behavior tree</strong>: 4 MGS states, 5 guard types, clang, sleeper, search un-deferred (7 files, +286/−102). &quot;gate not played&quot;</td>
+</tr>
+<tr>
+<td>01:16</td>
+<td><code>13045de</code></td>
+<td>walk speed 72 → 48 (known risk: gym gaps tuned to 72), unplayed</td>
+</tr>
+<tr>
+<td>01:31</td>
+<td><code>cb215c5</code></td>
+<td>end session, rev 6h</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>Iterations: m03 = 4 passes in 32 minutes on the same two files; <code>guard.ts</code> rewritten 3× in one session (agent.md: &quot;flirted with spiral territory&quot;).</strong></li>
+</ul>
+<h3 id="2026-09-02-09-22-idle"><a class="anchor" href="#2026-09-02-09-22-idle">2026-09-02 → 09-22 — idle</a></h3>
+<ul>
+<li>09-14: backlog notes the sprite render-compare loop deferred. 09-15: last file touch (backlog).</li>
+<li>09-17: <strong>D192</strong> — <code>Games/README.md</code> and <code>MEMORY.md</code> still said Rafter was NOT BUILT, 16 days after gates 00–04 passed. Fixed by hand.</li>
+<li>09-17 onward: SCANDISK (game #2) takes all game attention. The m05 handoff (&quot;fresh session on Sonnet&quot;) never fired. The behavior-tree build and the speed retune remain unplayed.</li>
+</ul>
+<hr>
+<h2 id="2-how-the-process-actually-worked"><a class="anchor" href="#2-how-the-process-actually-worked">2. How the process actually worked</a></h2>
+<p><strong>Nominal loop:</strong> brief → build → gym → Chris plays → verdict via <code>AskUserQuestion</code> → next milestone. That loop <strong>did</strong> run cleanly on 08-30 and 09-01, and when it ran it was fast: 3 gates in 90 minutes, each with a verbatim verdict.</p>
+<p><strong>Actual loop, by phase:</strong></p>
+<ol>
+<li><strong>Design ran ahead of play by a wide margin.</strong> Four of seven sessions produced no surviving code. The brief reached rev 5b (story, three acts, seven surfaces, art model, commission list) before a guard existed, and rev 6e before one had been played. Panels (imagined, pre-dossier) and grills drove those revisions, not play notes.</li>
+<li><strong>Who decided what (from the record):</strong><ul>
+<li><strong>Chris decided:</strong> stealth spine; GBC-only controls (caught Shift himself); no alarm object (cut Claude&#39;s alarm panels); Legend of Kage camera; two-rule detection (&quot;this encourages you to take down guards silently&quot;); gym format; controls strip; MVP = Training Village; 12-zone order; star = Up+B; Down family; the two-timing fight (mid-play); dead-stays-dead; zone-select screen; the clang; search un-deferred; walk slowdown; run/dash and anti-mash HELD; star-lure over Blow&#39;s advice; ROTN as art key (his screenshots).</li>
+<li><strong>Claude decided (then Chris approved or didn&#39;t object):</strong> every starting number in <code>tune.ts</code>; gym zone widths and order; the seven-surface system; the three-act world detail and palace; <strong>the story</strong> (father twist, mercy ending — from the imagined panel round); the art model &quot;generated world, drawn heroes&quot; (explicitly reasoned from Claude&#39;s own limits: &quot;Claude = bad painter, excellent engineer of pictures — aim the style at that&quot;); the concept-art commission list; frame-data values; <strong>the five guard types</strong>; the behavior-tree state machine; guard speeds; win condition (&quot;stated as an assumption; Chris did not object&quot;, 08-27).</li>
+<li><strong>Panels decided:</strong> rev 2&#39;s escape rule, checkpoints, assist toggle; the 08-31 scope audit shape. These were imagined personas without sourced dossiers (the dossier system arrived 09-21 for SCANDISK).</li>
+</ul>
+</li>
+<li><strong>Gates were <code>AskUserQuestion</code> after Chris played a gym zone via <code>?col=N</code>.</strong> Verdicts were short quotes (&quot;feels good&quot;, &quot;looks good&quot;, &quot;Feels right&quot;). There is no play log; verdicts live only in CHANGELOG prose.</li>
+<li><strong>Verification on Claude&#39;s side</strong> was <code>tsc --noEmit</code> (pre-commit hook) + headless screenshots. Claude never plays; it only renders.</li>
+<li><strong>Model:</strong> plan said Sonnet for builds, Opus for m03, never Fable. Both 08-29 sessions ran on Opus 5; build sessions&#39; models are <strong>not recorded</strong> anywhere in the game&#39;s files.</li>
+<li><strong>State hygiene:</strong> <code>agent.md</code> + <code>CHANGELOG.md</code> + <code>backlog.md</code> updated every session (good), but the workspace-level landscape (README, memory) drifted within days (D192), and the design brief lived in two places (local file + live artifact) that drifted apart on 08-31.</li>
+</ol>
+<hr>
+<h2 id="3-what-went-well-evidence"><a class="anchor" href="#3-what-went-well-evidence">3. What went well (evidence)</a></h2>
+<ol>
+<li><strong>The gym.</strong> Chris rejected the random layout on 08-30 and the rebuild took one commit (<code>60a53be</code>, 15 min). Every later milestone reused it (zones 11, 13, 14, 15, 16, 4b). It turned &quot;is it fun?&quot; into a walkable checklist and became a standing rule (<code>feedback_game_test_levels_are_gyms.md</code>, agent.md rule 11) that SCANDISK inherited.</li>
+<li><strong>On-screen controls strip, updated in the same commit as any button change</strong> (rule 10, <code>4b12d36</code>). <code>index.html</code> today is current with every verb.</li>
+<li><strong><code>tune.ts</code> as Chris&#39;s file.</strong> All numbers in one place, header says &quot;This file belongs to the designer (Chris)&quot;. Live tuning happened where it mattered (camera look-ahead <code>d751e2b</code>, walk speed <code>13045de</code>, guard speeds).</li>
+<li><strong>Chris designed in play, and it landed same-session.</strong> The two-timing fight (00:40), dead-stays-dead, the visible windup, the spawn-facing fix — all came from Chris playing for minutes, not from paper. <code>agent.md</code> SWOT: &quot;Chris designed IN PLAY … every change landed same-session with tsc + screenshot evidence.&quot;</li>
+<li><strong>Hard rules held once written.</strong> No Shift after 08-29. Greybox held — no art crept into 00–04. Stealth spine never re-proposed. GBC-only input survived every build.</li>
+<li><strong>Milestone-scoped commits + <code>tsc</code> pre-commit + push before the real playtest</strong> (08-31, &quot;undo point exists&quot;). The m03 churn is legible in git because each pass was its own commit.</li>
+<li><strong>Brief kept in lockstep at gates</strong> (rev 6g and 6h republished same URL, read-then-merge after the 08-31 drift scare).</li>
+<li><strong>The learning loop produced durable rules:</strong> rules 11–13 in agent.md, D141 (doc-blind build), D144 (render-and-read pages), D192 (landscape drift), P18 (gyms). Honest SWOTs every session.</li>
+<li><strong>Honesty about art.</strong> The page itself says nothing was drawn by hand; Chris&#39;s &quot;amateur&quot; verdict on Claude&#39;s pixel art was recorded, and the response was &quot;build tools, don&#39;t re-attempt painted sprites&quot; rather than more guessing.</li>
+<li><strong>The cold-start handoff pattern</strong> (<code>RAFTER-BUILD-BRIEF.md</code> §5 &quot;8 traps&quot;) worked: the 08-30 session hit none of the 08-29 traps.</li>
+</ol>
+<hr>
+<h2 id="4-what-went-poorly-evidence"><a class="anchor" href="#4-what-went-poorly-evidence">4. What went poorly (evidence)</a></h2>
+<h3 id="41-the-ai-built-the-wrong-game-once-and-nearly-authored-it-twice"><a class="anchor" href="#41-the-ai-built-the-wrong-game-once-and-nearly-authored-it-twice">4.1 The AI built the wrong game once and nearly authored it twice</a></h3>
+<ul>
+<li><strong>08-29 s1:</strong> wrong genre, wrong repo, wrong palette, Shift bound, sandbox localhost — every structural decision was answered by docs the session couldn&#39;t read. Chris&#39;s &quot;go ahead&quot; did not help because he couldn&#39;t see which docs were missing (D141, still <code>proposed-awaiting-approval</code> 24 days later).</li>
+<li><strong>Invented mechanics laundered as Chris&#39;s, twice</strong> (alarm-panel race, noise radius — archive 08-29 s1 gotcha 6, D142). This is the exact failure Chris&#39;s goal names: the game feeling like the AI&#39;s.</li>
+</ul>
+<h3 id="42-paper-outran-play-badly"><a class="anchor" href="#42-paper-outran-play-badly">4.2 Paper outran play, badly</a></h3>
+<ul>
+<li>~8.5k words of brief vs 1,315 lines of code. Rev 1→5b in one night, 6→6e in one session — <strong>11 revisions before a guard had been played.</strong></li>
+<li>The brief carries a <strong>three-act world, a palace, a warlord who is your father, a mercy ending, a seven-surface traversal system, 8 background palettes and a 7-piece artist commission list</strong> — for a game whose MVP is a training yard and whose v1 &quot;ships rafters + floor ONLY&quot;.</li>
+<li><code>new-game.md</code>&#39;s anti-pattern &quot;Polishing the brief when there is nothing to play&quot; was written 09-17 from SCANDISK. Rafter did it first (08-29 ×2, 08-31 s1) and the lesson was not captured until game #2 repeated it.</li>
+<li>Chris&#39;s own signal on 08-29: &quot;we&#39;re making this more complicated than it needs to be&quot; — twice — and the session kept grilling (six rounds).</li>
+</ul>
+<h3 id="43-four-documents-claimed-to-describe-the-game"><a class="anchor" href="#43-four-documents-claimed-to-describe-the-game">4.3 Four documents claimed to describe the game</a></h3>
+<ul>
+<li><code>[PLAN]</code> block (left &quot;three revisions stale&quot; as &quot;provenance&quot;), <code>BUILD-BRIEF.md</code>, <code>GAME-BRIEF.html</code>, memory. Precedence callouts were &quot;the only thing preventing a wrong build&quot; (archive SWOT). The live artifact drifted ahead of the local file on 08-31 (<code>.pre-merge.bak</code>). README + memory said &quot;NOT BUILT&quot; for 16 days (D192).</li>
+</ul>
+<h3 id="44-gates-were-softer-than-the-plan-said"><a class="anchor" href="#44-gates-were-softer-than-the-plan-said">4.4 Gates were softer than the plan said</a></h3>
+<ul>
+<li>m01&#39;s locked gate: &quot;Chris messes about for 2 minutes and does not want to stop.&quot; Recorded verdict: <strong>&quot;a good start with the basics&quot;</strong> + &quot;Feel not yet tuned.&quot; It passed. The promised tuning session never happened; only one movement number (camera look-ahead) was ever tuned live. <strong>The kill switch (&quot;if 01 isn&#39;t fun, change the game&quot;) was never honestly evaluated.</strong></li>
+<li>m05&#39;s gate (&quot;replays it without being asked&quot;) — the one that answers &quot;is this game fun?&quot; — was never reached.</li>
+</ul>
+<h3 id="45-the-09-01-sprint-stacked-unplayed-work-at-the-end"><a class="anchor" href="#45-the-09-01-sprint-stacked-unplayed-work-at-the-end">4.5 The 09-01 sprint stacked unplayed work at the end</a></h3>
+<ul>
+<li>m03 shipped &quot;mechanically right and unreadable&quot; (invisible win, instant restart, mash beats timing) — three defects Chris had to find. The legibility pass then bundled 3 changes in one commit.</li>
+<li>After m04 passed at 00:58, the session <strong>added a system not in the milestone table</strong>: 4-state behavior tree, 5 guard types, sleeper, clang, search (which the 08-27 plan explicitly deferred to post-v1). +286/−102 across 7 files at 01:12 am, <strong>unplayed</strong>. Then a walk-speed retune at 01:16 with a known risk (&quot;gym gaps assume air 72&quot;), also unplayed. Backlog &quot;Now&quot; still opens with &quot;Chris plays the gym end-to-end&quot; three weeks later.</li>
+<li><code>guard.ts</code> rewritten 3× in one session. Spiral Detection&#39;s &quot;3rd edit&quot; rule was skirted, not tripped, because each rewrite came with a &quot;done&quot;.</li>
+</ul>
+<h3 id="46-the-mvp-never-got-built"><a class="anchor" href="#46-the-mvp-never-got-built">4.6 The MVP never got built</a></h3>
+<ul>
+<li>Milestone 05 is the MVP. It has zero commits. The handoff (&quot;fresh session, Sonnet&quot;) depended on Chris re-triggering it; the system had no pull mechanism, and 16 days later attention moved to SCANDISK.</li>
+</ul>
+<h3 id="47-adhd-unfriendly-session-shape"><a class="anchor" href="#47-adhd-unfriendly-session-shape">4.7 ADHD-unfriendly session shape</a></h3>
+<ul>
+<li>Sessions ended at 02:20, 02:59, 01:31. The best day was a 90-minute, 13-commit, 4-gate sprint after midnight. Ten open-question cards, plus several &quot;HELD&quot; decisions (run/dash, anti-mash, slide job, perception decay, finite stars) left as live loose ends. The plan estimated 6–9 sessions and got compressed into three late-night bursts followed by silence — the classic hyperfocus-then-drop curve.</li>
+</ul>
+<h3 id="48-chris-has-never-played-rafter-on-a-phone"><a class="anchor" href="#48-chris-has-never-played-rafter-on-a-phone">4.8 Chris has never played Rafter on a phone</a></h3>
+<ul>
+<li>No ship script (<code>new-game.md</code> said &quot;write it alongside the FIRST real game&quot;), <code>dist/</code> stale since 08-30, keyboard-only input, no touch buttons. The GBC-on-phone rule that cost SCANDISK a rebuild round on 09-21 was never applied to Rafter at all.</li>
+</ul>
+<h3 id="49-art-direction-was-quotlockedquot-twice-before-any-gameplay-and-the-second-loc"><a class="anchor" href="#49-art-direction-was-quotlockedquot-twice-before-any-gameplay-and-the-second-loc">4.9 Art direction was &quot;locked&quot; twice before any gameplay, and the second lock bent to the tool</a></h3>
+<ul>
+<li>&quot;Night Watch&quot; locked 08-27 01:56; fully replaced by the ROTN key on 08-29 rev 3 after two more wrong guesses. Then the art <em>model</em> was chosen from Claude&#39;s capability (&quot;Claude = bad painter…&quot;) rather than from Chris&#39;s taste. Reasonable engineering; questionable authorship.</li>
+</ul>
+<h3 id="410-tooling-friction"><a class="anchor" href="#410-tooling-friction">4.10 Tooling friction</a></h3>
+<ul>
+<li>Cloud container without the workspace (D141/D143). <code>Games/</code> invisible to bare Glob/Grep (repeated in every doc as a trap). Artifact-vs-local drift. Authored HTML shipped broken twice (D144). Headless screenshots are the only thing Claude &quot;sees&quot; of the game.</li>
+</ul>
+<h3 id="411-no-play-log-no-learning-line-no-model-log"><a class="anchor" href="#411-no-play-log-no-learning-line-no-model-log">4.11 No play log, no learning line, no model log</a></h3>
+<ul>
+<li><code>new-game.md</code> step 5 asks for &quot;one play-log line per loop in agent.md (date · build · what Chris felt · the one change)&quot;. Rafter has none; verdicts are scattered quotes. No build carries a &quot;This build should tell us ___&quot; line (milestones do carry &quot;Must answer&quot;, which is good but coarser). No session records which model/effort ran it, so the plan&#39;s model table can&#39;t be audited.</li>
+</ul>
+<hr>
+<h2 id="5-where-chris39s-vision-was-honoured-vs-lost"><a class="anchor" href="#5-where-chris39s-vision-was-honoured-vs-lost">5. Where Chris&#39;s vision was honoured vs. lost</a></h2>
+<h3 id="honoured-cite"><a class="anchor" href="#honoured-cite">Honoured (cite)</a></h3>
+<ul>
+<li><strong>Stealth over movement</strong> — Chris overrode Claude&#39;s &quot;fluid movement first&quot; on 08-27; rule 5 &quot;Do not re-propose&quot; held through 7 sessions.</li>
+<li><strong>GBC controls</strong> — Chris caught the Shift binding 08-29; &quot;no Shift, no modifiers, no mouse&quot; became rule 8 and every build complied.</li>
+<li><strong>No alarm object</strong> — Claude drafted guards running to alarm panels; Chris cut it: &quot;being seen IS the alarm.&quot;</li>
+<li><strong>Camera = Legend of Kage</strong> and <strong>detection = cone + fight-noise</strong> — both Chris&#39;s 08-29 changes, propagated through the brief as design changes, not wording.</li>
+<li><strong>The gym and the controls strip</strong> — Chris&#39;s inventions, now standing rules.</li>
+<li><strong>The Training Village MVP</strong> — Chris&#39;s framing (&quot;the level shape is the tutorial, never text&quot;), replacing Claude&#39;s &quot;one short woods level&quot;.</li>
+<li><strong>The fight</strong> — Chris re-designed it live (peak = kill, fall = block), and the frame-data model matches his known taste for SF2/KI timing (<code>user_game_design_style.md</code>).</li>
+<li><strong>Star-lure noise</strong> — Chris&#39;s call over the imagined Blow&#39;s &quot;fights only&quot; advice.</li>
+<li><strong>ROTN art key</strong> — from Chris&#39;s own screenshots after Claude guessed wrong three times in total.</li>
+<li><strong>Clang, search un-deferred, slow-walk, zone-select</strong> — all recorded as Chris&#39;s calls in CHANGELOG.</li>
+</ul>
+<h3 id="lost-or-at-risk-cite"><a class="anchor" href="#lost-or-at-risk-cite">Lost or at risk (cite)</a></h3>
+<ul>
+<li><strong>08-29 s1</strong> — none of it was his; all deleted.</li>
+<li><strong>Two invented mechanics attributed to him</strong> (D142).</li>
+<li><strong>The story, three acts, seven surfaces, palette set, commission list</strong> — Claude/panel-authored expansions that Chris approved as reference. By volume the brief is more Claude&#39;s than Chris&#39;s. The 09-21 SCANDISK finding (D235: &quot;I feel you only using the most basic … I&#39;m disappointed&quot;) suggests the inverse risk too: the panel&#39;s depth was never checked against <em>his</em> references (Kage, Demon Sword, Shinobi, Tenchu, Halo, Deus Ex — the 08-27 list) mechanic by mechanic.</li>
+<li><strong>Five guard types + the state machine</strong> — proposed and built in one 15-minute window after midnight, unplayed. Whether they are what Chris wants is unknown.</li>
+<li><strong>The art model</strong> was reasoned from Claude&#39;s limits, not from Chris&#39;s taste.</li>
+<li><strong>m01 &quot;good start&quot;</strong> treated as a pass — the one gate that asked &quot;is moving fun?&quot; got a polite answer instead of a verdict.</li>
+<li><strong>The m05 handoff</strong> — the moment the game was supposed to become <em>his level</em>, the system dropped the thread.</li>
+<li><strong>Taste profile</strong> — <code>user_game_design_style.md</code> (readable base, opponent you read, chains to a big moment, calm pressure) was written 09-21, <em>after</em> Rafter. Rafter was never designed against an explicit taste profile; where it matches (yomi in the duel) it is by Chris&#39;s live intervention, not by system design.</li>
+</ul>
+<hr>
+<h2 id="6-compare-with-the-workflow-doc-new-gamemd-as-of-2026-09-22"><a class="anchor" href="#6-compare-with-the-workflow-doc-new-gamemd-as-of-2026-09-22">6. Compare with the workflow doc (<code>new-game.md</code> as of 2026-09-22)</a></h2>
+<p>Note: roughly half of today&#39;s <code>new-game.md</code> (step 1 &quot;cap the paper&quot;, step 4 &quot;learning line&quot;, step 5&#39;s one-change gate and play log, step 7&#39;s README/memory line, three of the anti-patterns) was written <strong>after</strong> Rafter, from SCANDISK and D192/D194. Rafter ran on the 08-27 version: skip table, folder shape, ports, ship pipeline, a 7-step flow.</p>
+<table>
+<thead>
+<tr>
+<th>Workflow says</th>
+<th>Rafter reality</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Skip table (no findability/launch/brand/copy gates)</td>
+<td><strong>Matched.</strong> None fired.</td>
+</tr>
+<tr>
+<td>Folder shape, three state files, own <code>git init</code>, port 3100</td>
+<td><strong>Matched.</strong></td>
+</tr>
+<tr>
+<td>Grill first, one <code>AskUserQuestion</code> at a time, <code>[PLAN]</code> block</td>
+<td><strong>Matched in form</strong>; 08-29 grill ran six rounds against Chris&#39;s &quot;too complicated&quot; signal.</td>
+</tr>
+<tr>
+<td>&quot;Cap the paper: one grill, one <code>[PLAN]</code>, one brief&quot;</td>
+<td><strong>Diverged</strong>: 2 grills, 1 <code>[PLAN]</code>, 3 briefs, ≥13 revisions.</td>
+</tr>
+<tr>
+<td>&quot;Hand-roll the first scaffold; extract <code>Games/template/</code> on the second game&quot;</td>
+<td>Scaffold hand-rolled (matched). <strong>Template never extracted</strong> — SCANDISK used a different stack (plain HTML) and reused nothing from Rafter.</td>
+</tr>
+<tr>
+<td>&quot;Build the smallest playable loop, ugly … write one learning line first&quot;</td>
+<td>Ugly/greybox <strong>matched</strong>. Learning line <strong>absent</strong> (milestone &quot;Must answer&quot; is the nearest thing).</td>
+</tr>
+<tr>
+<td>&quot;Chris plays it. That is the only gate.&quot;</td>
+<td><strong>Matched</strong> for 01–04. Gate wording not enforced (m01).</td>
+</tr>
+<tr>
+<td>&quot;One change per loop … one play-log line per loop in agent.md&quot;</td>
+<td><strong>Diverged</strong>: m03 legibility pass = 3 changes; behavior tree = ~6 systems; no play log.</td>
+</tr>
+<tr>
+<td>&quot;Once a build exists, the brief changes only from a play note&quot;</td>
+<td><strong>Diverged</strong>: rev 6→6e (08-31 s1) came from a scope audit + panels, not play.</td>
+</tr>
+<tr>
+<td>&quot;Each loop fits one sitting&quot;</td>
+<td>Sittings ran to 01:30–03:00.</td>
+</tr>
+<tr>
+<td>&quot;Game feel live in chat, agents for mechanical work only&quot;</td>
+<td><strong>Matched.</strong> No agents touched feel.</td>
+</tr>
+<tr>
+<td>&quot;Push before the first real playtest&quot;</td>
+<td>Pushed 08-31, one day after first play — near enough.</td>
+</tr>
+<tr>
+<td>&quot;Ship when it is fun; <code>npm run ship</code>; play the live URL&quot;</td>
+<td><strong>Not reached.</strong> No ship script.</td>
+</tr>
+<tr>
+<td>&quot;Log it: CHANGELOG, agent.md, backlog, README row, memory line&quot;</td>
+<td>Game files <strong>matched</strong>; README/memory <strong>drifted 16 days</strong> (D192 is Rafter&#39;s own failure).</td>
+</tr>
+<tr>
+<td>Anti-pattern: &quot;Polishing the brief when there is nothing to play&quot;</td>
+<td><strong>Rafter did it three sessions running</strong> before the doc named it.</td>
+</tr>
+<tr>
+<td>Anti-pattern: &quot;menus/settings before the loop is fun&quot;</td>
+<td>Zone-select screen is a dev tool, not a menu — acceptable.</td>
+</tr>
+<tr>
+<td>Model/effort per phase (in <code>RAFTER-BUILD-BRIEF.md</code> §8, not in the workflow)</td>
+<td>Design sessions on Opus 5 (fine); build sessions <strong>unrecorded</strong>.</td>
+</tr>
+<tr>
+<td>Doc-blind session rule (D141)</td>
+<td>Still <code>proposed-awaiting-approval</code>; not in the workflow.</td>
+</tr>
+<tr>
+<td>GBC-on-phone from build 1 (SCANDISK 09-21 rule)</td>
+<td>Not in the workflow; Rafter never applied it.</td>
+</tr>
+</tbody></table>
+<p><strong>Net:</strong> the workflow&#39;s skip table and folder discipline did their job. Everything about <em>pacing</em> (paper cap, one change, play log, session shape, unplayed-build limit, ship early) either did not exist yet or was not followed, and the workflow has no mechanism that pulls a stalled game back (m05).</p>
+<hr>
+<h2 id="7-lessons-system-requirements"><a class="anchor" href="#7-lessons-system-requirements">7. Lessons → system requirements</a></h2>
+<p>Each is phrased for a future game-dev skill/agent system and traced to evidence above.</p>
+<ol>
+<li><strong>The system must refuse to write game code when it cannot read the game&#39;s canonical brief and <code>agent.md</code> in-session; its only outputs then are a brief and a doc-access fix, and a user &quot;go ahead&quot; does not unblock it.</strong> — 08-29 s1, D141.</li>
+<li><strong>The system must tag the author of every rule and number: <code>(Chris)</code>, <code>(my call)</code>, or <code>(panel: &lt;seat&gt;)</code>, in the brief, <code>agent.md</code>, <code>tune.ts</code> comments and every build report; anything <code>(my call)</code> gets one <code>AskUserQuestion</code> before it is treated as locked.</strong> — D142, invented mechanics; five guard types; win condition &quot;did not object&quot;.</li>
+<li><strong>The system must keep exactly one design source of truth per game, as a file inside the game&#39;s git repo; any live artifact is a rendered copy, republished from the file, never edited ahead of it; older docs are deleted or reduced to a one-line pointer.</strong> — four documents, 08-31 drift, <code>.pre-merge.bak</code>.</li>
+<li><strong>The system must freeze the brief at the first playable build and reopen it only from a play note; it must show a revision counter and refuse content beyond the current milestone&#39;s horizon (no acts, story, palettes or commission lists before the m05-equivalent gate passes).</strong> — rev 1→5b, 6→6e; ~8.5k words vs 1,315 lines.</li>
+<li><strong>The system must keep a play log in <code>agent.md</code>: date · commit · zone · Chris&#39;s verbatim words · verdict (PASS / HOLD / KILL) · the one change. No gate passes without a verbatim quote, and the verdict must be scored against the gate&#39;s own wording from the milestone table.</strong> — m01 &quot;good start&quot; vs &quot;doesn&#39;t want to stop&quot;; no play log exists.</li>
+<li><strong>The system must allow at most one unplayed build at a time. Adding a second system, or retuning numbers, on top of an unplayed build is blocked until a play note exists.</strong> — behavior tree + speed retune, 09-01 01:12–01:16, unplayed 21 days.</li>
+<li><strong>The system must treat the locked milestone table as the only build queue; anything else Chris or Claude proposes mid-session goes to <code>backlog.md</code> with a date, and a control gets a button only when a drill needs the verb.</strong> — behavior tree not a milestone; search deferred then un-deferred; &quot;Down + B = slide, job open&quot;.</li>
+<li><strong>The system must require a learning line (&quot;this build should tell us ___&quot;) per build and record the answer in the play log.</strong> — absent on every Rafter build; m03&#39;s answer was &quot;it&#39;s unreadable&quot; and was never written down as such.</li>
+<li><strong>The system must put the kill switch on the table at every gate as a live <code>AskUserQuestion</code> option (Pass / Tune one thing / Change the game), not as a paragraph in the plan.</strong> — m01 kill switch never exercised.</li>
+<li><strong>The system must build a signed gym zone for every new verb and keep the on-screen controls strip current in the same commit, by default, without being asked.</strong> — rules 10–11 worked; keep them.</li>
+<li><strong>The system must ship every state a mechanic adds with a visible tell, and run a spawn-facing / sense-range check against the player&#39;s entry before a guard zone is played.</strong> — m03 invisible win; m04 partner facing the sign (rules 12–13).</li>
+<li><strong>The system must keep <code>tune.ts</code> as Chris&#39;s file, add a switch for every <code>(my call)</code> number, and tune live in chat; agents may never touch feel.</strong> — worked; formalise it.</li>
+<li><strong>The system must shape sessions for ADHD: one gate or ~60–90 minutes per sitting, a hard stop offered before the next system starts, no retunes in the last 15 minutes, one question per <code>AskUserQuestion</code>, and a written &quot;next sitting starts with ___&quot; line.</strong> — 02:59 / 02:20 / 01:31 endings; 13 commits in 90 minutes; <code>user_adhd.md</code>.</li>
+<li><strong>The system must make the game playable on Chris&#39;s phone with on-screen GBC buttons from the first gym, via a ship script written with game #1 and re-run on every gate; &quot;played on a phone&quot; is a per-gate check, not milestone 07.</strong> — no ship script, <code>dist/</code> stale, keyboard-only; SCANDISK 09-21 rule; <code>feedback_game_briefs_carry_hard_rules.md</code>.</li>
+<li><strong>The system must update the landscape (<code>Games/README.md</code> row, <code>project_*.md</code> status line) from <code>agent.md</code> in the same wrap, or generate them from it, so a game cannot read as &quot;NOT BUILT&quot; while its gates are passed.</strong> — D192.</li>
+<li><strong>The system must log model + effort per session in <code>agent.md</code> and enforce the phase table (small model for routine builds, larger for AI/behaviour logic, never a long-turn model in a tuning loop).</strong> — <code>BUILD-BRIEF.md</code> §8 unaudited; build-session models unknown.</li>
+<li><strong>The system must carry an inspiration map at brief time — each of Chris&#39;s named references → the exact mechanic borrowed → how it shows on screen — and re-check it at each gate; Chris&#39;s taste profile (<code>user_game_design_style.md</code>) is an input to the brief, not a post-hoc memory.</strong> — 08-27 inspiration list never mapped; D235 on SCANDISK; taste profile written after Rafter.</li>
+<li><strong>The system must state tool limits as constraints, never as art direction: the visual model is chosen from Chris&#39;s references, and Claude&#39;s capability gaps are listed separately with a plan (tool, generator, commission).</strong> — &quot;Claude = bad painter … aim the style at that&quot;; three wrong palette guesses; &quot;amateur&quot;.</li>
+<li><strong>The system must render and read every authored HTML deliverable (brief, showcase, manual) before reporting it done, and must never hand Chris a <code>localhost</code> URL for a server it started in a sandbox.</strong> — D144 (broken brief shipped twice), D143 (three round-trips).</li>
+<li><strong>The system must surface, at every game session start, the game&#39;s pending dispositions and its &quot;unplayed builds&quot; count, and must have a pull mechanism (a standing &quot;Now&quot; line the Welcome Mat repeats) so a game does not go silent between milestone 04 and its MVP.</strong> — D141/D142/D144 pending 24 days; m05 never started; 21 days idle.</li>
+</ol>
+<hr>
+<h2 id="8-open-questions-for-chris"><a class="anchor" href="#8-open-questions-for-chris">8. Open questions for Chris</a></h2>
+<ol>
+<li><strong>Is Rafter alive?</strong> m05 (the whole MVP level) has never started and the biggest build (behavior tree) is unplayed after three weeks. Resume it under the new system, park it deliberately, or fold its lessons into game #3?</li>
+<li><strong>Was milestone 01 actually fun?</strong> The locked gate was &quot;two minutes and you don&#39;t want to stop&quot;; the record says &quot;a good start with the basics&quot; and the tuning session never came. Should the system be allowed to pass a gate on a lukewarm quote, or must it force PASS / HOLD / KILL?</li>
+<li><strong>How much of the brief is yours?</strong> Story (warlord = father, mercy ending), three acts, seven surfaces, the art model — which would you keep if the brief had to fit on one page, and which did you approve because it was already written?</li>
+<li><strong>Session shape:</strong> the best day was 13 commits and three gates in 90 minutes, ending at 01:31. Is that the loop to reproduce, or the thing the system should prevent?</li>
+<li><strong>Phone-first from build 1?</strong> SCANDISK&#39;s rule is on-screen GBC buttons on phone and PC. Applying it to game #3 (and retro-fitting Rafter) costs a ship script and a touch layer up front — worth it before the first gym, or after the fun gate?</li>
+</ol>
+<hr>
+<h1 id="scandisk-process-retrospective"><a class="anchor" href="#scandisk-process-retrospective">SCANDISK — Process Retrospective</a></h1>
+<blockquote>
+<p>Written 2026-09-22 for the design of a reusable indie-game-dev skill + agent system. Sources read: <code>Games/Scandisk/</code> (agent.md all Session States, CHANGELOG.md all entries, VISION.md, INSPIRATIONS.md, backlog.md, LESSONS-LEARNED.md, NEXT-SESSION*.md, proto1/, p2/, p3/, clones/LESSONS+SYNTHESIS, audit/AUDIT + chris-voice, jam4/RESULTS + BRIEF, big-swings, ideas-alive-virus, questions-log), <code>Games/SCANDISK-JAM-BRIEF.md</code>, <code>SCANDISK-SPRINT-1-PROMPT.md</code>, <code>SCANDISK-JAM-SCORES.json</code>, <code>scandisk-jam-entries/</code>, <code>.agent/workflows/new-game.md</code>, <code>.agent/agents/thresh.md</code> + <code>team-fight.md</code>, <code>.agent/game-panel/README.md</code> + <code>subset-games.md</code> + <code>cowley.md</code>, 11 memory files, dispositions D201-D244. Chris&#39;s goal for the new system: more efficient, better games, HIS vision drives the final product.</p>
+<p>Honest framing up front: in six days SCANDISK produced roughly 44 distinct playable builds (60+ shipped iterations), 26 sourced designer dossiers, 5 team agents, a 108 KB <code>agent.md</code>, a 222 KB dispositions file, and <strong>zero SCANDISK builds Chris wants to keep</strong>. Every SCANDISK-proper prototype (v1-v9, Jam 2 A-D, Jam 3 A-C, Jam 4 sketches, Prototype 1, 2, 3) was shelved, paused, or left &quot;unchallenged&quot;. The kept assets are documents and reference clones: <code>VISION.md</code>, <code>INSPIRATIONS.md</code>, the locked look, <code>clones/SYNTHESIS.md</code>. Rafter, by contrast, passed milestones m00-m04 in three days with Chris playing every one.</p>
+</blockquote>
+<hr>
+<h2 id="1-timeline-1"><a class="anchor" href="#1-timeline-1">1. Timeline</a></h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Milestone</th>
+<th>Builds produced</th>
+<th>Chris played</th>
+<th>Chris approved / kept</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>09-17</strong></td>
+<td>Design brief rev 1a → 1h (8 revisions in one day). &quot;Last Clean Node Jam&quot;: 18 → 21 imagined designer seats, isolated agents, paper entries + 3 blind judges (<code>SCANDISK-JAM-SCORES.json</code>). Claude picked 13 ideas into rev 1h. Sprint-1 prompt written.</td>
+<td>0 code. 21 paper entries.</td>
+<td>n/a</td>
+<td>Brief &quot;frozen until 00a played&quot; — abandoned by 09-18.</td>
+</tr>
+<tr>
+<td><strong>09-18</strong></td>
+<td>Milestone 00a built, then <strong>6 loops in one day</strong> (bank, numbers, lessons, surges+land, nodes+wires, endings). v2 wire Othello (2 loops). v3 blank sectors (3 loops). Full-panel reset → v4 spec. v4, v5 (Thresh interview board), v6 (Feeding Frenzy), v7 (towers), v8 (flipper, Thresh sprint while Chris away). Fortress grill: core moved 4× in one session (D212).</td>
+<td>~9 pages (v1-v9 minus v9), ~20 shipped iterations.</td>
+<td>00a ×4 notes, v2, v3, v5, v6, v7 several, v8 6×6 once. <strong>Not v4, not v8 9×9.</strong></td>
+<td>&quot;Better, keep them&quot; (v7 setup dots). Otherwise: &quot;too easy&quot;, &quot;a stranger would have no clue&quot;, &quot;feels like Snake&quot;, &quot;not what I expected… a snake one step ahead&quot;, &quot;claustrophobic&quot;, &quot;ran out of moves and stalled&quot;, &quot;having some fun, but still unsure&quot;.</td>
+</tr>
+<tr>
+<td><strong>09-18/19</strong></td>
+<td>Chris: &quot;small steps when we could take bigger ones&quot; → panel <strong>big swings</strong> (QUARANTINE / SECTOR WAR / FLIP HAND) → <strong>v9 QUARANTINE</strong> built. <code>deploy-docs.sh</code> for remote play.</td>
+<td>1</td>
+<td>Once</td>
+<td>&quot;It&#39;s ok but I don&#39;t think it&#39;s the final.&quot;</td>
+</tr>
+<tr>
+<td><strong>09-19 → 09-20</strong></td>
+<td><strong>Jam 2</strong>: 4 genre teams (A tactics, B RTS, C arcade, D deckbuilder), 4 rounds: build → self-demoing tutorials + sprint → <strong>cross-play (12 reports)</strong> → <strong>Thresh directs round 4</strong> (&quot;have Thresh update each game to his liking&quot;; one-change limit lifted). 3 of 4 missed their gate.</td>
+<td>~16 builds</td>
+<td><strong>0</strong></td>
+<td>None. Line PAUSED 09-21.</td>
+</tr>
+<tr>
+<td><strong>09-21 (early)</strong></td>
+<td>Chris pauses Jam 2 line. <strong>Foundations</strong> research (9 classic grid games, skill ladder, tree size ≠ depth). <strong>Step 0</strong> plain Othello. <strong>Jam 3</strong>: RPS types on a frozen Othello core, 3 teams, 20 min. Cross-play ×2. Full <strong>audit</strong> (<code>audit/</code>). Panel rebuilt from sources (26 dossiers, 13 record corrections).</td>
+<td>Step 0 + 3</td>
+<td>Step 0 once. Jam 3: <strong>0</strong></td>
+<td>Step 0: &quot;works as expected&quot;, play again yes, out-read it yes — the first clear pass.</td>
+</tr>
+<tr>
+<td><strong>09-21 (mid)</strong></td>
+<td>Grill → Chris: &quot;Thresh is defining too much&quot;; FILE WAR withdrawn. <strong><code>VISION.md</code> written</strong> (day 5). <code>INSPIRATIONS.md</code>. Thresh role cut to coordinator/tie-breaker. <strong>Jam 4 &quot;one studio, one game&quot;</strong>: round 1 converged (4 wire games, unused); round 2 (own practice, banned-obvious, different model per team) → SNEAKERNET + BREAKPOINT sketches. GBC-controls rule missed → rebuild round.</td>
+<td>2 sketches (+4 unused pitches)</td>
+<td>Both</td>
+<td>&quot;The most like games so far… not as easy to understand at face value as I hoped.&quot; Not kept. Chris presents the 3-layer &quot;alive virus&quot; direction.</td>
+</tr>
+<tr>
+<td><strong>09-21 (night)</strong></td>
+<td><strong>Prototype 1</strong>: 4 teams list questions → Thresh merges 8 → Chris answers/locks (<code>LOCKED-PLAN.md</code>) → merged design + <code>types.ts</code> contract → 4 teams build in parallel (one interrupt killed all 4 once) → sim gates → Thresh audit + PLAY (&quot;IT arrives after the fight is over&quot;) → Loop 1. Panel → 5 teams.</td>
+<td>1 (+Loop 1)</td>
+<td>Reviewed, shelved same night</td>
+<td><strong>SHELVED</strong>: &quot;I have you so many inspirations and I feel you only using the most basic… I&#39;m disappointed.&quot;</td>
+</tr>
+<tr>
+<td><strong>09-22 (early)</strong></td>
+<td>Prototype 2 kickoff (5-team pitch contest) — agents killed by interrupt <strong>twice</strong>; Chris skips the contest → <strong>Prototype 2</strong> built solo (Fable) unsupervised, 7 teaching levels, &quot;no check-ins (his rule)&quot;.</td>
+<td>1 (7 levels)</td>
+<td>Once</td>
+<td><strong>SHELVED</strong>: &quot;Much less of a game I expected. It doesn&#39;t capture my influences together… not something I&#39;d be excited to share.&quot;</td>
+</tr>
+<tr>
+<td><strong>09-22 (night)</strong></td>
+<td>Grill → real cause = one-mechanic-per-level siloed the inspirations. <strong>Prototype 3</strong> = bare Into the Breach board. Then <strong>the look spiral</strong>: 3 confident visual answers (icon blocks → v4 flat grid → Def neon glow), each shipped + verified live, each rejected. Chris ends the session: &quot;It seems wild you are spending so many resources trying to learn from what we already know… Stop.&quot;</td>
+<td>1 (3 visual iterations)</td>
+<td>Look only</td>
+<td>Game design &quot;not challenged&quot; (never explicitly approved either). Look rejected ×3.</td>
+</tr>
+<tr>
+<td><strong>09-22 (later)</strong></td>
+<td>Chris locks VISION #14 (&quot;Use it exactly&quot;). <strong>Clone series</strong>: 10 standalone reference clones, one at a time, Chris plays each. Clone 1 rebuilt once, clone 6 rebuilt twice (&quot;betting IS poker&quot;), clone 8 rebuilt once (invented enemies). Mid-series Chris pivots: <strong>phone/web app, not Game Boy</strong>. Clones 8-10 not played; Chris asks for <code>SYNTHESIS.md</code>.</td>
+<td>10 clones (~14 builds)</td>
+<td>Clones 1-7. <strong>Not 8, 9, 10.</strong></td>
+<td>Clones 1-7 approved (&quot;it works&quot;, &quot;plays well&quot;, &quot;Clone 6 is good&quot;, &quot;Played. It works&quot;). These are the only builds Chris has approved in the project — and none is SCANDISK.</td>
+</tr>
+</tbody></table>
+<p><strong>Totals:</strong> ~44 distinct playable pages / 60+ shipped iterations · Chris played ~22 · Chris approved ~9 (Step 0, v7 setup dots, clones 1-7) · SCANDISK prototypes kept: <strong>0</strong>. Sessions ran past 4 a.m. on at least three days (audit §2 Weaknesses; LESSONS-LEARNED #5). 99 commits in the game repo.</p>
+<hr>
+<h2 id="2-how-the-process-worked"><a class="anchor" href="#2-how-the-process-worked">2. How the process worked</a></h2>
+<p><strong>Who did what</strong></p>
+<ul>
+<li><strong>Chris</strong> — vision holder and only real judge. Brought references continuously (Othello/Go, SF2 RPS, Alien: Isolation essays, Into the Breach AI video, Colony Wars, Animal Crossing, Def on Ouya, design-principles courses). Answered <code>AskUserQuestion</code>s one at a time (~50 logged in <code>questions-log.md</code>); overrode the panel on identity calls (stones stay, wipe-out, 9×9, FORGE, no 2-player) and took its recommendation 4/4 on detail picks (audit T10). Called every reset: big swings (09-18), jams (09-19, 09-21 ×2), Foundations (09-21), audit (09-21), VISION (09-21), clone series (09-22), phone-app pivot (09-22). Played late or not at all once agents took over (chris-voice §5). Pressed stop to ask questions, killing agent rounds three times.</li>
+<li><strong>Main session (Claude)</strong> — wrote every brief, merged designs, built most code, ran sims, deployed, maintained state files, logged dispositions. Also <strong>filled in ~8 rules per version as &quot;(my call)&quot;</strong> (D202), chose which jam ideas entered rev 1h, merged Prototype 1 toward &quot;buildable&quot;, and investigated the look three times.</li>
+<li><strong>Thresh</strong> — role drifted every day: rapid play-tester (09-18, first run 31 min / 1,900 bot games, &quot;an intern&#39;s feedback&quot;) → 10-question interviewer and 3-round decision-maker (v5-v7) → <strong>director with the pen</strong> (Jam 2 round 4) → proposer of FILE WAR (&quot;defining too much&quot;) → <strong>cut to coordinator / manager / tie-breaker / Chris&#39;s assistant</strong> (09-21 grill) → question-merger + auditor + player (Prototype 1). His single highest-value act: PLAYING Prototype 1 and finding what sim and audit missed (D234).</li>
+<li><strong>The teams</strong> — 09-17: 21 isolated &quot;designer&quot; agents, paper only. Jam 2: 4 teams by genre, 4 rounds, 12 cross-play reports. Jam 3: 3 teams on a frozen kit. Jam 4: 4 teams, pitch/attack/vote. Prototype 1: 4 → 5 themed teams (Fight · Hunter · Easy to Learn · Big Moment · Living World) building in parallel from a contract file. Prototype 2: the 5-team contest was killed twice and skipped. <strong>Prototype 3 and all 10 clones were built solo by the main session</strong> — the teams contributed nothing to the last, most productive 24 hours.</li>
+</ul>
+<p><strong>The pipeline as it actually ran</strong> (not as designed in <code>new-game.md</code>)</p>
+<pre><code>paper brief ×8 → paper jam (21) → sprint → 6 loops/day → panel reset → v4..v8 → Thresh sprint → big swings → v9
+  → Jam 2 (4 teams × 4 rounds, Thresh directs) → PAUSED
+  → Foundations research → Step 0 → Jam 3 (3 teams) → cross-play → AUDIT → VISION.md (day 5)
+  → Jam 4 (4 teams, one studio) → &quot;alive virus&quot; ideas
+  → Prototype 1 (5 teams + Thresh) → SHELVED
+  → Prototype 2 (solo, unsupervised) → SHELVED
+  → grill → Prototype 3 (solo) → look spiral → session killed
+  → look locked → clone series 1-10 (solo) → SYNTHESIS → phone-app pivot → (Prototype 4 pending)
+</code></pre>
+<p><code>new-game.md</code> step 5 says &quot;iterate in the prototype loop, live in chat, not via agents… one change per loop… game feel stays in the main thread.&quot; That is roughly what happened on 09-18 (too fast) and 09-22 (clones). Everything in between was agent-heavy and Chris-light. The workflow&#39;s own anti-pattern list (&quot;Polishing the brief when there is nothing to play. SCANDISK, 2026-09-17…&quot;, &quot;Delegating game feel to an agent… comes back generic every time&quot;) was written from this project and then broken by it repeatedly.</p>
+<hr>
+<h2 id="3-what-went-well"><a class="anchor" href="#3-what-went-well">3. What went well</a></h2>
+<ol>
+<li><strong>Verbatim capture of Chris&#39;s words.</strong> <code>VISION.md</code> (&quot;Chris&#39;s words are verbatim&quot;), <code>proto1/LOCKED-PLAN.md</code>, <code>ideas-2026-09-21-alive-virus.md</code>, <code>audit/chris-voice.md</code>, <code>INSPIRATIONS.md</code> (&quot;do not invent his reasons&quot;). When the system finally asked what he takes from each game and wrote it down, the record was good enough to catch drift (Team 1 caught &quot;shows next step&quot; vs &quot;Not: showing the enemy&#39;s next move&quot;, D232).</li>
+<li><strong>Step 0 (09-21).</strong> Ten minutes of plain Othello against a 2-ahead bot: &quot;works as expected&quot;, play again yes, out-read it yes. The cheapest, clearest signal in the project, and it came from starting at a base Chris already loved.</li>
+<li><strong>Ask-the-defining-rule-first (D241).</strong> Clones 7, 9, 10 landed with zero rebuilds after this gate; clones 1 and 6 needed 1 and 2 rebuilds before it. Clean counterfactual inside one session.</li>
+<li><strong>Research to source before building (D242).</strong> Clone 9 (Hoplite) read <code>hoplite-rules.md</code> first and needed no rebuild; clone 8 (MicRogue) built from one INSPIRATIONS line and shipped enemies that &quot;just follow you&quot;.</li>
+<li><strong>The Grill Me diagnosis of Prototype 2.</strong> Found the structural cause (one-mechanic-per-level silos every inspiration) after two UI patches had missed it. Chris confirmed it. The diagnosis produced a sequencing rule (bare core first, layer one influence at a time) that is still standing.</li>
+<li><strong>Real measured gates that caught real problems.</strong> Clone 9 was unwinnable (0/600) before tuning; clone 10&#39;s &quot;attacking loses exactly as badly as doing nothing&quot; is a proof; the no-seal guard (D243) came straight from Chris&#39;s bug report (&quot;a level started with me trapped&quot;) and now holds at 0 traps / 1.2M turns.</li>
+<li><strong>Contract-first parallel build (D233).</strong> Prototype 1: merged design → <code>types.ts</code> with <code>_check</code> lines → one owner per file → 4 teams in parallel → 2 small integration fixes. The mechanics of multi-agent building worked; the design they built did not.</li>
+<li><strong>Adversarial cross-play (D225).</strong> Jam 2 round 3: rivals found 3 real defects self-review and two Thresh gates had shipped past, two of them independently by multiple teams. ~4 min per reviewer.</li>
+<li><strong>Engineered diversity (D226).</strong> Jam 4 round 2 — own practice, banned-obvious list, no shared reading, a different model per team — turned four identical pitches into four distinct games in one pass.</li>
+<li><strong>Thresh PLAYING Prototype 1 (D234)</strong> found &quot;IT arrives after the fight is over&quot; after ~10 numeric levers had failed to fix &quot;too easy&quot;. Play beat sim and audit.</li>
+<li><strong>Honest self-reporting.</strong> &quot;Three of four missed a gate and nobody fudged a number to pass.&quot; Postmortems on P1 and P2 name Claude&#39;s failures first. <code>LESSONS-LEARNED.md</code> is blunt.</li>
+<li><strong>The knowledge base is real now.</strong> 26 dossiers with linked quotes, 13 corrections to previously wrong &quot;DNA&quot; (Pfeiffers ≠ Bad North, Fumoto ≠ Harvest Moon), <code>fair-ai-alien-isolation.md</code>, <code>street-fighter-rps.md</code>, <code>hoplite-rules.md</code>, <code>art-of-war.md</code>.</li>
+</ol>
+<hr>
+<h2 id="4-what-went-poorly"><a class="anchor" href="#4-what-went-poorly">4. What went poorly</a></h2>
+<h3 id="41-no-locked-vision-until-day-5"><a class="anchor" href="#41-no-locked-vision-until-day-5">4.1 No locked vision until day 5</a></h3>
+<p><code>VISION.md</code> was written on 09-21 after ~30 builds. Before it, the &quot;source of truth&quot; pointer moved four times: brief rev 1h (09-17) → <code>agent.md</code> &quot;MVP spec — v4&quot; (09-18) → nothing during Jam 2 → <code>VISION.md</code> (09-21) → VISION + LOCKED-PLAN → VISION + SYNTHESIS. The GBC-controls rule &quot;lived in memory, never reached the Jam 4 brief (which even said VISION lines could be broken); both sketches shipped with tap controls… a sweep then found ~20 more missing rules&quot; (D227). The look was never written down with a reference image until 09-22, and even then VISION #14 had &quot;silently recorded a build&#39;s deviation (Prototype 1&#39;s dotted-tile style) as &#39;the look we started with&#39;&quot; (D238).</p>
+<h3 id="42-builds-outran-chris39s-hands-the-single-biggest-failure"><a class="anchor" href="#42-builds-outran-chris39s-hands-the-single-biggest-failure">4.2 Builds outran Chris&#39;s hands — the single biggest failure</a></h3>
+<p>&quot;Chris has still not played any of the four&quot; appears in CHANGELOG on 09-19 late, 09-19 night, 09-20 (twice), and again for Prototype 1, clones 8-10. Audit §6: &quot;About 17 distinct games are live. Chris has played 9, each about once. Since v9, 8 new games and 3 rebuild rounds have shipped against one play session (Step 0).&quot; Jam 2 alone: 16 builds, 12 review reports, 4 Thresh gates, 2 new process gates, 0 Chris plays. The <code>new-game.md</code> gate &quot;Chris plays it. That is the only gate that matters&quot; was the one gate never enforced. Lessons-Learned #2 says it plainly: &quot;One build. Chris plays it. Then build the next thing. Never stack un-played builds.&quot;</p>
+<h3 id="43-churn-and-spirals"><a class="anchor" href="#43-churn-and-spirals">4.3 Churn and spirals</a></h3>
+<ul>
+<li><strong>Day 1 (09-18):</strong> ~12 systems + 3 whole versions in one chat, &quot;often 2-3 changes per loop&quot;; v3 was &quot;mostly Claude&#39;s guesses&quot; → &quot;not what I expected&quot; (D201, D202).</li>
+<li><strong>Fortress grill (09-18):</strong> core moved 4× in one session — types → resources → fortresses → wipe-out → chess units — &quot;the restate gate never locked&quot; (D212).</li>
+<li><strong>The look (09-22):</strong> three independent confident answers in one session, each shipped and verified live, each wrong. Chris: &quot;It seems wild you are spending so many resources trying to learn from what we already know.&quot; Existing Spiral Detection watches same-file edit counts and did not fire (D239).</li>
+<li><strong>Prototype 2 (09-22):</strong> two UI-legibility patches &quot;landed and tested clean, but didn&#39;t touch the actual complaint&quot; before the grill found the structural cause.</li>
+<li><strong>Clone 6:</strong> two rebuilds because the defining mechanic (betting) was inferred, not asked (D241).</li>
+<li><strong>Small-steps trap:</strong> a full day of &quot;one question / one change / 5 min&quot; briefs produced only patches until Chris said &quot;I am disappointed in the feedback… small steps when we could take bigger ones&quot; (D215).</li>
+</ul>
+<h3 id="44-the-ai39s-taste-overrode-chris39s-vision"><a class="anchor" href="#44-the-ai39s-taste-overrode-chris39s-vision">4.4 The AI&#39;s taste overrode Chris&#39;s vision</a></h3>
+<ul>
+<li><strong>Rev 1h:</strong> &quot;Claude chose&quot; 13 jam ideas into the frozen brief using Claude&#39;s own test.</li>
+<li><strong>v3:</strong> ~8 rules per version filled in by Claude; result &quot;a snake one step ahead of me&quot;.</li>
+<li><strong>Jam 2 round 4:</strong> Chris took Thresh&#39;s recommendation 4/4, then handed Thresh the pen and lifted the one-change limit. Result: 3 of 4 missed gates and Chris never played any.</li>
+<li><strong>FILE WAR:</strong> Thresh&#39;s framework proposal &quot;wrote the rules for him&quot; — &quot;Thresh is defining too much&quot; → withdrawn.</li>
+<li><strong>Prototype 1 merge:</strong> &quot;Claude drove toward a buildable plan too fast… picked the simplest pieces that fit, and nobody checked the result against the full inspiration list&quot; (<code>proto1/POSTMORTEM.md</code>). Used ~5 of ~25 inspirations &quot;each at its most basic&quot;.</li>
+<li><strong>Prototype 2:</strong> built unsupervised; the build&#39;s own report named only 6 inspirations &quot;genuinely showing through&quot; and &quot;explicitly and deliberately cut the Rogue AI / Alien Isolation dread&quot; — the exact thing VISION&#39;s &quot;The feel&quot; section names.</li>
+<li><strong>Jam 4 round 1:</strong> four identical wire games; Claude called it &quot;a good sign&quot;; Chris had to ask &quot;Would you expect the same at a typical game jam?&quot;</li>
+<li><strong>Clone 8:</strong> invented enemy behaviour when the correct source (Pickering&#39;s devlog) was already in the workspace, unread.</li>
+<li><strong>SYNTHESIS §1</strong> (drop telegraph markers, buy fairness from geometry) is flagged in agent.md as &quot;carried forward on Claude&#39;s reasoning alone… Chris has NOT played clones 8, 9 or 10.&quot;</li>
+</ul>
+<h3 id="45-quotinspirations-used-only-at-their-most-basicquot-twice-same-failure"><a class="anchor" href="#45-quotinspirations-used-only-at-their-most-basicquot-twice-same-failure">4.5 &quot;Inspirations used only at their most basic&quot; — twice, same failure</a></h3>
+<p>P1 postmortem lists what was left on the table: SF yomi/RPS/combos, Balatro/Star Realms chains, Poker hand-judging, Risk deployment, Chess king, Hive types, RTS buildings+units, Hex, Gomoku forcing moves, Blokus, Go territory, Metal Gear, Rymdkapsel, Art of War. P2 repeated it: &quot;Shallow use of the inspirations — the same failure as Prototype 1, again.&quot; The DEPTH RULE (every team uses ALL inspirations, Thresh scores depth) was written into <code>NEXT-SESSION-PROMPT.md</code> after P1 and then skipped when the P2 pitch contest was killed and Chris chose one unsupervised build. Note also the audit&#39;s count: Chris asked for <strong>a real opponent 7 times</strong>, <strong>buildings + units 5 times</strong>; neither was ever built. Alien: Isolation dread was &quot;never built&quot; across all six days.</p>
+<h3 id="46-measuring-tools-lied-as-often-as-games-failed-audit-t7"><a class="anchor" href="#46-measuring-tools-lied-as-often-as-games-failed-audit-t7">4.6 Measuring tools lied as often as games failed (audit T7)</a></h3>
+<ul>
+<li>&quot;Every round-2 jam defect PASSED its own bot sim and failed on the screen&quot; (D220).</li>
+<li>Sim action budget diverged from the game in both directions; three rival teams independently wrote &quot;the median board loses&quot; off one measuring error (D221).</li>
+<li>Clone 9&#39;s fairness metric counted a whole throw radius as damage and &quot;reported a 63.7% crisis that did not exist. Tuning had already begun against the bad number&quot; — third recurrence (D244).</li>
+<li>Four silent fallbacks in two rounds, &quot;every one looked right&quot; (D223). Headless Chrome ~500 px floor (D219). Vercel cache ignoring <code>?t=</code> cost ~24 min (D224).</li>
+</ul>
+<h3 id="47-panel-team-overhead-vs-value"><a class="anchor" href="#47-panel-team-overhead-vs-value">4.7 Panel / team overhead vs value</a></h3>
+<ul>
+<li>The 09-17 paper jam: 21 agents, 3 judges, a 141 KB showcase — &quot;the jam judged descriptions, so everything in rev 1h is a guess&quot; (panel&#39;s own verdict).</li>
+<li>Jam 2: 4 teams × 4 rounds + 12 reviews + 2 Thresh gates per round ≈ 30+ agent runs for zero Chris plays and a paused line.</li>
+<li>Jam 4 round 1: 4 agents produced one game four times.</li>
+<li>Audit: &quot;Sessions too long, agents too many — past 4am, 11-12 agents against &#39;under 10&#39;.&quot;</li>
+<li>Building the panel properly (26 sourced dossiers) had to happen mid-project because &quot;the DNA was vaguer than it looked&quot; — 13 wrong records were already shaping Thresh&#39;s advice.</li>
+<li>Thresh&#39;s role was renegotiated on four different days. When he directed, output missed gates; when he played, he found the truth. The oscillation itself cost sessions.</li>
+<li>The 5 themed teams + notebooks were built on 09-21 night; they have been used once (P1). P2&#39;s contest died to interrupts; P3 and all 10 clones were solo. Team notebooks for <code>living-world</code> are 819 bytes.</li>
+<li>Net: the team machinery produced its best value in narrow, engineered formats (cross-play, Jam 4 round 2 diversity, parallel build from a contract) and its worst cost when used as a substitute for Chris playing.</li>
+</ul>
+<h3 id="48-missing-playtest-discipline-and-missing-design-docs"><a class="anchor" href="#48-missing-playtest-discipline-and-missing-design-docs">4.8 Missing playtest discipline and missing design docs</a></h3>
+<ul>
+<li>A Thresh PLAY pass became mandatory only on 09-21 (D234), after ~30 builds.</li>
+<li>No <code>INSPIRATIONS.md</code> until 09-21; no look reference until 09-22; no <code>LESSONS-LEARNED.md</code> until 09-22.</li>
+<li><code>agent.md</code> is 108 KB with nine stacked &quot;Historical detail&quot; Session States; <code>dispositions.md</code> is 222 KB against a 60 KB target and &quot;the memory curator still has not run — this has appeared in every SWOT since 2026-09-19&quot;. State bloat is itself a process failure: the next session can&#39;t read it.</li>
+<li>Postmortems exist only for P1 and P2 (and per-clone lessons). v1-v9, Jam 2, Jam 3 have no postmortem beyond the audit&#39;s era files.</li>
+</ul>
+<h3 id="49-scope-creep"><a class="anchor" href="#49-scope-creep">4.9 Scope creep</a></h3>
+<ul>
+<li>Day-1 brief: 8-chip run, cards, bank, hands, cipher, NG+, daily seed, Director AI, six colours — &quot;cut order: none, Chris&#39;s call, ship it all (panel dissent on record)&quot;.</li>
+<li>Prototype 1: &quot;too many layers before one board was fun (3 virus kinds, wires, firewalls, meter, map, 4 board types, progress).&quot;</li>
+<li>Finished-game ideas (time away, Animal Crossing ×3, play rhythm, shared journey, NG+ adaptive AI) arrived <strong>mid-build</strong> on 09-21/22. They were correctly parked in <code>backlog.md</code> Later, but the SWOT flagged &quot;finished-game scope… is growing before the core is proven fun.&quot;</li>
+</ul>
+<h3 id="410-chris39s-own-process-choices-that-fed-the-churn-the-system-must-absorb-these"><a class="anchor" href="#410-chris39s-own-process-choices-that-fed-the-churn-the-system-must-absorb-these">4.10 Chris&#39;s own process choices that fed the churn (the system must absorb these, not blame them)</a></h3>
+<ul>
+<li>Picked TWO changes in loop 1 of 00a (&quot;his call&quot;); &quot;cut order: none&quot; on day 1.</li>
+<li>Lifted the one-change limit for Thresh in Jam 2 round 4 and delegated the pen.</li>
+<li>Overrode the panel on stones-stay / wipe-out / 9×9 by feel; audit T10: &quot;Most identity overrides later reversed.&quot;</li>
+<li>P2: &quot;I don&#39;t want to test… testing keeps leading to more testing&quot; → skipped the one-board-first checkpoint → 7 levels built before the structural flaw was visible.</li>
+<li>Pressed stop to ask a question three times, killing agent rounds (D231, D240 — &quot;prose alone hasn&#39;t held&quot;).</li>
+<li>Skipped playing clones 8-10 and asked for the synthesis anyway.</li>
+<li>Identity pivots: PC real-time no-turns (09-18) → phone GBC turn-based (09-21) → phone/web app touch (09-22, mid-clone-series). Audit: &quot;five core pivots in five days.&quot;</li>
+<li><code>AskUserQuestion</code> &quot;Other&quot; arrived empty four times (a tooling gap, but it lost answers).</li>
+</ul>
+<h3 id="411-time-lost-concretely"><a class="anchor" href="#411-time-lost-concretely">4.11 Time lost, concretely</a></h3>
+<p>Jam 2 (≈ a full day, 16 unplayed builds) · Jam 3 (3 unplayed builds) · P1 → P2 → P3 (three prototypes in ~30 hours, two shelved) · the look spiral (one evening) · clone rebuilds ×4 · agent rounds killed ×3 · ~24 min cache trap · a full day of small-step briefs (D215) · three sessions past 4 a.m.</p>
+<hr>
+<h2 id="5-where-chris39s-vision-was-honoured-vs-lost-1"><a class="anchor" href="#5-where-chris39s-vision-was-honoured-vs-lost-1">5. Where Chris&#39;s vision was honoured vs. lost</a></h2>
+<h3 id="honoured"><a class="anchor" href="#honoured">Honoured</a></h3>
+<ul>
+<li><strong><code>VISION.md</code> (09-21)</strong> — his words verbatim, &quot;outranks every brief&quot;, a 14-item checklist, &quot;Read this first — how we work together: this is Chris&#39;s game and Chris&#39;s vision.&quot;</li>
+<li><strong>The 8 merged answers (<code>proto1/LOCKED-PLAN.md</code>)</strong> — a hand not a piece, clean the board, IT as a monster you dread, the big wipe, Colony Wars loss, sound mix, board types + hybrids; every later note appended verbatim (&quot;goal, not step&quot;, the two feels, time away, Animal Crossing ×3).</li>
+<li><strong>North Star memory</strong> — FILE WAR withdrawn the same day Chris said &quot;defining too much&quot;; &quot;Othello is just a framework we used&quot; respected in Jam 4 hard rule 8.</li>
+<li><strong>INSPIRATIONS &quot;Not:&quot; lines</strong> — caught the restate drift (D232).</li>
+<li><strong>Hard-rules block (Jam 4 BRIEF, after the miss)</strong> — GBC controls, calm senses, phone-first, fair enemy, no named files.</li>
+<li><strong>Defining-rule question (clones 7-10)</strong> — &quot;Chris was asked up front which rule was &#39;the point&#39; and picked the whole deck-building loop… That choice is what made it work.&quot;</li>
+<li><strong>Chris&#39;s bug → engine rule</strong> — the no-seal guard.</li>
+<li><strong>Step 0 and the clone series</strong> — built from games he already loves, played one at a time, his verdict first.</li>
+<li><strong>Grill Me on P2</strong> — his own &quot;influences together&quot; phrase was taken as the diagnostic key.</li>
+<li><strong>Phone-app pivot</strong> — applied to &quot;screen + controls only&quot;, look explicitly protected.</li>
+</ul>
+<h3 id="lost-or-drifted"><a class="anchor" href="#lost-or-drifted">Lost or drifted</a></h3>
+<ul>
+<li><strong>&quot;A real opponent I out-read&quot;</strong> — asked 7 times, never delivered (audit T1: &quot;the virus was a script, a mirror, weather, or a plain search&quot;). Alien: Isolation dread: &quot;never built&quot;; P2 cut it deliberately.</li>
+<li><strong>&quot;Buildings and units&quot;</strong> — asked 5 times on 09-18, &quot;untouched since&quot;.</li>
+<li><strong>&quot;Influences together&quot;</strong> — P1 and P2 both shallow. The DEPTH RULE was written and then not run.</li>
+<li><strong>&quot;Easy to understand at face value&quot;</strong> — Jam 4&#39;s verdict; still the open gap.</li>
+<li><strong>&quot;Satisfying dopamine kicks&quot;</strong> — audit T2: the big moment &quot;keeps arriving by accident… random (&#39;slot machine&#39;) or too small.&quot;</li>
+<li><strong>&quot;Not: I start over each time&quot;</strong> — unaddressed until clone 7.</li>
+<li><strong>The look</strong> — Chris said &quot;It started with me referencing the design of Def on Ouya&quot;; the system had recorded three different things as &quot;the original look&quot; over two days.</li>
+<li><strong>GBC controls</strong> — in memory, not in the brief; shipped wrong (Jam 4).</li>
+<li><strong>v3</strong> — &quot;Claude&#39;s picture, not Chris&#39;s.&quot;</li>
+<li><strong>Letter vs spirit</strong> — Chris&#39;s &quot;teach one mechanic per level&quot; was honoured literally in P2 and it destroyed the thing he actually wanted (influences felt together). Honouring a rule is not the same as honouring the vision behind it.</li>
+<li><strong>Round 4 / FILE WAR</strong> — the vision was ceded to Thresh at Chris&#39;s own invitation; both times the output drifted from what he wanted and he pulled it back.</li>
+</ul>
+<p>Pattern: the system was excellent at <strong>recording</strong> Chris&#39;s vision and poor at <strong>carrying it through a build</strong>. The gap opened at every merge, every &quot;buildable&quot; simplification, every rule Claude filled in, and every round Chris didn&#39;t play.</p>
+<hr>
+<h2 id="6-lessons-system-requirements"><a class="anchor" href="#6-lessons-system-requirements">6. Lessons → system requirements</a></h2>
+<p>Each is phrased for a future game-dev skill/agent system and traced to evidence above.</p>
+<ol>
+<li><strong>The system must produce a locked VISION document before the first line of code</strong> — verbatim owner quotes, a numbered checklist, explicit &quot;Not:&quot; lines, platform + controls, a look reference image checked into the repo, and a HARD RULES block. <em>(4.1; VISION arrived day 5; D227; D238.)</em></li>
+<li><strong>The system must keep exactly one source-of-truth pointer that never moves</strong>, with every other doc marked subordinate, and must grep any &quot;locked&quot; design claim against the current render/rules code once before trusting it. <em>(4.1; pointer moved 4×; D238.)</em></li>
+<li><strong>The system must enforce a WIP limit of one unplayed build</strong>: it may not start build N+1 until the owner has played build N and left a note. A hard block, not a warning. <em>(4.2; &quot;still not played&quot; ×6; audit T6; Lessons #2.)</em></li>
+<li><strong>The system must treat the owner&#39;s play note as the only pass gate</strong>; sims, Thresh, audits and cross-play are pre-filters that can fail a build but never pass one. <em>(4.2, 4.6; D220, D234.)</em></li>
+<li><strong>The system must ask one defining question and wait for one answer before building any clone, prototype, or visual pass</strong> — and then build exactly that, with no independent verification detour. <em>(3.3, 4.3 look spiral; D241, D239; Lessons &quot;the one rule&quot;.)</em></li>
+<li><strong>The system must gather sourced mechanics into a knowledge file before building any clone or homage</strong>, and must check the workspace&#39;s existing dossiers before inventing. <em>(3.4; clone 8; D242.)</em></li>
+<li><strong>The system must carry an inspiration map on every design</strong> — each named inspiration → the exact mechanic → where it appears on screen → which other inspiration it is felt <em>together with</em> in one moment — and score depth before the owner sees it. <em>(4.5; P1 + P2 postmortems; D235.)</em></li>
+<li><strong>The system must mark every rule the AI fills in as &quot;(my call)&quot;</strong>, list them in one short block before build, and grep every restate against the VISION &quot;Not:&quot; lines. <em>(4.4; D202, D232.)</em></li>
+<li><strong>The system must extend spiral detection to design questions</strong>: the same open question re-answered twice, or the same owner complaint patched twice without a stated root cause, halts the loop and forces a grill. <em>(4.3; D239; P2 patches.)</em></li>
+<li><strong>The system must fix Thresh&#39;s role in writing and never renegotiate it per session</strong>: tester + coordinator + tie-breaker who plays every build before the owner; never the pen, never the director. <em>(2; 4.7; FILE WAR; round 4.)</em></li>
+<li><strong>The system must spin up parallel teams only when diversity is engineered</strong> (own-practice pitches, a banned-obvious list, no shared reading at pitch time, different models) and only for formats with proven value (cross-play review, contract-first parallel build, pitch contests). Otherwise the main thread builds solo. Agent count per session is capped and reported. <em>(3.7-3.9; 4.7; D225, D226, D233; &quot;11-12 agents&quot;.)</em></li>
+<li><strong>The system must paste the standing hard rules into every brief it generates</strong>, generated from VISION, separated from the parts teams may challenge. <em>(4.1; D227; Jam 4 rebuild.)</em></li>
+<li><strong>The system must make background agents stop-safe</strong>: a hook or launch-time warning, and a default of foreground work for anything taste-driven. <em>(4.10; D231, D240 &quot;prose alone hasn&#39;t held&quot;.)</em></li>
+<li><strong>The system must budget a session by &quot;the owner has something to play&quot;, not by clock or ambition</strong> — one build per session by default, an explicit NEXT-SESSION prompt on close, no session past a stated cap. <em>(4.11; Lessons #5; three sessions past 4 a.m.)</em></li>
+<li><strong>The system must switch from tuning to rethinking after two failed loops on one complaint</strong>, and must offer a no-limit reframe (&quot;big swings&quot;) after three small loops — early, not after eight versions. <em>(4.3; D215; big-swings; Lessons #4.)</em></li>
+<li><strong>The system must make &quot;one bare board, proven fun, before any layer&quot; non-skippable</strong> — or, if the owner insists on skipping, must state the specific cost in one line and get an explicit acknowledgement. <em>(4.10; P2 &quot;testing keeps leading to more testing&quot; → 7 levels built blind.)</em></li>
+<li><strong>The system must ship a reusable grid-game test kit</strong>: skill ladder (random &lt; greedy &lt; 2-ply), &quot;bot can do what the player can&quot;, fair-enemy honesty, winnability/no-seal at spawn and per turn, phone-frame screenshot at real width, no-cache live check, and a metric-validation step against one known-good and one known-bad case before any tuning. <em>(4.6; D219-D224, D243, D244.)</em></li>
+<li><strong>The system must write a one-page postmortem for every shelved build and a distilled LESSONS file the next session reads instead of the full history</strong>, and must keep state files under a size cap (auto-archive superseded Session States). <em>(4.8; agent.md 108 KB; dispositions 222 KB; curator never ran.)</em></li>
+<li><strong>The system must convert the owner&#39;s recurring asks into acceptance criteria on the vision checklist</strong> (e.g. &quot;a virus I can out-read&quot;, &quot;buildings and units&quot;, &quot;the big moment is built, not random&quot;) and report per build which are met, so an ask cannot go unbuilt seven times without being visible. <em>(5 Lost; audit §2 &quot;What he keeps asking for&quot;.)</em></li>
+<li><strong>The system must distinguish the letter of a rule from its spirit</strong> — when an owner rule is about to structurally defeat a stated owner goal, it must flag the conflict before building. <em>(5; P2 one-mechanic-per-level vs &quot;influences together&quot;.)</em></li>
+<li><strong>The system must log the owner&#39;s own process overrides as first-class decisions</strong> (&quot;two changes this loop — your call&quot;, &quot;one-change limit lifted&quot;, &quot;skip one-board-first&quot;) so that a later postmortem can tell owner choice from AI drift without blame. <em>(4.10.)</em></li>
+</ol>
+<hr>
+<h2 id="7-open-questions-for-chris"><a class="anchor" href="#7-open-questions-for-chris">7. Open questions for Chris</a></h2>
+<ol>
+<li><strong>Prototype 3&#39;s game design</strong> (one bare Into the Breach board, choose-what-to-sacrifice) is recorded as &quot;not challenged&quot;, never as approved. Is it the base for Prototype 4, or was the look the only thing you ever looked at?</li>
+<li><strong>&quot;Influences together&quot;</strong> — name the three inspirations that must be felt in the first 60 seconds of Prototype 4. Twenty-five is a library; three is a design.</li>
+<li><strong>Do you want the 5 teams and the panel in the next system at all?</strong> Their best value came in narrow, engineered formats (cross-play, Jam 4 round 2); their worst cost was whole days you never played. Solo-build + Thresh-plays produced the clones you approved. Which shape do you want as the default?</li>
+<li><strong>The one-unplayed-build rule</strong> — do you want the system to hard-block the next build until you&#39;ve played, even when you&#39;re on a roll and want more, or only warn? (Every &quot;still not played&quot; line in the CHANGELOG happened under a warning.)</li>
+<li><strong><code>clones/SYNTHESIS.md</code> §1</strong> (keep &quot;goal, never next step&quot;; buy fairness from enemy geometry instead of telegraph markers) rests on clones 8-10, which you have not played. Play them first, or accept the direction on the evidence and move to Prototype 4?</li>
+</ol>
+
+    <footer>Private review page · noindex · built 2026-09-23</footer>
+  </main>
+</div>
+<script>
+(function(){var b=document.getElementById('theme'),r=document.documentElement;try{var s=localStorage.getItem('gdh-theme');if(s)r.setAttribute('data-theme',s);}catch(e){}
+b.addEventListener('click',function(){var cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;var n=dark?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('gdh-theme',n);}catch(e){}});})();
+</script>
+</body>
+</html>
