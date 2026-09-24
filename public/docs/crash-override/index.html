@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Crash Override — Gate 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desk: #1E242C; --panel: #262E38; --line: #34404C;
+    --board: #345652; --you: #50DECD; --files: #FFCE54; --attack: #FF343C;
+    --text: #E8ECF1; --muted: #A4AEBA;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--desk); color: var(--text); font: 16px/1.55 Inter, system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 4px 0 6px; }
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--you); margin: 36px 0 10px; }
+  p { margin: 0 0 12px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .draft { display: inline-block; font-size: 12px; font-weight: 700; color: var(--desk); background: var(--files); border-radius: 4px; padding: 2px 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 0 0 12px; }
+  .big { font-size: 19px; font-weight: 600; line-height: 1.4; }
+  img { width: 100%; max-width: 360px; display: block; margin: 0 auto; border-radius: 10px; border: 1px solid var(--line); }
+  ol, ul { margin: 0; padding-left: 22px; }
+  li { margin: 0 0 10px; }
+  .tag { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .tag.chris { color: var(--you); }
+  .calls li { padding-left: 2px; }
+  .calls b { color: var(--files); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td { border-top: 1px solid var(--line); padding: 10px 6px; vertical-align: top; }
+  td:first-child { color: var(--muted); width: 32%; }
+  .ask { border-color: var(--files); }
+  .ask h3 { margin: 0 0 8px; font-size: 16px; color: var(--files); }
+  .reply { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--desk); border-radius: 6px; padding: 8px 10px; font-size: 14px; margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <span class="draft">DRAFT — GATE 2</span>
+  <h1>Crash Override</h1>
+  <p class="sub">The one-page design. Into the Breach on a toy motherboard. Learning project. 2026-09-24.</p>
+  <p class="sub"><span class="tag chris">Chris</span> = your words. <span class="tag">my call</span> = my proposal. You say yes or strike each one.</p>
+
+  <h2>What you do</h2>
+  <div class="card"><p class="big">Keep your files alive on a motherboard full of viruses. Move repair robots, shove bugs into holes and into each other, and step into attacks you can see coming.</p><span class="tag">my call · #1</span></div>
+
+  <h2>The look (locked)</h2>
+  <img src="/docs/crash-override/reference.png" alt="The locked look: a toy motherboard on a desk, seen at an angle, with repair robots, red bugs, gold file folders and red attack arrows">
+
+  <h2>The one feeling</h2>
+  <div class="card"><p class="big">Every turn is a problem you can see whole, and solve.</p>
+  <p class="sub">From your words: "I like problem solving" and "a mix of puzzle and strategy." Davis calls Into the Breach "a puzzle game that's masquerading as a strategy game."</p></div>
+
+  <h2>Pillars</h2>
+  <div class="card"><b>1 · Puzzle.</b> Every attack is shown before you act and lands exactly as shown. "Too hard" means "not solved yet," never "cheated." <span class="tag chris">Chris</span></div>
+  <div class="card"><b>2 · Strategy.</b> Your files matter more than your robots, so every turn is a trade. <span class="tag chris">Chris</span></div>
+  <div class="card"><b>3 · Theme.</b> You are the repair crew inside the machine. The red arrows are the virus's own scan of what it will do next. <span class="tag">my call · #6</span></div>
+
+  <h2>My 10 calls — yes or strike</h2>
+  <div class="card">
+  <ol class="calls">
+    <li><b>Goal:</b> keep files alive by moving robots, shoving bugs, and stepping into attacks you can see.</li>
+    <li><b>Hook:</b> "The virus tells you its next move. Stop it anyway."</li>
+    <li><b>Turn:</b> tap a robot, tap to move, tap to act. Move first, then act.</li>
+    <li><b>Big moment:</b> one shove turns a bug's attack onto another bug, or drops it into a hole.</li>
+    <li><b>Win / lose:</b> survive a set number of turns. You lose when every file is gone.</li>
+    <li><b>Theme:</b> you are the repair crew. The red arrows are the virus's scan.</li>
+    <li><b>The one limit:</b> one fixed camera, one screen. No pan, no zoom. <span class="sub">Monument Valley did the same. It found the iPhone screen was big enough.</span></li>
+    <li><b>Build 1 is small:</b> 2 robot types, 2 bug types, 1 file type, walls, holes. No map, no upgrades, no hero, no sound.</li>
+    <li><b>Drawing:</b> the board is flat 2D drawn at an angle, like the mock. Pieces slide. No animation.</li>
+    <li><b>Board size:</b> build 1 has one switch, 6×6 or 8×8. You pick by playing.</li>
+  </ol>
+  </div>
+
+  <h2>Store text (270 of 300 characters)</h2>
+  <div class="card"><p>Viruses are loose on your motherboard, and every bug shows exactly what it will hit next turn. Move your repair robots, shove bugs into holes and into each other, and keep your files alive. A turn-based puzzle strategy game for your phone, played on a toy circuit board.</p><span class="tag">my call</span></div>
+
+  <h2>Screen</h2>
+  <div class="card"><p>iPhone portrait, drawn at <b>390 × 844</b> and scaled to fit. <span class="tag chris">Chris</span></p></div>
+
+  <h2>How it could go wrong — answered</h2>
+  <div class="card">
+  <table>
+    <tr><td>Too big</td><td>Build 1 is one board with the small list in call #8.</td></tr>
+    <tr><td>Vague</td><td>The "What you do" line is the test. If a build does not fit it, it drifted.</td></tr>
+    <tr><td>Copy of ITB</td><td>On purpose. New: the virus world, the toy-motherboard look, one-thumb phone play.</td></tr>
+    <tr><td>Only for you</td><td>Yes. It is a learning project. That is fine.</td></tr>
+    <tr><td>Too late</td><td>Timing does not matter for a learning project.</td></tr>
+  </table>
+  </div>
+
+  <h2>What I can and can't build</h2>
+  <div class="card">
+    <p><b>Can:</b> TypeScript + canvas, rule tests, mocks, a phone link.</p>
+    <p><b>Can't:</b> a real 3D engine, hand-made animation, rich sound. So the angled board is faked in 2D, like the mock.</p>
+  </div>
+
+  <h2>Your answers</h2>
+  <div class="card ask">
+    <h3>A · The 10 calls</h3>
+    <p>Keep all 10, or strike some by number.</p>
+    <div class="reply">keep all</div>
+    <div class="reply">strike 4, 9</div>
+  </div>
+  <div class="card ask">
+    <h3>B · Undo</h3>
+    <p>Into the Breach lets you take back a turn. Should build 1?</p>
+    <p class="sub"><b>My pick: yes, undo one move.</b> It fits "puzzle, not fight": you try an idea, see it fail, and try again. It also saves you from a phone mis-tap. <b>No undo</b> is harder, and every move is final.</p>
+    <div class="reply">undo yes</div>
+    <div class="reply">undo no</div>
+  </div>
+  <p class="sub">After this, gate 2 locks. Next: the learning line and the one defining question, then build 1.</p>
+</main>
+</body>
+</html>
