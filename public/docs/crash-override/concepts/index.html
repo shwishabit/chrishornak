@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Crash Override — Look Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --desk:#1E242C; --panel:#262E38; --line:#34404C; --you:#50DECD; --files:#FFCE54; --text:#E8ECF1; --muted:#A4AEBA; --bad:#FF6B6B; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--desk); color:var(--text); font:16px/1.55 Inter, system-ui, sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:26px; line-height:1.2; margin:4px 0 8px; }
+  h2 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--you); margin:40px 0 6px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 12px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (min-width:760px) { .grid.four { grid-template-columns:repeat(4,1fr); } }
+  .menus { display:grid; grid-template-columns:1fr; gap:14px; }
+  @media (min-width:760px) { .menus { grid-template-columns:1fr 1fr; } }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px; }
+  figure img { width:100%; display:block; border-radius:6px; }
+  figcaption { font-size:13px; margin:6px 2px 0; }
+  .n { display:inline-block; min-width:22px; height:22px; line-height:22px; text-align:center; border-radius:5px; background:var(--files); color:var(--desk); font-weight:700; font-size:13px; margin-right:6px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin:0 0 10px; font-size:15px; }
+  .card b { color:var(--files); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { border-top:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  a { color:var(--you); }
+  .reply { font-family:ui-monospace, Menlo, Consolas, monospace; background:var(--panel); border-radius:6px; padding:8px 10px; font-size:14px; margin:8px 0 0; display:inline-block; }
+</style>
+</head>
+<body>
+<main>
+  <p class="sub"><a href="/docs/crash-override">← One-pager</a> · <a href="/docs/crash-override/hack">References</a></p>
+  <h1>Four look concepts</h1>
+  <p class="sub">Four designers, blind to each other, 15 minutes each. Each studied every reference (A–E, your links, the BIFRØST video) and made their own design. Same numbers in every section.</p>
+
+  <div class="card">
+    <span class="n">1</span><b>SKYLINE</b>: an angled board floating in space. Files are glass towers of text (Hackers). TV-head robots and red-eyed spider bugs.<br>
+    <span class="n">2</span><b>CITY OF TEXT</b>: straight down, purple. Mint bots with screen faces, red bugs.<br>
+    <span class="n">3</span><b>TRACE</b>: a flat circuit schematic. Every piece is a labelled chip module.<br>
+    <span class="n">4</span><b>PHOTOCOPY PUNK</b>: a taped-down zine printout. Sticker pieces with faces, highlighter moves, pink-marker attacks.
+  </div>
+
+  <h2>1 · Programs and bugs on their own</h2>
+  <div class="grid four">
+    <figure><img src="/docs/crash-override/concepts/c1-1-pieces.jpg" alt="Concept 1 SKYLINE piece sheet"><figcaption><span class="n">1</span>SKYLINE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c2-1-pieces.jpg" alt="Concept 2 CITY OF TEXT piece sheet"><figcaption><span class="n">2</span>CITY OF TEXT</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c3-1-pieces.jpg" alt="Concept 3 TRACE piece sheet"><figcaption><span class="n">3</span>TRACE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c4-1-pieces.jpg" alt="Concept 4 PHOTOCOPY PUNK piece sheet"><figcaption><span class="n">4</span>PHOTOCOPY PUNK</figcaption></figure>
+  </div>
+
+  <h2>2 · The board on its own</h2>
+  <div class="grid four">
+    <figure><img src="/docs/crash-override/concepts/c1-2-board.jpg" alt="Concept 1 board"><figcaption><span class="n">1</span>SKYLINE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c2-2-board.jpg" alt="Concept 2 board"><figcaption><span class="n">2</span>CITY OF TEXT</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c3-2-board.jpg" alt="Concept 3 board"><figcaption><span class="n">3</span>TRACE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c4-2-board.jpg" alt="Concept 4 board"><figcaption><span class="n">4</span>PHOTOCOPY PUNK</figcaption></figure>
+  </div>
+
+  <h2>3 · Menus (title + pause)</h2>
+  <div class="menus">
+    <figure><img src="/docs/crash-override/concepts/c1-3-menus.jpg" alt="Concept 1 menus"><figcaption><span class="n">1</span>SKYLINE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c2-3-menus.jpg" alt="Concept 2 menus"><figcaption><span class="n">2</span>CITY OF TEXT</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c3-3-menus.jpg" alt="Concept 3 menus"><figcaption><span class="n">3</span>TRACE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c4-3-menus.jpg" alt="Concept 4 menus"><figcaption><span class="n">4</span>PHOTOCOPY PUNK</figcaption></figure>
+  </div>
+
+  <h2>4 · Everything together</h2>
+  <div class="grid">
+    <figure><img src="/docs/crash-override/concepts/c1-4-game.jpg" alt="Concept 1 game screen"><figcaption><span class="n">1</span>SKYLINE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c2-4-game.jpg" alt="Concept 2 game screen"><figcaption><span class="n">2</span>CITY OF TEXT</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c3-4-game.jpg" alt="Concept 3 game screen"><figcaption><span class="n">3</span>TRACE</figcaption></figure>
+    <figure><img src="/docs/crash-override/concepts/c4-4-game.jpg" alt="Concept 4 game screen"><figcaption><span class="n">4</span>PHOTOCOPY PUNK</figcaption></figure>
+  </div>
+
+  <h2>What the reviewers said</h2>
+  <div class="card">
+    <b>Blind tests.</b> Each tester was a fresh helper who saw only one game screen, with no rules.
+    <table>
+      <tr><th></th><th>Found moves</th><th>Hacking feel</th><th>Exciting</th><th>Most confusing</th></tr>
+      <tr><td><span class="n">1</span></td><td>no (60% guess)</td><td>3/5</td><td>3/5</td><td>two red arrows cross; which bug hits which</td></tr>
+      <tr><td><span class="n">2</span></td><td>no (30%)</td><td>3/5</td><td>3/5</td><td>dashed vs black squares, no labels</td></tr>
+      <tr><td><span class="n">3</span></td><td>yes (70%)</td><td>4/5</td><td>3/5</td><td>what the black circles do</td></tr>
+      <tr><td><span class="n">4</span></td><td>yes (90%)</td><td>3/5</td><td>3/5</td><td>how a shove works; what holes do</td></tr>
+    </table>
+    <p class="sub" style="margin-top:8px">Every tester found what's yours (60–85%) and what to protect. Holes and walls are still guesses everywhere; the build teaches those (your call this morning).</p>
+  </div>
+  <div class="card">
+    <b>Into the Breach consultant (Davis + Ma, from their own talks). Ranking: 4 › 2 › 3 › 1.</b>
+    <p style="margin:6px 0 0"><span class="n">4</span>"Best hierarchy of the four." Flood-fill moves, pink arrows, and "-1" stamps are close to ITB's "you don't need to mouse over the pawn." Keep the tape and halftone off the grid itself.</p>
+    <p style="margin:6px 0 0"><span class="n">2</span>"The shape we'd want." Arrows are clear. Add a preview of where a shoved bug lands.</p>
+    <p style="margin:6px 0 0"><span class="n">3</span>Clean icons, but yours and theirs look alike at a glance. Needs a hard colour split.</p>
+    <p style="margin:6px 0 0"><span class="n">1</span>The angled view fights the grid, so crossing arrows are hard to read. Their fix: keep the angle for menus and art, and flatten the play board.</p>
+  </div>
+  <div class="card">
+    <b>My honest read.</b> No concept got better than 3/5 on "exciting" from the testers. The designs are readable, but none is a clear "wow" yet. <b>1</b> feels most like the Hackers movie. <b>4</b> reads best, and it has the most character. A mix is allowed.
+  </div>
+
+  <h2>Your pick</h2>
+  <p class="sub">Reply in chat with the numbers you like, or a mix, for example:</p>
+  <div class="reply">1, with 4's pieces</div>
+</main>
+</body>
+</html>
