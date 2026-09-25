@@ -31,13 +31,21 @@
   th { color:var(--muted); font-weight:600; }
   a { color:var(--you); }
   .reply { font-family:ui-monospace, Menlo, Consolas, monospace; background:var(--panel); border-radius:6px; padding:8px 10px; font-size:14px; margin:8px 0 0; display:inline-block; }
+  figure img { cursor:zoom-in; }
+  #lb { position:fixed; inset:0; z-index:50; background:rgba(12,15,20,.96); display:none; flex-direction:column; }
+  #lb.open { display:flex; }
+  #lb .bar { display:flex; align-items:center; gap:8px; padding:10px 12px; }
+  #lb .cap { flex:1; font-size:14px; font-weight:600; }
+  #lb button { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; min-width:44px; height:44px; font-size:18px; }
+  #lb .stage { flex:1; overflow:auto; -webkit-overflow-scrolling:touch; display:flex; justify-content:center; align-items:flex-start; padding:0 8px 16px; }
+  #lb .stage img { width:100%; max-width:900px; height:auto; border-radius:6px; }
 </style>
 </head>
 <body>
 <main>
   <p class="sub"><a href="/docs/crash-override">← One-pager</a> · <a href="/docs/crash-override/hack">References</a></p>
   <h1>Four look concepts</h1>
-  <p class="sub">Four designers, blind to each other, 15 minutes each. Each studied every reference (A–E, your links, the BIFRØST video) and made their own design. Same numbers in every section.</p>
+  <p class="sub">Four designers, blind to each other, 15 minutes each. Each studied every reference (A–E, your links, the BIFRØST video) and made their own design. Same numbers in every section. <b>Tap any picture to enlarge</b>, then use ‹ › to flip through.</p>
 
   <div class="card">
     <span class="n">1</span><b>SKYLINE</b>: an angled board floating in space. Files are glass towers of text (Hackers). TV-head robots and red-eyed spider bugs.<br>
@@ -105,5 +113,40 @@
   <p class="sub">Reply in chat with the numbers you like, or a mix, for example:</p>
   <div class="reply">1, with 4's pieces</div>
 </main>
+<div id="lb" role="dialog" aria-modal="true" aria-label="Enlarged picture">
+  <div class="bar">
+    <button id="lbPrev" aria-label="Previous picture">‹</button>
+    <button id="lbNext" aria-label="Next picture">›</button>
+    <span class="cap" id="lbCap"></span>
+    <button id="lbClose" aria-label="Close">✕</button>
+  </div>
+  <div class="stage" id="lbStage"><img id="lbImg" alt=""></div>
+</div>
+<script>
+(function () {
+  var figs = Array.prototype.slice.call(document.querySelectorAll('main figure'));
+  var lb = document.getElementById('lb'), img = document.getElementById('lbImg'),
+      cap = document.getElementById('lbCap'), stage = document.getElementById('lbStage'), i = 0;
+  function sectionOf(f) { var h = f.parentElement.previousElementSibling; return h && h.tagName === 'H2' ? h.textContent : ''; }
+  function show(n) {
+    i = (n + figs.length) % figs.length;
+    var f = figs[i], src = f.querySelector('img');
+    img.src = src.src; img.alt = src.alt;
+    var fc = f.querySelector('figcaption'), num = fc.querySelector('.n').textContent;
+    cap.textContent = num + ' · ' + fc.textContent.slice(num.length).trim() + ' — ' + sectionOf(f);
+    stage.scrollTop = 0;
+  }
+  figs.forEach(function (f, n) { f.querySelector('img').addEventListener('click', function () { show(n); lb.classList.add('open'); document.body.style.overflow = 'hidden'; }); });
+  function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+  document.getElementById('lbClose').onclick = close;
+  document.getElementById('lbPrev').onclick = function () { show(i - 1); };
+  document.getElementById('lbNext').onclick = function () { show(i + 1); };
+  stage.addEventListener('click', function (e) { if (e.target === stage) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'ArrowRight') show(i + 1);
+  });
+})();
+</script>
 </body>
 </html>
