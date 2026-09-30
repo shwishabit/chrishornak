@@ -31,6 +31,10 @@ export interface Post {
   /** Rounded up from word count at 225 wpm. */
   readingMinutes: number
   faq: PostFaq[]
+  /** Static ARTICLE share card (no copy, no logo). When set, generateMetadata passes it as
+   *  openGraph.images + twitter.images, which makes Next skip the segment's
+   *  opengraph-image.tsx for this post only. */
+  ogImage?: { url: string; alt: string }
 }
 
 export const posts: Post[] = [
@@ -207,6 +211,54 @@ export const posts: Post[] = [
         question: 'Does a better number prove my change worked?',
         answer:
           'Not on its own. The season, an email send, an ad campaign or a competitor running out of stock can all move the same number. A baseline does not remove that doubt, but it makes it visible, and it lets you check that you measured the page you actually changed.',
+      },
+    ],
+  },
+  {
+    slug: 'og-image',
+    title: 'What to put in an OG image so the right people click',
+    teaser:
+      'An OG image is the picture that shows up when someone shares your link. With the title and description beside it, it tells people what the page is before they click. So it decides who clicks, not only how many.',
+    targetKeyword: 'OG image',
+    metaDescription:
+      'What to put in an OG image, its title and description so a shared link sets the right expectation, plus the check I run before any card goes live.',
+    keywords: [
+      'OG image',
+      'Open Graph image',
+      'share preview',
+      'link preview',
+      'og:image size',
+      'social share card',
+    ],
+    published: true,
+    datePublished: '2026-09-30',
+    dateModified: '2026-09-30',
+    wordCount: 1158,
+    readingMinutes: 5,
+    ogImage: {
+      url: '/images/blog/og-image-card.png',
+      alt: 'A chat message holding a link preview: a large teal image of a sun and hills, grey bars standing in for the title and description, and a mouse cursor resting on it before the click.',
+    },
+    faq: [
+      {
+        question: 'What should an OG image include?',
+        answer:
+          'Something that stands for the page. For a homepage or service page, that is your logo, one line on what the page is, one line on what the reader gets, and a short tagline with your domain. For a blog post, one picture of the topic can be enough, because the share title and description already carry the words. Whatever you use, it should make the same promise as the page.',
+      },
+      {
+        question: 'What size should an OG image be?',
+        answer:
+          'Use 1200 x 630 pixels. Meta asks for at least 1200 x 630 pixels and a ratio as close to 1.91:1 as possible, so the full image shows in Feed without cropping. LinkedIn recommends the same 1.91:1 ratio, and Apple asks for images at least 900 pixels wide for previews in Messages.',
+      },
+      {
+        question: 'Should an OG image have text on it?',
+        answer:
+          'It depends on the page. A homepage card can carry one short, large line that positions the business. On a blog post, the share title and description already carry the words, so a picture works better. Apple’s guide to rich previews in Messages says to avoid text in preview images, because previews show at different sizes and small words can become unreadable.',
+      },
+      {
+        question: 'Why is my old OG image still showing?',
+        answer:
+          'Platforms cache previews. Meta says images are cached by their URL and will not update unless the URL changes, and LinkedIn says a preview may show an old cached image. Save a new image under a new file name, then refresh the preview with LinkedIn’s Post Inspector or Facebook’s Sharing Debugger. Posts that already went out keep their old preview.',
       },
     ],
   },

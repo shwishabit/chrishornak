@@ -17,12 +17,15 @@ import { TextInImagesPost } from '@/components/blog/TextInImagesPost'
 import { TextInImagesDiagram } from '@/components/blog/TextInImagesDiagram'
 import { MeasureWebsiteChangesPost } from '@/components/blog/MeasureWebsiteChangesPost'
 import { MeasureWebsiteChangesDiagram } from '@/components/blog/MeasureWebsiteChangesDiagram'
+import { OgImagePost } from '@/components/blog/OgImagePost'
+import { OgImageDiagram } from '@/components/blog/OgImageDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
   'shopify-theme-small-team': ShopifyThemePost,
   'product-page-audit': ProductPageAuditPost,
   'text-in-images': TextInImagesPost,
   'measure-website-changes': MeasureWebsiteChangesPost,
+  'og-image': OgImagePost,
 }
 
 const postHeroVisualMap: Record<string, React.ComponentType> = {
@@ -30,6 +33,7 @@ const postHeroVisualMap: Record<string, React.ComponentType> = {
   'product-page-audit': ProductPageAuditDiagram,
   'text-in-images': TextInImagesDiagram,
   'measure-website-changes': MeasureWebsiteChangesDiagram,
+  'og-image': OgImageDiagram,
 }
 
 // Table of contents per post — ids match the h2 anchors in the content
@@ -69,6 +73,15 @@ const postTocMap: Record<string, { id: string; label: string }[]> = {
     { id: 'when-not-to', label: 'When is measuring not worth it?' },
     { id: 'one-question', label: 'One question' },
   ],
+  'og-image': [
+    { id: 'what-is-it', label: 'What is an OG image, and where does it show up?' },
+    { id: 'why-it-matters', label: 'Why does the preview matter before the click?' },
+    { id: 'what-to-put-in', label: 'What should you put in an OG image?' },
+    { id: 'words-on-it', label: 'Should an OG image have words on it?' },
+    { id: 'how-to-check', label: 'How do you check a share preview before it goes live?' },
+    { id: 'matters-less', label: 'When does the OG image matter less?' },
+    { id: 'one-question', label: 'One question' },
+  ],
 }
 
 export function generateStaticParams() {
@@ -84,6 +97,12 @@ export async function generateMetadata({
   const post = getPostBySlug(slug)
   if (!post || !post.published) return {}
 
+  // A post with its own ARTICLE card sets images here, which makes Next skip the
+  // segment's opengraph-image.tsx for this post only (T5b, used on purpose).
+  const ogImages = post.ogImage
+    ? [{ url: `${siteConfig.domain}${post.ogImage.url}`, width: 1200, height: 630, alt: post.ogImage.alt }]
+    : undefined
+
   return {
     title: post.title,
     description: post.metaDescription,
@@ -91,19 +110,24 @@ export async function generateMetadata({
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
+    // `images` only when the post has its own card (ogImages above). Otherwise the
+    // segment's opengraph-image.tsx supplies it, and any images key would skip it (T5b).
     openGraph: {
       title: post.title,
       description: post.metaDescription,
+      url: `${siteConfig.domain}/blog/${post.slug}`,
       type: 'article',
       publishedTime: `${post.datePublished}T00:00:00Z`,
       modifiedTime: `${post.dateModified}T00:00:00Z`,
       authors: ['Chris Hornak'],
       section: 'Blog',
+      ...(ogImages && { images: ogImages }),
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.metaDescription,
+      ...(ogImages && { images: ogImages }),
     },
     other: {
       'article:published_time': `${post.datePublished}T00:00:00Z`,
@@ -150,7 +174,9 @@ export default async function BlogPostPage({
               '@id': `${siteConfig.domain}/blog/${post.slug}#article`,
               headline: post.title,
               description: post.metaDescription,
-              image: `${siteConfig.domain}/blog/${post.slug}/opengraph-image`,
+              image: post.ogImage
+                ? `${siteConfig.domain}${post.ogImage.url}`
+                : `${siteConfig.domain}/blog/${post.slug}/opengraph-image`,
               author: {
                 '@type': 'Person',
                 name: 'Chris Hornak',

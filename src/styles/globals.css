@@ -342,6 +342,50 @@ body {
   text-decoration-color: var(--color-primary);
 }
 
+.guide-prose figure {
+  margin: 2.5rem 0;
+}
+
+.guide-prose figcaption {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-muted-foreground);
+}
+
+.guide-prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 14%, transparent);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 2rem 0;
+  font-size: clamp(0.9375rem, 0.875rem + 0.25vw, 1rem);
+  line-height: 1.5;
+}
+
+.guide-prose th {
+  text-align: left;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--color-foreground);
+  background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+  padding: 0.875rem 1rem;
+}
+
+.guide-prose td {
+  color: var(--color-muted-foreground);
+  padding: 0.875rem 1rem;
+  border-top: 1px solid color-mix(in oklab, var(--color-foreground) 10%, transparent);
+  vertical-align: top;
+}
+
+.guide-prose td:first-child {
+  color: var(--color-foreground);
+  font-weight: 600;
+}
+
 .guide-prose hr {
   border: none;
   height: 1px;
