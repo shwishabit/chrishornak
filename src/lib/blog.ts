@@ -225,6 +225,7 @@ export const posts: Post[] = [
     keywords: [
       'OG image',
       'Open Graph image',
+      'social share image',
       'share preview',
       'link preview',
       'og:image size',
@@ -233,7 +234,7 @@ export const posts: Post[] = [
     published: true,
     datePublished: '2026-09-30',
     dateModified: '2026-09-30',
-    wordCount: 1158,
+    wordCount: 1187,
     readingMinutes: 5,
     ogImage: {
       url: '/images/blog/og-image-card.png',

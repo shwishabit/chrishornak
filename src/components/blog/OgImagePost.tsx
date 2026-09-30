@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SharePreviewTabs } from '@/components/blog/SharePreviewTabs'
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -29,7 +30,8 @@ export function OgImagePost() {
       <h2 id="what-is-it">What is an OG image, and where does it show up?</h2>
 
       <p>
-        It&apos;s the picture that appears when someone shares your link. OG stands for Open Graph,
+        It&apos;s the picture that appears when someone shares your link. You&apos;ll also hear it
+        called a social share image or a link preview image. OG stands for Open Graph,
         a set of tags hidden in your site&apos;s code. The{' '}
         <a href="https://ogp.me/" target="_blank" rel="noopener">
           Open Graph protocol
@@ -42,6 +44,10 @@ export function OgImagePost() {
         The image rarely travels alone. Beside it sit the share title and the share description.
         Together they make the preview.
       </p>
+
+      <p>Here&apos;s this post&apos;s own preview, laid out the way 4 apps show a shared link.</p>
+
+      <SharePreviewTabs />
 
       <p>
         LinkedIn and Facebook build their previews from these tags. Slack reads them alongside

@@ -10,6 +10,7 @@ import { ShopifyThemeDiagram } from '@/components/blog/ShopifyThemeDiagram'
 import { ProductPageAuditDiagram } from '@/components/blog/ProductPageAuditDiagram'
 import { TextInImagesDiagram } from '@/components/blog/TextInImagesDiagram'
 import { MeasureWebsiteChangesDiagram } from '@/components/blog/MeasureWebsiteChangesDiagram'
+import { OgImageDiagram } from '@/components/blog/OgImageDiagram'
 
 // Featured visual per post, so the index shows the same artwork as the piece.
 const postVisualMap: Record<string, React.ComponentType> = {
@@ -17,6 +18,7 @@ const postVisualMap: Record<string, React.ComponentType> = {
   'product-page-audit': ProductPageAuditDiagram,
   'text-in-images': TextInImagesDiagram,
   'measure-website-changes': MeasureWebsiteChangesDiagram,
+  'og-image': OgImageDiagram,
 }
 
 export const metadata: Metadata = {
