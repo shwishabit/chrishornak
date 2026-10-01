@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 50
 
-const LINKS_LABEL = { ok: '', busy: 'Links busy', unavailable: 'Links unavailable' } as const
+const LINKS_LABEL = { ok: '', busy: 'Authority busy', unavailable: 'Authority unavailable' } as const
 
 function Tile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -94,7 +94,7 @@ export default async function AuthorityAdminPage({
               <Tile label="Domains" value={data.unique_domains} />
               <Tile label="With rivals" value={data.with_rivals} />
               <Tile label="Page errors" value={data.errors} />
-              <Tile label="Links busy / off" value={data.links_busy} />
+              <Tile label="Authority busy / off" value={data.links_busy} />
             </div>
 
             <div className="glass-card mt-6 overflow-x-auto p-0">
@@ -103,8 +103,8 @@ export default async function AuthorityAdminPage({
                   <tr>
                     <th scope="col" className="px-4 py-3 font-medium">When (ET)</th>
                     <th scope="col" className="px-4 py-3 font-medium">Sites (you first)</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Links /100</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Proof /7</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Authority /100</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Proof /9</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -130,7 +130,12 @@ export default async function AuthorityAdminPage({
                       </td>
                       <td className="px-4 py-3 tabular-nums">
                         {r.links.map((v, i) => (
-                          <span key={i} className="block">{n(v, 'no data')}</span>
+                          <span key={i} className="block">
+                            {n(v, 'no data')}
+                            {typeof r.linking_sites?.[i] === 'number' && (
+                              <span className="text-muted-foreground"> · {r.linking_sites[i]} sites</span>
+                            )}
+                          </span>
                         ))}
                       </td>
                       <td className="px-4 py-3 tabular-nums">

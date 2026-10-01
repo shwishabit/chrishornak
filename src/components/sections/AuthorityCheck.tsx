@@ -18,6 +18,7 @@ import {
   type RankRow,
   type SiteResult,
 } from '@/lib/authority-check'
+import { ToolQuestions } from './ToolQuestions'
 
 /* ── Authority Check ────────────────────────────────────────────────────────
  * Hero form (Your site vs Rival, up to 3 rivals, or your site alone), then
@@ -233,7 +234,7 @@ function Hero({
               Or check your site alone
             </button>
             <span aria-hidden="true">· </span>
-            It reads each homepage once and asks Open PageRank for the link scores.
+            It reads each homepage once and looks up each site&apos;s authority score.
           </p>
         </div>
         <div
@@ -242,12 +243,12 @@ function Hero({
           role="group"
         >
           <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Links</b>
-            How many other sites link to you, scored by Open PageRank.
+            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Authority</b>
+            How much the rest of the web vouches for you, from the sites that link to you.
           </div>
           <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Proof</b>7
-            things on your homepage that show you are real.
+            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Proof</b>
+            {PROOF_CHECKS.length} things on your homepage that show you are real.
           </div>
           <div>
             <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">
@@ -261,179 +262,265 @@ function Hero({
   )
 }
 
-/* ── Ranked lists ───────────────────────────────────────────────────────── */
+/* ── Ranked table: one row per site, Authority + Proof side by side ───── */
 
-function Row({ row, rank, value, note }: { row: { site: SiteResult; index: number; pct?: number }; rank: string; value: string; note?: string }) {
-  const me = row.index === 0
+interface TableRow {
+  site: SiteResult
+  index: number
+  rank: string
+  /** Authority bar width (vs the top site), when scored. */
+  pct?: number
+}
+
+interface TableGroup {
+  key: string
+  tie: boolean
+  rows: TableRow[]
+}
+
+/**
+ * Sorted by authority, with "About the same" groups. Sites with no
+ * authority score go last, by proof. If the scores didn't come back at all,
+ * sort by proof instead.
+ */
+function tableGroups(r: AuthorityResult): TableGroup[] {
+  if (r.linksStatus === 'ok') {
+    const { groups, missing } = rankLinks(r)
+    const proofOf = (s: SiteResult) => s.proof?.length ?? -1
+    return [
+      ...groups.map((g) => ({
+        key: `g${g.rank}`,
+        tie: g.rows.length > 1,
+        rows: g.rows.map((row: RankRow) => ({ site: row.site, index: row.index, rank: String(g.rank), pct: row.pct })),
+      })),
+      ...missing
+        .sort((a, b) => proofOf(b.site) - proofOf(a.site) || a.index - b.index)
+        .map((m) => ({ key: `m${m.index}`, tie: false, rows: [{ site: m.site, index: m.index, rank: '–' }] })),
+    ]
+  }
+  const { rows, unread } = rankProof(r)
+  return [
+    ...rows.map((row) => ({ key: `p${row.index}`, tie: false, rows: [{ site: row.site, index: row.index, rank: String(row.rank) }] })),
+    ...unread.map((u) => ({ key: `u${u.index}`, tie: false, rows: [{ site: u.site, index: u.index, rank: '–' }] })),
+  ]
+}
+
+function Bar({ pct, me }: { pct: number; me: boolean }) {
   return (
-    <div
-      className={`grid grid-cols-[1.6em_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1 rounded-md border px-3 py-2.5 ${
-        me ? 'border-primary-line bg-primary-deep' : 'border-border bg-well'
-      }`}
-    >
-      <span className="row-span-2 self-start pt-px font-code text-[13px] text-muted-foreground">{rank}</span>
-      <span className={`truncate text-[15px] font-semibold ${me ? 'text-primary' : ''}`} title={row.site.domain}>
-        {row.site.domain}
+    <span className="mt-1.5 block h-1.5 overflow-hidden rounded-[3px] bg-border" aria-hidden="true">
+      <i className={`block h-full rounded-[3px] ${me ? 'bg-primary' : 'bg-[#5a5a5a]'}`} style={{ width: `${pct}%` }} />
+    </span>
+  )
+}
+
+const DASH = 'border-dashed border-line-strong'
+
+/** tie: null = a normal row; 'mid' / 'last' = inside an "About the same" box. */
+function SiteRow({ row, r, tie }: { row: TableRow; r: AuthorityResult; tie: null | 'mid' | 'last' }) {
+  const me = row.index === 0
+  const proof = row.site.proof
+  const edge = tie === null ? 'border-t border-border' : tie === 'last' ? `border-b ${DASH}` : ''
+  const cell = `px-2.5 py-3 align-top sm:px-3.5 ${edge} ${me ? 'bg-primary-deep' : ''}`
+  const first = tie ? `border-l ${DASH} ${tie === 'last' ? 'rounded-bl-md' : ''}` : ''
+  const last = tie ? `border-r ${DASH} ${tie === 'last' ? 'rounded-br-md' : ''}` : ''
+  return (
+    <tr>
+      <td className={`${cell} ${first} font-code text-[13px] text-muted-foreground`}>{row.rank}</td>
+      <th scope="row" className={`${cell} text-left`}>
+        <span className={`block text-[15px] font-semibold [overflow-wrap:anywhere] ${me ? 'text-primary' : ''}`} title={row.site.domain}>
+          {row.site.domain}
+        </span>
         {me && <span className="sr-only"> (your site)</span>}
-      </span>
-      <span className={`font-code text-sm tabular-nums ${note ? 'text-muted-foreground' : ''}`}>{value}</span>
-      <span className="col-span-2 h-1.5 overflow-hidden rounded-[3px] bg-border">
-        {row.pct !== undefined && (
-          <i
-            className={`block h-full rounded-[3px] ${me ? 'bg-primary' : 'bg-[#5a5a5a]'}`}
-            style={{ width: `${row.pct}%` }}
-          />
+      </th>
+      <td className={`${cell}`}>
+        {r.linksStatus !== 'ok' ? (
+          <span className="font-code text-sm text-muted-foreground">–</span>
+        ) : row.site.links === null ? (
+          <>
+            <span className="font-code text-sm text-muted-foreground">–</span>
+            <small className="block text-xs text-muted-foreground">No score yet</small>
+          </>
+        ) : (
+          <>
+            <span className="font-code text-sm tabular-nums">{row.site.links}</span>
+            <Bar pct={row.pct ?? 0} me={me} />
+            {typeof row.site.linkingSites === 'number' && (
+              <small className="mt-1.5 block text-xs text-muted-foreground">
+                {row.site.linkingSites.toLocaleString('en-US')} {row.site.linkingSites === 1 ? 'site links' : 'sites link'}{' '}
+                here
+              </small>
+            )}
+          </>
         )}
-      </span>
-      {note && <span className="col-span-2 col-start-2 text-xs text-muted-foreground">{note}</span>}
+      </td>
+      <td className={`${cell} ${last}`}>
+        {proof ? (
+          <>
+            <span className="font-code text-sm whitespace-nowrap tabular-nums">
+              {proof.length}
+              <span className="text-muted-foreground"> of {PROOF_CHECKS.length}</span>
+            </span>
+            <Bar pct={Math.round((proof.length / PROOF_CHECKS.length) * 100)} me={me} />
+          </>
+        ) : (
+          <>
+            <span className="font-code text-sm text-muted-foreground">–</span>
+            <small className="block text-xs text-muted-foreground">Couldn&apos;t read</small>
+          </>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+function RankTable({ r }: { r: AuthorityResult }) {
+  const groups = tableGroups(r)
+  return (
+    <div className="min-w-0">
+      {r.linksStatus !== 'ok' && (
+        <p className="m-0 mb-3 rounded-md border border-dashed border-caution-line px-3 py-3 text-sm text-caution">
+          {r.linksStatus === 'busy'
+            ? 'Authority scores are busy, try again in a minute. Your proof results are below.'
+            : 'Authority scores are not available right now. Your proof results are below.'}
+        </p>
+      )}
+      <div className="rounded-lg border border-border bg-panel p-1.5">
+        <table className="w-full table-fixed border-separate border-spacing-0">
+          <caption className="sr-only">Authority and proof for each site, ranked</caption>
+          <colgroup>
+            <col className="w-9 sm:w-12" />
+            <col />
+            <col className="w-[27%] sm:w-[24%]" />
+            <col className="w-[27%] sm:w-[24%]" />
+          </colgroup>
+          <thead>
+            <tr className="font-code text-xs font-medium tracking-[.08em] text-muted-foreground uppercase">
+              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
+                #
+              </th>
+              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
+                Site
+              </th>
+              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
+                Authority
+                <span className="block text-[11px] tracking-normal normal-case">out of 100</span>
+              </th>
+              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
+                Proof
+                <span className="block text-[11px] tracking-normal normal-case">out of {PROOF_CHECKS.length}</span>
+              </th>
+            </tr>
+          </thead>
+          {groups.map((g) =>
+            g.tie ? (
+              <tbody key={g.key} aria-label={`About the same: ${g.rows.map((x) => x.site.domain).join(' and ')}`}>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className={`rounded-t-md border-x border-t ${DASH} px-2.5 pt-2 pb-0 font-code text-[11px] font-medium tracking-[.08em] text-muted-foreground uppercase`}
+                  >
+                    About the same
+                  </td>
+                </tr>
+                {g.rows.map((row, i) => (
+                  <SiteRow key={row.index} row={row} r={r} tie={i === g.rows.length - 1 ? 'last' : 'mid'} />
+                ))}
+              </tbody>
+            ) : (
+              <tbody key={g.key}>
+                {g.rows.map((row) => (
+                  <SiteRow key={row.index} row={row} r={r} tie={null} />
+                ))}
+              </tbody>
+            ),
+          )}
+          {r.rivals.length === 0 && (
+            <tbody>
+              <tr>
+                <td colSpan={4} className="border-t border-border p-2">
+                  <button
+                    type="button"
+                    onClick={focusRival}
+                    className="w-full rounded-md border border-dashed border-line-strong px-3 py-3 text-left text-sm font-medium text-body-soft hover:border-primary-line hover:text-foreground"
+                  >
+                    <span className="mr-1 text-primary" aria-hidden="true">
+                      +
+                    </span>
+                    Add a rival
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          )}
+        </table>
+      </div>
     </div>
   )
 }
 
-function AddSlot() {
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={focusRival}
-        className="w-full rounded-md border border-dashed border-line-strong px-3 py-3.5 text-left text-sm font-medium text-body-soft hover:border-primary-line hover:text-foreground"
-      >
-        <span className="mr-1 text-primary" aria-hidden="true">
-          +
-        </span>
-        Add a rival
-      </button>
-    </li>
-  )
-}
+/* ── How we score (end of the page) ─────────────────────────────────────── */
 
-function RankCard({ id, title, sub, children }: { id: string; title: string; sub: string; children: React.ReactNode }) {
+function HowWeScore({ asOf }: { asOf: string | null }) {
+  const item = 'border-t border-line-strong pt-4'
   return (
-    <section aria-labelledby={id} className="min-w-0 rounded-lg border border-border bg-panel p-[18px]">
-      <h3 id={id} className="m-0 mb-0.5 font-heading text-[17px] font-bold">
-        {title}
-      </h3>
-      <p className="m-0 mb-3.5 text-[13px] text-muted-foreground">{sub}</p>
-      {children}
+    <section aria-labelledby="ac-hs" className="border-t border-border pt-10">
+      <h2 id="ac-hs" className="m-0 mb-6 font-heading text-[22px] font-bold">
+        How we score
+      </h2>
+      <dl className="m-0 grid gap-8 md:grid-cols-3">
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">Authority, out of 100</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">
+              When another website links to yours, it is a vote of trust. Votes from well-known sites count for more.
+              We add up those votes and show them as a score out of 100. Higher is better.
+            </p>
+            <p className="m-0">
+              New and small sites usually score under 20. Typical active sites score 20 to 50. The biggest sites
+              on the web score 80 and up.
+            </p>
+            <p className="m-0">
+              Under each score: how many different websites link to that site. Spammy and tiny sites count for
+              less, and the count comes from a public map of the web that can miss a few, so treat it as a close
+              estimate.
+            </p>
+          </dd>
+        </div>
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">“About the same”</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">
+              These scores move up and down a little every month, even when nothing changes on your site.
+            </p>
+            <p className="m-0">
+              So when two sites are less than {TIE_GAP} points apart, we call it a tie instead of picking a winner.
+            </p>
+          </dd>
+        </div>
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">Proof, out of {PROOF_CHECKS.length}</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">
+              {PROOF_CHECKS.length} things on a homepage that show a real business is behind it:{' '}
+              {PROOF_CHECKS.map((c) => c.label[0].toLowerCase() + c.label.slice(1)).join(', ')}.
+            </p>
+            <p className="m-0">
+              We read each homepage once, the same way{' '}
+              <a href="/audit" className="text-primary underline underline-offset-[3px]">
+                the Findability Check
+              </a>{' '}
+              does.
+            </p>
+          </dd>
+        </div>
+      </dl>
+      <p className="m-0 mt-8 font-code text-xs text-muted-foreground">
+        Authority data: Open PageRank, built from Common Crawl&apos;s map of the web.
+        {asOf && ` As of ${asOf}.`} Updated about once a month.
+      </p>
     </section>
   )
 }
-
-function LinksList({ r }: { r: AuthorityResult }) {
-  if (r.linksStatus !== 'ok') {
-    return (
-      <RankCard id="ac-links" title="Links" sub="Open PageRank, out of 100">
-        <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-3 text-sm text-caution">
-          {r.linksStatus === 'busy'
-            ? 'Link scores are busy, try again in a minute. Your proof results are below.'
-            : 'Link scores are not available right now. Your proof results are below.'}
-        </p>
-      </RankCard>
-    )
-  }
-  const { groups, missing } = rankLinks(r)
-  return (
-    <RankCard id="ac-links" title="Links" sub="Open PageRank, out of 100">
-      <ol className="m-0 grid list-none gap-2 p-0">
-        {groups.map((g) =>
-          g.rows.length > 1 ? (
-            <li
-              key={g.rank}
-              className="relative grid gap-1.5 rounded-lg border border-dashed border-line-strong px-1.5 pt-[26px] pb-1.5"
-              aria-label={`About the same: ${g.rows.map((row) => row.site.domain).join(' and ')}`}
-            >
-              <span className="absolute top-1.5 left-2.5 font-code text-[11px] font-medium tracking-[.08em] text-muted-foreground uppercase">
-                About the same
-              </span>
-              {g.rows.map((row: RankRow) => (
-                <Row key={row.index} row={row} rank={String(g.rank)} value={String(row.value)} />
-              ))}
-            </li>
-          ) : (
-            <li key={g.rank}>
-              <Row row={g.rows[0]} rank={String(g.rank)} value={String(g.rows[0].value)} />
-            </li>
-          ),
-        )}
-        {missing.map((m) => (
-          <li key={m.index}>
-            <Row row={m} rank="–" value="–" note="No link data yet" />
-          </li>
-        ))}
-        {r.rivals.length === 0 && <AddSlot />}
-      </ol>
-    </RankCard>
-  )
-}
-
-function ProofList({ r }: { r: AuthorityResult }) {
-  const { rows, unread } = rankProof(r)
-  return (
-    <RankCard id="ac-proof" title="Proof" sub={`Found on the homepage, out of ${PROOF_CHECKS.length}`}>
-      <ol className="m-0 grid list-none gap-2 p-0">
-        {rows.map((row) => (
-          <li key={row.index}>
-            <Row row={row} rank={String(row.rank)} value={String(row.value)} />
-          </li>
-        ))}
-        {unread.map((u) => (
-          <li key={u.index}>
-            <Row row={u} rank="–" value="–" note="Couldn't read this homepage" />
-          </li>
-        ))}
-        {r.rivals.length === 0 && <AddSlot />}
-      </ol>
-    </RankCard>
-  )
-}
-
-/* ── How we score ───────────────────────────────────────────────────────── */
-
-function Sheet({ asOf }: { asOf: string | null }) {
-  return (
-    <aside aria-labelledby="ac-hs" className="rounded-md border border-border bg-panel">
-      <h3
-        id="ac-hs"
-        className="m-0 border-b border-border px-[18px] py-3.5 font-code text-xs font-medium tracking-[.1em] text-muted-foreground uppercase"
-      >
-        How we score
-      </h3>
-      <dl className="m-0">
-        <div className="border-b border-border px-[18px] py-3.5">
-          <dt className="mb-1 text-sm font-semibold">Links</dt>
-          <dd className="m-0 text-sm text-body-soft">
-            Open PageRank&apos;s score, built from the links between sites in Common Crawl. They score 0 to 10.
-            We show it out of 100, so 0.96 reads as 10. It is not Moz DA, and it is not a Google ranking factor.
-          </dd>
-          <small className="mt-1.5 block font-code text-xs text-muted-foreground">
-            Link data: Open PageRank, derived from Common Crawl.
-            {asOf && ` Data as of ${asOf}.`} Updates about monthly.
-          </small>
-        </div>
-        <div className="border-b border-border px-[18px] py-3.5">
-          <dt className="mb-1 text-sm font-semibold">About the same</dt>
-          <dd className="m-0 text-sm text-body-soft">
-            Small sites&apos; link scores move a few points from month to month. A gap under {TIE_GAP} points
-            shows as a tie, not a win.
-          </dd>
-        </div>
-        <div className="px-[18px] py-3.5">
-          <dt className="mb-1 text-sm font-semibold">Proof</dt>
-          <dd className="m-0 text-sm text-body-soft">
-            {PROOF_CHECKS.length} checks from the Findability Check, read from each homepage&apos;s text and code.
-          </dd>
-          <small className="mt-1.5 block font-code text-xs text-muted-foreground">
-            Same rules as{' '}
-            <a href="/audit" className="underline decoration-line-strong underline-offset-[3px] hover:text-primary">
-              the Findability Check
-            </a>
-          </small>
-        </div>
-      </dl>
-    </aside>
-  )
-}
-
 /* ── Proof table ────────────────────────────────────────────────────────── */
 
 function Mark({ found }: { found: boolean | null }) {
@@ -585,7 +672,7 @@ function Moves({ r }: { r: AuthorityResult }) {
         </h2>
         {moves.length > 0 && (
           <p className="m-0 max-w-[60ch] text-body-soft">
-            Links take months to earn. {moves.length === 1 ? 'This one is' : 'These are'} on your own page, so you
+            Authority takes months to earn. {moves.length === 1 ? 'This one is' : 'These are'} on your own page, so you
             can do {moves.length === 1 ? 'it' : 'them'} this week.
           </p>
         )}
@@ -692,7 +779,7 @@ function Offer() {
       <div className="grid justify-items-start gap-3">
         <button
           type="button"
-          data-cal-link="chris-hornak/authority-check"
+          data-cal-link="chris-hornak/authority"
           data-cal-namespace="authority-check"
           data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}'
           className="rounded-full bg-primary px-[22px] py-[13px] font-semibold whitespace-nowrap text-primary-foreground"
@@ -708,34 +795,6 @@ function Offer() {
         </p>
       </div>
     </aside>
-  )
-}
-
-const QUESTIONS = [
-  { q: 'Can your website be found?', tool: 'Findability Check', href: '/audit' },
-  { q: 'What do people see first?', tool: 'OG Image Checker', href: '/og-image-checker' },
-]
-
-function Questions() {
-  return (
-    <nav aria-label="Three free checks">
-      <ol className="m-0 grid list-none gap-3 p-0 sm:grid-cols-3">
-        {QUESTIONS.map((x, i) => (
-          <li key={x.href} className="grid gap-0.5 border-t border-line-strong pt-3">
-            <span className="font-code text-xs text-muted-foreground">{i + 1}</span>
-            <a href={x.href} className="group no-underline">
-              <b className="font-heading text-base group-hover:underline group-hover:underline-offset-[3px]">{x.q}</b>
-            </a>
-            <small className="text-[13px] text-muted-foreground">{x.tool}</small>
-          </li>
-        ))}
-        <li className="grid gap-0.5 border-t border-primary pt-3" aria-current="page">
-          <span className="font-code text-xs text-muted-foreground">3</span>
-          <b className="font-heading text-base text-primary">How do you stack up?</b>
-          <small className="text-[13px] text-muted-foreground">You are here</small>
-        </li>
-      </ol>
-    </nav>
   )
 }
 
@@ -755,7 +814,7 @@ function Verdict({ r }: { r: AuthorityResult }) {
           </>
         ) : (
           <>
-            <Part v={links} /> on links.{' '}
+            <Part v={links} /> on authority.{' '}
           </>
         ))}
       <Part v={proof} /> on proof.
@@ -784,13 +843,7 @@ function Result({ r, example }: { r: AuthorityResult; example: boolean }) {
           </span>
           <Verdict r={r} />
         </div>
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <LinksList r={r} />
-            <ProofList r={r} />
-          </div>
-          <Sheet asOf={r.asOf} />
-        </div>
+        <RankTable r={r} />
       </div>
       <ProofTable r={r} />
       <Moves r={r} />
@@ -913,7 +966,8 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
             />
           )}
           <Offer />
-          <Questions />
+          <ToolQuestions current="/authority-check" />
+          <HowWeScore asOf={shown.asOf} />
         </div>
       </section>
     </>

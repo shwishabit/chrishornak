@@ -1,5 +1,5 @@
 /* ── Proof signals (shared) ───────────────────────────────────────────────
- * The 7 homepage proof checks, moved out of audit-parser.ts parseAI as a
+ * The homepage proof checks, moved out of audit-parser.ts (parseAI, parseSecurity) as a
  * pure move so the Findability Check and the Authority Check read a page
  * with the same rules. Any change here moves every Findability score and
  * the benchmark (labels are keys in issue-descriptions.ts), so don't tune
@@ -22,6 +22,18 @@ export function findJsonLdBlocks(html: string): RegExpMatchArray | null {
   return html.match(
     /<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi,
   )
+}
+
+/** Security: a link to a privacy, terms or cookie page, or those words on the page. */
+export function readPrivacyLink(html: string): boolean {
+  const privacyRe = /href=["'][^"']*(privacy|datenschutz|privacidad|legal|terms|policies\/privacy|cookie-policy)[^"']*["']/i
+  const privacyTextRe = />([^<]*(privacy policy|privacy notice|cookie policy)[^<]*)</i
+  return privacyRe.test(html) || privacyTextRe.test(html)
+}
+
+/** Security: Findability's HTTPS rule (api/audit/route.ts: the final URL after redirects). */
+export function isHttpsUrl(finalUrl: string): boolean {
+  return finalUrl.startsWith('https')
 }
 
 export interface ProofSignals {

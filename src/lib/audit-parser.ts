@@ -13,7 +13,7 @@
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { Status, AuditItem } from './audit-scoring'
-import { extractText, findJsonLdBlocks, readProofSignals } from './proof-signals'
+import { extractText, findJsonLdBlocks, readPrivacyLink, readProofSignals } from './proof-signals'
 
 export interface ParsedCategory {
   name: string
@@ -1953,9 +1953,8 @@ function parseSecurity(page: FetchedPage): AuditItem[] {
   }
 
   // 6. Privacy policy
-  const privacyRe = /href=["'][^"']*(privacy|datenschutz|privacidad|legal|terms|policies\/privacy|cookie-policy)[^"']*["']/i
-  const privacyTextRe = />([^<]*(privacy policy|privacy notice|cookie policy)[^<]*)</i
-  const hasPrivacyLink = privacyRe.test(html) || privacyTextRe.test(html)
+  //    (the rule lives in proof-signals.ts, shared with the Authority Check)
+  const hasPrivacyLink = readPrivacyLink(html)
   const hasDataCollection = forms.length > 0 ||
     /google-analytics|gtag|googletagmanager|facebook\.com\/tr|analytics|pixel/i.test(html)
 

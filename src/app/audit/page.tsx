@@ -3,6 +3,7 @@ import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { AuditPageClient } from '@/components/sections/AuditPageClient'
+import { ToolQuestions } from '@/components/sections/ToolQuestions'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { PlatformBar } from '@/components/ui/PlatformBar'
 import { siteConfig, auditFaqs } from '@/lib/data'
@@ -59,23 +60,10 @@ export default function AuditPage() {
               This measures how strong that signal is.
             </p>
             <PlatformBar />
-            <p className="mt-6 text-sm text-muted-foreground">
-              Checking how one link looks when shared?{' '}
-              <a href="/og-image-checker" className="text-primary underline underline-offset-4">
-                Try the OG image checker
-              </a>
-              .
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              How do you stack up against your rivals?{' '}
-              <a href="/authority-check" className="text-primary underline underline-offset-4">
-                Try the Authority Check
-              </a>
-              .
-            </p>
           </div>
 
           <AuditPageClient />
+          <ToolQuestions current="/audit" className="mx-auto mt-24 max-w-3xl" />
         </div>
       </div>
       <Footer />

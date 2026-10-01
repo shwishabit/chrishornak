@@ -12,17 +12,25 @@ interface OprHost {
   host: string
   found: boolean
   open_page_rank: number | null
+  referring_hosts?: number | null
 }
 
 interface OprDomain {
   domain: string
   found: boolean
   open_page_rank: number | null
+  referring_domains?: number | null
   hosts?: OprHost[]
 }
 
+/** score = 0–10, null when not found. linking = referring domains (weighted), null when not found. */
+export interface OprScore {
+  score: number | null
+  linking: number | null
+}
+
 export type OprLookup =
-  | { status: 'ok'; asOf: string | null; scores: Map<string, number | null> }
+  | { status: 'ok'; asOf: string | null; scores: Map<string, OprScore> }
   | { status: 'busy' }
   | { status: 'unavailable' }
 
@@ -46,18 +54,20 @@ export async function lookupOpenPageRank(hosts: string[]): Promise<OprLookup> {
     const data = (await res.json()) as { as_of?: string; results?: OprDomain[] }
     const results = data.results ?? []
 
-    const scores = new Map<string, number | null>()
+    const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+    const scores = new Map<string, OprScore>()
     for (const host of hosts) {
       // www. and subdomains are folded into the registered domain; a
       // subdomain's own score is in that domain's hosts[].
       const d = results.find((r) => r.domain === host || host.endsWith(`.${r.domain}`))
-      let score: number | null = null
-      if (d && d.domain === host) score = d.found ? d.open_page_rank : null
-      else if (d) {
+      let found: OprScore = { score: null, linking: null }
+      if (d && d.domain === host) {
+        if (d.found) found = { score: num(d.open_page_rank), linking: num(d.referring_domains) }
+      } else if (d) {
         const h = d.hosts?.find((x) => x.host === host)
-        score = h?.found ? h.open_page_rank : null
+        if (h?.found) found = { score: num(h.open_page_rank), linking: num(h.referring_hosts) }
       }
-      scores.set(host, typeof score === 'number' ? score : null)
+      scores.set(host, found)
     }
     return { status: 'ok', asOf: data.as_of ?? null, scores }
   } catch {

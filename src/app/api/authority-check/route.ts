@@ -15,7 +15,13 @@ import {
   rivalPageError,
 } from '@/lib/fetch-guard'
 import { lookupOpenPageRank } from '@/lib/open-pagerank'
-import { extractText, findJsonLdBlocks, readProofSignals } from '@/lib/proof-signals'
+import {
+  extractText,
+  findJsonLdBlocks,
+  isHttpsUrl,
+  readPrivacyLink,
+  readProofSignals,
+} from '@/lib/proof-signals'
 import {
   MAX_RIVALS,
   linksScore,
@@ -37,8 +43,12 @@ const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 // Each check is up to 4 page reads + 1 API call, so 5 a minute per IP.
 const isRateLimited = createRateLimiter(5, 60_000)
 
-function readProof(html: string): ProofId[] {
-  return proofFromSignals(readProofSignals(html, extractText(html), findJsonLdBlocks(html)))
+function readProof(html: string, finalUrl: string): ProofId[] {
+  return proofFromSignals({
+    ...readProofSignals(html, extractText(html), findJsonLdBlocks(html)),
+    isHttps: isHttpsUrl(finalUrl),
+    hasPrivacyLink: readPrivacyLink(html),
+  })
 }
 
 /* ── Log (domains + scores only) ────────────────────────────────────────── */
@@ -47,6 +57,7 @@ function logCheck(row: {
   domain: string
   rival_domains: string[]
   links: (number | null)[]
+  linking_sites: (number | null)[]
   proof: (number | null)[]
   links_status: LinksStatus
   status: 'completed' | 'error'
@@ -101,7 +112,11 @@ export async function GET(request: NextRequest) {
   ])
 
   const scores = opr.status === 'ok' ? opr.scores : null
-  const linksOf = (bare: string) => linksScore(scores?.get(bare))
+  const linksOf = (bare: string) => linksScore(scores?.get(bare)?.score)
+  const linkingOf = (bare: string) => {
+    const n = scores?.get(bare)?.linking
+    return typeof n === 'number' ? Math.round(n) : null
+  }
 
   const yourError = pageErrorMessage(pages[0], you.host)
   if (!pages[0] || yourError) {
@@ -109,6 +124,7 @@ export async function GET(request: NextRequest) {
       domain: you.bare,
       rival_domains: rivals.map((r) => r.bare),
       links: bares.map(linksOf),
+      linking_sites: bares.map(linkingOf),
       proof: bares.map(() => null),
       links_status: opr.status,
       status: 'error',
@@ -122,7 +138,8 @@ export async function GET(request: NextRequest) {
     return {
       domain: s.bare,
       links: linksOf(s.bare),
-      proof: page && !err ? readProof(page.body) : null,
+      linkingSites: linkingOf(s.bare),
+      proof: page && !err ? readProof(page.body, page.finalUrl) : null,
       ...(err ? { pageError: err } : {}),
     }
   })
@@ -139,6 +156,7 @@ export async function GET(request: NextRequest) {
     domain: you.bare,
     rival_domains: rivals.map((r) => r.bare),
     links: results.map((s) => s.links),
+    linking_sites: results.map((s) => s.linkingSites ?? null),
     proof: results.map((s) => s.proof?.length ?? null),
     links_status: opr.status,
     status: 'completed',

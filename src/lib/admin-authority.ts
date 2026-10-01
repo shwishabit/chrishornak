@@ -15,6 +15,8 @@ export interface AuthorityCheckRow {
   rival_domains: string[]
   /** You, Rival A, B, C. null = no link data. */
   links: (number | null)[]
+  /** You, Rival A, B, C. Sites linking here; null = no data. Missing on rows before 0007. */
+  linking_sites?: (number | null)[]
   /** You, Rival A, B, C. null = homepage not read. */
   proof: (number | null)[]
   links_status: 'ok' | 'busy' | 'unavailable'
