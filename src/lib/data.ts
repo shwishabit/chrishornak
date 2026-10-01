@@ -25,7 +25,7 @@ export const navLinks: NavLink[] = [
  */
 export const toolLinks = [
   { label: 'Findability Check', question: 'Can your website be found?', href: '/audit' },
-  { label: 'OG Image Checker', question: 'What do people see first?', href: '/og-image-checker' },
+  { label: 'Open Graph Checker', question: 'What do people see when they find you?', href: '/og-image-checker' },
   { label: 'Authority Check', question: 'How do you stack up?', href: '/authority-check' },
 ] as const
 

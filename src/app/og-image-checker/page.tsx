@@ -7,14 +7,14 @@ import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 import { OG_CHECK_EXAMPLE } from '@/lib/og-check-example'
 
-const TITLE = 'OG image checker: see your link before you share it'
+const TITLE = 'Open Graph checker: see your link before anyone clicks it'
 const DESCRIPTION =
-  'Free OG image checker. See your share card on Facebook, LinkedIn, X and in a text, checked against Meta, LinkedIn and Apple specs, with help to fix it.'
+  'Free Open Graph and OG image checker. See your link on Facebook, LinkedIn, X, a text and Google, checked against their rules, with help to fix it.'
 const OG_ALT =
   "OG image checker card: 'See your link before you share it.' on a dark card with a dashed 1200 × 630 safe-margin outline."
 
 export const metadata: Metadata = {
-  title: 'Free OG Image Checker: Preview Shared Links',
+  title: 'Free Open Graph Checker + Google Preview',
   description: DESCRIPTION,
   alternates: { canonical: '/og-image-checker' },
   openGraph: {
@@ -45,7 +45,7 @@ export default function OgImageCheckerPage() {
             '@type': 'BreadcrumbList',
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
-              { '@type': 'ListItem', position: 2, name: 'OG Image Checker', item: `${siteConfig.domain}/og-image-checker` },
+              { '@type': 'ListItem', position: 2, name: 'Open Graph Checker', item: `${siteConfig.domain}/og-image-checker` },
             ],
           }}
         />
@@ -53,10 +53,11 @@ export default function OgImageCheckerPage() {
           data={{
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'OG Image Checker',
+            name: 'Open Graph Checker',
+            alternateName: 'OG Image Checker',
             url: `${siteConfig.domain}/og-image-checker`,
             description: DESCRIPTION,
-            applicationCategory: 'DeveloperApplication',
+            applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             isAccessibleForFree: true,
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },

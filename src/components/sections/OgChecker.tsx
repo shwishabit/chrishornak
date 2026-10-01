@@ -136,8 +136,8 @@ function Hero({
             id="og-h1"
             className="mb-5 max-w-[16ch] font-heading text-[clamp(34px,5vw,60px)] leading-[1.05] font-bold tracking-[-.025em] text-balance"
           >
-            OG image checker.{' '}
-            <span className="font-semibold text-muted-foreground">See your link before you share it.</span>
+            Open Graph checker.{' '}
+            <span className="font-semibold text-muted-foreground">See your link before anyone clicks it.</span>
           </h1>
           <p className="mb-7 max-w-[56ch] text-base text-body-soft sm:text-lg">
             Paste a link. See how it looks on Facebook, LinkedIn, X, in a text message and in Google,

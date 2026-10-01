@@ -53,7 +53,7 @@ export default function PrivacyPage() {
                 most-common issues) are shown on the public benchmarks page.
               </p>
               <p>
-                If you use the OG image checker, the link you enter is sent to a server I
+                If you use the Open Graph Checker, the link you enter is sent to a server I
                 operate, which reads that page and its share image once. Your IP address is
                 kept for 60 seconds for rate limiting, then discarded. The page&apos;s domain,
                 the time and which checks did not pass are stored so I can see how the tool
