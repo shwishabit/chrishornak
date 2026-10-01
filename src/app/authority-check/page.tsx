@@ -37,8 +37,10 @@ export const metadata: Metadata = {
 }
 
 export default function AuthorityCheckPage() {
+  // The whole page (menu and footer too) takes the report's theme: white by
+  // default, dark on the switch in the report (AuthorityCheck sets data-ac-theme).
   return (
-    <>
+    <div id="ac-page" className="ac-theme" data-ac-theme="light">
       <Navigation />
       <main id="main-content" className="relative min-h-screen overflow-x-hidden">
         <AuthorityCheck example={AUTHORITY_CHECK_EXAMPLE} />
@@ -77,6 +79,6 @@ Cal.ns["authority-check"]("ui", {"theme":"dark","cssVarsPerTheme":{"light":{"cal
         </Script>
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

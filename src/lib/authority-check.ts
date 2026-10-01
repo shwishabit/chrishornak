@@ -1,41 +1,104 @@
 /* ── Authority Check: shared logic (client + server) ──────────────────────
- * Three sections, named after Google's E-E-A-T where they fit:
- *   Authority = who links to you (Open PageRank 0–10, shown out of 100)
- *   Trust     = 7 homepage checks (the Findability Check's own rules)
- *   Reviews   = reviews on your homepage (same rules)
- * Plus the "About the same" tie rule, the summary sentence and the first
- * 3 moves. Build spec: drafts/authority-check-build-spec.md; Chris's later
- * calls are in backlog.md (Tools item).
+ * One score out of 100, in four parts named after Google's E-E-A-T (our own
+ * score, built from Google's public guidance; Google gives no E-E-A-T score):
+ *   Experience 20 = your work shown + track record (experience-signals.ts)
+ *   Expertise  20 = real people + credentials (the Findability Check's rules)
+ *   Authority  20 = Ahrefs Domain Rating, full points at 30; Open PageRank
+ *                   (×10) is the backup when Ahrefs is down
+ *   Trust      40 = 7 checks: 5 Findability rules + 2 review proofs
+ *                   (review-signals.ts). Trust counts double because Google:
+ *                   "Of these aspects, trust is most important."
+ * Plus the sort (1st → 4th), the colours, the summary and the first 3 moves.
+ * Chris's calls: backlog.md, Tools item (round 4, 2026-10-01).
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { ProofSignals } from './proof-signals'
 
 export const MAX_RIVALS = 3
-/** Authority gaps under this many points read as "About the same" (spec decision 7). */
-export const TIE_GAP = 3
+/** Authority values (DR or Open PageRank ×10) under this far apart read as a tie. */
+export const TIE_GAP = 2
+/**
+ * Authority points follow a curve: 20 × √(DR ÷ 70), full points at DR 70.
+ * Small sites still separate (DR 2 → 3, DR 9 → 7) and big ones aren't capped
+ * flat (DR 30 → 13, DR 56 → 18). Chris picked the curve, 2026-10-01.
+ */
+export const AUTHORITY_FULL = 70
+export function authorityPoints(a: number | null): number {
+  return a === null ? 0 : Math.round(20 * Math.sqrt(Math.min(Math.max(a, 0), AUTHORITY_FULL) / AUTHORITY_FULL))
+}
 
-export type ProofId = 'https' | 'about' | 'people' | 'credentials' | 'schema' | 'address' | 'trade' | 'reviews'
-export type ProofGroup = 'trust' | 'reviews'
+export type ProofId =
+  | 'work'
+  | 'track'
+  | 'people'
+  | 'credentials'
+  | 'https'
+  | 'about'
+  | 'address'
+  | 'schema'
+  | 'trade'
+  | 'reviews'
+  | 'reviewSites'
+export type Letter = 'experience' | 'expertise' | 'authority' | 'trust'
+export type ProofGroup = Exclude<Letter, 'authority'>
 
-/** The homepage signals from parseAI plus HTTPS from Findability's Security checks. */
-export type ProofFacts = ProofSignals & { isHttps: boolean }
+/**
+ * The homepage signals from parseAI, HTTPS from Findability's Security checks,
+ * the review proofs (review-signals.ts) and Experience (experience-signals.ts).
+ */
+export type ProofFacts = ProofSignals & {
+  isHttps: boolean
+  hasReviewsShown: boolean
+  hasReviewSites: boolean
+  hasWorkShown: boolean
+  hasTrackRecord: boolean
+}
 
 export interface ProofCheck {
   id: ProofId
   group: ProofGroup
   label: string
-  small: string
   signal: keyof ProofFacts
   move: { title: string; body: string }
 }
 
-/** Table order. Also the tie-break order for the first moves (HTTPS first: "Not secure" is the worst sign). */
+/** Table order. Also the tie-break order for the first moves. */
 export const PROOF_CHECKS: readonly ProofCheck[] = [
+  {
+    id: 'work',
+    group: 'experience',
+    label: 'Your work shown',
+    signal: 'hasWorkShown',
+    move: { title: 'Show your work', body: 'Add a page of real jobs or projects, with your own photos.' },
+  },
+  {
+    id: 'track',
+    group: 'experience',
+    label: 'Track record',
+    signal: 'hasTrackRecord',
+    move: {
+      title: 'Show your track record',
+      body: 'Say how long you have done this work, like "Serving Pittsburgh since 1998", and how many reviews you have.',
+    },
+  },
+  {
+    id: 'people',
+    group: 'expertise',
+    label: 'Real people',
+    signal: 'hasPeople',
+    move: { title: 'Name the people', body: 'Say who runs the business, with a photo and one line each.' },
+  },
+  {
+    id: 'credentials',
+    group: 'expertise',
+    label: 'Credentials',
+    signal: 'hasCredentials',
+    move: { title: 'Show your credentials', body: 'List your licenses, awards, memberships or the year you started.' },
+  },
   {
     id: 'https',
     group: 'trust',
     label: 'Secure site',
-    small: 'The lock next to your web address',
     signal: 'isHttps',
     move: {
       title: 'Turn on HTTPS',
@@ -46,31 +109,20 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     id: 'about',
     group: 'trust',
     label: 'About page',
-    small: 'A link to a page about you',
     signal: 'hasAboutLink',
     move: { title: 'Link your About page', body: 'Add a clear link to a page that says who you are and why you do this.' },
   },
   {
-    id: 'people',
+    id: 'address',
     group: 'trust',
-    label: 'Real people',
-    small: 'Who runs the business',
-    signal: 'hasPeople',
-    move: { title: 'Name the people', body: 'Say who runs the business, with a photo and one line each.' },
-  },
-  {
-    id: 'credentials',
-    group: 'trust',
-    label: 'Credentials',
-    small: 'Licenses, awards or years in business',
-    signal: 'hasCredentials',
-    move: { title: 'Show your credentials', body: 'List your licenses, awards, memberships or the year you started.' },
+    label: 'How to reach you',
+    signal: 'hasAddressInfo',
+    move: { title: 'Show how to reach you', body: 'Put your address, phone number or service area on the homepage.' },
   },
   {
     id: 'schema',
     group: 'trust',
     label: 'Business details for Google',
-    small: 'Hidden code with your name and trade',
     signal: 'hasOrgSchema',
     move: {
       title: 'Tell Google who you are',
@@ -78,43 +130,65 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     },
   },
   {
-    id: 'address',
-    group: 'trust',
-    label: 'How to reach you',
-    small: 'Address, phone or service area',
-    signal: 'hasAddressInfo',
-    move: { title: 'Show how to reach you', body: 'Put your address, phone number or service area on the homepage.' },
-  },
-  {
     id: 'trade',
     group: 'trust',
     label: 'What you do',
-    small: 'Your trade, in plain words',
     signal: 'hasBusinessType',
     move: { title: 'Say what you do', body: 'Name your trade in plain words, like "plumber" or "bakery".' },
   },
   {
     id: 'reviews',
-    group: 'reviews',
-    label: 'Reviews',
-    small: 'What customers say, on your homepage',
-    signal: 'hasTestimonials',
-    move: { title: 'Add reviews', body: 'Put 2 or 3 real reviews on your homepage, with names.' },
+    group: 'trust',
+    label: 'Proof: reviews on your site',
+    signal: 'hasReviewsShown',
+    move: { title: 'Show your reviews', body: 'Put 2 or 3 real reviews on your homepage, with names and stars.' },
+  },
+  {
+    id: 'reviewSites',
+    group: 'trust',
+    label: 'Proof: links to your reviews',
+    signal: 'hasReviewSites',
+    move: {
+      title: 'Link to your reviews',
+      body: 'Link to your Google Business Profile, Yelp or BBB page, so visitors can read what customers say.',
+    },
   },
 ]
 
-export const TRUST_CHECKS = PROOF_CHECKS.filter((c) => c.group === 'trust')
+export interface LetterInfo {
+  id: Letter
+  badge: 'E' | 'A' | 'T'
+  label: string
+  hint: string
+  points: number
+}
+
+export const LETTERS: readonly LetterInfo[] = [
+  { id: 'experience', badge: 'E', label: 'Experience', hint: 'your work and track record', points: 20 },
+  { id: 'expertise', badge: 'E', label: 'Expertise', hint: 'people and credentials', points: 20 },
+  { id: 'authority', badge: 'A', label: 'Authority', hint: 'who links to you', points: 20 },
+  { id: 'trust', badge: 'T', label: 'Trust', hint: '7 checks, incl. review proof', points: 40 },
+]
+
+export const checksIn = (g: ProofGroup) => PROOF_CHECKS.filter((c) => c.group === g)
+export const badgeOf = (g: ProofGroup) => LETTERS.find((l) => l.id === g)!.badge
 
 /* ── Result shape (the API's JSON) ─────────────────────────────────────── */
 
 export interface SiteResult {
   /** Bare host, no www. */
   domain: string
-  /** Authority: Open PageRank shown out of 100. null = no score for this site. */
+  /** Open PageRank ×10, whole number (logged). null = no score for this site. */
   links: number | null
-  /** Sites linking here (Open PageRank's referring domains; weaker sites count for less). */
+  /** Open PageRank as it came (0–10, two decimals), for the backup score. */
+  opr?: number | null
+  /** Sites linking here (Open PageRank's referring domains). Logged, not shown. */
   linkingSites?: number | null
-  /** The homepage checks found. null = the homepage could not be read. */
+  /** Ahrefs Domain Rating (0–100). Shown only, never stored (licence). */
+  dr?: number | null
+  /** Track record level: 1 = one sign (6 points), 2 = strong (10 points). */
+  trackLevel?: 0 | 1 | 2
+  /** The checks found. null = the homepage could not be read. */
   proof: ProofId[] | null
   /** What each found check matched, in a few words (the phrase behind each ✓). */
   evidence?: Partial<Record<ProofId, string>>
@@ -122,7 +196,7 @@ export interface SiteResult {
   pageError?: string
 }
 
-/** ok = scores came back · busy = Open PageRank said 429 · unavailable = anything else. */
+/** ok = scores came back · busy = the source said 429 · unavailable = anything else. */
 export type LinksStatus = 'ok' | 'busy' | 'unavailable'
 
 export interface AuthorityResult {
@@ -130,42 +204,147 @@ export interface AuthorityResult {
   /** Open PageRank's data date (YYYY-MM-DD). */
   asOf: string | null
   linksStatus: LinksStatus
+  /** Ahrefs. Missing on results made before Ahrefs was added. */
+  drStatus?: LinksStatus
   you: SiteResult
   rivals: SiteResult[]
 }
 
 /* ── Scoring ────────────────────────────────────────────────────────────── */
 
-/** Open PageRank 0–10 → shown out of 100, whole number (0.96 → 10). */
+/** Open PageRank 0–10 → out of 100, whole number, for the log (0.96 → 10). */
 export function linksScore(opr: number | null | undefined): number | null {
   if (opr === null || opr === undefined || !Number.isFinite(opr)) return null
   return Math.max(0, Math.min(100, Math.round(opr * 10)))
-}
-
-/**
- * What an authority score means, from Open PageRank's own bands (/methodology,
- * 0–10 scale × 10): 0–2 "New, small, or lightly-linked domains", 2–5 "Typical
- * active sites", 5–8 "Well-established sites with a strong, genuine link
- * profile", 8–10 "The most-linked sites on the web".
- */
-export const AUTHORITY_BANDS = [
-  { min: 80, label: 'Major site', meaning: 'Among the most-linked sites on the web' },
-  { min: 50, label: 'Well established', meaning: 'Many strong, real sites link here' },
-  { min: 20, label: 'Typical', meaning: 'A typical active site' },
-  { min: 0, label: 'New or small', meaning: 'Few sites link here yet. Normal for a small business' },
-] as const
-
-export function authorityBand(score: number) {
-  return AUTHORITY_BANDS.find((b) => score >= b.min) ?? AUTHORITY_BANDS[AUTHORITY_BANDS.length - 1]
 }
 
 export function proofFromSignals(s: ProofFacts): ProofId[] {
   return PROOF_CHECKS.filter((c) => s[c.signal]).map((c) => c.id)
 }
 
-/** Trust checks found, or null when the homepage wasn't read. */
-export function trustCount(s: SiteResult): number | null {
-  return s.proof ? TRUST_CHECKS.filter((c) => s.proof!.includes(c.id)).length : null
+export type AuthoritySource = 'ahrefs' | 'opr'
+
+/** Which source this check's authority comes from: Ahrefs, else Open PageRank, else none. */
+export function authoritySource(r: AuthorityResult): AuthoritySource | null {
+  if (r.drStatus === 'ok') return 'ahrefs'
+  if (r.linksStatus === 'ok') return 'opr'
+  return null
+}
+
+/** A site's authority out of 100 from this check's source. null = no score. */
+export function authorityOf(s: SiteResult, r: AuthorityResult): number | null {
+  const src = authoritySource(r)
+  if (src === 'ahrefs') return typeof s.dr === 'number' ? s.dr : null
+  if (src === 'opr') {
+    if (typeof s.opr === 'number') return Math.round(s.opr * 100) / 10
+    return s.links
+  }
+  return null
+}
+
+/** 2.8 · 9 · 14 (one decimal under 10, whole numbers above). */
+export function fmtAuthority(v: number): string {
+  return v < 10 ? String(Math.round(v * 10) / 10) : String(Math.round(v))
+}
+
+export interface Scores {
+  experience: number
+  expertise: number
+  authority: number
+  trust: number
+  overall: number
+  /** Checks found per group. */
+  found: Record<ProofGroup, number>
+}
+
+/** The four parts and the total. null when the homepage wasn't read. */
+export function scoresOf(s: SiteResult, r: AuthorityResult): Scores | null {
+  if (!s.proof) return null
+  const count = (g: ProofGroup) => checksIn(g).filter((c) => s.proof!.includes(c.id)).length
+  const part = (g: ProofGroup) => Math.round((LETTERS.find((l) => l.id === g)!.points * count(g)) / checksIn(g).length)
+  const a = authorityOf(s, r)
+  // Experience: your work shown 10, track record 6 (one sign) or 10 (strong: the bonus level).
+  const has = (id: ProofId) => s.proof!.includes(id)
+  const experience = (has('work') ? 10 : 0) + (has('track') ? (s.trackLevel === 2 ? 10 : 6) : 0)
+  const expertise = part('expertise')
+  const authority = authorityPoints(a)
+  const trust = part('trust')
+  return {
+    experience,
+    expertise,
+    authority,
+    trust,
+    overall: experience + expertise + authority + trust,
+    found: { experience: count('experience'), expertise: count('expertise'), trust: count('trust') },
+  }
+}
+
+export function band(overall: number): 'Strong' | 'Fair' | 'Needs work' {
+  return overall >= 70 ? 'Strong' : overall >= 40 ? 'Fair' : 'Needs work'
+}
+
+/* ── Order and colours ──────────────────────────────────────────────────── */
+
+export function allSites(r: AuthorityResult): SiteResult[] {
+  return [r.you, ...r.rivals]
+}
+
+export interface Ranked {
+  site: SiteResult
+  /** 0 = you, 1–3 = the rivals in the order typed. */
+  index: number
+  scores: Scores | null
+  /** 1st, 2nd… equal totals share a place. null = homepage not read. */
+  place: number | null
+}
+
+/** Sites sorted by overall score, highest first; unread homepages last. */
+export function ranked(r: AuthorityResult): Ranked[] {
+  const rows = allSites(r).map((site, index) => ({ site, index, scores: scoresOf(site, r) }))
+  return rows
+    .map((row) => ({
+      ...row,
+      place: row.scores ? rows.filter((o) => o.scores && o.scores.overall > row.scores!.overall).length + 1 : null,
+    }))
+    .sort((a, b) => (b.scores?.overall ?? -1) - (a.scores?.overall ?? -1) || a.index - b.index)
+}
+
+export type Standing = 'ahead' | 'same' | 'behind' | 'low'
+
+/**
+ * Colour for one value against the others in its row: green only for the
+ * lead (or a tie at the top), amber for behind, red for under half the lead,
+ * grey when every site is level.
+ */
+export function standing(value: number | null, values: (number | null)[], tie = 0): Standing | null {
+  if (value === null) return null
+  const nums = values.filter((v): v is number => v !== null)
+  const max = Math.max(...nums)
+  const min = Math.min(...nums)
+  if (nums.length < 2 || max - min <= tie) return 'same'
+  if (value >= max - tie) return 'ahead'
+  return value >= max / 2 ? 'behind' : 'low'
+}
+
+export function ordinal(n: number): string {
+  const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')
+  return `${n}${s}`
+}
+
+/* ── The summary, in plain words ────────────────────────────────────────── */
+
+export function summary(r: AuthorityResult): string {
+  const order = ranked(r)
+  const me = order.find((o) => o.index === 0)!
+  if (!me.scores) return 'We couldn’t read your homepage.'
+  const mine = me.scores.overall
+  if (r.rivals.length === 0) return `Your score is ${mine} out of 100: ${band(mine).toLowerCase()}.`
+  const n = order.filter((o) => o.scores).length
+  const leaders = order.filter((o) => o.place === 1 && o.index !== 0)
+  if (me.place === 1 && leaders.length) return `You’re tied for 1st with ${leaders.map((o) => o.site.domain).join(' and ')}, on ${mine}.`
+  if (me.place === 1) return `You’re 1st of ${n}, with ${mine} out of 100.`
+  const top = order[0]
+  return `You’re ${ordinal(me.place!)} of ${n}. ${top.site.domain} leads with ${top.scores!.overall}, you have ${mine}.`
 }
 
 /* ── Input ──────────────────────────────────────────────────────────────── */
@@ -202,118 +381,6 @@ export function shareQuery(you: string, rivals: string[]): string {
   return q.toString()
 }
 
-/* ── Ranks ──────────────────────────────────────────────────────────────── */
-
-export interface RankRow {
-  site: SiteResult
-  /** 0 = you, 1–3 = Rival A–C. */
-  index: number
-  value: number
-  /** Bar width, 0–100. */
-  pct: number
-}
-
-export interface RankGroup {
-  rank: number
-  rows: RankRow[]
-}
-
-export function allSites(r: AuthorityResult): SiteResult[] {
-  return [r.you, ...r.rivals]
-}
-
-export function rivalLetter(index: number): string {
-  return String.fromCharCode(64 + index) // 1 → A
-}
-
-/**
- * Authority: highest first. A site joins the group above it when it is under
- * TIE_GAP points behind that group's top score. Ranks count sites
- * (1, 2, 2, 4). Bars are drawn against the top site in the check.
- */
-export function rankLinks(r: AuthorityResult): { groups: RankGroup[]; missing: { site: SiteResult; index: number }[] } {
-  const sites = allSites(r)
-  const scored = sites
-    .map((site, index) => ({ site, index, value: site.links }))
-    .filter((s): s is { site: SiteResult; index: number; value: number } => s.value !== null)
-    .sort((a, b) => b.value - a.value || a.index - b.index)
-  const top = scored[0]?.value ?? 0
-  const groups: RankGroup[] = []
-  scored.forEach((s, i) => {
-    const row: RankRow = { ...s, pct: top > 0 ? Math.round((s.value / top) * 100) : 0 }
-    const last = groups[groups.length - 1]
-    if (last && last.rows[0].value - s.value < TIE_GAP) last.rows.push(row)
-    else groups.push({ rank: i + 1, rows: [row] })
-  })
-  const missing = sites.map((site, index) => ({ site, index })).filter((s) => s.site.links === null)
-  return { groups, missing }
-}
-
-/** Per site (by index): its authority rank and whether it shares that rank ("About the same"). */
-export function authorityRanks(r: AuthorityResult): Map<number, { rank: number; tie: boolean; pct: number }> {
-  const out = new Map<number, { rank: number; tie: boolean; pct: number }>()
-  for (const g of rankLinks(r).groups)
-    for (const row of g.rows) out.set(row.index, { rank: g.rank, tie: g.rows.length > 1, pct: row.pct })
-  return out
-}
-
-/** Per site (by index): its trust rank (equal counts share a rank). Unread sites are left out. */
-export function trustRanks(r: AuthorityResult): Map<number, { rank: number; tie: boolean }> {
-  const read = allSites(r)
-    .map((site, index) => ({ index, value: trustCount(site) }))
-    .filter((s): s is { index: number; value: number } => s.value !== null)
-  const out = new Map<number, { rank: number; tie: boolean }>()
-  for (const s of read) {
-    out.set(s.index, {
-      rank: read.filter((o) => o.value > s.value).length + 1,
-      tie: read.filter((o) => o.value === s.value).length > 1,
-    })
-  }
-  return out
-}
-
-/* ── The summary, in plain words ────────────────────────────────────────── */
-
-/** Two short sentences: where you stand on authority, then on trust. */
-export function summary(r: AuthorityResult): string[] {
-  const out: string[] = []
-  const you = r.you
-  const n = TRUST_CHECKS.length
-  const solo = r.rivals.length === 0
-
-  if (r.linksStatus === 'ok') {
-    const scored = allSites(r).filter((s) => s.links !== null)
-    if (you.links === null) out.push('We have no authority score for your site yet.')
-    else if (solo) out.push(`Your authority is ${you.links} out of 100: ${authorityBand(you.links).label.toLowerCase()}.`)
-    else if (scored.length > 1 && scored.every((s) => s.links! < 20))
-      out.push("You're all small sites on authority, so links won't decide this.")
-    else {
-      const ranks = authorityRanks(r)
-      const me = ranks.get(0)!
-      const leaders = allSites(r).filter((_, i) => ranks.get(i)?.rank === 1 && i !== 0)
-      if (me.rank === 1 && me.tie) out.push(`You're about level with ${leaders.map((s) => s.domain).join(' and ')} on authority.`)
-      else if (me.rank === 1) out.push('You lead on authority.')
-      else {
-        const top = allSites(r)[[...ranks.entries()].find(([, v]) => v.rank === 1)![0]]
-        out.push(`${top.domain} leads on authority, ${top.links} to your ${you.links}.`)
-      }
-    }
-  }
-
-  const mine = trustCount(you) ?? 0
-  if (solo) out.push(`Your homepage shows ${mine} of ${n} trust signs.`)
-  else {
-    const best = r.rivals
-      .filter((s) => s.proof)
-      .sort((a, b) => trustCount(b)! - trustCount(a)!)[0]
-    if (!best) out.push(`Your homepage shows ${mine} of ${n} trust signs. We couldn't read your rivals' homepages.`)
-    else if (trustCount(best)! > mine) out.push(`${best.domain} shows ${trustCount(best)} trust signs to your ${mine}.`)
-    else if (trustCount(best)! === mine) out.push(`You're level on trust: ${mine} of ${n}.`)
-    else out.push(`You show the most trust signs: ${mine} of ${n}.`)
-  }
-  return out
-}
-
 /* ── First 3 moves ──────────────────────────────────────────────────────── */
 
 export interface Move {
@@ -329,18 +396,20 @@ function joinNames(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 }
 
+/** Points one check is worth (Experience and Expertise checks are worth more each). */
+function checkPoints(c: ProofCheck): number {
+  return LETTERS.find((l) => l.id === c.group)!.points / checksIn(c.group).length
+}
+
 /**
- * The user's missing homepage checks, ordered by how many rivals show them
- * (most first), ties broken by table order. Empty when the user shows all.
+ * The user's missing checks: the ones most rivals show first, then the ones
+ * worth the most points, then table order. Empty when the user shows all.
  */
 export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
   const found = new Set(r.you.proof ?? [])
   return PROOF_CHECKS.filter((c) => !found.has(c.id))
-    .map((c, order) => {
-      const have = r.rivals.filter((s) => s.proof?.includes(c.id)).map((s) => s.domain)
-      return { c, order, have }
-    })
-    .sort((a, b) => b.have.length - a.have.length || a.order - b.order)
+    .map((c, order) => ({ c, order, have: r.rivals.filter((s) => s.proof?.includes(c.id)).map((s) => s.domain) }))
+    .sort((a, b) => b.have.length - a.have.length || checkPoints(b.c) - checkPoints(a.c) || a.order - b.order)
     .slice(0, limit)
     .map(({ c, have }) => ({
       id: c.id,
@@ -355,7 +424,7 @@ export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
     }))
 }
 
-/** Rows a rival shows and you don't ("Your gap"). */
+/** A check a rival shows and you don't (an amber ✕ in your column). */
 export function isGap(r: AuthorityResult, id: ProofId): boolean {
   return !!r.you.proof && !r.you.proof.includes(id) && r.rivals.some((s) => s.proof?.includes(id))
 }
