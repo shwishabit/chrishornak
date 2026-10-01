@@ -13,6 +13,7 @@
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { Status, AuditItem } from './audit-scoring'
+import { extractText, findJsonLdBlocks, readProofSignals } from './proof-signals'
 
 export interface ParsedCategory {
   name: string
@@ -105,16 +106,6 @@ function wordCount(html: string): number {
     .replace(/\s+/g, ' ')
     .trim()
   return text ? text.split(/\s+/).length : 0
-}
-
-function extractText(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&[a-z]+;/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 function truncate(s: string, max: number): string {
@@ -589,9 +580,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
   const pageText = extractText(html)
 
   // Shared: detect JSON-LD blocks (used by multiple checks)
-  const jsonLdBlocks = html.match(
-    /<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi,
-  )
+  const jsonLdBlocks = findJsonLdBlocks(html)
   const hasMicrodata = /itemscope|itemtype/i.test(html)
 
   // 1. Structured data (JSON-LD or microdata) with schema depth validation
@@ -716,24 +705,17 @@ function parseAI(page: FetchedPage): AuditItem[] {
     })
   }
 
-  // 3. Trust signals — credibility indicators that work on any page type
-  const hasAboutLink = /href=["'][^"']*(about|team|who-we-are|our-story)/i.test(html)
-  const hasTestimonials =
-    /testimonial|review|client|customer.said|what.people.say/i.test(html) ||
-    (html.match(/<blockquote/gi) ?? []).length >= 2
-  const hasCredentials =
-    /\b(certified|licensed|accredited|award|year[s]? (of |in )?experience|founded|established|since \d{4})\b/i.test(
-      pageText,
-    )
-  const hasOrgSchema =
-    jsonLdBlocks?.some((b) => /Organization|LocalBusiness|Person|ProfessionalService/i.test(b)) ?? false
-  const hasTeamSection =
-    /(our team|meet the team|who we are|the people behind|leadership|our staff|about the owner|about us)/i.test(
-      pageText,
-    )
-  const hasPeopleWithRoles =
-    /\b(founder|owner|ceo|cto|director|manager|partner|principal|president)\b/i.test(pageText)
-  const hasPeople = hasTeamSection || hasPeopleWithRoles
+  // 3. Trust signals — credibility indicators that work on any page type.
+  //    The signal rules live in proof-signals.ts (shared with the Authority Check).
+  const {
+    hasAboutLink,
+    hasTestimonials,
+    hasCredentials,
+    hasOrgSchema,
+    hasPeople,
+    hasAddressInfo,
+    hasBusinessType,
+  } = readProofSignals(html, pageText, jsonLdBlocks)
 
   const signalList = [
     hasAboutLink && 'About/team page linked',
@@ -806,12 +788,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
   // 5. Entity clarity — business type, location, specialties clearly stated
   const hasLocalBusiness =
     jsonLdBlocks?.some((b) => /LocalBusiness|Organization|Person/i.test(b)) ?? false
-  const hasAddressInfo =
-    /\b(address|location|phone|tel|headquarter|based in|serving|office)\b/i.test(pageText)
-  const hasBusinessType =
-    /\b(agency|company|firm|consultant|freelanc|studio|practice|shop|store|restaurant|salon|spa|clinic|gym|church|school|contractor|dentist|doctor|lawyer|attorney|plumb|electric|mover|moving|clean|bakery|brewery|florist|veterinar|daycare|auto|insurance|account|roofing|hvac|landscap|photograph|catering|fitness|wellness|therapy|coaching|nonprofit|realtor|real estate|architect|engineer|construct)\b/i.test(
-      pageText,
-    )
+  // hasAddressInfo + hasBusinessType come from readProofSignals above.
   const entitySignals = [hasLocalBusiness, hasAddressInfo, hasBusinessType].filter(Boolean).length
 
   if (entitySignals >= 2) {

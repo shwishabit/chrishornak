@@ -861,6 +861,10 @@ function Offer() {
           <a href="/blog/og-image" className="text-muted-foreground underline underline-offset-[3px] hover:text-foreground">
             How to design a card
           </a>
+          {' · '}
+          <a href="/authority-check" className="text-muted-foreground underline underline-offset-[3px] hover:text-foreground">
+            Compare to your rivals
+          </a>
         </p>
       </div>
     </aside>

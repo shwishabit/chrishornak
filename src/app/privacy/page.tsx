@@ -59,6 +59,16 @@ export default function PrivacyPage() {
                 the time and which checks did not pass are stored so I can see how the tool
                 is used. Nothing personal is stored, and domains are never published.
               </p>
+              <p>
+                If you use the Authority Check, the sites you enter (yours and up to three
+                rivals) are sent to a server I operate, which reads each site&apos;s homepage
+                once. The domains are also sent to Open PageRank
+                (openpagerank.keywordseverywhere.com), a third-party service, to get their link
+                scores. Your IP address is kept for 60
+                seconds for rate limiting, then discarded. The domains, the time and each
+                site&apos;s scores are stored so I can see how the tool is used. Nothing personal
+                is stored, and domains are never published.
+              </p>
             </section>
 
             <section>

@@ -192,6 +192,19 @@ export function pageErrorMessage(
   return `${hostname} returned status ${pageResult.status} — try again or check the URL.`
 }
 
+/** Short reason a rival's homepage could not be read, naming the rival,
+ * not "your site". null when it fetched fine (same test as pageErrorMessage). */
+export function rivalPageError(pageResult: FetchResult | null, hostname: string): string | null {
+  if (pageErrorMessage(pageResult, hostname) === null) return null
+  if (!pageResult) return `We couldn't reach ${hostname}.`
+  if (pageResult.status === 401 || pageResult.status === 403) {
+    return `${hostname} blocks automated checks (${pageResult.status}).`
+  }
+  if (pageResult.status === 404) return `${hostname} has no homepage at that address (404).`
+  if (pageResult.status >= 500) return `${hostname} had a server error (${pageResult.status}).`
+  return `${hostname} returned status ${pageResult.status}.`
+}
+
 /* ── og:image direct-fetch (Facebook-scraper simulation) ───────────────── */
 
 /** Headers for fetching a share image. Our own honest UA, not Facebook's:

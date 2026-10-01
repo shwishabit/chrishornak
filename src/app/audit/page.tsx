@@ -66,6 +66,13 @@ export default function AuditPage() {
               </a>
               .
             </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              How do you stack up against your rivals?{' '}
+              <a href="/authority-check" className="text-primary underline underline-offset-4">
+                Try the Authority Check
+              </a>
+              .
+            </p>
           </div>
 
           <AuditPageClient />

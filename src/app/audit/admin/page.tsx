@@ -66,6 +66,9 @@ export default async function AdminPage({
             <Link href="/audit/admin/og" className="mt-2 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
               OG checker usage →
             </Link>
+            <Link href="/audit/admin/authority" className="mt-2 ml-4 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+              Authority Check usage →
+            </Link>
           </div>
           <form action={logout}>
             <button className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
