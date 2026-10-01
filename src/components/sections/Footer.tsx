@@ -1,5 +1,5 @@
 import { Linkedin, Youtube, Twitter, AtSign, MessageCircle, Newspaper, BookOpen, PenLine, Mic, Wrench } from 'lucide-react'
-import { siteConfig } from '@/lib/data'
+import { siteConfig, toolLinks } from '@/lib/data'
 import { Logo } from '@/components/ui/Logo'
 
 const socialLinks = [
@@ -24,7 +24,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border/50 px-6 py-14">
       <div className="mx-auto max-w-5xl">
-        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div>
             <a href="/" className="text-foreground">
@@ -33,6 +33,23 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               Marketing strategist for business owners who are done guessing and ready to grow.
             </p>
+          </div>
+
+          {/* Free tools (this site) */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Free tools</p>
+            <ul className="mt-4 flex flex-col gap-2.5">
+              {toolLinks.map((t) => (
+                <li key={t.href}>
+                  <a
+                    href={t.href}
+                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                  >
+                    {t.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Content */}

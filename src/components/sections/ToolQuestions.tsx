@@ -4,13 +4,11 @@
  * as links). The current page is marked, not linked.
  * ─────────────────────────────────────────────────────────────────────── */
 
-const QUESTIONS = [
-  { q: 'Can your website be found?', tool: 'Findability Check', href: '/audit' },
-  { q: 'What do people see first?', tool: 'OG Image Checker', href: '/og-image-checker' },
-  { q: 'How do you stack up?', tool: 'Authority Check', href: '/authority-check' },
-] as const
+import { toolLinks } from '@/lib/data'
 
-export type ToolHref = (typeof QUESTIONS)[number]['href']
+const QUESTIONS = toolLinks.map((t) => ({ q: t.question, tool: t.label, href: t.href }))
+
+export type ToolHref = (typeof toolLinks)[number]['href']
 
 export function ToolQuestions({ current, className = '' }: { current: ToolHref; className?: string }) {
   return (

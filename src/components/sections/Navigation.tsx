@@ -1,11 +1,74 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Menu, X } from 'lucide-react'
-import { navLinks } from '@/lib/data'
+import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react'
+import { navLinks, toolLinks } from '@/lib/data'
 import { Logo } from '@/components/ui/Logo'
 import { ease } from '@/lib/animations'
+
+/** Desktop "Tools" menu: a button that opens the three free tools. Closes on Escape, outside click or a pick. */
+function ToolsMenu() {
+  const [open, setOpen] = useState(false)
+  const wrap = useRef<HTMLDivElement>(null)
+  const button = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!wrap.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        button.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={wrap} className="relative">
+      <button
+        ref={button}
+        type="button"
+        aria-expanded={open}
+        aria-controls="tools-menu"
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground aria-expanded:text-foreground"
+      >
+        Free tools
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          id="tools-menu"
+          className="absolute top-full right-0 mt-4 w-72 rounded-xl border border-border bg-background p-2 shadow-lg"
+        >
+          <ul className="m-0 grid list-none gap-0.5 p-0">
+            {toolLinks.map((t) => (
+              <li key={t.href}>
+                <a
+                  href={t.href}
+                  onClick={() => setOpen(false)}
+                  className="grid gap-0.5 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-muted focus-visible:bg-muted"
+                >
+                  <span className="text-sm font-semibold text-foreground">{t.label}</span>
+                  <span className="text-[13px] text-muted-foreground">{t.question}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -33,6 +96,7 @@ export function Navigation() {
               {link.label}
             </a>
           ))}
+          <ToolsMenu />
           <a
             href="/#connect"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
@@ -63,7 +127,7 @@ export function Navigation() {
             transition={{ duration: 0.2 }}
             id="mobile-menu"
             role="menu"
-            className="glass fixed top-20 right-4 left-4 z-40 flex flex-col gap-4 p-6 md:hidden"
+            className="glass fixed top-20 right-4 left-4 z-40 flex max-h-[calc(100dvh-6rem)] flex-col gap-4 overflow-y-auto p-6 md:hidden"
           >
             {navLinks.map((link) => (
               <a
@@ -75,6 +139,20 @@ export function Navigation() {
                 {link.label}
               </a>
             ))}
+            <div className="grid gap-2.5 border-t border-border pt-4">
+              <p className="m-0 text-xs font-medium tracking-widest text-muted-foreground uppercase">Free tools</p>
+              {toolLinks.map((t) => (
+                <a
+                  key={t.href}
+                  href={t.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="grid gap-0.5 text-foreground transition-colors duration-200 hover:text-primary"
+                >
+                  <span className="text-lg font-medium">{t.label}</span>
+                  <span className="text-[13px] text-muted-foreground">{t.question}</span>
+                </a>
+              ))}
+            </div>
             <a
               href="/#connect"
               onClick={() => setMobileOpen(false)}

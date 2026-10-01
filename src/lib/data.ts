@@ -17,8 +17,17 @@ export const navLinks: NavLink[] = [
   { label: 'Work', href: '/work' },
   { label: 'Blog', href: '/blog' },
   { label: 'Be The Signal', href: '/signal' },
-  { label: 'Findability Check', href: '/audit' },
 ]
+
+/**
+ * The free tools, in order, as the owner's three questions. One list for the
+ * "Tools" menu, the footer and the strip at the end of each tool page.
+ */
+export const toolLinks = [
+  { label: 'Findability Check', question: 'Can your website be found?', href: '/audit' },
+  { label: 'OG Image Checker', question: 'What do people see first?', href: '/og-image-checker' },
+  { label: 'Authority Check', question: 'How do you stack up?', href: '/authority-check' },
+] as const
 
 export const heroContent = {
   headline: 'Your next customer is looking for you.',
