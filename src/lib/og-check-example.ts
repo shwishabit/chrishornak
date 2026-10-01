@@ -1,14 +1,14 @@
 import type { OgCheckResult } from './og-check'
 
 /* A real /api/og-check result for https://chrishornak.com/blog/og-image,
- * captured 2026-10-01T00:21:04.672Z (one page fetch + one image fetch). Shown as the
- * page's Example before a visitor checks their own link. The image itself is
- * drawn from the same file on this site (/images/blog/og-image-card.png), so
- * the snapshot carries no data: URI. Re-capture if that post's tags change. */
+ * captured 2026-10-01T22:59:19.011Z (one page fetch + the image + the favicon). Shown as the
+ * page's Example before a visitor checks their own link. The image and favicon are
+ * drawn from the same files on this site (/images/blog/og-image-card.png, /icon.png),
+ * so the snapshot carries no data: URIs. Re-capture if that post's tags change. */
 export const OG_CHECK_EXAMPLE: OgCheckResult = {
   "url": "https://chrishornak.com/blog/og-image",
   "domain": "chrishornak.com",
-  "checkedAt": "2026-10-01T00:21:04.672Z",
+  "checkedAt": "2026-10-01T22:59:19.011Z",
   "tags": {
     "title": "What to put in an OG image so the right people click",
     "description": "What to put in an OG image, its title and description so a shared link sets the right expectation, plus the check I run before any card goes live.",
@@ -37,11 +37,15 @@ export const OG_CHECK_EXAMPLE: OgCheckResult = {
       "label": "Size",
       "status": "pass",
       "value": "1200 × 630",
-      "rule": "At least 1200 × 630",
+      "rule": "At least 1200 × 630 · LinkedIn allows 627",
       "sources": [
         {
           "label": "Meta",
           "href": "https://developers.facebook.com/docs/sharing/webmasters/images"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/help/linkedin/answer/a521928"
         }
       ]
     },
@@ -140,5 +144,32 @@ export const OG_CHECK_EXAMPLE: OgCheckResult = {
       ]
     }
   ],
-  "passed": 8
+  "passed": 8,
+  "google": {
+    "title": "What to put in an OG image so the right people click | Chris Hornak",
+    "titleSource": "title",
+    "description": "What to put in an OG image, its title and description so a shared link sets the right expectation, plus the check I run before any card goes live.",
+    "bodyText": "An OG image is the picture that shows up when someone shares your link. With the title and description beside it, it tells people what the page is before they click. So it decides who clicks, not only how many.",
+    "noindex": false,
+    "nosnippet": false,
+    "siteName": "Chris Hornak",
+    "siteNameSource": "schema",
+    "isHome": false,
+    "breadcrumb": [
+      "Home",
+      "Blog",
+      "What to put in an OG image so the right people click"
+    ],
+    "datePublished": "2026-09-30",
+    "faviconUrl": "https://chrishornak.com/icon.png?995b2b5e90297c1f",
+    "favicon": {
+      "url": "https://chrishornak.com/icon.png?995b2b5e90297c1f",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 3655,
+      "width": 192,
+      "height": 192,
+      "format": "PNG"
+    }
+  }
 }

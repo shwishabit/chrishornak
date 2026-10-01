@@ -24,6 +24,10 @@ export const viewport: Viewport = {
   themeColor: '#0a0a0a',
 }
 
+// Share title without the site name: og:site_name carries it (Apple TN3156).
+// The <title> keeps "| Chris Hornak" for search.
+const SHARE_TITLE = 'Marketing Strategist for Growing Businesses'
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.defaultTitle,
@@ -42,7 +46,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteConfig.domain,
     siteName: siteConfig.brandName,
-    title: siteConfig.defaultTitle,
+    title: SHARE_TITLE,
     description: siteConfig.defaultDescription,
     images: [
       {
@@ -55,7 +59,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteConfig.defaultTitle,
+    title: SHARE_TITLE,
     description: siteConfig.defaultDescription,
     images: ['/images/og-image.png'],
   },

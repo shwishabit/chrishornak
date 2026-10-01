@@ -83,6 +83,30 @@ export interface ImageFacts {
   tooBigToShow?: boolean
 }
 
+/** What the Google tab reads from the same page fetch. Shown, never scored. */
+export interface GoogleFacts {
+  /** <title>, else og:title, else the first <h1>. */
+  title: string | null
+  titleSource: 'title' | 'og:title' | 'h1' | null
+  /** <meta name="description">. */
+  description: string | null
+  /** First real paragraph, for the snippet when there is no description. */
+  bodyText: string | null
+  noindex: boolean
+  nosnippet: boolean
+  siteName: string | null
+  siteNameSource: 'schema' | 'og:site_name' | null
+  /** The checked URL is a domain or subdomain root. */
+  isHome: boolean
+  /** BreadcrumbList item names, only when it has 2+ items. */
+  breadcrumb: string[] | null
+  /** yyyy-mm-dd from datePublished or article:published_time. */
+  datePublished: string | null
+  /** Favicon address from <link rel="icon">, else /favicon.ico. */
+  faviconUrl: string
+  favicon: ImageFacts | null
+}
+
 export interface OgCheckResult {
   /** The page we read (after redirects). */
   url: string
@@ -96,6 +120,8 @@ export interface OgCheckResult {
   image: ImageFacts | null
   checks: CheckRow[]
   passed: number
+  /** Optional so results logged or captured before the Google tab still render. */
+  google?: GoogleFacts
 }
 
 /* ── HTML parsing ─────────────────────────────────────────────────────── */
@@ -333,12 +359,13 @@ export function buildChecks(
       label: 'Size',
       status: 'skip',
       value: '—',
-      rule: 'At least 1200 × 630',
-      sources: [SOURCES.meta],
+      rule: 'At least 1200 × 630 · LinkedIn allows 627',
+      sources: [SOURCES.meta, SOURCES.linkedin],
     }
     if (hasDims) {
       row.value = `${w} × ${h}`
-      if (w! >= 1200 && h! >= 630) row.status = 'pass'
+      // Meta asks for 1200 × 630, LinkedIn for 1200 × 627: pass either.
+      if (w! >= 1200 && h! >= 627) row.status = 'pass'
       else if (w! < 200 || h! < 200) {
         row.status = 'fail'
         row.fix = `Your image is ${w} × ${h}. Meta does not allow images under 200 × 200. Make it 1200 × 630.`
@@ -535,10 +562,14 @@ export function buildResult(input: {
   url: string
   html: string
   image: ImageFacts | null
+  favicon?: ImageFacts | null
+  xRobots?: string | null
 }): OgCheckResult {
   const { tags, htmlTitle, h1 } = readPage(input.html)
   const domain = bareHost(input.url)
   const checks = buildChecks(tags, input.image, domain)
+  const google = readGoogle(input.html, input.url, input.xRobots ?? null)
+  google.favicon = input.favicon ?? null
   return {
     url: input.url,
     domain,
@@ -549,7 +580,311 @@ export function buildResult(input: {
     image: input.image,
     checks,
     passed: checks.filter((c) => c.status === 'pass').length,
+    google,
   }
+}
+
+/* ── Google tab: what Google reads (shown, never scored) ──────────────────
+ * Every rule is from Google Search Central, read 2026-10-01; the facts are in
+ * drafts/research/google-result-preview.md. Google picks titles, snippets and
+ * site names itself, so the tab says "likely" and nothing here is a check.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+const GOOGLE = 'https://developers.google.com/search/docs/'
+
+export const GOOGLE_SOURCES = {
+  noindex: { label: 'Google: noindex', href: `${GOOGLE}crawling-indexing/block-indexing` },
+  title: { label: 'Google: title links', href: `${GOOGLE}appearance/title-link` },
+  snippet: { label: 'Google: snippets', href: `${GOOGLE}appearance/snippet` },
+  siteName: { label: 'Google: site names', href: `${GOOGLE}appearance/site-names` },
+  favicon: { label: 'Google: favicons', href: `${GOOGLE}appearance/favicon-in-search` },
+  breadcrumb: { label: 'Google: breadcrumbs', href: `${GOOGLE}appearance/structured-data/breadcrumb` },
+  date: { label: 'Google: dates', href: `${GOOGLE}appearance/publication-dates` },
+  image: { label: 'Google: images', href: `${GOOGLE}appearance/google-images` },
+} as const
+
+type Json = unknown
+
+/** Every JSON-LD node on the page, flattened out of arrays and @graph. */
+export function readJsonLd(html: string): Record<string, Json>[] {
+  const nodes: Record<string, Json>[] = []
+  const walk = (v: Json) => {
+    if (Array.isArray(v)) v.forEach(walk)
+    else if (v && typeof v === 'object') {
+      const o = v as Record<string, Json>
+      nodes.push(o)
+      if (o['@graph']) walk(o['@graph'])
+    }
+  }
+  const re = /<script\b[^>]*type\s*=\s*["']?application\/ld\+json["']?[^>]*>([\s\S]*?)<\/script>/gi
+  for (const m of html.matchAll(re)) {
+    try {
+      walk(JSON.parse(m[1].trim()))
+    } catch {
+      // Broken JSON-LD: Google can't read it either, so skip it.
+    }
+  }
+  return nodes
+}
+
+function hasType(node: Record<string, Json>, type: string): boolean {
+  const t = node['@type']
+  return Array.isArray(t) ? t.includes(type) : t === type
+}
+
+function str(v: Json): string | null {
+  return typeof v === 'string' && v.trim() ? clean(v) : null
+}
+
+/** Robots rules that apply to Google: <meta name="robots|googlebot"> plus the
+ * X-Robots-Tag header (a "otherbot: noindex" line is not for Google). */
+export function readRobots(meta: Map<string, string>, xRobots: string | null): { noindex: boolean; nosnippet: boolean } {
+  const rules: string[] = []
+  for (const k of ['robots', 'googlebot']) {
+    const v = meta.get(k)
+    if (v) rules.push(...v.toLowerCase().split(','))
+  }
+  if (xRobots) {
+    // "googlebot: noindex" applies; "bingbot: noindex" doesn't; plain rules apply to all.
+    // A "name:" prefix sets who the following rules are for.
+    const valued = ['max-snippet', 'max-image-preview', 'max-video-preview', 'unavailable_after']
+    let forGoogle = true
+    for (const token of xRobots.toLowerCase().split(',')) {
+      const m = token.match(/^\s*([a-z0-9_-]+)\s*:\s*(.*)$/)
+      if (m && !valued.includes(m[1])) {
+        forGoogle = m[1] === 'googlebot'
+        if (forGoogle) rules.push(m[2])
+      } else if (forGoogle) rules.push(token)
+    }
+  }
+  const has = (r: string) => rules.some((x) => x.trim() === r)
+  return {
+    noindex: has('noindex') || has('none'),
+    nosnippet: has('nosnippet') || rules.some((x) => /^\s*max-snippet\s*:\s*0\s*$/.test(x)),
+  }
+}
+
+function firstParagraph(html: string): string | null {
+  const body = html.replace(/<(script|style|noscript|template|svg)\b[\s\S]*?<\/\1>/gi, ' ')
+  const scope = body.match(/<main\b[\s\S]*?<\/main>/i)?.[0] ?? body
+  for (const m of scope.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)) {
+    const text = clean(m[1].replace(/<[^>]+>/g, ' '))
+    if (text.length >= 60) return text.length > 320 ? `${text.slice(0, 317).trimEnd()}…` : text
+  }
+  return null
+}
+
+function faviconFrom(html: string, pageUrl: string): string {
+  const links = [...html.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)].map((m) => {
+    const attrs: Record<string, string> = {}
+    for (const a of m[0].slice(5).matchAll(/([^\s=/>"']+)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)) {
+      attrs[a[1].toLowerCase()] = a[2] ?? a[3] ?? a[4] ?? ''
+    }
+    return attrs
+  })
+  // rel="icon" (Google's documented value; "shortcut icon" includes it). When a
+  // page lists several, read the largest by its sizes attribute (Google
+  // recommends larger than 48 × 48); without sizes, the first one.
+  const icons = links.filter((l) => (l.rel ?? '').toLowerCase().split(/\s+/).includes('icon') && l.href)
+  const side = (l: Record<string, string>) =>
+    Math.max(0, ...(l.sizes ?? '').split(/\s+/).map((s) => (s.toLowerCase() === 'any' ? 1024 : Number(s.toLowerCase().split('x')[0]) || 0)))
+  const icon = icons.reduce<Record<string, string> | null>((best, l) => (!best || side(l) > side(best) ? l : best), null)
+  try {
+    return new URL(icon?.href ?? '/favicon.ico', pageUrl).toString()
+  } catch {
+    return `${new URL(pageUrl).origin}/favicon.ico`
+  }
+}
+
+export function readGoogle(html: string, pageUrl: string, xRobots: string | null): GoogleFacts {
+  const meta = parseMetaTags(html)
+  const nodes = readJsonLd(html)
+  const htmlTitle = firstElementText(html, 'title')
+  const ogTitle = meta.get('og:title') || null
+  const h1 = firstElementText(html, 'h1')
+  const title = htmlTitle ?? ogTitle ?? h1
+  const titleSource = htmlTitle ? 'title' : ogTitle ? 'og:title' : h1 ? 'h1' : null
+
+  const site = nodes.find((n) => hasType(n, 'WebSite'))
+  const schemaName = site ? str(site.name) : null
+  const ogSite = meta.get('og:site_name') || null
+
+  let breadcrumb: string[] | null = null
+  const list = nodes.find((n) => hasType(n, 'BreadcrumbList'))
+  if (list && Array.isArray(list.itemListElement)) {
+    const items = (list.itemListElement as Record<string, Json>[])
+      .filter((i) => i && typeof i === 'object')
+      .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
+      .map((i) => str(i.name) ?? (i.item && typeof i.item === 'object' ? str((i.item as Record<string, Json>).name) : null))
+      .filter((n): n is string => !!n)
+    if (items.length >= 2) breadcrumb = items
+  }
+
+  const dated = nodes.map((n) => str(n.datePublished)).find(Boolean) ?? meta.get('article:published_time') ?? null
+  const datePublished = dated && /^\d{4}-\d{2}-\d{2}/.test(dated) ? dated.slice(0, 10) : null
+
+  let isHome = false
+  try {
+    const p = new URL(pageUrl).pathname
+    isHome = p === '/' || p === ''
+  } catch {
+    // keep false
+  }
+
+  return {
+    title,
+    titleSource,
+    description: meta.get('description') || null,
+    bodyText: firstParagraph(html),
+    ...readRobots(meta, xRobots),
+    siteName: schemaName ?? ogSite,
+    siteNameSource: schemaName ? 'schema' : ogSite ? 'og:site_name' : null,
+    isHome,
+    breadcrumb,
+    datePublished,
+    faviconUrl: faviconFrom(html, pageUrl),
+    favicon: null,
+  }
+}
+
+/** Image size for a favicon: the share-image readers plus ICO and SVG. */
+export function readIconSize(b: Uint8Array): { width: number; height: number; format: string } | null {
+  if (b.length >= 22 && b[0] === 0 && b[1] === 0 && b[2] === 1 && b[3] === 0 && (b[4] | (b[5] << 8)) > 0) {
+    // ICO: the largest picture in the directory (0 means 256).
+    const count = b[4] | (b[5] << 8)
+    let best = { width: 0, height: 0 }
+    for (let i = 0; i < count && 6 + i * 16 + 1 < b.length; i++) {
+      const w = b[6 + i * 16] || 256
+      const h = b[7 + i * 16] || 256
+      if (w * h > best.width * best.height) best = { width: w, height: h }
+    }
+    return { ...best, format: 'ICO' }
+  }
+  return readImageSize(b)
+}
+
+export type GoogleMark = 'ok' | 'warn' | 'info'
+
+export interface GoogleRow {
+  id: 'index' | 'title' | 'description' | 'sitename' | 'favicon' | 'breadcrumb' | 'date' | 'thumbnail'
+  label: string
+  mark: GoogleMark
+  value: string
+  why: string
+  source: Source
+}
+
+export function fmtGoogleDate(ymd: string): string {
+  return new Date(`${ymd}T00:00:00Z`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+/** The "What Google reads" list. titleCut comes from the drawn preview. */
+export function buildGoogleRows(r: OgCheckResult, titleCut: boolean): GoogleRow[] {
+  const g = r.google
+  if (!g) return []
+  const S = GOOGLE_SOURCES
+  const chars = (s: string) => `${[...s].length} characters`
+  const rows: GoogleRow[] = []
+
+  rows.push(
+    g.noindex
+      ? { id: 'index', label: 'Can show in Google', mark: 'warn', value: 'No', source: S.noindex,
+          why: 'Your page says noindex, so Google drops it from results. Take the tag out if you want it found.' }
+      : { id: 'index', label: 'Can show in Google', mark: 'ok', value: 'Yes', source: S.noindex, why: 'No noindex rule found.' },
+  )
+
+  if (!g.title) {
+    rows.push({ id: 'title', label: 'Title', mark: 'warn', value: 'Missing', source: S.title,
+      why: 'No <title> tag, so Google has to pick a title itself. Add one that says what the page is.' })
+  } else if (g.titleSource !== 'title') {
+    rows.push({ id: 'title', label: 'Title', mark: 'warn', value: 'No <title>', source: S.title,
+      why: `No <title> tag. Google may use your ${g.titleSource === 'og:title' ? 'share title' : 'headline'}, shown above. Add a <title>.` })
+  } else if (titleCut) {
+    rows.push({ id: 'title', label: 'Title', mark: 'warn', value: chars(g.title), source: S.title,
+      why: 'Likely cut at the end on a computer. Put the words that matter first. Google can also pick its own title.' })
+  } else {
+    rows.push({ id: 'title', label: 'Title', mark: 'ok', value: chars(g.title), source: S.title,
+      why: 'From your <title> tag. Google can still pick its own title.' })
+  }
+
+  if (g.nosnippet) {
+    rows.push({ id: 'description', label: 'Description', mark: 'warn', value: 'Blocked', source: S.snippet,
+      why: 'Your page says nosnippet, so Google shows no text under the title.' })
+  } else if (!g.description) {
+    rows.push({ id: 'description', label: 'Description', mark: 'warn', value: 'Missing', source: S.snippet,
+      why: 'No meta description, so Google takes text from your page. Add one line on what the reader gets.' })
+  } else {
+    rows.push({ id: 'description', label: 'Description', mark: 'ok', value: chars(g.description), source: S.snippet,
+      why: 'Google sometimes uses this, and may pick other page text for some searches.' })
+  }
+
+  const home = g.isHome ? '' : ' Google reads the site name from your home page.'
+  rows.push(
+    g.siteNameSource === 'schema'
+      ? { id: 'sitename', label: 'Site name', mark: 'info', value: g.siteName!, source: S.siteName,
+          why: `From your WebSite structured data. Google may use it, or show your domain (${r.domain}) instead.${home}` }
+      : g.siteNameSource === 'og:site_name'
+        ? { id: 'sitename', label: 'Site name', mark: 'info', value: g.siteName!, source: S.siteName,
+            why: `From og:site_name. Google says WebSite structured data on your home page counts most. It may show ${r.domain} instead.${home}` }
+        : { id: 'sitename', label: 'Site name', mark: 'info', value: r.domain, source: S.siteName,
+            why: `No site name found, so Google will likely show your domain. Add WebSite structured data to your home page to name it.` },
+  )
+
+  const f = g.favicon
+  const fOk = !!f?.status && f.status >= 200 && f.status < 300
+  if (!fOk) {
+    rows.push({ id: 'favicon', label: 'Favicon', mark: 'warn', value: 'Not found', source: S.favicon,
+      why: 'We could not load a favicon, so Google may show a plain default icon. Add <link rel="icon"> to your home page.' })
+  } else if (f?.format === 'SVG' || /svg/i.test(f?.contentType ?? '')) {
+    rows.push({ id: 'favicon', label: 'Favicon', mark: 'ok', value: 'SVG', source: S.favicon,
+      why: 'Found. An SVG scales to any size. Google asks for a square icon.' })
+  } else if (f?.width && f?.height) {
+    const square = f.width === f.height
+    const big = f.width > 48
+    rows.push({
+      id: 'favicon', label: 'Favicon', mark: square && big ? 'ok' : 'warn', value: `${f.width} × ${f.height}`, source: S.favicon,
+      why: !square
+        ? 'Google asks for a square icon. Make it 1:1.'
+        : big
+          ? 'Square and larger than 48 × 48, as Google asks.'
+          : 'Google recommends larger than 48 × 48 so it looks sharp.',
+    })
+  } else {
+    rows.push({ id: 'favicon', label: 'Favicon', mark: 'info', value: 'Found', source: S.favicon,
+      why: 'Found, but we could not read its size. Google asks for square, larger than 48 × 48.' })
+  }
+
+  rows.push(
+    g.breadcrumb
+      ? { id: 'breadcrumb', label: 'Breadcrumb', mark: 'info', value: g.breadcrumb.slice(0, -1).join(' › ') || g.breadcrumb[0], source: S.breadcrumb,
+          why: 'Found in your structured data. Google may show it on computers.' }
+      : { id: 'breadcrumb', label: 'Breadcrumb', mark: 'info', value: 'None', source: S.breadcrumb,
+          why: 'None found, so Google shows your web address.' },
+  )
+
+  rows.push(
+    g.datePublished
+      ? { id: 'date', label: 'Date', mark: 'info', value: fmtGoogleDate(g.datePublished), source: S.date,
+          why: 'From your page markup. Google may show it before the description.' }
+      : { id: 'date', label: 'Date', mark: 'info', value: 'None', source: S.date,
+          why: 'None found. Fine for pages that are not articles.' },
+  )
+
+  const loaded = !!r.image?.status && r.image.status >= 200 && r.image.status < 300
+  rows.push(
+    loaded
+      ? { id: 'thumbnail', label: 'Picture', mark: 'info', value: 'Your share image', source: S.image,
+          why: 'Google may show it beside the result, or pick another image or none. Google asks for no logo and no text in it.' }
+      : { id: 'thumbnail', label: 'Picture', mark: 'info', value: 'None', source: S.image,
+          why: 'No share image loaded. Google may pick one from the page, or show none.' },
+  )
+
+  return rows
 }
 
 /* ── The copy-paste tag block ─────────────────────────────────────────── */

@@ -3,7 +3,7 @@ import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { Navigation } from '@/components/sections/Navigation'
 import { Hero } from '@/components/sections/Hero'
 import { JsonLd } from '@/components/ui/JsonLd'
-import { homeFaqs } from '@/lib/data'
+import { homeFaqs, siteConfig } from '@/lib/data'
 
 const About = dynamic(() => import('@/components/sections/About').then(m => ({ default: m.About })))
 const Services = dynamic(() => import('@/components/sections/Services').then(m => ({ default: m.Services })))
@@ -28,6 +28,24 @@ export default function HomePage() {
       <Ventures />
       <Faq />
       <Footer />
+      {/* Google's preferred picture for this page: the headshot shown in About,
+          not the text-heavy share card (Google: avoid images with text).
+          developers.google.com/search/docs/appearance/google-images */}
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          url: siteConfig.domain,
+          name: siteConfig.defaultTitle,
+          primaryImageOfPage: {
+            '@type': 'ImageObject',
+            url: `${siteConfig.domain}/images/chris-hornak.jpg`,
+            width: 400,
+            height: 400,
+            caption: 'Chris Hornak — marketing strategist',
+          },
+        }}
+      />
       <JsonLd
         data={{
           '@context': 'https://schema.org',

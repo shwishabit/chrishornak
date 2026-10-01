@@ -1,6 +1,6 @@
 /* ── GET /api/og-check?url= ────────────────────────────────────────────────
  * The OG image checker's one server call. Reads the page once and the
- * og:image once (no redirect following), measures the image
+ * og:image + favicon once each (no redirect following), measures the image
  * from its own bytes, runs the 8 checks in lib/og-check.ts, and logs the
  * domain + failed check ids (no IP, no full URL) to og_checks.
  * ─────────────────────────────────────────────────────────────────────── */
@@ -18,7 +18,9 @@ import {
 import {
   bareHost,
   buildResult,
+  readIconSize,
   readImageSize,
+  readGoogle,
   readPage,
   type ImageFacts,
   type OgCheckResult,
@@ -31,12 +33,18 @@ export const maxDuration = 25
 const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 const MAX_IMAGE = 8 * 1024 * 1024 // Meta's limit; stop reading past it
 const MAX_INLINE = 2.5 * 1024 * 1024 // embed as data: URI up to this (response stays under Vercel's 4.5 MB)
+const MAX_ICON = 256 * 1024 // a favicon bigger than this is not shown
 
 const isRateLimited = createRateLimiter(10, 60_000)
 
 /* ── The one image fetch ────────────────────────────────────────────────── */
 
-async function fetchImage(url: string): Promise<ImageFacts> {
+async function fetchImage(
+  url: string,
+  max = MAX_IMAGE,
+  inline = MAX_INLINE,
+  readSize = readImageSize,
+): Promise<ImageFacts> {
   const facts: ImageFacts = { url }
   let host: string
   try {
@@ -79,7 +87,7 @@ async function fetchImage(url: string): Promise<ImageFacts> {
       if (done) break
       chunks.push(value)
       total += value.byteLength
-      if (total > MAX_IMAGE) {
+      if (total > max) {
         facts.bytesOver = true
         await reader.cancel()
         break
@@ -94,7 +102,7 @@ async function fetchImage(url: string): Promise<ImageFacts> {
     const declared = Number(res.headers.get('content-length'))
     facts.bytes = facts.bytesOver && declared > total ? declared : total
 
-    const size = readImageSize(bytes)
+    const size = readSize(bytes)
     if (size) {
       facts.width = size.width
       facts.height = size.height
@@ -102,7 +110,7 @@ async function fetchImage(url: string): Promise<ImageFacts> {
     }
     const isImage = !!facts.contentType && /^image\//i.test(facts.contentType)
     if (isImage && !facts.bytesOver) {
-      if (total <= MAX_INLINE) {
+      if (total <= inline) {
         const type = facts.contentType!.split(';')[0].trim()
         facts.dataUri = `data:${type};base64,${Buffer.from(bytes).toString('base64')}`
       } else {
@@ -176,18 +184,26 @@ export async function GET(request: NextRequest) {
   }
 
   const { tags } = readPage(page.body)
-  let image: ImageFacts | null = null
-  if (tags.image) {
+  const xRobots = page.headers.get('x-robots-tag')
+  const { faviconUrl } = readGoogle(page.body, page.finalUrl, xRobots)
+
+  // The share image and the favicon (for the Google tab), in parallel.
+  const imageJob = (async (): Promise<ImageFacts | null> => {
+    if (!tags.image) return null
     let resolved: string | null = null
     try {
       resolved = new URL(tags.image, page.finalUrl).toString()
     } catch {
       resolved = null
     }
-    image = resolved && /^https?:/i.test(resolved) ? await fetchImage(resolved) : { url: tags.image }
-  }
+    return resolved && /^https?:/i.test(resolved) ? fetchImage(resolved) : { url: tags.image }
+  })()
+  const faviconJob = /^https?:/i.test(faviconUrl)
+    ? fetchImage(faviconUrl, MAX_ICON, MAX_ICON, readIconSize)
+    : Promise.resolve(null)
+  const [image, favicon] = await Promise.all([imageJob, faviconJob])
 
-  const result: OgCheckResult = buildResult({ url: page.finalUrl, html: page.body, image })
+  const result: OgCheckResult = buildResult({ url: page.finalUrl, html: page.body, image, favicon, xRobots })
 
   logCheck({
     domain: result.domain,

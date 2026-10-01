@@ -3,12 +3,15 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { LINK_CARDS, PREVIEW_GROUNDS, type PreviewTabId } from '@/components/blog/SharePreviewTabs'
 import {
+  buildGoogleRows,
   buildTagBlock,
   compareTitleToH1,
+  fmtGoogleDate,
   isArticle,
   tagBlockText,
   type CheckRow,
   type CheckStatus,
+  type GoogleMark,
   type OgCheckResult,
 } from '@/lib/og-check'
 
@@ -18,7 +21,7 @@ import {
  * the free card offer. Look locked in drafts/og-checker-hero-comp.src.html.
  * ─────────────────────────────────────────────────────────────────────── */
 
-type ResultTab = 'measure' | PreviewTabId
+type ResultTab = 'measure' | PreviewTabId | 'google'
 
 const RESULT_TABS: { id: ResultTab; label: string }[] = [
   { id: 'measure', label: 'Measured' },
@@ -26,6 +29,35 @@ const RESULT_TABS: { id: ResultTab; label: string }[] = [
   { id: 'linkedin', label: 'LinkedIn' },
   { id: 'x', label: 'X' },
   { id: 'sms', label: 'Text message' },
+  { id: 'google', label: 'Google' },
+]
+
+/** The hero card: what you get, in plain words. Counts match buildChecks() and RESULT_TABS. */
+const HERO_PARTS = [
+  {
+    label: 'Your picture',
+    plain: 'Right size and shape for the apps, and it loads',
+    count: '5 checks',
+    icon: 'M4 5h16v14H4zM4 15l4-4 4 4 3-3 5 5',
+  },
+  {
+    label: 'Your words',
+    plain: 'Title, tags and a picture description',
+    count: '3 checks',
+    icon: 'M5 7h14M5 12h14M5 17h9',
+  },
+  {
+    label: 'Cut-off edges',
+    plain: 'Words near the edges that could get cut off',
+    count: 'View',
+    icon: 'M7 3v14h14M3 7h14v14',
+  },
+  {
+    label: 'Your Google look',
+    plain: 'How you will likely show in a search',
+    count: 'Preview',
+    icon: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',
+  },
 ]
 
 function normalize(input: string): string | null {
@@ -108,8 +140,8 @@ function Hero({
             <span className="font-semibold text-muted-foreground">See your link before you share it.</span>
           </h1>
           <p className="mb-7 max-w-[56ch] text-base text-body-soft sm:text-lg">
-            Paste a link. See how it looks on Facebook, LinkedIn, X and in a text message, and what
-            to fix. Every check shows its source.
+            Paste a link. See how it looks on Facebook, LinkedIn, X, in a text message and in Google,
+            and what to fix. Every check shows its source.
           </p>
           <form
             noValidate
@@ -166,28 +198,37 @@ function Hero({
             </p>
           ) : (
             <p id="og-hint" className="mt-3 text-[13px] text-muted-foreground">
-              It reads the page once and the image once. Nothing to install.
+              It reads the page once, plus its image and icon. Nothing to install.
             </p>
           )}
         </div>
-        <div
-          className="grid gap-2.5 border-t border-primary-line pt-4 text-[13px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5"
-          aria-label="What the checker measures"
-          role="group"
+        <section
+          aria-labelledby="og-what"
+          className="grid gap-3 rounded-xl border border-line-strong bg-panel p-4 sm:max-w-[420px] lg:max-w-none"
         >
-          <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Size + shape</b>
-            Pixels and ratio against Meta and LinkedIn.
-          </div>
-          <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Stress test</b>
-            A centered square, so words near the edge show.
-          </div>
-          <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Tags</b>
-            The four Open Graph tags, plus the image alt.
-          </div>
-        </div>
+          <h2 id="og-what" className="m-0 font-heading text-[15px] font-bold">
+            8 checks, 5 previews
+          </h2>
+          <ul className="m-0 grid list-none gap-2.5 p-0">
+            {HERO_PARTS.map((p) => (
+              <li key={p.label} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5">
+                <span
+                  aria-hidden="true"
+                  className="inline-grid size-6 flex-none place-items-center rounded-md border border-line-strong bg-primary-deep text-primary"
+                >
+                  <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={p.icon} />
+                  </svg>
+                </span>
+                <span className="min-w-0 text-sm leading-snug">
+                  <b className="font-semibold">{p.label}</b>
+                  <small className="block text-[13px] text-muted-foreground">{p.plain}</small>
+                </span>
+                <span className="font-heading text-sm font-bold whitespace-nowrap tabular-nums">{p.count}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </section>
   )
@@ -441,7 +482,240 @@ const MOCK_CAPTION: Record<PreviewTabId, string> = {
   sms: 'text-[#6e6e73]',
 }
 
-function Previews({ r, src }: { r: OgCheckResult; src: string | null }) {
+/* ── Google tab: a likely search result, drawn from the page's own code ─────
+ * Google publishes no length limit. The cut is our estimate: a 600 px text
+ * column (third-party measures, drafts/research/google-result-preview.md),
+ * titles wrap to 2 lines (seen on a real result, 2026-10-01). Not scored.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+const G_FONT = 'font-[Arial,Helvetica,sans-serif]'
+const G_TEXT_COL = 600
+const G_DESK_W = 724 // text column + 20 px gap + 104 px picture, drawn at real size, scaled to fit
+
+let measureCtx: CanvasRenderingContext2D | null = null
+
+/** Lines the title takes at 20px Arial in the 600 px column. */
+function titleLines(text: string): number {
+  if (typeof document === 'undefined') return 1
+  measureCtx ??= document.createElement('canvas').getContext('2d')
+  if (!measureCtx) return 1
+  measureCtx.font = '20px Arial, Helvetica, sans-serif'
+  let lines = 1
+  let line = ''
+  for (const word of text.split(/\s+/)) {
+    const next = line ? `${line} ${word}` : word
+    if (line && measureCtx.measureText(next).width > G_TEXT_COL) {
+      lines++
+      line = word
+    } else line = next
+  }
+  return lines
+}
+
+function pathOf(url: string): { host: string; segments: string[] } {
+  try {
+    const u = new URL(url)
+    const segments = u.pathname
+      .split('/')
+      .filter(Boolean)
+      .map((s) => {
+        try {
+          return decodeURIComponent(s)
+        } catch {
+          return s
+        }
+      })
+    return { host: `${u.protocol}//${u.host}`, segments }
+  } catch {
+    return { host: url, segments: [] }
+  }
+}
+
+function GoogleFavicon({ src }: { src: string | null }) {
+  return (
+    <span className="grid size-7 flex-none place-items-center overflow-hidden rounded-full border border-[#dadce0] bg-[#f1f3f4]">
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" width={18} height={18} className="size-[18px]" />
+      ) : (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="#5f6368" strokeWidth="1.6" />
+          <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="#5f6368" strokeWidth="1.4" />
+        </svg>
+      )}
+    </span>
+  )
+}
+
+const G_MARK: Record<GoogleMark, { sign: string; cls: string; sr: string }> = {
+  ok: { sign: '✓', cls: 'text-[#188038]', sr: 'Good' },
+  warn: { sign: '!', cls: 'text-[#b06000]', sr: 'Look at this' },
+  info: { sign: 'i', cls: 'text-[#5f6368]', sr: 'Note' },
+}
+
+function GooglePreview({ r, src, favicon }: { r: OgCheckResult; src: string | null; favicon: string | null }) {
+  const g = r.google
+  const [view, setView] = useState<'desk' | 'phone'>('desk')
+  const [cut, setCut] = useState(false)
+  const [scale, setScale] = useState(1)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const deskRef = useRef<HTMLDivElement>(null)
+  const [deskH, setDeskH] = useState(0)
+
+  useEffect(() => {
+    setCut(!!g?.title && g.titleSource === 'title' && titleLines(g.title) > 2)
+  }, [g?.title, g?.titleSource])
+
+  useEffect(() => {
+    const stage = stageRef.current
+    const desk = deskRef.current
+    if (!stage || !desk) return
+    const fit = () => {
+      setScale(Math.min(1, stage.clientWidth / G_DESK_W || 1))
+      setDeskH(desk.offsetHeight)
+    }
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(stage)
+    ro.observe(desk)
+    return () => ro.disconnect()
+  }, [view])
+
+  if (!g) {
+    return <p className="m-0 text-center text-sm text-[#4d5156]">Check your link again to see the Google preview.</p>
+  }
+
+  const { host, segments } = pathOf(r.url)
+  const siteName = g.siteName ?? r.domain
+  const middle = g.breadcrumb ? g.breadcrumb.slice(1, -1) : null
+  const deskCite = g.isHome ? host : [host, ...(middle ?? segments)].join(' › ')
+  const phoneCite = [host, ...segments].join(' › ')
+  const snippet = g.nosnippet ? null : (g.description ?? g.bodyText)
+  const rows = buildGoogleRows(r, cut)
+
+  const who = (cite: string) => (
+    <div className="flex min-w-0 items-center gap-3">
+      <GoogleFavicon src={favicon} />
+      <span className="min-w-0">
+        <span className="block text-sm leading-5 text-[#202124]">{siteName}</span>
+        <span className="block truncate text-xs leading-[18px] text-[#4d5156]">{cite}</span>
+      </span>
+    </div>
+  )
+  const snip = (clamp: string) =>
+    snippet ? (
+      <p className={`m-0 text-sm text-[#4d5156] ${clamp}`}>
+        {g.datePublished && <span className="text-[#70757a]">{fmtGoogleDate(g.datePublished)} — </span>}
+        {snippet}
+      </p>
+    ) : null
+  const thumb = (size: string) =>
+    src ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt="" className={`${size} rounded-[10px] object-cover`} />
+    ) : null
+
+  return (
+    <div className={`flex flex-col gap-3.5 text-[#202124] ${G_FONT}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div role="group" aria-label="Screen" className="inline-flex rounded-full border border-[#dadce0] p-0.5">
+          {(['desk', 'phone'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+              className={`rounded-full px-3 py-1 text-[13px] font-semibold ${
+                view === v ? 'bg-[#e8f0fe] text-[#202124]' : 'text-[#4d5156] hover:text-[#202124]'
+              }`}
+            >
+              {v === 'desk' ? 'Computer' : 'Phone'}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-[#4d5156]">Likely look in Google Search</span>
+      </div>
+
+      {g.noindex && (
+        <div className="rounded-[10px] border border-dashed border-[#dadce0] p-3.5 text-sm leading-normal">
+          <b className="mb-0.5 block text-[15px]">This page will not show in Google.</b>
+          Your page has a <code>noindex</code> rule, so Google drops it from results. If you want it found, take the
+          rule out.
+        </div>
+      )}
+
+      <div className={g.noindex ? 'opacity-35 grayscale' : undefined}>
+        {view === 'desk' ? (
+          <div ref={stageRef} className="min-w-0 overflow-hidden" style={{ height: deskH * scale || undefined }}>
+            <div
+              ref={deskRef}
+              className="grid origin-top-left items-center gap-5"
+              style={{ width: G_DESK_W, gridTemplateColumns: `${G_TEXT_COL}px 104px`, transform: `scale(${scale})` }}
+            >
+              <div className="min-w-0">
+                {who(deskCite)}
+                <p className="m-0 mt-1.5 mb-[3px] line-clamp-2 text-xl leading-[26px] text-[#1a0dab]">
+                  {g.title ?? r.domain}
+                </p>
+                {snip('line-clamp-2 leading-[22px]')}
+              </div>
+              {thumb('h-[92px] w-[104px]')}
+            </div>
+          </div>
+        ) : (
+          <div className="w-full max-w-[380px] rounded-[14px] border border-[#dadce0] px-3.5 pt-3.5 pb-3">
+            {who(phoneCite)}
+            <p className="m-0 mt-2.5 mb-1.5 text-lg leading-6 text-[#1a0dab]">{g.title ?? r.domain}</p>
+            <div className="grid grid-cols-[minmax(0,1fr)_84px] items-start gap-3">
+              {snip('line-clamp-4 leading-[21px]') ?? <span />}
+              {thumb('size-[84px]')}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="m-0 max-w-[64ch] text-xs leading-normal text-[#4d5156]">
+        Drawn from your page&apos;s code. Google picks the title and description itself and can change them for each
+        search. Google does not publish a length limit, so the cut is our estimate: 2 lines in a column about 600 px
+        wide on a computer.
+      </p>
+
+      <div className="border-t border-[#dadce0] pt-3">
+        <h3 className="m-0 mb-1.5 font-code text-xs font-bold tracking-[.1em] text-[#4d5156] uppercase">
+          What Google reads
+        </h3>
+        <ol className="m-0 list-none p-0">
+          {rows.map((row) => (
+            <li
+              key={row.id}
+              className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 gap-y-0.5 border-b border-[#eceef1] py-2.5 text-sm leading-snug last:border-b-0"
+            >
+              <span className={`text-[13px] font-bold ${G_MARK[row.mark].cls}`}>
+                <span aria-hidden="true">{G_MARK[row.mark].sign}</span>
+                <span className="sr-only">{G_MARK[row.mark].sr}</span>
+              </span>
+              <span>{row.label}</span>
+              <span className="text-right font-code text-[13px] break-all tabular-nums">{row.value}</span>
+              <span className="col-[2/-1] text-[13px] text-[#4d5156]">
+                {row.why}{' '}
+                <a
+                  href={row.source.href}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-[#4d5156] underline underline-offset-[3px] hover:text-[#202124]"
+                >
+                  {row.source.label}
+                </a>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  )
+}
+
+function Previews({ r, src, favicon }: { r: OgCheckResult; src: string | null; favicon: string | null }) {
   const [active, setActive] = useState<ResultTab>('measure')
   const refs = useRef<(HTMLButtonElement | null)[]>([])
   const base = useId().replace(/:/g, '')
@@ -458,7 +732,9 @@ function Previews({ r, src }: { r: OgCheckResult; src: string | null }) {
   const ground =
     active === 'measure'
       ? 'border border-border bg-well p-6'
-      : `${PREVIEW_GROUNDS[active]} px-4 py-[18px] ${active === 'x' ? 'border border-border' : ''}`
+      : active === 'google'
+        ? 'bg-white px-4 py-[18px] sm:px-[18px]'
+        : `${PREVIEW_GROUNDS[active]} px-4 py-[18px] ${active === 'x' ? 'border border-border' : ''}`
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
@@ -497,10 +773,14 @@ function Previews({ r, src }: { r: OgCheckResult; src: string | null }) {
         id={`${base}-panel`}
         role="tabpanel"
         aria-labelledby={`${base}-tab-${active}`}
-        className={`flex flex-1 flex-col justify-center rounded-xl lg:absolute lg:inset-0 lg:overflow-y-auto ${ground}`}
+        className={`flex flex-1 flex-col rounded-xl lg:absolute lg:inset-0 lg:overflow-y-auto ${
+          active === 'google' ? 'justify-start' : 'justify-center'
+        } ${ground}`}
       >
         {active === 'measure' ? (
           <Measured r={r} src={src} />
+        ) : active === 'google' ? (
+          <GooglePreview r={r} src={src} favicon={favicon} />
         ) : (
           <>
             <div className="mx-auto w-full max-w-[400px] lg:max-w-[340px] xl:max-w-[380px]">
@@ -873,8 +1153,15 @@ function Offer() {
 
 /* ── Result ─────────────────────────────────────────────────────────────── */
 
-function Result({ r, example }: { r: OgCheckResult; example?: { image: string; date: string } }) {
+function Result({
+  r,
+  example,
+}: {
+  r: OgCheckResult
+  example?: { image: string; favicon: string; date: string }
+}) {
   const src = imageSrc(r, example?.image)
+  const favicon = example?.favicon ?? r.google?.favicon?.dataUri ?? null
   const ran = r.checks.filter((c) => c.status !== 'skip').length
   const skipped = r.checks.length - ran
 
@@ -902,7 +1189,7 @@ function Result({ r, example }: { r: OgCheckResult; example?: { image: string; d
 
       <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col">
-          <Previews key={r.url + r.checkedAt} r={r} src={src} />
+          <Previews key={r.url + r.checkedAt} r={r} src={src} favicon={favicon} />
         </div>
         <SpecSheet checks={r.checks} />
       </div>
@@ -974,7 +1261,7 @@ export function OgChecker({ example }: { example: OgCheckResult }) {
             {result ? (
               <Result r={result} />
             ) : (
-              <Result r={example} example={{ image: '/images/blog/og-image-card.png', date: fmtDate(example.checkedAt) }} />
+              <Result r={example} example={{ image: '/images/blog/og-image-card.png', favicon: '/icon.png', date: fmtDate(example.checkedAt) }} />
             )}
           </div>
           <Offer />

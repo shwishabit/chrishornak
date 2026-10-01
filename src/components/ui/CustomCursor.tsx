@@ -99,7 +99,9 @@ export function CustomCursor() {
 
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-9999 rounded-full bg-primary"
-        style={{ x: cursorX, y: cursorY }}
+        // The dark outline keeps the teal dot visible on white (the light preview
+        // grounds, the light theme); on the dark site it blends into the page.
+        style={{ x: cursorX, y: cursorY, boxShadow: '0 0 0 1.5px rgba(10, 10, 10, 0.85)' }}
         animate={{
           width: dotSize,
           height: dotSize,
