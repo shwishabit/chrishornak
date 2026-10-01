@@ -138,6 +138,23 @@ export function linksScore(opr: number | null | undefined): number | null {
   return Math.max(0, Math.min(100, Math.round(opr * 10)))
 }
 
+/**
+ * What an authority score means, from Open PageRank's own bands (/methodology,
+ * 0–10 scale × 10): 0–2 "New, small, or lightly-linked domains", 2–5 "Typical
+ * active sites", 5–8 "Well-established sites with a strong, genuine link
+ * profile", 8–10 "The most-linked sites on the web".
+ */
+export const AUTHORITY_BANDS = [
+  { min: 80, label: 'Major site', meaning: 'Among the most-linked sites on the web' },
+  { min: 50, label: 'Well established', meaning: 'Many strong, real sites link here' },
+  { min: 20, label: 'Typical', meaning: 'A typical active site' },
+  { min: 0, label: 'New or small', meaning: 'Few sites link here yet. Normal for a small business' },
+] as const
+
+export function authorityBand(score: number) {
+  return AUTHORITY_BANDS.find((b) => score >= b.min) ?? AUTHORITY_BANDS[AUTHORITY_BANDS.length - 1]
+}
+
 export function proofFromSignals(s: ProofFacts): ProofId[] {
   return PROOF_CHECKS.filter((c) => s[c.signal]).map((c) => c.id)
 }

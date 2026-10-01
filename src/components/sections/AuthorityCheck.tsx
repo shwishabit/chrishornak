@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import {
+  AUTHORITY_BANDS,
   MAX_RIVALS,
+  authorityBand,
   PROOF_CHECKS,
   TIE_GAP,
   firstMoves,
@@ -147,7 +149,7 @@ function Hero({
                   inputMode="url"
                   spellCheck={false}
                   autoCapitalize="none"
-                  placeholder="a rival's site"
+                  placeholder="optional"
                   value={rivals[0] ?? ''}
                   onChange={(e) => setRival(0, e.target.value)}
                   className={INPUT}
@@ -343,6 +345,7 @@ function SiteRow({ row, r, tie }: { row: TableRow; r: AuthorityResult; tie: null
         ) : (
           <>
             <span className="font-code text-sm tabular-nums">{row.site.links}</span>
+            <span className="block text-xs leading-snug text-body-soft">{authorityBand(row.site.links).label}</span>
             <Bar pct={row.pct ?? 0} me={me} />
             {typeof row.site.linkingSites === 'number' && (
               <small className="mt-1.5 block text-xs text-muted-foreground">
@@ -454,6 +457,23 @@ function RankTable({ r }: { r: AuthorityResult }) {
           )}
         </table>
       </div>
+      {r.linksStatus === 'ok' && (
+        <div className="mt-3 text-[13px] text-muted-foreground">
+          <p className="m-0 mb-1.5 font-code text-xs tracking-[.08em] uppercase">What an authority score means</p>
+          <dl className="m-0 grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-4">
+            {[...AUTHORITY_BANDS].reverse().map((b, i, all) => (
+              <div key={b.label}>
+                <dt className="inline font-code text-foreground tabular-nums">
+                  {b.min}–{i + 1 < all.length ? all[i + 1].min - 1 : 100}
+                </dt>{' '}
+                <dd className="inline">
+                  <b className="font-semibold text-body-soft">{b.label}.</b> {b.meaning}.
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </div>
   )
 }
@@ -476,8 +496,8 @@ function HowWeScore({ asOf }: { asOf: string | null }) {
               We add up those votes and show them as a score out of 100. Higher is better.
             </p>
             <p className="m-0">
-              New and small sites usually score under 20. Typical active sites score 20 to 50. The biggest sites
-              on the web score 80 and up.
+              New and small sites usually score under 20. That is normal for a small business. Typical active
+              sites score 20 to 49, well-established sites 50 to 79, and the biggest sites on the web 80 and up.
             </p>
             <p className="m-0">
               Under each score: how many different websites link to that site. Spammy and tiny sites count for
