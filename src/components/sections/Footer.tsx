@@ -20,7 +20,7 @@ const contentLinks = [
   { label: 'Content Brief Podcast', href: 'https://podcasters.spotify.com/pod/show/content-brief', icon: Mic },
 ]
 
-export function Footer() {
+export function Footer({ lightLogo = false }: { lightLogo?: boolean } = {}) {
   return (
     <footer className="border-t border-border/50 px-6 py-14">
       <div className="mx-auto max-w-5xl">
@@ -28,7 +28,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <a href="/" className="text-foreground">
-              <Logo className="h-8 w-auto" />
+              <Logo className="h-8 w-auto" withLight={lightLogo} />
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               Marketing strategist for business owners who are done guessing and ready to grow.

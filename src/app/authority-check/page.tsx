@@ -41,7 +41,7 @@ export default function AuthorityCheckPage() {
   // default, dark on the switch in the report (AuthorityCheck sets data-ac-theme).
   return (
     <div id="ac-page" className="ac-theme" data-ac-theme="light">
-      <Navigation />
+      <Navigation lightLogo />
       <main id="main-content" className="relative min-h-screen overflow-x-hidden">
         <AuthorityCheck example={AUTHORITY_CHECK_EXAMPLE} />
         <JsonLd
@@ -78,7 +78,7 @@ Cal("init", "authority-check", {origin:"https://app.cal.com"});
 Cal.ns["authority-check"]("ui", {"theme":"dark","cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":"#2dd4a8"}},"hideEventTypeDetails":false,"layout":"month_view"});`}
         </Script>
       </main>
-      <Footer />
+      <Footer lightLogo />
     </div>
   )
 }

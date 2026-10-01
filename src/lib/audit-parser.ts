@@ -1719,27 +1719,33 @@ function parseMobile(page: FetchedPage): AuditItem[] {
   // 7. Responsive images — srcset/sizes/<picture> let each device download an
   //    appropriately-sized image instead of one fixed desktop-scale file. Unlike
   //    doctype/charset, this genuinely varies across sites, so it differentiates.
+  //    SVGs are left out: a vector file is sharp at every size, so srcset does
+  //    nothing for it (a header + footer logo in light and dark is 4 SVGs).
   const pictureCount = (html.match(/<picture[\s>]/gi) ?? []).length
-  const responsiveImgs = realImgs.filter(
+  const rasterImgs = realImgs.filter((img) => {
+    const src = attr(img, 'src') ?? ''
+    return !/\.svg(\?|#|$)/i.test(src) && !/^data:image\/svg\+xml/i.test(src)
+  })
+  const responsiveImgs = rasterImgs.filter(
     (img) => /\ssrcset=/i.test(img) || /\ssizes=/i.test(img),
   )
-  if (realImgs.length <= 2) {
+  if (rasterImgs.length <= 2) {
     items.push({
       label: 'Responsive images',
       status: 'pass',
-      value: realImgs.length === 0 ? 'No images to evaluate' : 'Too few images to matter',
+      value: rasterImgs.length === 0 ? 'No images to evaluate' : 'Too few images to matter',
     })
   } else if (responsiveImgs.length > 0 || pictureCount > 0) {
     items.push({
       label: 'Responsive images',
       status: 'pass',
-      value: `${responsiveImgs.length + pictureCount} of ${realImgs.length} images serve responsive sources`,
+      value: `${responsiveImgs.length + pictureCount} of ${rasterImgs.length} images serve responsive sources`,
     })
   } else {
     items.push({
       label: 'Responsive images',
       status: 'warn',
-      value: `${realImgs.length} images, none with responsive sources`,
+      value: `${rasterImgs.length} images, none with responsive sources`,
       recommendation:
         'Your images ship a single fixed-size file to every device, so phones download desktop-scale images and load slower. Add srcset/sizes (or a <picture> element) so each device gets an appropriately-sized image — most modern site builders and CMS image tools do this automatically.',
     })

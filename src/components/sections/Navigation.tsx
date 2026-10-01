@@ -70,7 +70,7 @@ function ToolsMenu() {
   )
 }
 
-export function Navigation() {
+export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -82,7 +82,7 @@ export function Navigation() {
         className="glass fixed top-4 right-4 left-4 z-50 mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:top-6 md:right-6 md:left-6"
       >
         <a href="/" className="text-foreground">
-          <Logo className="h-10 w-auto" />
+          <Logo className="h-10 w-auto" withLight={lightLogo} />
         </a>
 
         {/* Desktop nav */}
