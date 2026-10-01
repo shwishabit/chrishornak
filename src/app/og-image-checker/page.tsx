@@ -1,0 +1,78 @@
+import type { Metadata } from 'next'
+import Script from 'next/script'
+import { Navigation } from '@/components/sections/Navigation'
+import { Footer } from '@/components/sections/Footer'
+import { OgChecker } from '@/components/sections/OgChecker'
+import { JsonLd } from '@/components/ui/JsonLd'
+import { siteConfig } from '@/lib/data'
+import { OG_CHECK_EXAMPLE } from '@/lib/og-check-example'
+
+const TITLE = 'OG image checker: see your link before you share it'
+const DESCRIPTION =
+  'Free OG image checker. See your share card on Facebook, LinkedIn, X and in a text, checked against Meta, LinkedIn and Apple specs, with help to fix it.'
+const OG_ALT =
+  "OG image checker card: 'See your link before you share it.' on a dark card with a dashed 1200 × 630 safe-margin outline."
+
+export const metadata: Metadata = {
+  title: 'Free OG Image Checker: Preview Shared Links',
+  description: DESCRIPTION,
+  alternates: { canonical: '/og-image-checker' },
+  openGraph: {
+    type: 'website',
+    url: `${siteConfig.domain}/og-image-checker`,
+    siteName: siteConfig.brandName,
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: '/images/og-image-checker.png', width: 1200, height: 630, alt: OG_ALT }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/images/og-image-checker.png'],
+  },
+}
+
+export default function OgImageCheckerPage() {
+  return (
+    <>
+      <Navigation />
+      <main id="main-content" className="relative min-h-screen overflow-x-hidden">
+        <OgChecker example={OG_CHECK_EXAMPLE} />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: siteConfig.domain },
+              { '@type': 'ListItem', position: 2, name: 'OG Image Checker', item: `${siteConfig.domain}/og-image-checker` },
+            ],
+          }}
+        />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'OG Image Checker',
+            url: `${siteConfig.domain}/og-image-checker`,
+            description: DESCRIPTION,
+            applicationCategory: 'DeveloperApplication',
+            operatingSystem: 'Any',
+            isAccessibleForFree: true,
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            author: { '@type': 'Person', name: 'Chris Hornak', url: siteConfig.domain },
+          }}
+        />
+        {/* The free-card offer's Cal.com pop-up. Same idempotent loader as
+            layout.tsx (whichever runs first creates window.Cal), then this
+            page's own namespace. */}
+        <Script id="cal-og-image" strategy="lazyOnload">
+          {`(function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+Cal("init", "og-image", {origin:"https://app.cal.com"});
+Cal.ns["og-image"]("ui", {"theme":"dark","cssVarsPerTheme":{"light":{"cal-brand":"#292929"},"dark":{"cal-brand":"#2dd4a8"}},"hideEventTypeDetails":false,"layout":"month_view"});`}
+        </Script>
+      </main>
+      <Footer />
+    </>
+  )
+}

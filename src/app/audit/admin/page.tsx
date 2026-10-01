@@ -63,6 +63,9 @@ export default async function AdminPage({
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Admin</p>
             <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Findability usage</h1>
+            <Link href="/audit/admin/og" className="mt-2 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+              OG checker usage →
+            </Link>
           </div>
           <form action={logout}>
             <button className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">

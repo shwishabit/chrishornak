@@ -1,7 +1,29 @@
 'use client'
 
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { SharePreviewTabs } from '@/components/blog/SharePreviewTabs'
+
+/** Same box as the Signal guides' mid and closing CTAs. */
+function CheckerCta({ title, body, closing = false }: { title: string; body: string; closing?: boolean }) {
+  return (
+    <div
+      className={`rounded-2xl border border-primary/20 bg-primary/[0.04] px-6 py-8 md:px-8 md:py-10 ${
+        closing ? 'mt-14 text-center' : 'my-14'
+      }`}
+    >
+      {/* div, not p: .guide-prose p would grey it out */}
+      <div className="font-heading text-lg font-bold text-foreground md:text-xl">{title}</div>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">{body}</p>
+      <Link
+        href="/og-image-checker"
+        className="guide-cta mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground no-underline shadow-lg shadow-primary/20 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/30"
+      >
+        Check your link <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
+  )
+}
 
 function PullQuote({ children }: { children: React.ReactNode }) {
   return (
@@ -263,6 +285,11 @@ export function OgImagePost() {
         human read.
       </p>
 
+      <CheckerCta
+        title="Want to see your own card?"
+        body="Paste a link into my free OG image checker. It measures your image, runs the square crop test and shows your preview in 4 apps, with the source for every rule."
+      />
+
       <h2 id="matters-less">When does the OG image matter less?</h2>
 
       <p>
@@ -286,6 +313,12 @@ export function OgImagePost() {
       <p>Text your homepage link to yourself. Look at the card before you tap it.</p>
 
       <p>Does it promise what the page delivers?</p>
+
+      <CheckerCta
+        closing
+        title="Check your link before you share it"
+        body="The OG image checker shows your card the way 4 apps do, flags what's off and hands you the tags to fix it. Free, no sign-up."
+      />
     </>
   )
 }

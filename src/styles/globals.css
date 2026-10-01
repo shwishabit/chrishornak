@@ -15,6 +15,7 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Sora', system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, monospace;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; /* OG checker: names real fonts, since Chromium on Windows ignores ui-monospace */
 
   /* Colors — Dark-first (default) */
   --color-background: #0a0a0a;
@@ -31,6 +32,20 @@
   --color-secondary-foreground: #f0f0f0;
   --color-accent: #2dd4a8;
   --color-accent-foreground: #2dd4a8;
+
+  /* Colors — Tool surfaces (OG image checker) */
+  --color-panel: #111111;
+  --color-well: #0d0d0d;
+  --color-field: #141414;
+  --color-field-edge: #616161; /* ~3.2:1 on #0a0a0a (WCAG 1.4.11) */
+  --color-line-strong: #2c2c2c;
+  --color-body-soft: #c9c9c9;
+  --color-primary-deep: #0c1714;
+  --color-primary-line: #1d4a3f;
+  --color-grid: #10201c;
+  --color-caution: #f5b04c;
+  --color-caution-line: #4a3a1a;
+  --color-danger: #f26d6d;
 
   /* Colors — Semantic */
   --color-success: hsl(142 71% 45%);
@@ -192,7 +207,7 @@ body {
 /* -- Selection ------------------------------------------------------------ */
 
 ::selection {
-  background-color: #2dd4a8 / 0.2;
+  background-color: rgb(45 212 168 / 0.35); /* was `#2dd4a8 / 0.2`, invalid CSS, so no highlight showed */
   color: var(--color-foreground);
 }
 

@@ -54,6 +54,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${siteConfig.domain}/og-image-checker`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${siteConfig.domain}/audit/benchmarks`,
       lastModified: new Date(),
       changeFrequency: 'weekly',

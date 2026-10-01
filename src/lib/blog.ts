@@ -234,7 +234,7 @@ export const posts: Post[] = [
     published: true,
     datePublished: '2026-09-30',
     dateModified: '2026-09-30',
-    wordCount: 1187,
+    wordCount: 1219,
     readingMinutes: 5,
     ogImage: {
       url: '/images/blog/og-image-card.png',

@@ -59,6 +59,13 @@ export default function AuditPage() {
               This measures how strong that signal is.
             </p>
             <PlatformBar />
+            <p className="mt-6 text-sm text-muted-foreground">
+              Checking how one link looks when shared?{' '}
+              <a href="/og-image-checker" className="text-primary underline underline-offset-4">
+                Try the OG image checker
+              </a>
+              .
+            </p>
           </div>
 
           <AuditPageClient />

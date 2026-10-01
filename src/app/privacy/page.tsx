@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
-            Last updated: April 5, 2026
+            Last updated: September 30, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-sm leading-relaxed text-muted-foreground [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-foreground [&_h2]:mb-3 [&_p+p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5">
@@ -51,6 +51,13 @@ export default function PrivacyPage() {
                 This is never tied to your IP or any personal information, individual
                 domains are never published, and only aggregate statistics (averages,
                 most-common issues) are shown on the public benchmarks page.
+              </p>
+              <p>
+                If you use the OG image checker, the link you enter is sent to a server I
+                operate, which reads that page and its share image once. Your IP address is
+                kept for 60 seconds for rate limiting, then discarded. The page&apos;s domain,
+                the time and which checks did not pass are stored so I can see how the tool
+                is used. Nothing personal is stored, and domains are never published.
               </p>
             </section>
 
