@@ -1,39 +1,38 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
-  AUTHORITY_BANDS,
   MAX_RIVALS,
-  authorityBand,
   PROOF_CHECKS,
   TIE_GAP,
+  TRUST_CHECKS,
+  allSites,
+  authorityBand,
+  authorityRanks,
   firstMoves,
   isGap,
-  linksVerdict,
   parseSite,
-  proofVerdict,
-  rankLinks,
-  rankProof,
   rivalLetter,
   shareQuery,
+  summary,
+  trustCount,
+  trustRanks,
   type AuthorityResult,
-  type RankRow,
+  type ProofId,
   type SiteResult,
 } from '@/lib/authority-check'
 import { ToolQuestions } from './ToolQuestions'
 
 /* ── Authority Check ────────────────────────────────────────────────────────
  * Hero form (Your site vs Rival, up to 3 rivals, or your site alone), then
- * the result: two ranked lists (Links, Proof) beside the "How we score"
- * sheet, the proof table, the first 3 moves, the 15-minute offer and the
- * three-questions strip. Look locked in drafts/authority-map-hero-comp.src.html.
+ * the result: the answer in a sentence, the first 3 moves, one comparison
+ * table (Authority · Trust, folded open on tap · Reviews, with the phrase
+ * behind each ✓), the 15-minute offer, the three-questions strip and
+ * "How we score". Hero look: drafts/authority-map-hero-comp.src.html.
  * ─────────────────────────────────────────────────────────────────────── */
 
 const RIVAL_INPUT_ID = 'ac-r1'
 
-function siteName(index: number): string {
-  return index === 0 ? 'You' : `Rival ${rivalLetter(index)}`
-}
 
 function focusRival() {
   const el = document.getElementById(RIVAL_INPUT_ID) as HTMLInputElement | null
@@ -103,7 +102,7 @@ function Hero({
           </h1>
           <p className="mb-7 max-w-[56ch] text-base text-body-soft sm:text-lg">
             Put your site next to a rival or three. See which ones other sites link to, and which ones
-            show proof on their homepage. Then the first 3 things to fix.
+            show trust and reviews on their homepage. Then the first 3 things to fix.
           </p>
           <form
             noValidate
@@ -246,17 +245,15 @@ function Hero({
         >
           <div>
             <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Authority</b>
-            How much the rest of the web vouches for you, from the sites that link to you.
+            Who links to you, and how strong those sites are.
           </div>
           <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Proof</b>
-            {PROOF_CHECKS.length} things on your homepage that show you are real.
+            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Trust</b>
+            {TRUST_CHECKS.length} things on your homepage that show a real business is behind it.
           </div>
           <div>
-            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">
-              First moves
-            </b>
-            What your rivals show that you don&apos;t.
+            <b className="block font-code text-xs font-medium tracking-[.06em] text-foreground uppercase">Reviews</b>
+            Whether your homepage shows what customers say.
           </div>
         </div>
       </div>
@@ -264,48 +261,14 @@ function Hero({
   )
 }
 
-/* ── Ranked table: one row per site, Authority + Proof side by side ───── */
+/* ── The comparison: one table, sites across the top ────────────────────
+ * Authority (who links to you), Trust (7 homepage checks, folded into one
+ * score that opens) and Reviews. Not added into one total: Google ranks on
+ * links; the homepage checks build trust (research: drafts/research/
+ * trust-signals-google-ai.md).
+ * ─────────────────────────────────────────────────────────────────────── */
 
-interface TableRow {
-  site: SiteResult
-  index: number
-  rank: string
-  /** Authority bar width (vs the top site), when scored. */
-  pct?: number
-}
-
-interface TableGroup {
-  key: string
-  tie: boolean
-  rows: TableRow[]
-}
-
-/**
- * Sorted by authority, with "About the same" groups. Sites with no
- * authority score go last, by proof. If the scores didn't come back at all,
- * sort by proof instead.
- */
-function tableGroups(r: AuthorityResult): TableGroup[] {
-  if (r.linksStatus === 'ok') {
-    const { groups, missing } = rankLinks(r)
-    const proofOf = (s: SiteResult) => s.proof?.length ?? -1
-    return [
-      ...groups.map((g) => ({
-        key: `g${g.rank}`,
-        tie: g.rows.length > 1,
-        rows: g.rows.map((row: RankRow) => ({ site: row.site, index: row.index, rank: String(g.rank), pct: row.pct })),
-      })),
-      ...missing
-        .sort((a, b) => proofOf(b.site) - proofOf(a.site) || a.index - b.index)
-        .map((m) => ({ key: `m${m.index}`, tie: false, rows: [{ site: m.site, index: m.index, rank: '–' }] })),
-    ]
-  }
-  const { rows, unread } = rankProof(r)
-  return [
-    ...rows.map((row) => ({ key: `p${row.index}`, tie: false, rows: [{ site: row.site, index: row.index, rank: String(row.rank) }] })),
-    ...unread.map((u) => ({ key: `u${u.index}`, tie: false, rows: [{ site: u.site, index: u.index, rank: '–' }] })),
-  ]
-}
+const DASH = 'border-dashed border-line-strong'
 
 function Bar({ pct, me }: { pct: number; me: boolean }) {
   return (
@@ -315,281 +278,172 @@ function Bar({ pct, me }: { pct: number; me: boolean }) {
   )
 }
 
-const DASH = 'border-dashed border-line-strong'
-
-/** tie: null = a normal row; 'mid' / 'last' = inside an "About the same" box. */
-function SiteRow({ row, r, tie }: { row: TableRow; r: AuthorityResult; tie: null | 'mid' | 'last' }) {
-  const me = row.index === 0
-  const proof = row.site.proof
-  const edge = tie === null ? 'border-t border-border' : tie === 'last' ? `border-b ${DASH}` : ''
-  const cell = `px-2.5 py-3 align-top sm:px-3.5 ${edge} ${me ? 'bg-primary-deep' : ''}`
-  const first = tie ? `border-l ${DASH} ${tie === 'last' ? 'rounded-bl-md' : ''}` : ''
-  const last = tie ? `border-r ${DASH} ${tie === 'last' ? 'rounded-br-md' : ''}` : ''
+function RankTag({ rank, tie }: { rank: number; tie: boolean }) {
   return (
-    <tr>
-      <td className={`${cell} ${first} font-code text-[13px] text-muted-foreground`}>{row.rank}</td>
-      <th scope="row" className={`${cell} text-left`}>
-        <span className={`block text-[15px] font-semibold [overflow-wrap:anywhere] ${me ? 'text-primary' : ''}`} title={row.site.domain}>
-          {row.site.domain}
-        </span>
-        {me && <span className="sr-only"> (your site)</span>}
-      </th>
-      <td className={`${cell}`}>
-        {r.linksStatus !== 'ok' ? (
-          <span className="font-code text-sm text-muted-foreground">–</span>
-        ) : row.site.links === null ? (
-          <>
-            <span className="font-code text-sm text-muted-foreground">–</span>
-            <small className="block text-xs text-muted-foreground">No score yet</small>
-          </>
-        ) : (
-          <>
-            <span className="font-code text-sm tabular-nums">{row.site.links}</span>
-            <span className="block text-xs leading-snug text-body-soft">{authorityBand(row.site.links).label}</span>
-            <Bar pct={row.pct ?? 0} me={me} />
-            {typeof row.site.linkingSites === 'number' && (
-              <small className="mt-1.5 block text-xs text-muted-foreground">
-                {row.site.linkingSites.toLocaleString('en-US')} {row.site.linkingSites === 1 ? 'site links' : 'sites link'}{' '}
-                here
-              </small>
-            )}
-          </>
-        )}
-      </td>
-      <td className={`${cell} ${last}`}>
-        {proof ? (
-          <>
-            <span className="font-code text-sm whitespace-nowrap tabular-nums">
-              {proof.length}
-              <span className="text-muted-foreground"> of {PROOF_CHECKS.length}</span>
-            </span>
-            <Bar pct={Math.round((proof.length / PROOF_CHECKS.length) * 100)} me={me} />
-          </>
-        ) : (
-          <>
-            <span className="font-code text-sm text-muted-foreground">–</span>
-            <small className="block text-xs text-muted-foreground">Couldn&apos;t read</small>
-          </>
-        )}
-      </td>
-    </tr>
+    <small className="mt-1 block font-code text-[11px] text-muted-foreground">
+      #{rank}
+      {tie && <span title="About the same: under 3 points apart"> · tie</span>}
+    </small>
   )
 }
 
-function RankTable({ r }: { r: AuthorityResult }) {
-  const groups = tableGroups(r)
-  return (
-    <div className="min-w-0">
-      {r.linksStatus !== 'ok' && (
-        <p className="m-0 mb-3 rounded-md border border-dashed border-caution-line px-3 py-3 text-sm text-caution">
-          {r.linksStatus === 'busy'
-            ? 'Authority scores are busy, try again in a minute. Your proof results are below.'
-            : 'Authority scores are not available right now. Your proof results are below.'}
-        </p>
-      )}
-      <div className="rounded-lg border border-border bg-panel p-1.5">
-        <table className="w-full table-fixed border-separate border-spacing-0">
-          <caption className="sr-only">Authority and proof for each site, ranked</caption>
-          <colgroup>
-            <col className="w-9 sm:w-12" />
-            <col />
-            <col className="w-[27%] sm:w-[24%]" />
-            <col className="w-[27%] sm:w-[24%]" />
-          </colgroup>
-          <thead>
-            <tr className="font-code text-xs font-medium tracking-[.08em] text-muted-foreground uppercase">
-              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
-                #
-              </th>
-              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
-                Site
-              </th>
-              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
-                Authority
-                <span className="block text-[11px] tracking-normal normal-case">out of 100</span>
-              </th>
-              <th scope="col" className="px-2.5 py-3 text-left font-medium sm:px-3.5">
-                Proof
-                <span className="block text-[11px] tracking-normal normal-case">out of {PROOF_CHECKS.length}</span>
-              </th>
-            </tr>
-          </thead>
-          {groups.map((g) =>
-            g.tie ? (
-              <tbody key={g.key} aria-label={`About the same: ${g.rows.map((x) => x.site.domain).join(' and ')}`}>
-                <tr>
-                  <td
-                    colSpan={4}
-                    className={`rounded-t-md border-x border-t ${DASH} px-2.5 pt-2 pb-0 font-code text-[11px] font-medium tracking-[.08em] text-muted-foreground uppercase`}
-                  >
-                    About the same
-                  </td>
-                </tr>
-                {g.rows.map((row, i) => (
-                  <SiteRow key={row.index} row={row} r={r} tie={i === g.rows.length - 1 ? 'last' : 'mid'} />
-                ))}
-              </tbody>
-            ) : (
-              <tbody key={g.key}>
-                {g.rows.map((row) => (
-                  <SiteRow key={row.index} row={row} r={r} tie={null} />
-                ))}
-              </tbody>
-            ),
-          )}
-          {r.rivals.length === 0 && (
-            <tbody>
-              <tr>
-                <td colSpan={4} className="border-t border-border p-2">
-                  <button
-                    type="button"
-                    onClick={focusRival}
-                    className="w-full rounded-md border border-dashed border-line-strong px-3 py-3 text-left text-sm font-medium text-body-soft hover:border-primary-line hover:text-foreground"
-                  >
-                    <span className="mr-1 text-primary" aria-hidden="true">
-                      +
-                    </span>
-                    Add a rival
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          )}
-        </table>
-      </div>
-      {r.linksStatus === 'ok' && (
-        <div className="mt-3 text-[13px] text-muted-foreground">
-          <p className="m-0 mb-1.5 font-code text-xs tracking-[.08em] uppercase">What an authority score means</p>
-          <dl className="m-0 grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-4">
-            {[...AUTHORITY_BANDS].reverse().map((b, i, all) => (
-              <div key={b.label}>
-                <dt className="inline font-code text-foreground tabular-nums">
-                  {b.min}–{i + 1 < all.length ? all[i + 1].min - 1 : 100}
-                </dt>{' '}
-                <dd className="inline">
-                  <b className="font-semibold text-body-soft">{b.label}.</b> {b.meaning}.
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-    </div>
-  )
-}
+type Shown = { id: ProofId; index: number } | null
 
-/* ── How we score (end of the page) ─────────────────────────────────────── */
-
-function HowWeScore({ asOf }: { asOf: string | null }) {
-  const item = 'border-t border-line-strong pt-4'
-  return (
-    <section aria-labelledby="ac-hs" className="border-t border-border pt-10">
-      <h2 id="ac-hs" className="m-0 mb-6 font-heading text-[22px] font-bold">
-        How we score
-      </h2>
-      <dl className="m-0 grid gap-8 md:grid-cols-3">
-        <div className={item}>
-          <dt className="mb-2 font-heading text-[17px] font-bold">Authority, out of 100</dt>
-          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
-            <p className="m-0">
-              When another website links to yours, it is a vote of trust. Votes from well-known sites count for more.
-              We add up those votes and show them as a score out of 100. Higher is better.
-            </p>
-            <p className="m-0">
-              New and small sites usually score under 20. That is normal for a small business. Typical active
-              sites score 20 to 49, well-established sites 50 to 79, and the biggest sites on the web 80 and up.
-            </p>
-            <p className="m-0">
-              Under each score: how many different websites link to that site. Spammy and tiny sites count for
-              less, and the count comes from a public map of the web that can miss a few, so treat it as a close
-              estimate.
-            </p>
-          </dd>
-        </div>
-        <div className={item}>
-          <dt className="mb-2 font-heading text-[17px] font-bold">“About the same”</dt>
-          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
-            <p className="m-0">
-              These scores move up and down a little every month, even when nothing changes on your site.
-            </p>
-            <p className="m-0">
-              So when two sites are less than {TIE_GAP} points apart, we call it a tie instead of picking a winner.
-            </p>
-          </dd>
-        </div>
-        <div className={item}>
-          <dt className="mb-2 font-heading text-[17px] font-bold">Proof, out of {PROOF_CHECKS.length}</dt>
-          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
-            <p className="m-0">
-              {PROOF_CHECKS.length} things on a homepage that show a real business is behind it:{' '}
-              {PROOF_CHECKS.map((c) => c.label[0].toLowerCase() + c.label.slice(1)).join(', ')}.
-            </p>
-            <p className="m-0">
-              We read each homepage once, the same way{' '}
-              <a href="/audit" className="text-primary underline underline-offset-[3px]">
-                the Findability Check
-              </a>{' '}
-              does.
-            </p>
-          </dd>
-        </div>
-      </dl>
-      <p className="m-0 mt-8 font-code text-xs text-muted-foreground">
-        Authority data: Open PageRank, built from Common Crawl&apos;s map of the web.
-        {asOf && ` As of ${asOf}.`} Updated about once a month.
-      </p>
-    </section>
-  )
-}
-/* ── Proof table ────────────────────────────────────────────────────────── */
-
-function Mark({ found }: { found: boolean | null }) {
-  if (found === null)
+/** ✓ (a button that shows the phrase we found), ✕, or – when the homepage wasn't read. */
+function CheckMark({
+  site,
+  index,
+  id,
+  shown,
+  setShown,
+}: {
+  site: SiteResult
+  index: number
+  id: ProofId
+  shown: Shown
+  setShown: (s: Shown) => void
+}) {
+  if (!site.proof)
     return (
       <span className="text-muted-foreground" role="img" aria-label="not read">
         –
       </span>
     )
-  return found ? (
-    <span className="text-primary" role="img" aria-label="yes">
+  if (!site.proof.includes(id))
+    return (
+      <span className="text-[#6b6b6b]" role="img" aria-label="no">
+        ✕
+      </span>
+    )
+  const open = shown?.id === id && shown.index === index
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-label={`yes: show what we found on ${site.domain}`}
+      onClick={() => setShown(open ? null : { id, index })}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-primary hover:bg-primary-deep ${
+        open ? 'bg-primary-deep ring-1 ring-primary-line' : ''
+      }`}
+    >
       ✓
-    </span>
-  ) : (
-    <span className="text-[#6b6b6b]" role="img" aria-label="no">
-      ✕
-    </span>
+    </button>
   )
 }
 
-function ProofTable({ r }: { r: AuthorityResult }) {
-  const sites = [r.you, ...r.rivals]
+function CompareTable({ r }: { r: AuthorityResult }) {
+  const sites = allSites(r)
   const solo = r.rivals.length === 0
+  const aRanks = authorityRanks(r)
+  const tRanks = trustRanks(r)
+  const [openTrust, setOpenTrust] = useState(false)
+  const [shown, setShown] = useState<Shown>(null)
+  const nT = TRUST_CHECKS.length
+  const span = sites.length + 1 + (solo ? 1 : 0)
+  const reviews = PROOF_CHECKS.find((c) => c.group === 'reviews')!
   const failed = r.rivals.filter((s) => s.pageError)
+
+  const td = (i: number, extra = '') =>
+    `border-t border-border px-1.5 py-3 text-center align-top sm:px-3.5 ${i === 0 ? 'bg-primary-deep' : ''} ${extra}`
+  const rowHead = 'border-t border-border px-2.5 py-3 text-left align-top font-medium sm:px-3.5'
+  const addCell = solo ? <td className={`border-t border-l border-border ${DASH}`} /> : null
+
+  const groupRow = (title: string, sub: string, id: string, how: string) => (
+    <tr>
+      <th id={id} scope="colgroup" colSpan={span} className="border-t border-line-strong px-2.5 pt-5 pb-2 text-left sm:px-3.5">
+        <span className="font-heading text-[17px] font-bold">{title}</span>
+        <span className="ml-2 text-[13px] font-normal text-muted-foreground">{sub}</span>
+        <span className="mt-1 block max-w-[80ch] text-[13px] font-normal text-body-soft">
+          <b className="font-semibold text-foreground">How to grow it:</b> {how}
+        </span>
+      </th>
+    </tr>
+  )
+
+  const evidenceRow = (id: ProofId) => {
+    if (!shown || shown.id !== id) return null
+    const site = sites[shown.index]
+    return (
+      <tr>
+        <td colSpan={span} className="px-2.5 pb-3 sm:px-3.5">
+          <p className="m-0 flex items-start justify-between gap-3 rounded-md border border-primary-line bg-primary-deep px-3 py-2 text-[13px]">
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              <b className="font-semibold text-foreground">{site.domain}:</b>{' '}
+              <span className="text-body-soft">{site.evidence?.[id] ?? 'Found on the homepage.'}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShown(null)}
+              aria-label="Close"
+              className="flex-none text-muted-foreground hover:text-foreground"
+            >
+              ×
+            </button>
+          </p>
+        </td>
+      </tr>
+    )
+  }
+
+  const checkRow = (c: (typeof PROOF_CHECKS)[number]) => (
+    <Fragment key={c.id}>
+      <tr>
+        <th scope="row" className={rowHead}>
+          {c.label}
+          {isGap(r, c.id) && (
+            <span className="mt-1 block w-max rounded-full border border-caution-line px-[7px] py-px font-code text-[10px] font-medium tracking-[.08em] text-caution uppercase sm:mt-0 sm:ml-2 sm:inline-block sm:align-[2px]">
+              Your gap
+            </span>
+          )}
+          <small className="hidden text-xs font-normal text-muted-foreground sm:block">{c.small}</small>
+        </th>
+        {sites.map((s, i) => (
+          <td key={s.domain} className={td(i)}>
+            <CheckMark site={s} index={i} id={c.id} shown={shown} setShown={setShown} />
+          </td>
+        ))}
+        {addCell}
+      </tr>
+      {evidenceRow(c.id)}
+    </Fragment>
+  )
+
   return (
-    <section aria-labelledby="ac-pt">
+    <section aria-labelledby="ac-ct" className="min-w-0">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <h2 id="ac-pt" className="m-0 font-heading text-[22px] font-bold">
-          What does each site show?
+        <h2 id="ac-ct" className="m-0 font-heading text-[22px] font-bold">
+          How do you compare?
         </h2>
-        <p className="m-0 max-w-[60ch] text-body-soft">
-          {solo
-            ? 'Add a rival to see which of these they show and you don’t.'
-            : 'Rows marked “Your gap” are proof your rivals show and you don’t.'}
-        </p>
+        <p className="m-0 max-w-[60ch] text-body-soft">Tap a ✓ to see what we found on that homepage.</p>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full border-collapse text-[15px] tabular-nums">
+      {r.linksStatus !== 'ok' && (
+        <p className="m-0 mb-3 rounded-md border border-dashed border-caution-line px-3 py-3 text-sm text-caution">
+          {r.linksStatus === 'busy'
+            ? 'Authority scores are busy, try again in a minute. Your trust and reviews results are below.'
+            : 'Authority scores are not available right now. Your trust and reviews results are below.'}
+        </p>
+      )}
+      <div className="overflow-x-auto rounded-lg border border-border bg-panel">
+        <table className="w-full table-fixed border-collapse text-[15px] tabular-nums">
+          <caption className="sr-only">Authority, trust and reviews for each site</caption>
+          <colgroup>
+            <col className="w-[34%] sm:w-[30%]" />
+            {sites.map((s) => (
+              <col key={s.domain} />
+            ))}
+            {solo && <col />}
+          </colgroup>
           <thead>
             <tr>
-              <th scope="col" className="bg-panel px-2 py-3 sm:px-3.5">
+              <th scope="col" className="px-2.5 py-3 sm:px-3.5">
                 <span className="sr-only">Check</span>
               </th>
               {sites.map((s, i) => (
                 <th
                   key={s.domain}
                   scope="col"
-                  className={`bg-panel px-2 py-3 text-center align-bottom font-code text-xs font-medium tracking-[.08em] uppercase sm:px-3.5 ${
-                    i === 0 ? 'text-primary' : 'text-muted-foreground'
+                  className={`px-1.5 py-3 text-center align-bottom font-code text-xs font-medium tracking-[.08em] uppercase sm:px-3.5 ${
+                    i === 0 ? 'bg-primary-deep text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   {i === 0 ? (
@@ -606,11 +460,11 @@ function ProofTable({ r }: { r: AuthorityResult }) {
                 </th>
               ))}
               {solo && (
-                <th scope="col" className="bg-panel px-2 py-2 sm:px-3.5">
+                <th scope="col" className={`border-l ${DASH} px-1.5 py-2 sm:px-3.5`}>
                   <button
                     type="button"
                     onClick={focusRival}
-                    className="rounded border border-dashed border-line-strong px-2.5 py-1.5 font-sans text-[13px] font-medium whitespace-nowrap text-body-soft normal-case hover:border-primary-line hover:text-foreground"
+                    className={`rounded border ${DASH} px-2 py-1.5 font-sans text-[13px] font-medium text-body-soft normal-case hover:border-primary-line hover:text-foreground`}
                   >
                     <span className="mr-1 text-primary" aria-hidden="true">
                       +
@@ -621,46 +475,105 @@ function ProofTable({ r }: { r: AuthorityResult }) {
               )}
             </tr>
           </thead>
+
           <tbody>
-            {PROOF_CHECKS.map((c) => {
-              const gap = isGap(r, c.id)
-              return (
-                <tr key={c.id} className="border-t border-border">
-                  <th scope="row" className="px-2 py-3 text-left font-medium sm:px-3.5">
-                    {c.label}
-                    {gap && (
-                      <span className="mt-1 block w-max rounded-full border border-caution-line px-[7px] py-px font-code text-[10px] font-medium tracking-[.08em] text-caution uppercase sm:mt-0 sm:ml-2 sm:inline-block sm:align-[2px]">
-                        Your gap
-                      </span>
+            {groupRow('Authority', 'Who links to you', 'ac-g-auth', "Get other sites to mention and link to you: local news, partners, suppliers, associations. That's called digital PR. It takes months.")}
+            <tr>
+              <th scope="row" className={rowHead}>
+                Authority score
+                <small className="block text-xs font-normal text-muted-foreground">out of 100</small>
+              </th>
+              {sites.map((s, i) => {
+                const rank = aRanks.get(i)
+                return (
+                  <td key={s.domain} className={td(i)}>
+                    {r.linksStatus !== 'ok' ? (
+                      <span className="font-code text-muted-foreground">–</span>
+                    ) : s.links === null ? (
+                      <>
+                        <span className="font-code text-muted-foreground">–</span>
+                        <small className="block text-xs text-muted-foreground">No score yet</small>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-code">{s.links}</span>
+                        <small className="block text-xs leading-snug text-body-soft">{authorityBand(s.links).label}</small>
+                        <Bar pct={rank?.pct ?? 0} me={i === 0} />
+                        {!solo && rank && <RankTag rank={rank.rank} tie={rank.tie} />}
+                      </>
                     )}
-                    <small className="hidden text-xs font-normal text-muted-foreground sm:block">{c.small}</small>
-                  </th>
-                  {sites.map((s, i) => (
-                    <td key={s.domain} className={`px-2 py-3 text-center sm:px-3.5 ${i === 0 ? 'bg-primary-deep' : ''}`}>
-                      <Mark found={s.proof ? s.proof.includes(c.id) : null} />
-                    </td>
-                  ))}
-                  {solo && <td className="border-l border-dashed border-line-strong" />}
-                </tr>
-              )
-            })}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-border bg-panel font-code text-[13px] text-muted-foreground">
-              <th scope="row" className="px-2 py-3 text-left font-normal sm:px-3.5">
-                Proof found
+                  </td>
+                )
+              })}
+              {addCell}
+            </tr>
+            <tr>
+              <th scope="row" className={rowHead}>
+                Sites linking here
               </th>
               {sites.map((s, i) => (
-                <td
-                  key={s.domain}
-                  className={`px-2 py-3 text-center text-xs whitespace-nowrap sm:px-3.5 sm:text-[13px] ${i === 0 ? 'text-primary' : ''}`}
-                >
-                  {s.proof ? `${s.proof.length} of ${PROOF_CHECKS.length}` : 'Not read'}
+                <td key={s.domain} className={td(i, 'font-code')}>
+                  {r.linksStatus === 'ok' && typeof s.linkingSites === 'number' ? (
+                    s.linkingSites.toLocaleString('en-US')
+                  ) : (
+                    <span className="text-muted-foreground">–</span>
+                  )}
                 </td>
               ))}
-              {solo && <td className="border-l border-dashed border-line-strong" />}
+              {addCell}
             </tr>
-          </tfoot>
+          </tbody>
+
+          <tbody>
+            {groupRow('Trust', 'What your homepage shows', 'ac-g-trust', 'Fix the gaps on your homepage. Your first moves above show where to start.')}
+            <tr>
+              <th scope="row" className={rowHead}>
+                Trust score
+                <small className="block text-xs font-normal text-muted-foreground">out of {nT}</small>
+                <button
+                  type="button"
+                  aria-expanded={openTrust}
+                  aria-controls="ac-trust-rows"
+                  onClick={() => setOpenTrust(!openTrust)}
+                  className="mt-2 rounded-full border border-line-strong px-2.5 py-1 font-sans text-xs font-medium text-body-soft hover:border-primary-line hover:text-foreground"
+                >
+                  {openTrust ? 'Hide the checks' : `Show the ${nT} checks`}
+                </button>
+              </th>
+              {sites.map((s, i) => {
+                const count = trustCount(s)
+                const rank = tRanks.get(i)
+                return (
+                  <td key={s.domain} className={td(i)}>
+                    {count === null ? (
+                      <>
+                        <span className="font-code text-muted-foreground">–</span>
+                        <small className="block text-xs text-muted-foreground">Couldn&apos;t read</small>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-code whitespace-nowrap">
+                          {count}
+                          <span className="text-muted-foreground"> of {nT}</span>
+                        </span>
+                        <Bar pct={Math.round((count / nT) * 100)} me={i === 0} />
+                        {!solo && rank && <RankTag rank={rank.rank} tie={rank.tie} />}
+                      </>
+                    )}
+                  </td>
+                )
+              })}
+              {addCell}
+            </tr>
+          </tbody>
+          <tbody id="ac-trust-rows" hidden={!openTrust}>
+            {TRUST_CHECKS.map(checkRow)}
+          </tbody>
+
+          <tbody>
+            {groupRow('Reviews', 'What customers say', 'ac-g-rev', 'Ask happy customers for a review, then put the best ones on your homepage, with names.')}
+            {checkRow(reviews)}
+          </tbody>
         </table>
       </div>
       {!solo && (
@@ -671,10 +584,90 @@ function ProofTable({ r }: { r: AuthorityResult }) {
       {failed.length > 0 && (
         <ul className="mt-2.5 list-none p-0 text-[13px] text-caution">
           {failed.map((s) => (
-            <li key={s.domain}>{s.pageError} Its proof shows as “–”.</li>
+            <li key={s.domain}>{s.pageError} Its trust and reviews show as “–”.</li>
           ))}
         </ul>
       )}
+    </section>
+  )
+}
+
+/* ── How we score (end of the page) ─────────────────────────────────────── */
+
+function HowWeScore({ asOf }: { asOf: string | null }) {
+  const item = 'border-t border-line-strong pt-4'
+  const lower = (s: string) => s[0].toLowerCase() + s.slice(1)
+  return (
+    <section aria-labelledby="ac-hs" className="border-t border-border pt-10">
+      <h2 id="ac-hs" className="m-0 mb-2 font-heading text-[22px] font-bold">
+        How we score
+      </h2>
+      <p className="m-0 mb-6 max-w-[70ch] text-body-soft">
+        Authority and Trust are named after two of the letters in E-E-A-T, the guide Google gives the people who
+        check its search results. Google ranks pages on links. The homepage checks are what those reviewers, and
+        your visitors, look for.
+      </p>
+      <dl className="m-0 grid gap-8 md:grid-cols-3">
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">Authority, out of 100</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">
+              When another website links to yours, it is a vote of trust. Votes from well-known sites count for more.
+              We add up the votes and show a score out of 100. Google says links are still part of how it ranks
+              pages.
+            </p>
+            <p className="m-0">
+              New and small sites usually score under 20. That is normal for a small business. Typical active sites
+              score 20 to 49, well-established sites 50 to 79, and the biggest sites on the web 80 and up.
+            </p>
+            <p className="m-0">
+              &ldquo;Sites linking here&rdquo; counts the different websites that link to you. Spammy and tiny sites
+              count for less, and the count comes from a public map of the web that can miss a few.
+            </p>
+          </dd>
+        </div>
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">Trust, out of {TRUST_CHECKS.length}</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">
+              {TRUST_CHECKS.length} things on a homepage that show a real business is behind it:{' '}
+              {TRUST_CHECKS.map((c) => lower(c.label)).join(', ')}.
+            </p>
+            <p className="m-0">
+              They build trust with the people who visit. Google tells its reviewers to look for most of them, but
+              says they are not a direct ranking score. A secure site is the one Google has called a small ranking
+              signal.
+            </p>
+          </dd>
+        </div>
+        <div className={item}>
+          <dt className="mb-2 font-heading text-[17px] font-bold">Reviews</dt>
+          <dd className="m-0 grid gap-2 text-[15px] text-body-soft">
+            <p className="m-0">Whether your homepage shows what customers say about you.</p>
+            <p className="m-0">
+              Google&apos;s reviewers are told to trust what others say about a business more than what a site says
+              about itself, so reviews on other sites, like your Google Business Profile, matter too.
+            </p>
+          </dd>
+        </div>
+      </dl>
+      <div className="mt-8 grid gap-1.5 text-[13px] text-muted-foreground">
+        <p className="m-0">
+          <b className="font-semibold text-body-soft">“Tie”</b> means about the same. Authority scores move a few
+          points every month, so sites less than {TIE_GAP} points apart share a rank instead of one winning.
+        </p>
+        <p className="m-0">
+          We read each homepage once, with the same rules as{' '}
+          <a href="/audit" className="text-primary underline underline-offset-[3px]">
+            the Findability Check
+          </a>
+          . Tap a ✓ to see the words we matched.
+        </p>
+        <p className="m-0 font-code text-xs">
+          Authority data: Open PageRank, built from Common Crawl&apos;s map of the web.
+          {asOf && ` As of ${asOf}.`} Updated about once a month.
+        </p>
+      </div>
     </section>
   )
 }
@@ -692,14 +685,14 @@ function Moves({ r }: { r: AuthorityResult }) {
         </h2>
         {moves.length > 0 && (
           <p className="m-0 max-w-[60ch] text-body-soft">
-            Authority takes months to earn. {moves.length === 1 ? 'This one is' : 'These are'} on your own page, so you
-            can do {moves.length === 1 ? 'it' : 'them'} this week.
+            Authority takes months to earn. {moves.length === 1 ? 'This one is' : 'These are'} on your own homepage,
+            so you can do {moves.length === 1 ? 'it' : 'them'} this week.
           </p>
         )}
       </div>
       {moves.length === 0 ? (
         <div className="rounded-lg border border-border bg-panel p-[18px]">
-          <p className="m-0 font-heading text-[17px] font-bold">You show all {PROOF_CHECKS.length}.</p>
+          <p className="m-0 font-heading text-[17px] font-bold">Your homepage shows every check we read.</p>
           <p className="m-0 mt-2 text-[15px] text-body-soft">
             Nothing to add here. For the full list,{' '}
             <a href="/audit" className="text-primary underline underline-offset-[3px]">
@@ -818,36 +811,14 @@ function Offer() {
   )
 }
 
-/* ── Result ─────────────────────────────────────────────────────────────── */
-
-function Verdict({ r }: { r: AuthorityResult }) {
-  const links = linksVerdict(r)
-  const proof = proofVerdict(r)
-  const Part = ({ v }: { v: { text: string; good: boolean } }) =>
-    v.good ? <em className="text-primary not-italic">{v.text}</em> : <i className="text-caution not-italic">{v.text}</i>
-  return (
-    <h2 id="ac-result" className="m-0 w-full font-heading text-[22px] font-bold lg:ml-auto lg:w-auto">
-      {links &&
-        (r.you.links === null ? (
-          <>
-            <Part v={links} /> for your site yet.{' '}
-          </>
-        ) : (
-          <>
-            <Part v={links} /> on authority.{' '}
-          </>
-        ))}
-      <Part v={proof} /> on proof.
-    </h2>
-  )
-}
+/* ── Result: the answer in a sentence, the moves, then the evidence ─────── */
 
 function Result({ r, example }: { r: AuthorityResult; example: boolean }) {
   const n = r.rivals.length
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-11">
-      <div>
-        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2.5">
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
           {example ? (
             <span className="rounded-[2px] border border-dashed border-[#3a3a3a] px-2 py-1 font-code text-[11px] font-medium tracking-[.1em] text-muted-foreground uppercase">
               Example · {fmtDate(r.checkedAt)}
@@ -861,12 +832,13 @@ function Result({ r, example }: { r: AuthorityResult; example: boolean }) {
             {r.you.domain} {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`}
             {example && <span className="text-muted-foreground"> · works with 0 to {MAX_RIVALS}</span>}
           </span>
-          <Verdict r={r} />
         </div>
-        <RankTable r={r} />
+        <h2 id="ac-result" className="m-0 max-w-[36ch] font-heading text-[22px] leading-snug font-bold text-balance sm:text-[26px]">
+          {summary(r).join(' ')}
+        </h2>
       </div>
-      <ProofTable r={r} />
       <Moves r={r} />
+      <CompareTable r={r} />
     </div>
   )
 }

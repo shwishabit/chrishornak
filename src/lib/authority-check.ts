@@ -1,32 +1,28 @@
 /* ── Authority Check: shared logic (client + server) ──────────────────────
- * The 9 proof checks (read with the Findability Check's own rules, see
- * proof-signals.ts), the links score (Open PageRank 0–10 shown out of 100),
- * the two ranked lists with the "About the same" tie rule, the verdict line
- * and the first 3 moves. Locked in drafts/authority-check-build-spec.md.
+ * Three sections, named after Google's E-E-A-T where they fit:
+ *   Authority = who links to you (Open PageRank 0–10, shown out of 100)
+ *   Trust     = 7 homepage checks (the Findability Check's own rules)
+ *   Reviews   = reviews on your homepage (same rules)
+ * Plus the "About the same" tie rule, the summary sentence and the first
+ * 3 moves. Build spec: drafts/authority-check-build-spec.md; Chris's later
+ * calls are in backlog.md (Tools item).
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { ProofSignals } from './proof-signals'
 
 export const MAX_RIVALS = 3
-/** Link score gaps under this many points read as "About the same" (spec decision 7). */
+/** Authority gaps under this many points read as "About the same" (spec decision 7). */
 export const TIE_GAP = 3
 
-export type ProofId =
-  | 'https'
-  | 'about'
-  | 'reviews'
-  | 'people'
-  | 'credentials'
-  | 'schema'
-  | 'address'
-  | 'trade'
-  | 'privacy'
+export type ProofId = 'https' | 'about' | 'people' | 'credentials' | 'schema' | 'address' | 'trade' | 'reviews'
+export type ProofGroup = 'trust' | 'reviews'
 
-/** The trust signals from parseAI plus two from Findability's Security checks. */
-export type ProofFacts = ProofSignals & { isHttps: boolean; hasPrivacyLink: boolean }
+/** The homepage signals from parseAI plus HTTPS from Findability's Security checks. */
+export type ProofFacts = ProofSignals & { isHttps: boolean }
 
 export interface ProofCheck {
   id: ProofId
+  group: ProofGroup
   label: string
   small: string
   signal: keyof ProofFacts
@@ -37,6 +33,7 @@ export interface ProofCheck {
 export const PROOF_CHECKS: readonly ProofCheck[] = [
   {
     id: 'https',
+    group: 'trust',
     label: 'Secure site',
     small: 'The lock next to your web address',
     signal: 'isHttps',
@@ -47,20 +44,15 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
   },
   {
     id: 'about',
+    group: 'trust',
     label: 'About page',
     small: 'A link to a page about you',
     signal: 'hasAboutLink',
     move: { title: 'Link your About page', body: 'Add a clear link to a page that says who you are and why you do this.' },
   },
   {
-    id: 'reviews',
-    label: 'Customer reviews',
-    small: 'What customers say about you',
-    signal: 'hasTestimonials',
-    move: { title: 'Add customer reviews', body: 'Put 2 or 3 real reviews on your homepage, with names.' },
-  },
-  {
     id: 'people',
+    group: 'trust',
     label: 'Real people',
     small: 'Who runs the business',
     signal: 'hasPeople',
@@ -68,6 +60,7 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
   },
   {
     id: 'credentials',
+    group: 'trust',
     label: 'Credentials',
     small: 'Licenses, awards or years in business',
     signal: 'hasCredentials',
@@ -75,13 +68,18 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
   },
   {
     id: 'schema',
+    group: 'trust',
     label: 'Business details for Google',
     small: 'Hidden code with your name and trade',
     signal: 'hasOrgSchema',
-    move: { title: 'Tell Google who you are', body: 'Add a few lines of hidden code (called schema) with your business name, address and trade.' },
+    move: {
+      title: 'Tell Google who you are',
+      body: 'Add a few lines of hidden code (called schema) with your business name, address and trade.',
+    },
   },
   {
     id: 'address',
+    group: 'trust',
     label: 'How to reach you',
     small: 'Address, phone or service area',
     signal: 'hasAddressInfo',
@@ -89,19 +87,23 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
   },
   {
     id: 'trade',
+    group: 'trust',
     label: 'What you do',
     small: 'Your trade, in plain words',
     signal: 'hasBusinessType',
     move: { title: 'Say what you do', body: 'Name your trade in plain words, like "plumber" or "bakery".' },
   },
   {
-    id: 'privacy',
-    label: 'Privacy policy',
-    small: 'How you handle visitor data',
-    signal: 'hasPrivacyLink',
-    move: { title: 'Link a privacy policy', body: 'Add a privacy policy page and link it in your footer.' },
+    id: 'reviews',
+    group: 'reviews',
+    label: 'Reviews',
+    small: 'What customers say, on your homepage',
+    signal: 'hasTestimonials',
+    move: { title: 'Add reviews', body: 'Put 2 or 3 real reviews on your homepage, with names.' },
   },
 ]
+
+export const TRUST_CHECKS = PROOF_CHECKS.filter((c) => c.group === 'trust')
 
 /* ── Result shape (the API's JSON) ─────────────────────────────────────── */
 
@@ -112,8 +114,10 @@ export interface SiteResult {
   links: number | null
   /** Sites linking here (Open PageRank's referring domains; weaker sites count for less). */
   linkingSites?: number | null
-  /** The proof checks found. null = the homepage could not be read. */
+  /** The homepage checks found. null = the homepage could not be read. */
   proof: ProofId[] | null
+  /** What each found check matched, in a few words (the phrase behind each ✓). */
+  evidence?: Partial<Record<ProofId, string>>
   /** Why a rival's homepage could not be read, in a few words. */
   pageError?: string
 }
@@ -159,6 +163,11 @@ export function proofFromSignals(s: ProofFacts): ProofId[] {
   return PROOF_CHECKS.filter((c) => s[c.signal]).map((c) => c.id)
 }
 
+/** Trust checks found, or null when the homepage wasn't read. */
+export function trustCount(s: SiteResult): number | null {
+  return s.proof ? TRUST_CHECKS.filter((c) => s.proof!.includes(c.id)).length : null
+}
+
 /* ── Input ──────────────────────────────────────────────────────────────── */
 
 export interface SiteInput {
@@ -193,7 +202,7 @@ export function shareQuery(you: string, rivals: string[]): string {
   return q.toString()
 }
 
-/* ── Ranked lists ───────────────────────────────────────────────────────── */
+/* ── Ranks ──────────────────────────────────────────────────────────────── */
 
 export interface RankRow {
   site: SiteResult
@@ -218,7 +227,7 @@ export function rivalLetter(index: number): string {
 }
 
 /**
- * Links: highest first. A site joins the group above it when it is under
+ * Authority: highest first. A site joins the group above it when it is under
  * TIE_GAP points behind that group's top score. Ranks count sites
  * (1, 2, 2, 4). Bars are drawn against the top site in the check.
  */
@@ -240,56 +249,69 @@ export function rankLinks(r: AuthorityResult): { groups: RankGroup[]; missing: {
   return { groups, missing }
 }
 
-/** Proof: most found first. Equal counts share a rank number. Bars are out of PROOF_CHECKS.length. */
-export function rankProof(r: AuthorityResult): { rows: (RankRow & { rank: number })[]; unread: { site: SiteResult; index: number }[] } {
-  const sites = allSites(r)
-  const read = sites
-    .map((site, index) => ({ site, index, value: site.proof?.length ?? -1 }))
-    .filter((s) => s.site.proof !== null)
-    .sort((a, b) => b.value - a.value || a.index - b.index)
-  const rows = read.map((s) => ({
-    ...s,
-    pct: Math.round((s.value / PROOF_CHECKS.length) * 100),
-    rank: read.findIndex((o) => o.value === s.value) + 1,
-  }))
-  const unread = sites.map((site, index) => ({ site, index })).filter((s) => s.site.proof === null)
-  return { rows, unread }
+/** Per site (by index): its authority rank and whether it shares that rank ("About the same"). */
+export function authorityRanks(r: AuthorityResult): Map<number, { rank: number; tie: boolean; pct: number }> {
+  const out = new Map<number, { rank: number; tie: boolean; pct: number }>()
+  for (const g of rankLinks(r).groups)
+    for (const row of g.rows) out.set(row.index, { rank: g.rank, tie: g.rows.length > 1, pct: row.pct })
+  return out
 }
 
-/* ── Verdict ────────────────────────────────────────────────────────────── */
-
-export function ordinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd']
-  const v = n % 100
-  return n + (s[(v - 20) % 10] || s[v] || s[0])
+/** Per site (by index): its trust rank (equal counts share a rank). Unread sites are left out. */
+export function trustRanks(r: AuthorityResult): Map<number, { rank: number; tie: boolean }> {
+  const read = allSites(r)
+    .map((site, index) => ({ index, value: trustCount(site) }))
+    .filter((s): s is { index: number; value: number } => s.value !== null)
+  const out = new Map<number, { rank: number; tie: boolean }>()
+  for (const s of read) {
+    out.set(s.index, {
+      rank: read.filter((o) => o.value > s.value).length + 1,
+      tie: read.filter((o) => o.value === s.value).length > 1,
+    })
+  }
+  return out
 }
 
-export interface VerdictPart {
-  /** "Tied 2nd of 4", "1st of 3", "7 of 100". */
-  text: string
-  /** true when you lead (or tie for the lead), or on a solo check. */
-  good: boolean
-}
+/* ── The summary, in plain words ────────────────────────────────────────── */
 
-export function linksVerdict(r: AuthorityResult): VerdictPart | null {
-  if (r.linksStatus !== 'ok') return null
-  if (r.you.links === null) return { text: 'No authority score', good: false }
-  if (r.rivals.length === 0) return { text: `${r.you.links} of 100`, good: true }
-  const { groups } = rankLinks(r)
-  const n = groups.reduce((sum, g) => sum + g.rows.length, 0)
-  const g = groups.find((x) => x.rows.some((row) => row.index === 0))!
-  const tied = g.rows.length > 1
-  return { text: `${tied ? 'Tied ' : ''}${ordinal(g.rank)} of ${n}`, good: g.rank === 1 }
-}
+/** Two short sentences: where you stand on authority, then on trust. */
+export function summary(r: AuthorityResult): string[] {
+  const out: string[] = []
+  const you = r.you
+  const n = TRUST_CHECKS.length
+  const solo = r.rivals.length === 0
 
-export function proofVerdict(r: AuthorityResult): VerdictPart {
-  const count = r.you.proof?.length ?? 0
-  if (r.rivals.length === 0) return { text: `${count} of ${PROOF_CHECKS.length}`, good: true }
-  const { rows } = rankProof(r)
-  const me = rows.find((row) => row.index === 0)
-  if (!me) return { text: 'Not read', good: false }
-  const shared = rows.filter((row) => row.value === me.value).length > 1
-  return { text: `${shared ? 'Tied ' : ''}${ordinal(me.rank)} of ${rows.length}`, good: me.rank === 1 }
+  if (r.linksStatus === 'ok') {
+    const scored = allSites(r).filter((s) => s.links !== null)
+    if (you.links === null) out.push('We have no authority score for your site yet.')
+    else if (solo) out.push(`Your authority is ${you.links} out of 100: ${authorityBand(you.links).label.toLowerCase()}.`)
+    else if (scored.length > 1 && scored.every((s) => s.links! < 20))
+      out.push("You're all small sites on authority, so links won't decide this.")
+    else {
+      const ranks = authorityRanks(r)
+      const me = ranks.get(0)!
+      const leaders = allSites(r).filter((_, i) => ranks.get(i)?.rank === 1 && i !== 0)
+      if (me.rank === 1 && me.tie) out.push(`You're about level with ${leaders.map((s) => s.domain).join(' and ')} on authority.`)
+      else if (me.rank === 1) out.push('You lead on authority.')
+      else {
+        const top = allSites(r)[[...ranks.entries()].find(([, v]) => v.rank === 1)![0]]
+        out.push(`${top.domain} leads on authority, ${top.links} to your ${you.links}.`)
+      }
+    }
+  }
+
+  const mine = trustCount(you) ?? 0
+  if (solo) out.push(`Your homepage shows ${mine} of ${n} trust signs.`)
+  else {
+    const best = r.rivals
+      .filter((s) => s.proof)
+      .sort((a, b) => trustCount(b)! - trustCount(a)!)[0]
+    if (!best) out.push(`Your homepage shows ${mine} of ${n} trust signs. We couldn't read your rivals' homepages.`)
+    else if (trustCount(best)! > mine) out.push(`${best.domain} shows ${trustCount(best)} trust signs to your ${mine}.`)
+    else if (trustCount(best)! === mine) out.push(`You're level on trust: ${mine} of ${n}.`)
+    else out.push(`You show the most trust signs: ${mine} of ${n}.`)
+  }
+  return out
 }
 
 /* ── First 3 moves ──────────────────────────────────────────────────────── */
@@ -308,8 +330,8 @@ function joinNames(names: string[]): string {
 }
 
 /**
- * The user's missing checks, ordered by how many rivals show them (most
- * first), ties broken by table order. Empty when the user shows all 7.
+ * The user's missing homepage checks, ordered by how many rivals show them
+ * (most first), ties broken by table order. Empty when the user shows all.
  */
 export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
   const found = new Set(r.you.proof ?? [])

@@ -19,11 +19,12 @@ import {
   extractText,
   findJsonLdBlocks,
   isHttpsUrl,
-  readPrivacyLink,
+  readProofEvidence,
   readProofSignals,
 } from '@/lib/proof-signals'
 import {
   MAX_RIVALS,
+  PROOF_CHECKS,
   linksScore,
   parseSite,
   proofFromSignals,
@@ -43,12 +44,19 @@ const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 // Each check is up to 4 page reads + 1 API call, so 5 a minute per IP.
 const isRateLimited = createRateLimiter(5, 60_000)
 
-function readProof(html: string, finalUrl: string): ProofId[] {
-  return proofFromSignals({
-    ...readProofSignals(html, extractText(html), findJsonLdBlocks(html)),
-    isHttps: isHttpsUrl(finalUrl),
-    hasPrivacyLink: readPrivacyLink(html),
-  })
+/** The homepage checks found, and the phrase behind each one. */
+function readProof(html: string, finalUrl: string): { proof: ProofId[]; evidence: SiteResult['evidence'] } {
+  const text = extractText(html)
+  const blocks = findJsonLdBlocks(html)
+  const https = isHttpsUrl(finalUrl)
+  const proof = proofFromSignals({ ...readProofSignals(html, text, blocks), isHttps: https })
+  const found = { ...readProofEvidence(html, text, blocks), ...(https ? { isHttps: `Loads over “https://”` } : {}) }
+  const evidence: NonNullable<SiteResult['evidence']> = {}
+  for (const c of PROOF_CHECKS) {
+    const e = found[c.signal as keyof typeof found]
+    if (proof.includes(c.id) && e) evidence[c.id] = e
+  }
+  return { proof, evidence }
 }
 
 /* ── Log (domains + scores only) ────────────────────────────────────────── */
@@ -135,11 +143,13 @@ export async function GET(request: NextRequest) {
   const results: SiteResult[] = sites.map((s, i) => {
     const page = pages[i]
     const err = i === 0 ? null : rivalPageError(page, s.bare)
+    const read = page && !err ? readProof(page.body, page.finalUrl) : null
     return {
       domain: s.bare,
       links: linksOf(s.bare),
       linkingSites: linkingOf(s.bare),
-      proof: page && !err ? readProof(page.body, page.finalUrl) : null,
+      proof: read?.proof ?? null,
+      ...(read ? { evidence: read.evidence } : {}),
       ...(err ? { pageError: err } : {}),
     }
   })

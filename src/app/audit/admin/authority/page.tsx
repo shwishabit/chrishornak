@@ -104,7 +104,7 @@ export default async function AuthorityAdminPage({
                     <th scope="col" className="px-4 py-3 font-medium">When (ET)</th>
                     <th scope="col" className="px-4 py-3 font-medium">Sites (you first)</th>
                     <th scope="col" className="px-4 py-3 font-medium">Authority /100</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Proof /9</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Trust + reviews /8</th>
                   </tr>
                 </thead>
                 <tbody>
