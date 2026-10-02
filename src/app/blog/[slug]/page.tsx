@@ -19,8 +19,11 @@ import { MeasureWebsiteChangesPost } from '@/components/blog/MeasureWebsiteChang
 import { MeasureWebsiteChangesDiagram } from '@/components/blog/MeasureWebsiteChangesDiagram'
 import { OgImagePost } from '@/components/blog/OgImagePost'
 import { OgImageDiagram } from '@/components/blog/OgImageDiagram'
+import { PublishingChecklistPost } from '@/components/blog/PublishingChecklistPost'
+import { PublishingChecklistDiagram } from '@/components/blog/PublishingChecklistDiagram'
 
 const postContentMap: Record<string, React.ComponentType> = {
+  'publishing-checklist': PublishingChecklistPost,
   'shopify-theme-small-team': ShopifyThemePost,
   'product-page-audit': ProductPageAuditPost,
   'text-in-images': TextInImagesPost,
@@ -29,6 +32,7 @@ const postContentMap: Record<string, React.ComponentType> = {
 }
 
 const postHeroVisualMap: Record<string, React.ComponentType> = {
+  'publishing-checklist': PublishingChecklistDiagram,
   'shopify-theme-small-team': ShopifyThemeDiagram,
   'product-page-audit': ProductPageAuditDiagram,
   'text-in-images': TextInImagesDiagram,
@@ -38,6 +42,14 @@ const postHeroVisualMap: Record<string, React.ComponentType> = {
 
 // Table of contents per post — ids match the h2 anchors in the content
 const postTocMap: Record<string, { id: string; label: string }[]> = {
+  'publishing-checklist': [
+    { id: 'what-is-it', label: 'What is a publishing checklist?' },
+    { id: 'approved-vs-ready', label: "Why doesn't approved mean ready to publish?" },
+    { id: 'the-5-checks', label: 'The 5 checks every post should pass' },
+    { id: 'questions-for-your-team', label: 'What should you ask the team that publishes your blog?' },
+    { id: 'after-it-goes-live', label: 'What happens after the post goes live?' },
+    { id: 'one-question', label: 'One question' },
+  ],
   'shopify-theme-small-team': [
     { id: 'what-actually-changed', label: 'What actually changed' },
     { id: 'the-condition', label: 'The condition nobody mentions' },

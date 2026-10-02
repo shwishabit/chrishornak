@@ -39,6 +39,49 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    slug: 'publishing-checklist',
+    title: 'Your content workflow needs a publishing checklist',
+    teaser:
+      'A publishing checklist is the written standard every post meets before it goes live. Here are 5 checks every post should pass: on-page basics, formatting and images, internal links, CMS setup, and how it looks where people share it.',
+    targetKeyword: 'publishing checklist',
+    metaDescription:
+      'A publishing checklist is the written standard a post meets before it goes live. Here are 5 checks every post should pass, and 7 questions to ask your team.',
+    keywords: [
+      'publishing checklist',
+      'blog publishing checklist',
+      'content workflow',
+      'content publishing process',
+      'internal linking',
+      'content operations',
+    ],
+    published: true,
+    datePublished: '2026-10-02',
+    dateModified: '2026-10-02',
+    wordCount: 1352,
+    readingMinutes: 6,
+    ogImage: {
+      url: '/images/blog/publishing-checklist-card.png',
+      alt: 'A checklist with five rows. The first four boxes are ticked in teal, and a mouse cursor rests on the fifth, still empty: the last check before a post is published.',
+    },
+    faq: [
+      {
+        question: 'Who should own the publishing checklist?',
+        answer:
+          'One person. Usually that is whoever publishes, with the content lead approving the standard once. When ownership is shared, the list tends to get skipped.',
+      },
+      {
+        question: 'Does every post need all 5 checks?',
+        answer:
+          'Yes, before it goes live. They are quick once the standard is written down. The first few times take longer while the team learns the list.',
+      },
+      {
+        question: "Isn't a checklist just more process?",
+        answer:
+          'It can be, if it keeps growing. Keep it to what affects readers and search. Style preferences belong in a style guide, not on the publish list.',
+      },
+    ],
+  },
+  {
     slug: 'shopify-theme-small-team',
     title: 'A small team moves fast if the Shopify theme allows it',
     teaser:
