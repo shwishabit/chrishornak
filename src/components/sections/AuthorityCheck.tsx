@@ -2,10 +2,13 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react'
 import {
-  AUTHORITY_FULL,
   LETTERS,
+  LINK_BANDS,
+  LINK_POINTS,
   MAX_RIVALS,
+  OVERALL_TIE,
   PROOF_CHECKS,
+  SHOWN_CHECKS,
   TIE_GAP,
   authorityFrom,
   authorityOf,
@@ -65,10 +68,10 @@ function fmtDate(iso: string): string {
 
 /** What each part checks, in an owner's words (hero card). */
 const HERO_PLAIN: Record<Letter, string> = {
-  experience: 'Real work shown, years in business, customer stories',
-  expertise: 'The people behind it, licenses and awards',
-  authority: 'Other websites that link to you',
-  trust: 'Secure site, contact details, proof of reviews',
+  experience: 'Real work shown, years in business, client counts',
+  expertise: 'The people behind it, credentials, a page per offer',
+  authority: 'Link strength, review sites, where you’re featured',
+  trust: 'Reviews on your site, how to reach you, About page',
 }
 
 const FIELD =
@@ -331,6 +334,7 @@ function CheckMark({
   id,
   shown,
   setShown,
+  neutral = false,
 }: {
   r: AuthorityResult
   site: SiteResult
@@ -338,6 +342,8 @@ function CheckMark({
   id: ProofId
   shown: Shown
   setShown: (s: Shown) => void
+  /** A "good to know" row: never scored, so a missing one isn't a gap. */
+  neutral?: boolean
 }) {
   if (!site.proof)
     return (
@@ -346,7 +352,7 @@ function CheckMark({
       </span>
     )
   if (!site.proof.includes(id)) {
-    const gap = index === 0 && isGap(r, id)
+    const gap = !neutral && index === 0 && isGap(r, id)
     return (
       <span className={gap ? 'ac-gap font-semibold' : 'ac-no'} role="img" aria-label={gap ? 'no, and a rival has it' : 'no'}>
         ✕
@@ -416,8 +422,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
     alone ? level(pts, max) : standing(value, values, tie)
   const letterTone = (l: (typeof LETTERS)[number], o: Ranked, values: (number | null)[]) => {
     if (!o.scores) return null
-    if (l.id !== 'authority') return tone(o.scores[l.id], l.points, o.scores[l.id], values)
-    return src ? tone(o.scores.authority, l.points, authorityOf(o.site, r), values, TIE_GAP) : null
+    return tone(o.scores[l.id], l.points, o.scores[l.id], values)
   }
 
   /** Authority's row in the checks: the Domain Rating itself, a number rather than a ✓. */
@@ -432,7 +437,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       >
         <span className="flex items-center gap-2">
           <Badge id="authority" size="sm" />
-          <span className="min-w-0">{src === 'opr' ? 'Open PageRank' : 'Domain Rating'}</span>
+          <span className="min-w-0">{src === 'opr' ? 'Link strength (Open PageRank)' : 'Link strength (Domain Rating)'}</span>
         </span>
       </th>
       {order.map((o, i) => (
@@ -456,13 +461,27 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       ))}
     </tr>
   )
-  const firstTrust = PROOF_CHECKS.findIndex((c) => c.group === 'trust')
+  const firstAuthority = PROOF_CHECKS.findIndex((c) => c.group === 'authority')
+  const ROWS = [...PROOF_CHECKS, ...SHOWN_CHECKS]
 
   /** The check rows (11 from the homepage + Domain Rating), each ✓ opening a "what we found" row. Shared by the desktop table and the phone grid. */
   const checkRows = (compact = false) =>
-    PROOF_CHECKS.map((c, i) => (
+    ROWS.map((c, i) => (
       <Fragment key={c.id}>
-        {i === firstTrust && drRow(compact)}
+        {i === firstAuthority && drRow(compact)}
+        {i === PROOF_CHECKS.length && (
+          <tr>
+            <th
+              scope="rowgroup"
+              colSpan={cols}
+              className={`border-t border-line-strong text-left font-heading font-bold tracking-[.06em] text-muted-foreground uppercase ${
+                compact ? 'px-2.5 pt-3 pb-1 text-[11px]' : 'px-3 pt-4 pb-1.5 text-xs sm:px-4'
+              }`}
+            >
+              Good to know · not scored
+            </th>
+          </tr>
+        )}
         <tr className="ac-tint">
           <th
             scope="row"
@@ -471,8 +490,11 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
             }`}
           >
             <span className="flex items-center gap-2">
-              <Badge id={c.group} size="sm" />
-              <span className="min-w-0">{c.label}</span>
+              {'group' in c ? <Badge id={c.group} size="sm" /> : <span aria-hidden="true" className="w-5 flex-none" />}
+              <span className="min-w-0">
+                {c.label}
+                {'note' in c && !compact && <small className="block text-xs text-muted-foreground">{c.note}</small>}
+              </span>
             </span>
           </th>
           {order.map((o) => (
@@ -480,7 +502,15 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
               key={o.site.domain}
               className={`border-t border-border text-center ${compact ? 'px-0 py-1' : 'px-1.5 py-1.5'} ${o.index === 0 ? 'ac-you' : ''}`}
             >
-              <CheckMark r={r} site={o.site} index={o.index} id={c.id} shown={shown} setShown={setShown} />
+              <CheckMark
+                r={r}
+                site={o.site}
+                index={o.index}
+                id={c.id}
+                shown={shown}
+                setShown={setShown}
+                neutral={!('group' in c)}
+              />
             </td>
           ))}
         </tr>
@@ -510,7 +540,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
     ))
 
   const letterRow = (l: (typeof LETTERS)[number]) => {
-    const values = l.id === 'authority' ? auths : part(l.id)
+    const values = part(l.id)
     return (
       <tr key={l.id}>
         <th scope="row" className={rowHead}>
@@ -556,10 +586,8 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                 <small className="ml-0.5 font-sans text-[13px] font-normal text-muted-foreground">/ {l.points}</small>
               </span>
               <small className="block text-xs text-muted-foreground">
-                {l.id === 'authority'
-                  ? a === null
-                    ? 'No score'
-                    : `${authorityFrom(o.site, r) === 'ahrefs' ? 'DR' : 'OPR'} ${fmtAuthority(a)}`
+                {l.id === 'authority' && a !== null
+                  ? `${authorityFrom(o.site, r) === 'ahrefs' ? 'DR' : 'OPR'} ${fmtAuthority(a)} · ${o.scores.found[l.id]} of ${checksIn(l.id).length}`
                   : `${o.scores.found[l.id]} of ${checksIn(l.id).length}`}
               </small>
             </td>
@@ -581,7 +609,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
         <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
           {src === 'opr'
             ? 'Ahrefs scores are busy right now, so Authority uses Open PageRank for this check.'
-            : 'Authority scores are not available right now, so Authority counts 0 for every site. Try again in a minute.'}
+            : `Link strength isn’t available right now, so it counts for no one and each total is scaled up from the other ${100 - LINK_POINTS} points. Try again in a minute for the full score.`}
         </p>
       )}
       {standIns.length > 0 && (
@@ -595,7 +623,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
         <ol className="m-0 grid list-none gap-2.5 p-0">
           {order.map((o) => {
             const s = o.scores
-            const ov = tone(s?.overall ?? null, 100, s?.overall ?? null, overall)
+            const ov = tone(s?.overall ?? null, 100, s?.overall ?? null, overall, OVERALL_TIE - 1)
             return (
               <li
                 key={o.site.domain}
@@ -621,7 +649,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                     </span>
                     <dl className="m-0 mt-3 grid grid-cols-4 gap-1.5">
                       {LETTERS.map((l) => {
-                        const values = l.id === 'authority' ? auths : part(l.id)
+                        const values = part(l.id)
                         const a = authorityOf(o.site, r)
                         const st = letterTone(l, o, values)
                         return (
@@ -734,7 +762,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
               </th>
               {order.map((o) => {
                 const v = o.scores?.overall ?? null
-                const s = tone(v, 100, v, overall)
+                const s = tone(v, 100, v, overall, OVERALL_TIE - 1)
                 return (
                   <td key={o.site.domain} className={td(o, `py-4 ${sClass(s)}`)}>
                     {v === null ? (
@@ -948,9 +976,15 @@ const LETTER_ICON: Record<Letter, React.ReactNode> = {
 
 const GROW: { id: Letter; text: string }[] = [
   { id: 'experience', text: 'Show real jobs on a projects page, and say how long you have done this work.' },
-  { id: 'expertise', text: 'Name the people behind the business, and list licenses and awards.' },
-  { id: 'authority', text: 'Get local news, partners and associations to link to you. It takes months.' },
-  { id: 'trust', text: 'Fix the homepage gaps, and show proof of your reviews. Most take an afternoon.' },
+  { id: 'expertise', text: 'Name the people behind the business, list licenses and awards, and give each offer its own page.' },
+  {
+    id: 'authority',
+    text: 'Get named and linked by local news, partners, associations and lists, and link your review profiles. It takes months.',
+  },
+  {
+    id: 'trust',
+    text: 'Show real reviews, a phone or street address and an About page. Most take an afternoon; earning reviews takes longer.',
+  },
 ]
 
 function Grow() {
@@ -978,6 +1012,30 @@ function Grow() {
           )
         })}
       </ul>
+    </section>
+  )
+}
+
+/* ── What this can't see: right under the table, so the score isn't read as a ranking
+ * (SEO panel, 6 of 6; the AI wording is the line all six would sign, rounds 3 and 5). ─── */
+
+function CantSee() {
+  return (
+    <section aria-labelledby="ac-cant" className="grid gap-2 rounded-xl border border-dashed border-line-strong px-4 py-3.5 text-sm">
+      <h2 id="ac-cant" className="m-0 font-heading text-[15px] font-bold">
+        What this can&apos;t see
+      </h2>
+      <p className="m-0 max-w-[75ch] text-body-soft">
+        This checks what your website shows, next to the rivals you pick. It can&apos;t see your Google Business
+        Profile, how close you are to the person searching, your Google rating, how many reviews you have and how
+        recent they are, or whether visitors stay on your site. Those drive Google Maps more than anything here, so a
+        rival can beat you in Maps with a weaker website.
+      </p>
+      <p className="m-0 max-w-[75ch] text-body-soft">
+        No AI tool publishes how it picks the businesses it mentions, and its answers change from one ask to the next.
+        So no score, ours included, can tell you whether ChatGPT, Gemini or Google&apos;s AI answers will name you. This
+        is our score, not Google&apos;s, and it doesn&apos;t predict rankings.
+      </p>
     </section>
   )
 }
@@ -1010,19 +1068,26 @@ function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof
           . Not made, checked or endorsed by Google. Google does not give sites an E-E-A-T score.
         </p>
         <p className="m-0">
-          Experience 20, Expertise 20, Authority 20, Trust 40. Experience: your work shown is 10 points; a track
-          record is 6, or 10 when it is strong (5+ testimonials, 50+ reviews, 20+ years, or two signs together). Authority points
-          grow fastest at the start: Domain Rating 9 gets 7, 30 gets 13, {AUTHORITY_FULL} or more gets all 20. 70 and
-          up overall is strong, 40 to 69 is fair, under 40 needs work. A site checked alone gets each part coloured
-          the same way, as a share of that part&apos;s points. Authority scores less than {TIE_GAP} points
-          apart count as a tie.
+          Experience 20, Expertise 20, Authority 20, Trust 40, from 11 checks. Experience: your work shown 10, a
+          track record 6, or 10 when it is strong (20+ years, or years plus a client count). Expertise: real people 8,
+          credentials 6, a page for each offer 6. Authority: link strength up to {LINK_POINTS} (Domain Rating{' '}
+          {[...LINK_BANDS]
+            .reverse()
+            .filter((b) => b.points > 0)
+            .map((b) => `${b.from} gets ${b.points}`)
+            .join(', ')}
+          ), review spread up to 5 (1 review site 2, 2 sites 4, 3 or more 5) and seen elsewhere up to 4. Trust:
+          reviews on your site 15, how to reach you 13, About page 8, secure site 4. 70 and up overall is strong, 40
+          to 69 is fair, under 40 needs work. Totals less than {OVERALL_TIE} points apart read as about the same, and
+          Domain Ratings less than {TIE_GAP} apart count as a tie. A site checked alone gets each part coloured as a
+          share of that part&apos;s points. &ldquo;Good to know&rdquo; rows are shown, never scored.
         </p>
         <p className="m-0">
           We read each homepage once, plus its About page and reviews page when the homepage doesn&apos;t show enough. Expertise and most Trust checks use the same rules as{' '}
           <a href="/audit" className="text-primary underline underline-offset-[3px]">
             the Findability Check
           </a>
-          . Track record means 5 or more years in practice, a count of 20 or more clients or jobs, 20 or more reviews, or 3 or more testimonials on your homepage or About page.
+          . Track record means 5 or more years in practice, or a count of 20 or more clients or jobs. Testimonials and review counts count once, under Reviews on your site.
         </p>
         <p className="m-0">
           Authority:{' '}
@@ -1204,6 +1269,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
           <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 ${loading ? 'opacity-50 transition-opacity' : ''}`}>
             <ReportHead r={shown} example={!result} />
             <CompareTable r={shown} onAddRival={addRival} loading={loading} />
+            <CantSee />
             {result && result.rivals.length === 0 && <SoloAddRival onAddRival={addRival} loading={loading} />}
             <Moves r={shown} />
           </div>

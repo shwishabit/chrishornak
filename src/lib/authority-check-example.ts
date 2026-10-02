@@ -1,17 +1,17 @@
 /* ── Authority Check: the example shown at rest ───────────────────────────
  * Made-up domains only (never real businesses), labelled "Example" on the
- * page. Same sites as the approved mock (drafts/authority-check-results-
- * v4-comp.html), which showed 79 · 48 · 24 · 9; on today's Authority curve
- * they score 79 · 50 · 25 · 11. The phrases behind the ✓ marks are invented
- * to show what a real check returns, and each one passes today's rule for its
- * check (re-written 2026-10-02 for the stricter rules). Renders through the same code
- * as a real check, so places, colours, gaps and moves come out of the rules.
+ * page. The same four sites as the approved mock (drafts/authority-check-
+ * results-v4-comp.html), re-written 2026-10-02 for the 11 checks of the SEO
+ * panel's final spec: they score 84 · 64 · 29 · 8. The phrases behind the ✓
+ * marks are invented to show what a real check returns, and each one passes
+ * today's rule for its check. Renders through the same code as a real check,
+ * so places, colours, gaps and moves come out of the rules.
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { AuthorityResult } from './authority-check'
 
 export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
-  checkedAt: '2026-10-01T12:00:00.000Z',
+  checkedAt: '2026-10-02T12:00:00.000Z',
   asOf: '2026-09-01',
   linksStatus: 'ok',
   drStatus: 'ok',
@@ -21,11 +21,12 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
     opr: 1.02,
     linkingSites: 8,
     dr: 10,
-    proof: ['https', 'about', 'address'],
+    proof: ['address', 'about', 'https', 'age'],
     evidence: {
-      https: 'Loads over “https://”',
-      about: 'A link to “/about”',
+      age: 'First registered in 2019',
       address: 'Found “412-555-0142”: Call or text 412-555-0142 any day…',
+      about: 'A link to “/about”',
+      https: 'Loads over “https://”',
     },
   },
   rivals: [
@@ -36,18 +37,25 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
       linkingSites: 12,
       dr: 14,
       trackLevel: 2,
-      proof: ['work', 'track', 'people', 'https', 'about', 'address', 'schema', 'trade', 'reviews', 'reviewSites'],
+      reviewSiteCount: 2,
+      seenCount: 1,
+      proof: ['work', 'track', 'people', 'focus', 'reviewSites', 'seen', 'reviews', 'address', 'about', 'https', 'schema', 'trade', 'area', 'name', 'age'],
       evidence: {
         work: 'A link to “Our work” (/our-work)',
-        track: 'Strong: “Serving the valley since 2004” (22 years) · 6 testimonials',
+        track: 'Strong: “since 2004” (22 years) · “Over 300 weddings”',
         people: 'Found “Dana”: Meet Dana, owner and head baker…',
-        https: 'Loads over “https://”',
-        about: 'A link to “/about-us”',
+        focus: '5 offer pages: /cakes, /breads, /catering, /wholesale …',
+        reviewSites: 'Links to your Google listing and Yelp page',
+        seen: 'A link to LinkedIn',
+        reviews: 'Found “4.9 stars”: Rated 4.9 stars by our regulars…',
         address: 'Found “12 Main Street”: Our address is 12 Main Street…',
+        about: 'A link to “/about-us”',
+        https: 'Loads over “https://”',
         schema: 'Code that says this is a “Bakery” named “Rival A Bakery”',
         trade: 'Found “bakery”: A small-batch bakery in town…',
-        reviews: 'Found “4.9 stars”: Rated 4.9 stars by our regulars…',
-        reviewSites: 'Links to your Google listing and Yelp page',
+        area: 'Found “Serving Allegheny County”: Serving Allegheny County since 2004…',
+        name: 'Same name in the schema, share name, © line: “Rival A Bakery”',
+        age: 'First registered in 2004; your site says 2004',
       },
     },
     {
@@ -56,14 +64,16 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
       opr: 0.83,
       linkingSites: 6,
       dr: 8,
-      proof: ['people', 'credentials', 'https', 'about', 'address', 'reviews'],
+      trackLevel: 1,
+      proof: ['track', 'people', 'credentials', 'reviews', 'address', 'about', 'https'],
       evidence: {
+        track: '“since 2009” (17 years)',
         people: 'Found “Sam Ortiz”: Sam Ortiz, our founder, started…',
-        credentials: 'Found “since 2009”: Serving the valley since 2009…',
-        https: 'Loads over “https://”',
-        about: 'A link to “/our-story”',
-        address: 'Found “412-555-0177”: Call 412-555-0177 to order…',
+        credentials: 'Found “licensed”: Licensed and insured, serving the valley since 2009…',
         reviews: 'Found “Testimonials”: Testimonials from our customers…',
+        address: 'Found “412-555-0177”: Call 412-555-0177 to order…',
+        about: 'A link to “/our-story”',
+        https: 'Loads over “https://”',
       },
     },
     {

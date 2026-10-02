@@ -7,11 +7,10 @@
  *                     list ("Clients we've helped grow", "Who we work with")
  *   Track record    = 5+ years in practice ("since 1962", "established his
  *                     practice in 1987", "six decades", foundingDate), a client
- *                     or job count of 20+ ("Over 150 clients"), 20+ reviews
- *                     stated ("700+ reviews"), or 3+ customer testimonials shown.
- *                     Strong: 5+ testimonials, 50+ reviews, 20+ years, or two signs
- * Testimonials: Google's raters look for experience in "sections such as
- * reviews and comments" (QRG Sept 2025, p. 27); Chris picked 3+ (option 2).
+ *                     or job count of 20+ ("Over 150 clients").
+ *                     Strong: 20+ years, or both signs.
+ * Testimonials and review counts were signs here until 2026-10-02; they now
+ * count only in "Reviews on your site" (TRACK_COUNTS_REVIEWS, SEO panel).
  * Tested on 18 Pittsburgh small-business homepages + 4 agency sites,
  * 2026-10-01 (backlog.md). Photo checks were dropped: a free check can't tell
  * the business's own photos from stock (Chris agreed). No server-only imports.
@@ -81,7 +80,14 @@ export const STRONG_YEARS = 20
 export const STRONG_TESTIMONIALS = 5
 export const STRONG_REVIEWS = 50
 
-/** 0 = none · 1 = one sign · 2 = strong (5+ testimonials, 20+ years, or two different signs). */
+/**
+ * Testimonials and stated review counts in Track record. Off since 2026-10-02 (SEO panel,
+ * 5 of 6): they count once, in "Reviews on your site", not twice. Track record is now
+ * years in practice and client / job counts.
+ */
+export const TRACK_COUNTS_REVIEWS = false
+
+/** 0 = none · 1 = one sign · 2 = strong (20+ years, or two different signs). */
 export type TrackLevel = 0 | 1 | 2
 
 export interface ExperienceRead {
@@ -169,19 +175,23 @@ function findTrackRecord(html: string, now: number): { text: string | null; leve
     if (longest.years >= STRONG_YEARS) strong = true
   }
 
-  const count = REVIEW_COUNT_RE.exec(text)
-  const reviews = count ? Number(count[1].replace(/,/g, '')) : 0
-  if (reviews >= MIN_REVIEWS) {
-    signs.push(`“${count![0].trim()}”`)
-    if (reviews >= STRONG_REVIEWS) strong = true
+  if (TRACK_COUNTS_REVIEWS) {
+    const count = REVIEW_COUNT_RE.exec(text)
+    const reviews = count ? Number(count[1].replace(/,/g, '')) : 0
+    if (reviews >= MIN_REVIEWS) {
+      signs.push(`“${count![0].trim()}”`)
+      if (reviews >= STRONG_REVIEWS) strong = true
+    }
   }
   // A year is never a count: "2027 Weddings" is a booking season (fresh-site test, 2026-10-01).
   const clients = [...text.matchAll(new RegExp(CLIENT_COUNT_RE.source, 'gi'))].find((m) => !/^(?:19|20)\d\d$/.test(m[1]))
   if (clients && Number(clients[1].replace(/,/g, '')) >= MIN_COUNT) signs.push(`“${clients[0].trim()}”`)
-  const shown = countTestimonials(html)
-  if (shown >= MIN_TESTIMONIALS) {
-    signs.push(`${shown} testimonials`)
-    if (shown >= STRONG_TESTIMONIALS) strong = true
+  if (TRACK_COUNTS_REVIEWS) {
+    const shown = countTestimonials(html)
+    if (shown >= MIN_TESTIMONIALS) {
+      signs.push(`${shown} testimonials`)
+      if (shown >= STRONG_TESTIMONIALS) strong = true
+    }
   }
 
   if (!signs.length) return { text: null, level: 0 }

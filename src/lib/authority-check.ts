@@ -1,31 +1,44 @@
 /* ── Authority Check: shared logic (client + server) ──────────────────────
  * One score out of 100, in four parts named after Google's E-E-A-T (our own
- * score, built from Google's public guidance; Google gives no E-E-A-T score):
- *   Experience 20 = your work shown + track record (experience-signals.ts)
- *   Expertise  20 = real people + credentials (the Findability Check's rules)
- *   Authority  20 = Ahrefs Domain Rating on a curve, full points at DR 70;
- *                   Open PageRank (×10) is the backup when Ahrefs is down, or
- *                   for a site Ahrefs has no rating for
- *   Trust      40 = 7 checks: 5 Findability rules + 2 review proofs
- *                   (review-signals.ts). Trust counts double because Google:
- *                   "Of these aspects, trust is most important."
- * Plus the sort (1st → 4th), the colours, the summary and the first 3 moves.
- * Chris's calls: backlog.md, Tools item (round 4, 2026-10-01).
+ * score, built from Google's public guidance; Google gives no E-E-A-T score).
+ * 11 scored checks, each worth its own points (SEO panel review, rounds 1–5,
+ * 2026-10-02):
+ *   Experience 20 = your work shown 10 + track record 6, or 10 when strong
+ *   Expertise  20 = real people 8 + credentials 6 + focus (offer pages) 6
+ *   Authority  20 = link strength 11 (Ahrefs DR in bands; Open PageRank ×10
+ *                   for a site Ahrefs has no rating for, or when Ahrefs is
+ *                   down) + review spread 5 + seen elsewhere 4
+ *   Trust      40 = reviews on your site 15 + how to reach you 13 + About
+ *                   page 8 + secure site 4. Trust counts double because
+ *                   Google: "Of these aspects, trust is most important."
+ * Plus "good to know" rows, shown and never scored (schema, what you do,
+ * where you work). The weights live in PROOF_CHECKS and LINK_BANDS only.
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { ProofSignals } from './proof-signals'
 
 export const MAX_RIVALS = 3
-/** Authority values (DR or Open PageRank ×10) under this far apart read as a tie. */
-export const TIE_GAP = 2
+/** Authority values (DR or Open PageRank ×10) under this far apart read as a tie (colour only). */
+export const TIE_GAP = 5
+/** Overall scores under this far apart read as "about the same" (colour and summary; places don't change). */
+export const OVERALL_TIE = 5
+
 /**
- * Authority points follow a curve: 20 × √(DR ÷ 70), full points at DR 70.
- * Small sites still separate (DR 2 → 3, DR 9 → 7) and big ones aren't capped
- * flat (DR 30 → 13, DR 56 → 18). Chris picked the curve, 2026-10-01.
+ * Link strength in bands, not a curve: a local site's DR moves a point or two a month, and
+ * bands keep that from moving the score (SEO panel, 6 of 6). Full points at DR 50, which few
+ * local businesses pass; the old curve needed about 67.
  */
-export const AUTHORITY_FULL = 70
+export const LINK_BANDS: readonly { from: number; points: number }[] = [
+  { from: 50, points: 11 },
+  { from: 30, points: 9 },
+  { from: 15, points: 7 },
+  { from: 5, points: 4 },
+  { from: 0, points: 0 },
+]
+export const LINK_POINTS = LINK_BANDS[0].points
 export function authorityPoints(a: number | null): number {
-  return a === null ? 0 : Math.round(20 * Math.sqrt(Math.min(Math.max(a, 0), AUTHORITY_FULL) / AUTHORITY_FULL))
+  if (a === null) return 0
+  return LINK_BANDS.find((b) => a >= b.from)?.points ?? 0
 }
 
 export type ProofId =
@@ -33,19 +46,26 @@ export type ProofId =
   | 'track'
   | 'people'
   | 'credentials'
-  | 'https'
-  | 'about'
+  | 'focus'
+  | 'reviewSites'
+  | 'seen'
+  | 'reviews'
   | 'address'
+  | 'about'
+  | 'https'
+  // Shown, never scored:
   | 'schema'
   | 'trade'
-  | 'reviews'
-  | 'reviewSites'
+  | 'area'
+  | 'name'
+  | 'age'
+  | 'wikidata'
 export type Letter = 'experience' | 'expertise' | 'authority' | 'trust'
-export type ProofGroup = Exclude<Letter, 'authority'>
+export type ProofGroup = Letter
 
 /**
- * The homepage signals from parseAI, HTTPS from Findability's Security checks,
- * the review proofs (review-signals.ts) and Experience (experience-signals.ts).
+ * The homepage signals (proof-signals.ts), HTTPS, the review proofs (review-signals.ts),
+ * Experience (experience-signals.ts) and Focus / Seen elsewhere (standing-signals.ts).
  */
 export type ProofFacts = ProofSignals & {
   isHttps: boolean
@@ -53,6 +73,8 @@ export type ProofFacts = ProofSignals & {
   hasReviewSites: boolean
   hasWorkShown: boolean
   hasTrackRecord: boolean
+  hasFocus: boolean
+  hasSeen: boolean
 }
 
 export interface ProofCheck {
@@ -60,16 +82,19 @@ export interface ProofCheck {
   group: ProofGroup
   label: string
   signal: keyof ProofFacts
+  /** Full points. Graded checks (track, reviewSites, seen) can earn less: see pointsFor. */
+  points: number
   move: { title: string; body: string }
 }
 
-/** Table order. Also the tie-break order for the first moves. */
+/** The 11 scored checks, in table order (also the last tie-break for the first moves). */
 export const PROOF_CHECKS: readonly ProofCheck[] = [
   {
     id: 'work',
     group: 'experience',
     label: 'Your work shown',
     signal: 'hasWorkShown',
+    points: 10,
     move: { title: 'Show your work', body: 'Add a page of real jobs or projects, with your own photos.' },
   },
   {
@@ -77,9 +102,10 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     group: 'experience',
     label: 'Track record',
     signal: 'hasTrackRecord',
+    points: 10,
     move: {
       title: 'Show your track record',
-      body: 'Say how long you have done this work, like "Serving Pittsburgh since 1998", and how many reviews you have.',
+      body: 'Say how long you have done this work and how many clients or jobs, like "Serving Pittsburgh since 1998".',
     },
   },
   {
@@ -87,74 +113,131 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     group: 'expertise',
     label: 'Real people',
     signal: 'hasPeople',
+    points: 8,
     move: { title: 'Name the people', body: 'Say who runs the business, with a photo and one line each.' },
   },
   {
     id: 'credentials',
     group: 'expertise',
     label: 'Credentials',
-    signal: 'hasCredentials',
-    move: { title: 'Show your credentials', body: 'List your licenses, awards, memberships or the year you started.' },
-  },
-  /* Trust, in a visitor's order: what you do and who you are, then proof,
-   * then the behind-the-scenes checks (Chris picked the order, 2026-10-01). */
-  {
-    id: 'trade',
-    group: 'trust',
-    label: 'What you do',
-    signal: 'hasBusinessType',
-    move: { title: 'Say what you do', body: 'Name your trade in plain words, like "plumber" or "bakery".' },
+    signal: 'hasLicences',
+    points: 6,
+    move: { title: 'Show your credentials', body: 'List your licenses, certifications, awards and memberships.' },
   },
   {
-    id: 'about',
+    id: 'focus',
+    group: 'expertise',
+    label: 'Focus: offer pages',
+    signal: 'hasFocus',
+    points: 6,
+    move: {
+      title: 'Give each offer its own page',
+      body: 'Make one page per service or product, and link them all from your menu.',
+    },
+  },
+  {
+    id: 'reviewSites',
+    group: 'authority',
+    label: 'Review spread',
+    signal: 'hasReviewSites',
+    points: 5,
+    move: {
+      title: 'Link your review profiles',
+      body: 'Link to your Google listing plus Yelp, BBB, G2 or the review site your customers use.',
+    },
+  },
+  {
+    id: 'seen',
+    group: 'authority',
+    label: 'Seen elsewhere',
+    signal: 'hasSeen',
+    points: 4,
+    move: {
+      title: 'Show where you’re featured',
+      body: 'Link to the press, podcasts, associations or directories that list you.',
+    },
+  },
+  /* Trust, in a visitor's order (Chris picked the order, 2026-10-01). */
+  {
+    id: 'reviews',
     group: 'trust',
-    label: 'About page',
-    signal: 'hasAboutLink',
-    move: { title: 'Link your About page', body: 'Add a clear link to a page that says who you are and why you do this.' },
+    label: 'Reviews on your site',
+    signal: 'hasReviewsShown',
+    points: 15,
+    move: { title: 'Show your reviews', body: 'Put 2 or 3 real reviews on your homepage, with names and stars.' },
   },
   {
     id: 'address',
     group: 'trust',
     label: 'How to reach you',
     signal: 'hasAddressInfo',
+    points: 13,
     move: { title: 'Show how to reach you', body: 'Put your phone number or street address on the homepage.' },
   },
   {
-    id: 'reviews',
+    id: 'about',
     group: 'trust',
-    label: 'Proof: reviews on your site',
-    signal: 'hasReviewsShown',
-    move: { title: 'Show your reviews', body: 'Put 2 or 3 real reviews on your homepage, with names and stars.' },
-  },
-  {
-    id: 'reviewSites',
-    group: 'trust',
-    label: 'Proof: links to your reviews',
-    signal: 'hasReviewSites',
-    move: {
-      title: 'Link to your reviews',
-      body: 'Link to your Google Business Profile, Yelp or BBB page, so visitors can read what customers say.',
-    },
+    label: 'About page',
+    signal: 'hasAboutLink',
+    points: 8,
+    move: { title: 'Link your About page', body: 'Add a clear link to a page that says who you are and why you do this.' },
   },
   {
     id: 'https',
     group: 'trust',
     label: 'Secure site',
     signal: 'isHttps',
+    points: 4,
     move: {
       title: 'Turn on HTTPS',
       body: 'Ask your host for a free SSL certificate, so browsers stop calling your site "Not secure".',
     },
   },
+]
+
+/** "Good to know": read and shown with what we found, never scored (SEO panel, rounds 2–5). */
+export interface ShownCheck {
+  id: ProofId
+  label: string
+  /** The homepage signal behind it; none for the public-record rows (public-records.ts, read in the route). */
+  signal?: keyof ProofFacts
+  /** One line under the row: why it isn't scored. */
+  note: string
+}
+export const SHOWN_CHECKS: readonly ShownCheck[] = [
   {
     id: 'schema',
-    group: 'trust',
     label: 'Business details for Google',
     signal: 'hasOrgSchema',
-    move: {
-      title: 'Tell Google who you are',
-      body: 'Add a few lines of hidden code (called schema) with your business name, address and trade.',
-    },
+    note: 'Schema helps machines know who you are. The Findability Check scores it, so it isn’t scored twice.',
+  },
+  {
+    id: 'trade',
+    label: 'Says what you do',
+    signal: 'hasBusinessType',
+    note: 'Your trade in plain words. Focus scores the pages behind it.',
+  },
+  {
+    id: 'area',
+    label: 'Where you work',
+    signal: 'hasServiceArea',
+    note: 'A place you serve or are based in. Not scored, so national and online businesses aren’t marked down.',
+  },
+  {
+    id: 'name',
+    label: 'One name everywhere',
+    signal: 'hasOneName',
+    note: 'Your schema, share name and © line use the same business name.',
+  },
+  {
+    id: 'age',
+    label: 'Domain age',
+    note: 'When your web address was first registered (public RDAP record). Many older firms have newer domains, so it isn’t scored.',
+  },
+  {
+    id: 'wikidata',
+    label: 'Known entity (Wikidata)',
+    note: 'A Wikidata entry that names your site. Most small businesses don’t have one, so it can only add.',
   },
 ]
 
@@ -167,9 +250,9 @@ export interface LetterInfo {
 
 export const LETTERS: readonly LetterInfo[] = [
   { id: 'experience', label: 'Experience', hint: 'your work and track record', points: 20 },
-  { id: 'expertise', label: 'Expertise', hint: 'people and credentials', points: 20 },
-  { id: 'authority', label: 'Authority', hint: 'who links to you', points: 20 },
-  { id: 'trust', label: 'Trust', hint: '7 checks, incl. review proof', points: 40 },
+  { id: 'expertise', label: 'Expertise', hint: 'people, credentials, offer pages', points: 20 },
+  { id: 'authority', label: 'Authority', hint: 'link strength, review sites, mentions', points: 20 },
+  { id: 'trust', label: 'Trust', hint: '4 checks, incl. reviews', points: 40 },
 ]
 
 export const checksIn = (g: ProofGroup) => PROOF_CHECKS.filter((c) => c.group === g)
@@ -189,6 +272,10 @@ export interface SiteResult {
   dr?: number | null
   /** Track record level: 1 = one sign (6 points), 2 = strong (10 points). */
   trackLevel?: 0 | 1 | 2
+  /** How many review sites the homepage links to (Review spread: 1 = 2 points, 2 = 4, 3+ = 5). */
+  reviewSiteCount?: number
+  /** How many other places list or feature the site (Seen elsewhere: 1 = 2 points, 2+ = 4). */
+  seenCount?: number
   /** The checks found. null = the homepage could not be read. */
   proof: ProofId[] | null
   /** What each found check matched, in a few words (the phrase behind each ✓). */
@@ -219,8 +306,14 @@ export function linksScore(opr: number | null | undefined): number | null {
   return Math.max(0, Math.min(100, Math.round(opr * 10)))
 }
 
+/** Every check found: the scored ones, then the "good to know" ones. */
 export function proofFromSignals(s: ProofFacts): ProofId[] {
-  return PROOF_CHECKS.filter((c) => s[c.signal]).map((c) => c.id)
+  return [...PROOF_CHECKS, ...SHOWN_CHECKS].filter((c) => c.signal && s[c.signal]).map((c) => c.id)
+}
+
+/** How many scored checks a site passed (the usage log stores this, 0 to 11). */
+export function scoredCount(proof: ProofId[] | null): number | null {
+  return proof ? PROOF_CHECKS.filter((c) => proof.includes(c.id)).length : null
 }
 
 export type AuthoritySource = 'ahrefs' | 'opr'
@@ -271,29 +364,46 @@ export interface Scores {
   authority: number
   trust: number
   overall: number
-  /** Checks found per group. */
+  /** Checks found per group (Authority: its 2 checks, not the link strength row). */
   found: Record<ProofGroup, number>
+  /** True when no authority source answered and the total was scaled from the other points. */
+  scaled: boolean
+}
+
+/**
+ * Points one check earns for a site. Graded checks: track record 6, or 10 when strong;
+ * review spread 2 / 4 / 5 for 1 / 2 / 3+ review sites; seen elsewhere 2, or 4 for 2+ places.
+ * Results saved before the counts existed score a found graded check at its first level.
+ */
+export function pointsFor(c: ProofCheck, s: SiteResult): number {
+  if (!s.proof?.includes(c.id)) return 0
+  if (c.id === 'track') return s.trackLevel === 2 ? c.points : 6
+  if (c.id === 'reviewSites') return [0, 2, 4, 5][Math.min(Math.max(s.reviewSiteCount ?? 1, 1), 3)]
+  if (c.id === 'seen') return (s.seenCount ?? 1) >= 2 ? c.points : 2
+  return c.points
 }
 
 /** The four parts and the total. null when the homepage wasn't read. */
 export function scoresOf(s: SiteResult, r: AuthorityResult): Scores | null {
   if (!s.proof) return null
+  const sum = (g: ProofGroup) => checksIn(g).reduce((n, c) => n + pointsFor(c, s), 0)
   const count = (g: ProofGroup) => checksIn(g).filter((c) => s.proof!.includes(c.id)).length
-  const part = (g: ProofGroup) => Math.round((LETTERS.find((l) => l.id === g)!.points * count(g)) / checksIn(g).length)
-  const a = authorityOf(s, r)
-  // Experience: your work shown 10, track record 6 (one sign) or 10 (strong: the bonus level).
-  const has = (id: ProofId) => s.proof!.includes(id)
-  const experience = (has('work') ? 10 : 0) + (has('track') ? (s.trackLevel === 2 ? 10 : 6) : 0)
-  const expertise = part('expertise')
-  const authority = authorityPoints(a)
-  const trust = part('trust')
+  const experience = sum('experience')
+  const expertise = sum('expertise')
+  const authority = authorityPoints(authorityOf(s, r)) + sum('authority')
+  const trust = sum('trust')
+  const raw = experience + expertise + authority + trust
+  // No authority source answered: link strength can't be read for anyone, so the total is
+  // scaled from the points that could be earned (SEO panel), not capped at 89.
+  const scaled = authoritySource(r) === null
   return {
     experience,
     expertise,
     authority,
     trust,
-    overall: experience + expertise + authority + trust,
-    found: { experience: count('experience'), expertise: count('expertise'), trust: count('trust') },
+    overall: scaled ? Math.round((raw * 100) / (100 - LINK_POINTS)) : raw,
+    found: { experience: count('experience'), expertise: count('expertise'), authority: count('authority'), trust: count('trust') },
+    scaled,
   }
 }
 
@@ -372,6 +482,9 @@ export function summary(r: AuthorityResult): string {
   if (me.place === 1 && leaders.length) return `You’re tied for 1st with ${leaders.map((o) => o.site.domain).join(' and ')}, on ${mine}.`
   if (me.place === 1) return `You’re 1st of ${n}, with ${mine} out of 100.`
   const top = order[0]
+  // Under 5 points apart is inside what the checks can tell apart (each is about 95% right).
+  if (top.scores!.overall - mine < OVERALL_TIE)
+    return `You’re about level with ${top.site.domain}: ${top.scores!.overall} to your ${mine}, ${ordinal(me.place!)} of ${n}.`
   return `You’re ${ordinal(me.place!)} of ${n}. ${top.site.domain} leads with ${top.scores!.overall}, you have ${mine}.`
 }
 
@@ -424,10 +537,6 @@ function joinNames(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 }
 
-/** Points one check is worth (Experience and Expertise checks are worth more each). */
-function checkPoints(c: ProofCheck): number {
-  return LETTERS.find((l) => l.id === c.group)!.points / checksIn(c.group).length
-}
 
 /**
  * The user's missing checks: the ones most rivals show first, then the ones
@@ -437,7 +546,7 @@ export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
   const found = new Set(r.you.proof ?? [])
   return PROOF_CHECKS.filter((c) => !found.has(c.id))
     .map((c, order) => ({ c, order, have: r.rivals.filter((s) => s.proof?.includes(c.id)).map((s) => s.domain) }))
-    .sort((a, b) => b.have.length - a.have.length || checkPoints(b.c) - checkPoints(a.c) || a.order - b.order)
+    .sort((a, b) => b.have.length - a.have.length || b.c.points - a.c.points || a.order - b.order)
     .slice(0, limit)
     .map(({ c, have }) => ({
       id: c.id,

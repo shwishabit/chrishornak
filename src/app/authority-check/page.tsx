@@ -7,11 +7,12 @@ import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 import { AUTHORITY_CHECK_EXAMPLE } from '@/lib/authority-check-example'
 
-// The <title> keeps the search phrase (spec decision 1); og:title asks the question.
-const PAGE_TITLE = 'Free Domain Authority Checker: Compare Your Site to Rivals'
+// Not "Domain Authority Checker": that is Moz's product name, and the tool doesn't show it (SEO
+// panel, 6 of 6, 2026-10-02). The description still says it, so the search phrase stays. og:title asks the question.
+const PAGE_TITLE = 'Free Authority Check: Compare Your Website to Your Rivals'
 const TITLE = 'How do you stack up? Your site next to your rivals.'
 const DESCRIPTION =
-  "Free domain authority checker. Compare your site's authority and homepage proof with up to 3 rivals, and get help with the first 3 fixes. No sign-up."
+  "Free website authority check: compare your link strength, reviews and homepage proof with up to 3 rivals. Not Moz's Domain Authority. No sign-up."
 const OG_ALT =
   "Authority Check card: the headline 'How do you stack up? Your site next to your rivals.' above an example ranking of four sites, with yourshop.com in third place, highlighted in teal."
 const URL = `${siteConfig.domain}/authority-check`
@@ -59,7 +60,7 @@ export default function AuthorityCheckPage() {
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
             name: 'Authority Check',
-            alternateName: 'Domain Authority Checker',
+            alternateName: 'Website Authority Checker',
             url: URL,
             description: DESCRIPTION,
             applicationCategory: 'BusinessApplication',

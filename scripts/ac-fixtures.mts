@@ -38,7 +38,7 @@ M._load = function (req: string, ...rest: unknown[]) {
 }
 const { fetchPageWithRetry, pageErrorMessage } = await import('../src/lib/fetch-guard')
 const { liveReader, MAX_HTML, readSite } = await import('../src/lib/authority-read')
-const { PROOF_CHECKS, parseSite } = await import('../src/lib/authority-check')
+const { PROOF_CHECKS, SHOWN_CHECKS, parseSite } = await import('../src/lib/authority-check')
 const { extractText, findAboutPage, findJsonLdBlocks } = await import('../src/lib/proof-signals')
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), 'ac-fixtures')
@@ -167,7 +167,8 @@ function replayReader(fx: Fixture, missing: string[], skip?: string | null): Rea
 
 async function score(out?: string, group?: string, noAbout = false) {
   const labels: Record<string, Label> = JSON.parse(readFileSync(join(DIR, 'labels.json'), 'utf8'))
-  const ids = PROOF_CHECKS.map((c) => c.id)
+  // The scored checks, then the "good to know" ones (shown on the page, labelled the same way).
+  const ids = [...PROOF_CHECKS, ...SHOWN_CHECKS].map((c) => c.id)
   const tally = Object.fromEntries(ids.map((id) => [id, { right: 0, falseNo: 0, falseYes: 0 }]))
   const wrong: string[] = []
   const runs: Record<string, { proof: ProofId[] | null; evidence?: Record<string, string> }> = {}

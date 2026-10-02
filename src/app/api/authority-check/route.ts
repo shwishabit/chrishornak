@@ -22,10 +22,13 @@ import {
 import { lookupOpenPageRank } from '@/lib/open-pagerank'
 import { lookupDomainRating } from '@/lib/ahrefs'
 import { MAX_HTML, readSite } from '@/lib/authority-read'
+import { domainRegistered, wikidataItem } from '@/lib/public-records'
+import { extractText } from '@/lib/proof-signals'
 import {
   MAX_RIVALS,
   linksScore,
   parseSite,
+  scoredCount,
   type AuthorityResult,
   type LinksStatus,
   type SiteInput,
@@ -93,6 +96,9 @@ export async function GET(request: NextRequest) {
   const blocked = await Promise.all(sites.map((s) => resolveAndCheck(s.host)))
   if (blocked.some(Boolean)) return bad('Cannot fetch internal or private addresses')
 
+  // The public records for the "good to know" rows start first and run alongside everything else.
+  const records = Promise.all(bares.map((b) => Promise.all([domainRegistered(b), wikidataItem(b)])))
+
   // Ahrefs + one Open PageRank call + one homepage read per site, in parallel.
   const [drs, opr, ...pages] = await Promise.all([
     lookupDomainRating(bares),
@@ -124,6 +130,21 @@ export async function GET(request: NextRequest) {
   // Each homepage's checks (with Reputation's extra reads), for every homepage that was read, in parallel.
   const errors = sites.map((s, i) => (i === 0 ? null : rivalPageError(pages[i], s.bare)))
   const reads = await Promise.all(pages.map((page, i) => (page && !errors[i] ? readSite(page) : null)))
+  const recs = await records
+  reads.forEach((read, i) => {
+    if (!read) return
+    const [year, item] = recs[i]
+    if (year) {
+      // The site's own start year, when it gives one ("since 1998", "established 2004").
+      const said = extractText(pages[i]!.body).match(/\b(?:since|established|est\.?|founded)(?: in)? ((?:19|20)\d\d)\b/i)?.[1]
+      read.proof.push('age')
+      read.evidence.age = `First registered in ${year}${said ? `; your site says ${said}${Number(said) < year ? ', older than the domain, which is common' : ''}` : ''}`
+    }
+    if (item) {
+      read.proof.push('wikidata')
+      read.evidence.wikidata = `Wikidata item ${item.id}: “${item.label}”`
+    }
+  })
 
   const results: SiteResult[] = sites.map((s, i) => {
     const err = errors[i]
@@ -136,6 +157,8 @@ export async function GET(request: NextRequest) {
       dr: drs.status === 'ok' ? (drs.dr.get(s.bare) ?? null) : null,
       proof: read?.proof ?? null,
       ...(read?.trackLevel ? { trackLevel: read.trackLevel } : {}),
+      ...(read?.reviewSiteCount ? { reviewSiteCount: read.reviewSiteCount } : {}),
+      ...(read?.seen.length ? { seenCount: read.seen.length } : {}),
       ...(read ? { evidence: read.evidence } : {}),
       ...(err ? { pageError: err } : {}),
     }
@@ -155,7 +178,8 @@ export async function GET(request: NextRequest) {
     rival_domains: rivals.map((r) => r.bare),
     links: results.map((s) => s.links),
     linking_sites: results.map((s) => s.linkingSites ?? null),
-    proof: results.map((s) => s.proof?.length ?? null),
+    // Scored checks only (0–11, the column's limit): the "good to know" rows aren't counted.
+    proof: results.map((s) => scoredCount(s.proof)),
     links_status: opr.status,
     status: 'completed',
   })

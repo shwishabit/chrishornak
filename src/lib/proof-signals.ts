@@ -112,8 +112,10 @@ export interface ProofSignals {
   hasAboutLink: boolean
   /** Trust signals: testimonials, reviews, or 2+ blockquotes. */
   hasTestimonials: boolean
-  /** Trust signals: licenses, awards, years in business. */
+  /** Trust signals: licenses, awards, years in business (Findability). */
   hasCredentials: boolean
+  /** The same without years: licenses, certifications, awards, degree letters, badges (Authority Check). */
+  hasLicences: boolean
   /** Trust signals: a business entry in valid JSON-LD (businessEntry). */
   hasOrgSchema: boolean
   /** Trust signals: a named person who works there (findPerson). */
@@ -122,6 +124,8 @@ export interface ProofSignals {
   hasAddressInfo: boolean
   /** Entity clarity: a named place it serves or is based in ("Serving Allegheny County"). */
   hasServiceArea: boolean
+  /** The schema name, share name, title brand and © line agree (readNames; Authority Check, shown only). */
+  hasOneName: boolean
   /** Entity clarity: a plain business-type word (plumber, bakery, agency…). */
   hasBusinessType: boolean
 }
@@ -208,6 +212,11 @@ const TESTIMONIAL_RE = /testimonial|review|client|customer.said|what.people.say/
 // "an established brand" and "Founded Swift Growth" stop passing.
 const CREDENTIALS_RE =
   /\b(certified|certifications?|licensed|accredited|accreditation|awards?|award-winning|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4}|\d+\+? years? (?:of |in )?(?:[a-z-]+ ){0,3}?experience|\d+\+? years running|(?:founded|established|est\.)(?: in)? \d{4}|since \d{4})\b/i
+// The Authority Check's Credentials: the same without years. A start year or "20 years of experience"
+// is time in business, which Track record scores (SEO panel, 6 of 6, 2026-10-02); Findability's
+// "credentials or experience" keeps them.
+const LICENCE_RE =
+  /\b(certified|certifications?|licensed|accredited|accreditation|awards?|award-winning|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4})\b/i
 // The same, read from what images are called: alt, title, file name (badges are images).
 const IMAGE_CREDENTIALS_RE =
   /\b(badges?|certified|certification|accredited|awards?|winner|aaha|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo|official|preferred|authorized|select) partner|inc\.? ?5000|clutch|upcity|designrush|goodfirms|bbb|best of \d{4}|top rated)\b/i // not "David Kadosh | Partner" (a client's job title)
@@ -230,7 +239,7 @@ const ORG_TYPE_RE =
 // Words that don't name a business: "the", "&", legal endings.
 const NAME_STOP = /^(?:a|an|and|of|the|to|at|in|for|llc|inc|ltd|co|corp|pllc|pc|lp|llp)$/
 const nameWords = (s: string) =>
-  s.toLowerCase().replace(/&amp;|&/g, ' ').split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !NAME_STOP.test(w))
+  s.toLowerCase().replace(/&#0?39;|['’]/g, '').replace(/&amp;|&/g, ' ').split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !NAME_STOP.test(w))
 /**
  * Does the page show this name? Its first word, and most of its words. Schema names run longer
  * than the page's ("Roots to Petals Studio & Shop" vs "Roots To Petals") or carry a tagline after
@@ -289,6 +298,41 @@ function businessEntry(
   }
   return null
 }
+/* ── One name everywhere (Authority Check, shown only) ─────────────────────
+ * The name a page gives itself in the places machines read it: the schema
+ * business entry, og:site_name and the © line. When two or more are found and
+ * they agree (same first word, 2 in 3 words shared), the row passes. The
+ * <title> isn't read: most titles lead with keywords, not the name (26 false
+ * clashes on the saved test sites). Jason Barnard: when facts clash, an AI "hedges" (SEO panel,
+ * round 3, 4 of 6). "LLC", "&" and "The" are ignored.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+const sameName = (a: string, b: string): boolean => {
+  const x = nameWords(a), y = nameWords(b)
+  if (!x.length || !y.length || x[0] !== y[0]) return false
+  const [short, long] = x.length <= y.length ? [x, y] : [y, x]
+  return short.filter((w) => long.includes(w)).length / short.length >= 2 / 3
+}
+
+/** The names found and whether they agree, or null when fewer than two were found. */
+export function readNames(
+  html: string,
+  pageText: string,
+  blocks: RegExpMatchArray | null,
+  pageUrl?: string,
+): { names: { where: string; name: string }[]; agree: boolean } | null {
+  const names: { where: string; name: string }[] = []
+  const entry = businessEntryOf(blocks, pageText, hostOf(pageUrl))
+  if (entry) names.push({ where: 'schema', name: entry.name })
+  const site = html.match(/<meta[^>]+property=["']?og:site_name["']?[^>]*>/i)?.[0]
+  const siteName = site ? attrOf(site, 'content').replace(/&amp;/g, '&').trim() : ''
+  if (siteName) names.push({ where: 'share name', name: siteName })
+  const copy = pageText.match(/(?:©|&copy;|Copyright)\s*(?:\d{4}(?:\s*[-–]\s*\d{4})?\s*)?(?:by\s+)?([A-Z][\w&'’.,\- ]{1,50}?)(?=\s*(?:\.|,|\||All rights|All Rights|$))/)?.[1]
+  if (copy && !/^all rights/i.test(copy.trim())) names.push({ where: '© line', name: copy.trim() })
+  if (names.length < 2) return null
+  return { names, agree: names.every((n) => sameName(n.name, names[0].name)) }
+}
+
 const businessEntryOf = (() => {
   let key: unknown[] = []
   let value: { type: string; name: string } | null = null
@@ -487,23 +531,27 @@ export function readProofSignals(
   const hasTestimonials =
     TESTIMONIAL_RE.test(html) ||
     (html.match(/<blockquote/gi) ?? []).length >= 2
-  const hasCredentials =
-    CREDENTIALS_RE.test(pageText) || DEGREE_RE.test(pageText) || imageWords(html).some((w) => IMAGE_CREDENTIALS_RE.test(w))
+  const badge = imageWords(html).some((w) => IMAGE_CREDENTIALS_RE.test(w))
+  const hasCredentials = CREDENTIALS_RE.test(pageText) || DEGREE_RE.test(pageText) || badge
+  const hasLicences = LICENCE_RE.test(pageText) || DEGREE_RE.test(pageText) || badge
   const hasOrgSchema = businessEntryOf(jsonLdBlocks, pageText, hostOf(pageUrl)) !== null
   const hasPeople = findPerson(html, jsonLdBlocks) !== null
 
   const hasAddressInfo = hasReachInfo(html, pageText)
   const hasServiceArea = SERVICE_AREA_RE.test(pageText)
+  const hasOneName = readNames(html, pageText, jsonLdBlocks, pageUrl)?.agree ?? false
   const hasBusinessType = BUSINESS_TYPE_RE.test(pageText)
 
   return {
     hasAboutLink,
     hasTestimonials,
     hasCredentials,
+    hasLicences,
     hasOrgSchema,
     hasPeople,
     hasAddressInfo,
     hasServiceArea,
+    hasOneName,
     hasBusinessType,
   }
 }
@@ -563,9 +611,14 @@ export function readProofEvidence(
     inText(CREDENTIALS_RE, pageText) ??
     inText(DEGREE_RE, pageText) ??
     (badge ? `An image called “${badge.slice(0, 70)}”` : undefined)
+  out.hasLicences =
+    inText(LICENCE_RE, pageText) ??
+    inText(DEGREE_RE, pageText) ??
+    (badge ? `An image called “${badge.slice(0, 70)}”` : undefined)
 
   const entry = businessEntryOf(jsonLdBlocks, pageText, hostOf(pageUrl))
-  if (entry) out.hasOrgSchema = `Code that says this is a “${entry.type}” named “${entry.name.slice(0, 60)}”`
+  if (entry)
+    out.hasOrgSchema = `Code that says this is ${/^[AEIOU]/.test(entry.type) ? 'an' : 'a'} “${entry.type}” named “${entry.name.slice(0, 60)}”`
 
   out.hasPeople = findPerson(html, jsonLdBlocks) ?? undefined
   out.hasAddressInfo =
@@ -573,6 +626,8 @@ export function readProofEvidence(
     inText(STREET_RE, pageText) ??
     (TEL_LINK_RE.test(html) ? 'A tap-to-call phone link' : undefined)
   out.hasServiceArea = inText(SERVICE_AREA_RE, pageText)
+  const named = readNames(html, pageText, jsonLdBlocks, pageUrl)
+  if (named?.agree) out.hasOneName = `Same name in the ${named.names.map((n) => n.where).join(', ')}: “${named.names[0].name.slice(0, 50)}”`
   out.hasBusinessType = inText(BUSINESS_TYPE_RE, pageText)
 
   for (const k of Object.keys(out) as (keyof ProofSignals)[]) if (!out[k]) delete out[k]

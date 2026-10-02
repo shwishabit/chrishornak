@@ -12,7 +12,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "no portfolio, gallery or case studies; only service pages",
@@ -23,9 +25,11 @@
    "about": "close call: nav is Home, Auto Repair, Specials, Reviews, FAQs, Contact; no About page",
    "address": "12827 Frankstown Rd Pittsburgh, PA 15235; (412) 244-1030",
    "reviews": "quoted reviews (Andre Whitley etc.); 4.9 Star Rating Based on 33 Reviews",
-   "reviewSites": "links https://www.yelp.com/biz/dave-smith-autostar-pittsburgh and aaa.com shop profile",
+   "reviewSites": "links https://www.yelp.com/biz/dave-smith-autostar-pittsburgh and aaa.com shop profile [count 2: search.google.com/local/reviews + writereview?placeid=ChIJEXM262..., yelp.com/biz/dave-smith-autostar-pittsburgh; AAA profile counted under seen not here (close call)]",
    "https": "final URL https://davesmithautoservice.com/",
-   "schema": "AutoRepair JSON-LD"
+   "schema": "AutoRepair JSON-LD",
+   "focus": "links /brake-repair-pittsburgh/, /engine-repair-pittsburgh/, /auto-ac-repair-pittsburgh/, /pa-state-inspection-emissions/ + more",
+   "seen": "1 place(s): aaa.com/autorepair/shop/dave-smith-auto-llc-77172 (AAA Approved Auto Repair certification profile; also hosts reviews) (close call)"
   }
  },
  "directiveconsulting.com": {
@@ -41,7 +45,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "client logo wall (Amazon, Cisco, Samsung) + /success-stories/ Case Studies link",
@@ -52,9 +58,11 @@
    "about": "https://directiveconsulting.com/about/",
    "address": "tel:949-214-4024",
    "reviews": "CLOSE CALL false: no quotes, stars or counts; Clutch logo only",
-   "reviewSites": "Clutch widget links clutch.co/profile/directive",
+   "reviewSites": "Clutch widget links clutch.co/profile/directive [count 1: clutch.co/profile/directive]",
    "https": "https://directiveconsulting.com/",
-   "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite"
+   "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite",
+   "focus": "links /services/content-marketing-agency/, /services/paid-media-agency/, /services/pr-agency/, /services/shopping-agency/ + more",
+   "seen": "1 place(s): ca.linkedin.com/company/directive-consulting"
   }
  },
  "directom.com": {
@@ -70,7 +78,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /case-studies/jv-manufacturing/; client logo wall (Highmark, UGA, SAE)",
@@ -81,9 +91,11 @@
    "about": "link https://www.directom.com/about-us/",
    "address": "tel:14127857671; \"4117 Liberty Ave. Pittsburgh, PA 15224\"",
    "reviews": "quoted testimonials: \"they are collectively the calm voice of reason\"",
-   "reviewSites": "links clutch.co/profile/direct-online-marketing and g2.com/products/direct-online-marketing/reviews",
+   "reviewSites": "links clutch.co/profile/direct-online-marketing and g2.com/products/direct-online-marketing/reviews [count 3: clutch.co/profile/direct-online-marketing, g2.com/products/direct-online-marketing/reviews, google.com/search?...#lrd= (Google reviews)]",
    "https": "https://www.directom.com/",
-   "schema": "JSON-LD Organization (with address, telephone)"
+   "schema": "JSON-LD Organization (with address, telephone)",
+   "focus": "links /services/seo/, /services/ppc/, /services/web-design/, /services/cro/ + more",
+   "seen": "1 place(s): linkedin.com/company/direct-online-marketing/; Google Premier/Semrush/ITA badges link only to own /partnerships/ pages"
   }
  },
  "disruptiveadvertising.com": {
@@ -99,7 +111,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "client logo wall (Guitar Center, Adobe, KPMG) + /client-marketing-results/ link",
@@ -110,9 +124,11 @@
    "about": "/about/ link",
    "address": "tel:(877) 956-7510",
    "reviews": "\"4.8 Average rating from 350+ reviews on Clutch\"",
-   "reviewSites": "CLOSE CALL false: Clutch only as widget images (alt 'Clutch Widget'), no link to clutch.co; Reviews link goes to own get.disruptiveadvertising.com",
+   "reviewSites": "CLOSE CALL false: Clutch only as widget images (alt 'Clutch Widget'), no link to clutch.co; Reviews link goes to own get.disruptiveadvertising.com [count 0: '4.8 on Clutch' text + Clutch widget images only, no link out; 'Reviews' goes to own get.disruptiveadvertising.com]",
    "https": "https://disruptiveadvertising.com/",
-   "schema": "JSON-LD @type Organization"
+   "schema": "JSON-LD @type Organization",
+   "focus": "links /seo-services/, /advertising-services/ppc-management/, /social-media-advertising/, /amazon-marketing-services/ + more",
+   "seen": "1 place(s): linkedin.com/company/disruptive-advertising/; Inc 500 / DesignRush / Clutch award badges are images with no link"
   }
  },
  "egconley.com": {
@@ -128,7 +144,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "no portfolio or client list (Industries list is services)",
@@ -139,9 +157,11 @@
    "about": "link /about.php",
    "address": "1 Forestwood Dr Ste 201 Pittsburgh; (412) 367-2001",
    "reviews": "four unattributed quotes under 'Latest News', not clearly customer reviews (close call)",
-   "reviewSites": "no review-site links",
+   "reviewSites": "no review-site links [count 0: no review platform links]",
    "https": "https://www.egconley.com/",
-   "schema": "JSON-LD section empty"
+   "schema": "JSON-LD section empty",
+   "focus": "links /bookkeeping.php, /payrollservice.php, /audits.php, /taxprep.php, /estateplan.php + more",
+   "seen": "0 place(s): no outside listing links; only client portal (netlinksolution) and own egconleyblog.com"
   }
  },
  "findoncpa.com": {
@@ -157,7 +177,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "no portfolio, case studies or client list",
@@ -168,9 +190,11 @@
    "about": "link /pages/cpa-firm-pittsburgh-monroeville-pennsylvania 'About'",
    "address": "tel:(412) 793-6612; '12013 Frankstown Rd, Pittsburgh, PA 15235'",
    "reviews": "quoted: 'Findon Associates is by far the best tax firm around.' - Pamela A.; Reviews section",
-   "reviewSites": "only facebook, twitter, linkedin; Reviews link is same-site",
+   "reviewSites": "only facebook, twitter, linkedin; Reviews link is same-site [count 0: 'Reviews' links to own /pages/reviews only]",
    "https": "https://www.findoncpa.com/",
-   "schema": "Organization JSON-LD with telephone and PostalAddress"
+   "schema": "Organization JSON-LD with telephone and PostalAddress",
+   "focus": "links /pages/services/tax-services-..., /accounting-services-..., /bookkeeping-services-..., /payroll-services-..., /business-consulting-...",
+   "seen": "1 place(s): linkedin.com/company/findon-cpa/; PICPA/AICPA membership mentioned on About with no link"
   }
  },
  "frewplumbing.com": {
@@ -186,7 +210,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "no portfolio or gallery; services pages only (close call: stock-like man_by_sink photo)",
@@ -197,9 +223,11 @@
    "about": "link /about/",
    "address": "tel:412-761-5711",
    "reviews": "quote 'I couldn't be happier with Frew Plumbing' - Gary G.",
-   "reviewSites": "only Facebook and LinkedIn",
+   "reviewSites": "only Facebook and LinkedIn [count 0: no review platform links (About says 'Reviews by our customers' with no link)]",
    "https": "https://www.frewplumbing.com/",
-   "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only"
+   "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only",
+   "focus": "links /services/plumbing/, /services/cooling/, /services/heating/, /services/iaq/",
+   "seen": "1 place(s): linkedin.com/company/frew-plumbing-heating-and-cooling-inc-/about/"
   }
  },
  "gleasonfamilydentistry.com": {
@@ -215,7 +243,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "only office/stock-style photos named Gleason-60 etc; no portfolio or before/after",
@@ -226,16 +256,18 @@
    "about": "close call: nav is Technology/Services/Insurance/Contact; 'Meet Dr. Gleason' is a same-page section, not a link",
    "address": "tel:+14127318700; '6314 Forbes Ave, Pittsburgh, PA'",
    "reviews": "'Dr. Gleason is the best!' Ed Hebert; 4 quoted patients",
-   "reviewSites": "close call: only Google Maps Get Directions link to street address (excluded by rubric)",
+   "reviewSites": "close call: only Google Maps Get Directions link to street address (excluded by rubric) [count 0: 'Get Directions' maps.app.goo.gl resolves to the street-address pin '6314 Forbes Ave', not a business listing (close call)]",
    "https": "https://www.gleasonfamilydentistry.com/",
-   "schema": "JSON-LD section empty"
+   "schema": "JSON-LD section empty",
+   "focus": "only /services and /technology (CEREC); Preventative/Restorative/Cosmetic/Specialty are not links",
+   "seen": "0 place(s): no outside listing links; patients-choice-winner.png image with no link"
   }
  },
  "grazemarketing.com": {
   "group": "agency",
   "expect": {
    "work": true,
-   "track": true,
+   "track": false,
    "people": false,
    "credentials": false,
    "trade": true,
@@ -244,27 +276,31 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "link https://grazemarketing.com/our-work/ (Our Work)",
-   "track": "7 testimonials on homepage (Rob, Cat, Terri, Emily, Josh, Reis, Jimmy)",
+   "track": "7 testimonials on homepage (Rob, Cat, Terri, Emily, Josh, Reis, Jimmy) -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "close call: only first names in testimonials (customers); no staff named",
    "credentials": "close call: Google Partner badge URL only in schema thumbnail, not on page; 'top rated' is a claim; 'clients 2+ years' is not years in business",
    "trade": "Creative Digital Marketing Agency in Michigan",
    "about": "close call: nav has Services, Our Work, Insights, Contact; no About link",
    "address": "tel:13135182752 313.518.2752",
    "reviews": "quoted client words with 5-star ratings",
-   "reviewSites": "no Google/Clutch/etc. profile link; only social links",
+   "reviewSites": "no Google/Clutch/etc. profile link; only social links [count 0: star testimonials on page, no review platform link]",
    "https": "final URL https://grazemarketing.com/",
-   "schema": "Organization JSON-LD"
+   "schema": "Organization JSON-LD",
+   "focus": "links /web-development-agency/, /google-ads-agency-michigan/, /michigan-seo-company/, /facebook-advertising-agency/ + more",
+   "seen": "1 place(s): linkedin.com/company/graze-marketing/"
   }
  },
  "group8a.com": {
   "group": "agency",
   "expect": {
    "work": true,
-   "track": true,
+   "track": false,
    "people": true,
    "credentials": true,
    "trade": true,
@@ -273,20 +309,24 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": true
   },
   "why": {
    "work": "OUR WORK section with CASE STUDY blocks and client logos (Liverpool, Baby Brezza)",
-   "track": "4 customer testimonials (Kadosh, Choi, Contract, Elisa)",
+   "track": "4 customer testimonials (Kadosh, Choi, Contract, Elisa) -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "About page: Eric Samson CEO & Founder; Karl Holzwarth Director of Affiliate",
    "credentials": "About page: Image alt 'meta business partner', 'PremierBadgeClickable', 'MC Partner' badges",
    "trade": "\"A Boutique Digital Marketing Agency | New York City\"",
    "about": "/pages/about-group8a",
    "address": "close call: only email sales@group8a.com and city; no phone or street",
    "reviews": "quoted testimonials, e.g. \"Group 8A has done a great job helping our brand\"",
-   "reviewSites": "only Instagram/Facebook/LinkedIn links",
+   "reviewSites": "only Instagram/Facebook/LinkedIn links [count 0: no review platform links]",
    "https": "final URL https://group8a.com/",
-   "schema": "Organization JSON-LD"
+   "schema": "Organization JSON-LD",
+   "focus": "only /pages/services and /pages/affiliate-services; Paid Search/Paid Social/Email etc. are not links",
+   "seen": "1 place(s): linkedin.com/company/group-8a"
   }
  },
  "hawkemedia.com": {
@@ -302,7 +342,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "/case-studies/k-swiss/ , /case-studies/crocs/ links; client logo wall",
@@ -313,9 +355,11 @@
    "about": "https://hawkemedia.com/about-us/",
    "address": "CLOSE CALL false: phone +13104517295 only in JSON-LD; no visible phone or street address (only city names LA/NY/Chicago)",
    "reviews": "5 quoted client testimonials, e.g. \"Hawke did a stellar job identifying our lowest hanging fruit\"",
-   "reviewSites": "CLOSE CALL false: only Google Partners and Microsoft partner directory profile links, not review sites; sameAs social only",
+   "reviewSites": "CLOSE CALL false: only Google Partners and Microsoft partner directory profile links, not review sites; sameAs social only [count 0: trustpilot logo image only, no link]",
    "https": "https://hawkemedia.com/",
-   "schema": "JSON-LD @type Organization"
+   "schema": "JSON-LD @type Organization",
+   "focus": "links /services/seo/, /services/paid-search/, /services/public-relations/, /services/web-design/ + many more",
+   "seen": "2+ place(s): forbes.com/sites/forbesagencycouncil/..., rollingstone.com/culture-council/..., adweek.com/agencyspy/..., google.com/partners/agency?id=8349185200, linkedin.com/company/hawkemedia"
   }
  },
  "ignitevisibility.com": {
@@ -331,7 +375,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /case-studies and /clients; client logo wall (Experian, Jazzercise, Inspire Brands)",
@@ -342,9 +388,11 @@
    "about": "link https://ignitevisibility.com/about/ (Our Story / About Us)",
    "address": "tel:619.752.1955; 4370 La Jolla Village Drive, San Diego",
    "reviews": "4 quoted client testimonials with star images",
-   "reviewSites": "close call: clutch-logo.webp and ignite-clutch-reviews.webp images but no link to a Clutch/Google profile",
+   "reviewSites": "close call: clutch-logo.webp and ignite-clutch-reviews.webp images but no link to a Clutch/Google profile [count 0: ignite-clutch-reviews.webp / ignite-google-rating.webp images, no link out]",
    "https": "final URL https://ignitevisibility.com/",
-   "schema": "Organization JSON-LD"
+   "schema": "Organization JSON-LD",
+   "focus": "links /services/seo/, /services/local-seo/, /services/pay-per-click-management/, /services/digital-pr/ + more",
+   "seen": "1 place(s): linkedin.com/company/ignite-visibility/; award badges are unlinked images"
   }
  },
  "kabodnar.com": {
@@ -360,7 +408,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "no case results or portfolio, just practice areas",
@@ -371,9 +421,11 @@
    "about": "link /kim-a-bodnar/ MORE ABOUT ME",
    "address": "304 Ross St Ste 701 Pittsburgh; (412) 804-4048",
    "reviews": "only a 'Leave a Review' link, no review text (close call)",
-   "reviewSites": "search.google.com/local/writereview?placeid=... (own Google Business Profile; close call)",
+   "reviewSites": "search.google.com/local/writereview?placeid=... (own Google Business Profile; close call) [count 1: search.google.com/local/writereview?placeid=ChIJKf89... 'Leave a Review' + google.com/maps?cid=...]",
    "https": "https://www.kabodnar.com/",
-   "schema": "JSON-LD type LegalService"
+   "schema": "JSON-LD type LegalService",
+   "focus": "links /practice-areas/personal-injury/, /estate-law/, /probate/, /family-law/divorce/, /dui/ + more",
+   "seen": "0 place(s): only facebook + twitter"
   }
  },
  "lagourmandinebakery.com": {
@@ -389,7 +441,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: product photos have no alt and there is no portfolio; a menu is not past work",
@@ -400,9 +454,11 @@
    "about": "'Our Story' link (/#our-story, same page section)",
    "address": "tel:(412) 682-2210; '4605 Butler Street Pittsburgh, PA 15201'",
    "reviews": "no quotes, stars or counts",
-   "reviewSites": "only instagram, facebook, order.online, menus.fyi, DoorDash/Grubhub logos; no review profile",
+   "reviewSites": "only instagram, facebook, order.online, menus.fyi, DoorDash/Grubhub logos; no review profile [count 0: no review platform links]",
    "https": "https://lagourmandinebakery.com/",
-   "schema": "JSON-LD section empty"
+   "schema": "JSON-LD section empty",
+   "focus": "menu categories /same-day-pick-up/breakfast-catering, /danishes, /pasteries, /cakes, /bread, /beverages",
+   "seen": "0 place(s): order.online, menus.fyi, squareup gift cards are vendors"
   }
  },
  "lebovitzlaw.com": {
@@ -418,7 +474,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "/case-results/ link: \"Documented outcomes from our practice\"",
@@ -429,9 +487,11 @@
    "about": "https://lebovitzlaw.com/about-lebovitz/",
    "address": "412-351-4422; \"2018 Monongahela Ave, Pittsburgh, PA 15218\"",
    "reviews": "CLOSE CALL false: 'Client Experiences' appears only as a menu link; no quoted reviews, stars or counts on homepage",
-   "reviewSites": "CLOSE CALL true: schema sameAs martindale.com/attorney/stephen-h-lebovitz and lawyers.justia.com profile (lawyer directory profiles, like Avvo)",
+   "reviewSites": "CLOSE CALL true: schema sameAs martindale.com/attorney/stephen-h-lebovitz and lawyers.justia.com profile (lawyer directory profiles, like Avvo) [count 0: only maps.google.com/maps?q=<address> and driving-directions links, no business listing (close call)]",
    "https": "https://lebovitzlaw.com/",
-   "schema": "JSON-LD @type Organization (with employee Person)"
+   "schema": "JSON-LD @type Organization (with employee Person)",
+   "focus": "links /wills-estates-trusts-probate/, /real-estate-issues/, /business-law/, /family-law-and-divorce/, /personal-injury-lawyer-pittsburgh/ + sub-pages",
+   "seen": "2+ place(s): linkedin.com/company-beta/22314881/, JSON-LD sameAs martindale.com/attorney/stephen-h-lebovitz-1556830/ (+ justia, wikidata)"
   }
  },
  "lewishairsalon.com": {
@@ -447,7 +507,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "no gallery/portfolio; only salon/stylist portraits",
@@ -458,9 +520,11 @@
    "about": "close call: nav has Stylist and Contact Us, no About page link",
    "address": "tel:4126824063; '824 South Aiken Avenue'",
    "reviews": "no reviews shown",
-   "reviewSites": "no review-site links; only GoDaddy builder link",
+   "reviewSites": "no review-site links; only GoDaddy builder link [count 0: no review platform links]",
    "https": "https://lewishairsalon.com/",
-   "schema": "JSON-LD @type LocalBusiness"
+   "schema": "JSON-LD @type LocalBusiness",
+   "focus": "single /services page; haircuts/color/treatments not linked",
+   "seen": "0 place(s): no outside links except godaddy builder"
   }
  },
  "nogood.io": {
@@ -476,7 +540,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /case-study/bytedance/, /results/; client logos Nike, TikTok, MongoDB",
@@ -487,9 +553,11 @@
    "about": "link https://nogood.io/about-us/",
    "address": "close call: only neighbourhoods (Soho, Brickell, Trade Centre 2); no phone or street number",
    "reviews": "quoted testimonials: \"NoGood is a strategic and insightful partner.\"",
-   "reviewSites": "no Clutch/G2/Google profile links; only Facebook/IG/TikTok/LinkedIn",
+   "reviewSites": "no Clutch/G2/Google profile links; only Facebook/IG/TikTok/LinkedIn [count 0: no review platform links]",
    "https": "https://nogood.io/",
-   "schema": "JSON-LD Organization (NoGood)"
+   "schema": "JSON-LD Organization (NoGood)",
+   "focus": "links /seo/, /ppc-agency/, /paid-social-agency/, /answer-engine-optimization-aeo/ + more",
+   "seen": "1 place(s): linkedin.com/company/nogood/; Shorty/Webby/Drum award logos unlinked"
   }
  },
  "paperboxseo.com": {
@@ -505,7 +573,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "link /case-studies/; client logo wall under 'Trusted by 67+ Startups and Agencies'",
@@ -516,9 +586,11 @@
    "about": "link /about-us/ 'About Us'",
    "address": "tel '(412) 224-1795'",
    "reviews": "quoted words: 'PaperBox SEO is hands-down the best SEO company I've worked with.'",
-   "reviewSites": "close call: Clutch badges are plain images, no Clutch link; /reviews/ is internal; sameAs only Facebook/LinkedIn",
+   "reviewSites": "close call: Clutch badges are plain images, no Clutch link; /reviews/ is internal; sameAs only Facebook/LinkedIn [count 0: 'Reviews' goes to own /reviews/ only]",
    "https": "https://paperboxseo.com/",
-   "schema": "JSON-LD type ProfessionalService / LocalBusiness"
+   "schema": "JSON-LD type ProfessionalService / LocalBusiness",
+   "focus": "links /services/ai-seo-services/, /services/local-seo/, /services/technical-seo/, /services/link-building/ + more",
+   "seen": "1 place(s): linkedin.com/company/paper-box-seo/; Top Clutch badges are unlinked images"
   }
  },
  "pghdma.com": {
@@ -534,7 +606,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Our Work: 30 live client sites, e.g. malickbrothersexteriors.com Visit Site",
@@ -545,9 +619,11 @@
    "about": "/about-us/ \"About Us\" (unquoted href)",
    "address": "(412) 579-3580; 140 E Main St, STE #3 Carnegie, PA 15106",
    "reviews": "Our business has absolutely taken off... Malick Brothers Exteriors Google Review",
-   "reviewSites": "BBB profile link; Yelp + BBB in sameAs",
+   "reviewSites": "BBB profile link; Yelp + BBB in sameAs [count 3: goo.gl/maps/6KVQTSPQR46X1CAj6 'Read all of our reviews on Google', bbb.org/us/pa/carnegie/profile/..., JSON-LD yelp.com/biz/pittsburgh-digital-marketing-agency-carnegie]",
    "https": "https://pghdma.com/",
-   "schema": "Organization + ProfessionalService JSON-LD"
+   "schema": "Organization + ProfessionalService JSON-LD",
+   "focus": "links /services/web-design/, /services/seo/, /services/ppc-management/, /services/local-seo/, /services/email-marketing/",
+   "seen": "1 place(s): google.com/partners/agency?id=2718339696; linkedin.com/in/pghdma is a personal-style /in/ URL (not counted)"
   }
  },
  "powerdigitalmarketing.com": {
@@ -563,7 +639,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "/case-studies/ link (Our Impact) plus client logo wall (asics, crocs, Graza)",
@@ -574,9 +652,11 @@
    "about": "/company/ and /approach/ links",
    "address": "visible \"9605 Scranton Rd Suite 700 San Diego, CA 92121\"",
    "reviews": "quoted client testimonials, e.g. \"Power Digital is in a league of their own\"",
-   "reviewSites": "clutch.co/profile/power-digital in schema sameAs",
+   "reviewSites": "clutch.co/profile/power-digital in schema sameAs [count 0: no review platform links]",
    "https": "final URL https://powerdigitalmarketing.com/",
-   "schema": "Organization JSON-LD"
+   "schema": "Organization JSON-LD",
+   "focus": "links /services/seo/, /services/paid-media/, /services/public-relations/, /services/email-marketing/ + more",
+   "seen": "0 place(s): only facebook/youtube/instagram/tiktok in sameAs; no listing or press links"
   }
  },
  "powermarketingcompany.com": {
@@ -592,7 +672,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": true
   },
   "why": {
    "work": "DRIVING REAL RESULTS: Franchise 2036% ROAS case results; client logo wall",
@@ -603,9 +685,11 @@
    "about": "link /about",
    "address": "tel:4122943412 (412) 294-3412",
    "reviews": "What Our Clients Are Saying: 3 named testimonials",
-   "reviewSites": "only LinkedIn/Instagram/Facebook/Spotify links",
+   "reviewSites": "only LinkedIn/Instagram/Facebook/Spotify links [count 0: no review platform links]",
    "https": "https://www.powermarketingcompany.com/",
-   "schema": "JSON-LD is WebSite only"
+   "schema": "JSON-LD is WebSite only",
+   "focus": "every service tile (Social Media Advertising, Email, SEO, Podcasting...) links to the single /services page",
+   "seen": "1 place(s): linkedin.com/company/power-marketing-company/; open.spotify.com show is their own podcast (not counted)"
   }
  },
  "proudfoot-services.com": {
@@ -621,7 +705,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: 'Gallery' /portfolio-items/ links are service pages with AdobeStock stock photos, not past jobs",
@@ -632,16 +718,18 @@
    "about": "link /about-plumbing-heating-and-cooling/ 'ABOUT'",
    "address": "'229 W. 8th Avenue West Homestead, PA 15120 Phone: 412-461-2198'; tel: link",
    "reviews": "BrightLocal showcase-reviews widget embedded",
-   "reviewSites": "https://www.bbb.org/pittsburgh/business-reviews/plumber/proudfoot-plumbing-in-pittsburgh-pa-11002167/ (BBB seal, alt 'BBB Business Review')",
+   "reviewSites": "https://www.bbb.org/pittsburgh/business-reviews/plumber/proudfoot-plumbing-in-pittsburgh-pa-11002167/ (BBB seal, alt 'BBB Business Review') [count 1: bbb.org/pittsburgh/business-reviews/plumber/proudfoot-plumbing-in-pittsburgh-pa-11002167]",
    "https": "https://proudfoot-services.com/",
-   "schema": "Organization, Place, Plumber JSON-LD"
+   "schema": "Organization, Place, Plumber JSON-LD",
+   "focus": "links /portfolio-items/hvac-pittsburgh-pa/, /plumbing-repair/, /hot-water-heaters/, /maintenance-plans/ (service pages despite portfolio URL)",
+   "seen": "0 place(s): no listing links; dev2.oncore.ventures is the web vendor"
   }
  },
  "reimaginemainstreet.com": {
   "group": "agency",
   "expect": {
    "work": false,
-   "track": true,
+   "track": false,
    "people": false,
    "credentials": true,
    "trade": true,
@@ -650,27 +738,31 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "close call: only 3 client logos tied to testimonials (alt text wrong, 'Concordia Lutheran Ministries'); no portfolio or case studies",
-   "track": "3 customer testimonials (Chase McClain, Stephanie Wagoner, Anastasia Barr-Whiteman)",
+   "track": "3 customer testimonials (Chase McClain, Stephanie Wagoner, Anastasia Barr-Whiteman) -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "close call: only customers named in testimonials; no staff name on homepage",
    "credentials": "close call: 'Our award-winning team specializes in capturing potential customers' (no named award)",
    "trade": "'RMS connects your business to your target audiences' plus digital marketing services list",
    "about": "link https://reimaginemainstreet.com/about-us/",
    "address": "tel:724-206-2310; 724-206-2310 visible",
    "reviews": "quoted: 'The Washington County Tourism Promotion Agency has enjoyed partnering...' (3 testimonials)",
-   "reviewSites": "https://g.page/r/CUTdfm6Je6EsEBM/review (Google Business Profile review link)",
+   "reviewSites": "https://g.page/r/CUTdfm6Je6EsEBM/review (Google Business Profile review link) [count 1: g.page/r/CUTdfm6Je6EsEBM/review]",
    "https": "https://reimaginemainstreet.com/",
-   "schema": "Organization (name RMS) in JSON-LD @graph"
+   "schema": "Organization (name RMS) in JSON-LD @graph",
+   "focus": "links /social-media-marketing/, /search-engine-optimization/, /email-marketing-management/, /reputation-management/ + more",
+   "seen": "1 place(s): linkedin.com/company/reimagine-main-street/; testimonial links go to clients' own sites"
   }
  },
  "rootstopetalsstudio.com": {
   "group": "pittsburgh",
   "expect": {
    "work": false,
-   "track": true,
+   "track": false,
    "people": true,
    "credentials": false,
    "trade": true,
@@ -679,20 +771,24 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: product photos and service pages (weddings/events) only; no portfolio or gallery link",
-   "track": "3 testimonials: Jill V., Ruth W., Kionna H.",
+   "track": "3 testimonials: Jill V., Ruth W., Kionna H. -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "schema founder Person \"Lauren Marzullo\"",
    "credentials": "close call: 'independent, woman-owned' is not a credential; no year, licence or award",
    "trade": "'independent, woman-owned local florist in Oakmont, PA'",
    "about": "link /pages/about-me 'About Us'",
    "address": "'527 Allegheny Avenue, Oakmont, PA 15139'; tel:+14128226023",
    "reviews": "quoted customer words: 'Roots to Petals is such a gem!'",
-   "reviewSites": "close call/uncertain: 'View More' link to share.google/cjt8YyYOpHnXqYKnS right after the testimonials (a Google listing, distinct from the address link)",
+   "reviewSites": "close call/uncertain: 'View More' link to share.google/cjt8YyYOpHnXqYKnS right after the testimonials (a Google listing, distinct from the address link) [count 1: share.google/cjt8YyYOpHnXqYKnS 'View More' under customer reviews (Google listing; short link not resolved) (close call)]",
    "https": "https://rootstopetalsstudio.com/",
-   "schema": "JSON-LD type Florist"
+   "schema": "JSON-LD type Florist",
+   "focus": "links /collections/bouquets-and-arrangements, /collections/funeral-arrangements, /pages/wedding-florist-in-oakmont-pa, /pages/plant-studio, /pages/flower-workshops + more",
+   "seen": "0 place(s): eventbrite ticket link is a vendor; only facebook/instagram otherwise"
   }
  },
  "ruffingautomotive.com": {
@@ -708,7 +804,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: services pages and shop photos without alt; no portfolio or case studies",
@@ -719,9 +817,11 @@
    "about": "https://ruffingautomotive.com/about/ | About",
    "address": "2870 West Liberty Ave, Pittsburgh (Dormont), PA 15216; (412) 561-9911",
    "reviews": "Honest, dependable, high quality work... William Urrea",
-   "reviewSites": "https://search.google.com/local/reviews?placeid=ChIJJVj_jxf3NIgRR3OZw3tdHiA | Read More",
+   "reviewSites": "https://search.google.com/local/reviews?placeid=ChIJJVj_jxf3NIgRR3OZw3tdHiA | Read More [count 1: search.google.com/local/reviews?placeid=ChIJJVj_..., writereview link]",
    "https": "https://ruffingautomotive.com/",
-   "schema": "JSON-LD only WebPage/ImageObject/BreadcrumbList/WebSite"
+   "schema": "JSON-LD only WebPage/ImageObject/BreadcrumbList/WebSite",
+   "focus": "links /services/brake-repair/, /services/oil-change/, /services/transmission-repair/, /services/tires/ + more",
+   "seen": "0 place(s): no outside listing links; autoshopsolutions.com is the web vendor"
   }
  },
  "schultheisbros.com": {
@@ -737,7 +837,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "/see-our-work/ link \"See Our Work\"",
@@ -748,9 +850,11 @@
    "about": "/about-us/",
    "address": "\"1001 Millers Lane Pittsburgh, PA 15239\" and tel:(412)793-8000",
    "reviews": "\"4.9 / 5 - Verified Google Reviews\" with /reviews/ link",
-   "reviewSites": "link to bbb.org/us/pa/pittsburgh/profile/.../schultheis-bros-heating-cooling-roofing",
+   "reviewSites": "link to bbb.org/us/pa/pittsburgh/profile/.../schultheis-bros-heating-cooling-roofing [count 2: google.com/maps/place/Schultheis+Bros... 'Find Us On Google', bbb.org/us/pa/pittsburgh/profile/heating-and-air-conditioning/schultheis-bros-...]",
    "https": "final URL https://www.schultheisbros.com/",
-   "schema": "HVACBusiness + RoofingContractor JSON-LD"
+   "schema": "HVACBusiness + RoofingContractor JSON-LD",
+   "focus": "links /air-conditioning/installation/, /heating/furnace-installation/, /roofing/roof-repair-maintenance/, /gutter-systems/ + more",
+   "seen": "1 place(s): linkedin.com/company/schultheis-brothers-company; manufacturer badges (Trane, Velux) unlinked"
   }
  },
  "seerinteractive.com": {
@@ -766,7 +870,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /work/case-studies; 4 case study cards; client logo wall (amfam, drexel, time, intuit)",
@@ -777,9 +883,11 @@
    "about": "link /people (About) and /people/team",
    "address": "close call: no phone or street address in homepage text or links, only Let's Talk/contact link",
    "reviews": "homepage links /testimonials; extra page read has 13+ named client quotes",
-   "reviewSites": "no independent review profile link; B Corp and LinkedIn do not count",
+   "reviewSites": "no independent review profile link; B Corp and LinkedIn do not count [count 0: testimonials page is on-site; no review platform links]",
    "https": "final URL https://www.seerinteractive.com/",
-   "schema": "Organization JSON-LD"
+   "schema": "Organization JSON-LD",
+   "focus": "links /work/seo, /work/paid-media, /work/analytics, /work/cro, /generative-engine-optimization",
+   "seen": "1 place(s): linkedin.com/company/seer-interactive/; 'cited by' links go to bare homepages forbes.com, emarketer.com, fastcompany.com and bcorporation.net/en-us/, not articles or a profile (close call)"
   }
  },
  "siegemedia.com": {
@@ -795,7 +903,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /work/instacart-content-marketing etc. 'View case study'; client logos",
@@ -806,9 +916,11 @@
    "about": "link /about 'About'",
    "address": "'1920 E. Riverside Dr #A-120 Austin, TX 78741'",
    "reviews": "no customer quotes, stars or review count on page",
-   "reviewSites": "sameAs only Facebook, X, Instagram, LinkedIn, YouTube, Dribbble",
+   "reviewSites": "sameAs only Facebook, X, Instagram, LinkedIn, YouTube, Dribbble [count 0: no review-platform links]",
    "https": "https://www.siegemedia.com/",
-   "schema": "JSON-LD type Organization"
+   "schema": "JSON-LD type Organization",
+   "focus": "links /services/geo, /services/digital-pr, /services/content-marketing, /services/reddit-marketing, /services/web-design",
+   "seen": "1 place(s): linkedin.com/company/siege-media (dribbble/twitter/youtube are social)"
   }
  },
  "singlegrain.com": {
@@ -824,7 +936,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Case Studies nav + 'See All Case Studies', results grid (+112.5% Increase in total sales)",
@@ -835,9 +949,11 @@
    "about": "link to /about (About Us, Our Team)",
    "address": "close call: phone 800-701-0793 and Miami street address are in JSON-LD only; no tel: link or visible phone/address",
    "reviews": "quoted: 'Single Grain was instrumental to our growth.' - Yaniv Masjedi; 3 testimonials",
-   "reviewSites": "close call: schema sameAs is empty; podcast ratings are not a review profile; no clutch/g2/etc links",
+   "reviewSites": "close call: schema sameAs is empty; podcast ratings are not a review profile; no clutch/g2/etc links [count 0: no review-platform links]",
    "https": "https://www.singlegrain.com/",
-   "schema": "LocalBusiness JSON-LD (Single Grain, LLC)"
+   "schema": "LocalBusiness JSON-LD (Single Grain, LLC)",
+   "focus": "links /services/seo/, /services/technical-seo/, /services/tiktok-ads-agency/, /cro-agency/",
+   "seen": "1 place(s): linkedin.com/company/single-grain-llc (Apple Podcasts/Spotify links are its own shows)"
   }
  },
  "smartsites.com": {
@@ -853,7 +969,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "alt \"HQ Custom Design case study\"; \"See all 411 case studies\"; Our Work nav",
@@ -864,9 +982,11 @@
    "about": "/company/ \"About SmartSites\", /meet-the-team/ (unquoted hrefs)",
    "address": "\"201-870-6000\" visible text",
    "reviews": "\"4.9 stars ... 906 Google reviews\"; quoted reviews e.g. \"Sales have almost tripled\"",
-   "reviewSites": "Clutch/GoodFirms/DesignRush badges are images with no link; sameAs is social only",
+   "reviewSites": "Clutch/GoodFirms/DesignRush badges are images with no link; sameAs is social only [count 0: '906 Google reviews', Clutch/Capterra/Gartner review quotes all unlinked; 'Reviews' goes to own /company/reviews/]",
    "https": "https://www.smartsites.com/",
-   "schema": "ProfessionalService JSON-LD (unquoted type= attribute)"
+   "schema": "ProfessionalService JSON-LD (unquoted type= attribute)",
+   "focus": "links /organic-seo/, /ppc-marketing/, /email-marketing/, /social-media-marketing/, /web-design/",
+   "seen": "1 place(s): linkedin.com/company/smartsites; Forbes Advisor/Clutch/DesignRush/Inc. 5000 named with no link"
   }
  },
  "studioboothsalon.com": {
@@ -882,7 +1002,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "/pages/our-work link \"Explore our work\"",
@@ -893,9 +1015,11 @@
    "about": "/pages/about",
    "address": "\"6343 Penn Ave, Suite B Pittsburgh, PA 15206\" and tel:+14123626684",
    "reviews": "quoted reviews and \"4.8 - 13,500+ client ratings\"",
-   "reviewSites": "Google Maps embed of its listing (cid=13535359734477008175)",
+   "reviewSites": "Google Maps embed of its listing (cid=13535359734477008175) [count 1: maps.app.goo.gl/9E6AmitaoXaz1M5B6 'Get Directions' (Google); 'Read all reviews' goes to na0.meevo.com FiveStarRatingApp, the booking vendor's widget, not counted (close call)]",
    "https": "final URL https://studioboothsalon.com/",
-   "schema": "HairSalon/DaySpa/BeautySalon JSON-LD"
+   "schema": "HairSalon/DaySpa/BeautySalon JSON-LD",
+   "focus": "links /pages/massage, /pages/facials, /pages/lash-extensions, /pages/hair, /pages/nails, /pages/waxing",
+   "seen": "2+ place(s): 'As seen on' apnews.com/press-release/..., usatoday.com/press-release/..., barchart.com/story/news/..., streetinsider.com (close call: syndicated press releases)"
   }
  },
  "swiftgrowth.marketing": {
@@ -904,27 +1028,31 @@
    "work": true,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "client logo wall: alt SkillsTX, Rehab Essentials, ProTech, SCI",
    "track": "3 customer testimonials (John Kleist III, David Horell, Cheryl Cassaly)",
    "people": "About page: Chris Hornak Co-Founder | SEO; Wade Onuffer Co-Founder | UX",
-   "credentials": "About page: Building brands since 2007 (founding year / years in business)",
+   "credentials": "About page: Building brands since 2007 (founding year / years in business) -> no since 2026-10-02: years in business count only in Track record",
    "trade": "Brand Studio for B2B Companies",
    "about": "/about | About",
    "address": "tel:4127566656 | 412.756.6656",
    "reviews": "Swift Growth Marketing has been an invaluable partner... Cheryl Cassaly",
-   "reviewSites": "close call: sameAs and links are Facebook, X, LinkedIn, Instagram, Threads, YouTube, Bluesky only",
+   "reviewSites": "close call: sameAs and links are Facebook, X, LinkedIn, Instagram, Threads, YouTube, Bluesky only [count 0: no review-platform links (home or /about)]",
    "https": "https://swiftgrowth.marketing/",
-   "schema": "JSON-LD @type Organization"
+   "schema": "JSON-LD @type Organization",
+   "focus": "links /brand-strategy, /seo-ai-visibility, /paid-media, /email-marketing, /web-design-development",
+   "seen": "1 place(s): linkedin.com/company/86689597/"
   }
  },
  "threeriversdent.com": {
@@ -940,7 +1068,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "link /video-examples-of-dent-repair/ (own repair videos); close call, no gallery text",
@@ -951,9 +1081,11 @@
    "about": "link /about-us/ (labeled Contact; close call)",
    "address": "412-850-2660 shown in text",
    "reviews": "HighLevel review widget embedded",
-   "reviewSites": "only Facebook/YouTube/Instagram",
+   "reviewSites": "only Facebook/YouTube/Instagram [count 0: 'Customer Reviews' goes to own /customer-reviews/; About text says 'Google 5 star reviews' with no link]",
    "https": "https://www.threeriversdent.com/",
-   "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only"
+   "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only",
+   "focus": "links /paintless-dent-repair-pittsburgh/, /bumper-repair/, /hail-damage-repair-in-pittsburgh-pa/, /hail-repair/",
+   "seen": "2+ place(s): certifiedpdr.com ('Master technician status'), napdrt.com (association), pdrcollege.com; root-domain links, not profiles (close call)"
   }
  },
  "thriveagency.com": {
@@ -969,7 +1101,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links /case-studies/ and /case-study/qualis/ 'Read Qualis Roofing's Case Study'",
@@ -980,9 +1114,11 @@
    "about": "link /about/ 'Who We Are'",
    "address": "tel:+18669084748 '866-908-4748'",
    "reviews": "'Over 1,000 Client Reviews'; quoted testimonials with names",
-   "reviewSites": "schema hasMap = Google listing (cid)",
+   "reviewSites": "schema hasMap = Google listing (cid) [count 1: JSON-LD hasMap google.com/maps?cid=13660575709814596593 (close call: hasMap, not sameAs); review badges link to own /real-reviews-from-real-people/]",
    "https": "https://thriveagency.com/",
-   "schema": "LocalBusiness/Organization JSON-LD"
+   "schema": "LocalBusiness/Organization JSON-LD",
+   "focus": "links /digital-marketing-services/search-engine-optimization-seo/, /pay-per-click-ppc/, /social-media/, /web-design/",
+   "seen": "2+ place(s): JSON-LD sameAs linkedin.com/company/thrive-agency, dnb.com/business-directory/..., crunchbase.com/organization/thrive-internet-marketing-agency-587d"
   }
  },
  "tjdentalpa.com": {
@@ -998,7 +1134,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "services icons only, no portfolio/gallery",
@@ -1009,9 +1147,11 @@
    "about": "link #about 'about us' (same-page anchor, close call)",
    "address": "tel:4124225959; '6301 Forbes Ave STE 102'",
    "reviews": "no quoted reviews or ratings on page",
-   "reviewSites": "schema sameAs google.com/maps/place/TJ+Dental business listing",
+   "reviewSites": "schema sameAs google.com/maps/place/TJ+Dental business listing [count 1: JSON-LD sameAs google.com/maps/place/TJ+Dental/...]",
    "https": "https://tjdentalpa.com/",
-   "schema": "JSON-LD @type Dentist, but the block doesn't parse (stray text after a value); since 2026-10-02 the block must parse"
+   "schema": "JSON-LD @type Dentist, but the block doesn't parse (stray text after a value); since 2026-10-02 the block must parse",
+   "focus": "nav is only anchors #about, #services, #process; no sub-pages",
+   "seen": "0 place(s): only facebook in sameAs"
   }
  },
  "victoriousseo.com": {
@@ -1027,7 +1167,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "links to /case-studies/unionbay/, /case-studies/agora/",
@@ -1038,9 +1180,11 @@
    "about": "https://victorious.com/company/ | Company",
    "address": "(415) 621-9830",
    "reviews": "Chelsea Boylan, enTouch Wireless quoted testimonials; 119 Reviews",
-   "reviewSites": "close call: clutch-stat.webp image only, no Clutch link; sameAs has Facebook/LinkedIn/Crunchbase/Wikidata only",
+   "reviewSites": "close call: clutch-stat.webp image only, no Clutch link; sameAs has Facebook/LinkedIn/Crunchbase/Wikidata only [count 0: 'Reviews' goes to own /reviews/; Clutch named in awards text with no link]",
    "https": "https://victorious.com/",
-   "schema": "JSON-LD @type Organization"
+   "schema": "JSON-LD @type Organization",
+   "focus": "links /services/seo/, /services/answer-engine-optimization/, /services/seo-content/, /services/seo/technical-seo/",
+   "seen": "2+ place(s): linkedin.com/company/victorious-seo, JSON-LD sameAs crunchbase.com/organization/victorious, wikidata.org/wiki/Q141178654"
   }
  },
  "wahlheatingandcooling.com": {
@@ -1056,7 +1200,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Real Work, Real Homes: Actual installs from actual Pittsburgh homes; alt 'Tankless water heater installation'",
@@ -1067,9 +1213,11 @@
    "about": "link https://wahlheatingandcooling.com/about-us/ (About Us / Our Story)",
    "address": "tel:4122769245 and 1 Willow Avenue, Oakdale, PA 15071",
    "reviews": "4.8 stars, 1,600+ Google reviews; quoted reviews (Trustindex widget)",
-   "reviewSites": "link https://g.page/r/CQRylOvXU4CoEBM (Google Business Profile)",
+   "reviewSites": "link https://g.page/r/CQRylOvXU4CoEBM (Google Business Profile) [count 1: g.page/r/CQRylOvXU4CoEBM/review 'Review us']",
    "https": "final URL https://wahlheatingandcooling.com/",
-   "schema": "HVACBusiness JSON-LD (plus Organization)"
+   "schema": "HVACBusiness JSON-LD (plus Organization)",
+   "focus": "links /heating/, /air-conditioning/, /plumbing-services/, /water-heating-services/, /sewers/",
+   "seen": "1 place(s): JSON-LD sameAs linkedin.com/company/wahl-heating-cooling-and-plumbing; partner badges link to own pages; 'BBB A+' unlinked"
   }
  },
  "webfx.com": {
@@ -1085,7 +1233,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "link /portfolio/case-studies/ 'Explore Our Case Studies'; client logos",
@@ -1096,9 +1246,11 @@
    "about": "link /about/ 'About Us'",
    "address": "tel:8886015359 '888-601-5359'",
    "reviews": "quoted client words: 'What I find unique about WebFX is their transparency'",
-   "reviewSites": "schema sameAs: clutch.co/profile/webfx, g2.com/sellers/webfx, capterra.com",
+   "reviewSites": "schema sameAs: clutch.co/profile/webfx, g2.com/sellers/webfx, capterra.com [count 3: JSON-LD sameAs clutch.co/profile/webfx, g2.com/sellers/webfx, capterra.com/services/sp/26/webfx/]",
    "https": "https://www.webfx.com/",
-   "schema": "JSON-LD type Organization"
+   "schema": "JSON-LD type Organization",
+   "focus": "links /seo/services/, /ppc/services/, /content-marketing/services/, /local-seo/services/",
+   "seen": "2+ place(s): linkedin.com/company/webfxinc, JSON-LD sameAs crunchbase.com/organization/webfx"
   }
  },
  "wildrisebakery.com": {
@@ -1114,12 +1266,17 @@
    "reviews": null,
    "reviewSites": null,
    "https": true,
-   "schema": null
+   "schema": null,
+   "focus": null,
+   "seen": false
   },
   "why": {
    "https": "final URL https://www.wildrisebakery.com/",
    "work": "saved page is empty (title only, JS-rendered); can't tell",
-   "schema": "no JSON-LD in saved page, but page is empty so can't tell"
+   "schema": "no JSON-LD in saved page, but page is empty so can't tell",
+   "focus": "saved page is empty (title 'Home | Wild Rise Bakery' only, no text or links)",
+   "seen": "0 place(s): no links captured",
+   "reviewSites": "[count 0: no links captured]"
   }
  },
  "mtviewroofing.com": {
@@ -1135,7 +1292,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "'Take a look at some of our recent work' + alt 'New Roof in Boise Idaho' photos",
@@ -1146,9 +1305,11 @@
    "about": "Close call false: nav is Roofing Process / Types of Roofs / Contact only; no About link",
    "address": "tel:208-353-2952 and '3412 Wilson Lane Nampa Idaho'",
    "reviews": "'125 star rating based on 66 Google Reviews'",
-   "reviewSites": "search.google.com/local/writereview?placeid=... and bbb.org/.../mountain-view-roofing-in-nampa-id profile link",
+   "reviewSites": "search.google.com/local/writereview?placeid=... and bbb.org/.../mountain-view-roofing-in-nampa-id profile link [count 2: search.google.com/local/writereview?placeid=... 'Leave us a Google Review', bbb.org/northwest/business-reviews/roofing-contractors/mountain-view-roofing-in-nampa-id-...]",
    "https": "https://mtviewroofing.com/",
-   "schema": "JSON-LD Organization 'Mountain View Roofing'"
+   "schema": "JSON-LD Organization 'Mountain View Roofing'",
+   "focus": "one /types-of-roofs-we-do/ page plus /the-roofing-process/; metal, tile and flat roofing are named in text with no links",
+   "seen": "0 place(s): none"
   }
  },
  "idahoroofingcontractors.com": {
@@ -1164,7 +1325,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "'Past Projects... Check out our gallery' + /featured-projects/ link and project write-ups",
@@ -1175,9 +1338,11 @@
    "about": "link /about-us/ 'About'",
    "address": "tel:+12089217821 and '1565 Rolling Hills Dr Meridian'",
    "reviews": "'Over 940 reviews With A 4.9 Average'; schema aggregateRating",
-   "reviewSites": "https://www.yelp.com/biz/idaho-roofing-contractors-meridian-2 link and sameAs; maps.app.goo.gl Google link",
+   "reviewSites": "https://www.yelp.com/biz/idaho-roofing-contractors-meridian-2 link and sameAs; maps.app.goo.gl Google link [count 2: maps.app.goo.gl/LsEA1mDdgC8DmZpZ8 'Google', yelp.com/biz/idaho-roofing-contractors-meridian-2]",
    "https": "https://www.idahoroofingcontractors.com/",
-   "schema": "JSON-LD RoofingContractor and Organization"
+   "schema": "JSON-LD RoofingContractor and Organization",
+   "focus": "links /services/roof-replacement-services/, /services/repair/, /services/new-construction/, /services/flat-roofing/, /services/storm-damage/",
+   "seen": "1 place(s): linkedin.com/company/idaho-roofing-contractors-inc; 'Boise Metro Chamber' named with no link"
   }
  },
  "peakroofingidaho.com": {
@@ -1186,34 +1351,38 @@
    "work": true,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "nav link /gallery/ 'Gallery' on same site",
    "track": "'Over 40 Years of Roofing Construction Experience in Treasure Valley'",
    "people": "'Mike Cappetto, Owner of Peak Roofing'",
-   "credentials": "Close call: only years-of-experience claim ('Over 40 Years') and Owens Corning shingle brand; no licence/award",
+   "credentials": "Close call: only years-of-experience claim ('Over 40 Years') and Owens Corning shingle brand; no licence/award -> no since 2026-10-02: years in business count only in Track record",
    "trade": "'Roofing Company Boise, ID | Roof Contractor'",
    "about": "link /about-us/ 'About'",
    "address": "tel:+12087249315 '208.724.9315'",
    "reviews": "Trustindex review widget embedded (rubric: a widget counts)",
-   "reviewSites": "yelp.com/biz/peak-roofing-meridian link; schema sameAs google.com/maps?cid=14060100250671271378",
+   "reviewSites": "yelp.com/biz/peak-roofing-meridian link; schema sameAs google.com/maps?cid=14060100250671271378 [count 2: yelp.com/biz/peak-roofing-meridian, share.google/CWc9H9jZBRiWMZAfa 'Google' (+ sameAs google.com/maps?cid=...)]",
    "https": "https://peakroofingidaho.com/",
-   "schema": "JSON-LD RoofingContractor and Organization"
+   "schema": "JSON-LD RoofingContractor and Organization",
+   "focus": "links /residential-roof-replacement/, /residential-roof-repair/, /residential-roof-inspection/",
+   "seen": "0 place(s): only facebook"
   }
  },
  "allandalevetclinic.com": {
   "group": "holdout",
   "expect": {
    "work": false,
-   "track": true,
+   "track": false,
    "people": true,
    "credentials": true,
    "trade": true,
@@ -1222,20 +1391,24 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "Services pages and stock-style photos only; no portfolio/gallery",
-   "track": "7 quoted customer testimonials; 'about 25 years now' in a review",
+   "track": "7 quoted customer testimonials; 'about 25 years now' in a review -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "Blog teaser: 'Dr. Stephanie Baker will be moving on from the practice' (outside testimonials)",
    "credentials": "image 'AAHA Logo' (images/aaha-logo.svg)",
    "trade": "'provides quality veterinary services for dogs and cats'",
    "about": "links /about-us/ and /staff/ 'Meet Our Team'",
    "address": "tel:+1-512-454-6719; '6800 Burnet Road, Suite 1 Austin, TX 78757'",
    "reviews": "Quoted customers e.g. 'I don't think I could've found a better clinic for my fearful... dog'",
-   "reviewSites": "https://www.yelp.com/biz/allandale-veterinary-clinic-austin 'See Our Reviews on Yelp'; google.com/maps/place link",
+   "reviewSites": "https://www.yelp.com/biz/allandale-veterinary-clinic-austin 'See Our Reviews on Yelp'; google.com/maps/place link [count 2: yelp.com/biz/allandale-veterinary-clinic-austin 'See Our Reviews on Yelp', google.com/maps/place/Allandale+Veterinary+Clinic 'Review us on Google']",
    "https": "https://www.allandalevetclinic.com/",
-   "schema": "JSON-LD VeterinaryCare + LocalBusiness, but the block starts with a '// Pablo BB' comment so it doesn't parse; since 2026-10-02 the block must parse"
+   "schema": "JSON-LD VeterinaryCare + LocalBusiness, but the block starts with a '// Pablo BB' comment so it doesn't parse; since 2026-10-02 the block must parse",
+   "focus": "links /services/wellness.html, /services/senior-pet-care.html, /services/surgery-dentistry.html, /services/diagnostics.html, /services/rehabilitation-therapy.html",
+   "seen": "0 place(s): none (facebook only)"
   }
  },
  "farwestvet.com": {
@@ -1244,27 +1417,31 @@
    "work": false,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "Services/pet library only; no portfolio",
    "track": "'Dr. Debbie Faludi has been caring for people's beloved pets in Austin since 2004'",
    "people": "'Dr. Debbie Faludi', 'Dr. Rachael Dreibelbis' and other named doctors",
-   "credentials": "Close call: only 'since 2004' / 'opened Far West Veterinary Clinic in 2020' years-in-business; no AAHA/licence",
+   "credentials": "Close call: only 'since 2004' / 'opened Far West Veterinary Clinic in 2020' years-in-business; no AAHA/licence -> no since 2026-10-02: years in business count only in Track record",
    "trade": "'a full-service veterinary hospital'",
    "about": "links /about-us.pml and /our-doctors.pml",
    "address": "tel:5125531833; '3720 Far West Blvd Ste 101 Austin, TX 78731'",
    "reviews": "no review text, stars or widget; 'Client Feedback' link only",
-   "reviewSites": "Only Facebook/Twitter/Instagram, PayPal, CareCredit; Google link is a search for another hospital",
+   "reviewSites": "Only Facebook/Twitter/Instagram, PayPal, CareCredit; Google link is a search for another hospital [count 0: Google search link is for another emergency hospital; 'Client Feedback' is an own page]",
    "https": "https://farwestvet.com/",
-   "schema": "JSON-LD section empty"
+   "schema": "JSON-LD section empty",
+   "focus": "a single /services.pml page; other nav pages are info/forms",
+   "seen": "0 place(s): none; vin.com/evetsites.com are the site vendor"
   }
  },
  "staroftexasvet.com": {
@@ -1280,7 +1457,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "No portfolio/case studies; services and team only",
@@ -1291,9 +1470,11 @@
    "about": "Link /team/ (Team)",
    "address": "tel:512-291-1600; 10706 Brodie Lane, Austin, TX 78748",
    "reviews": "No quotes, stars or review widget",
-   "reviewSites": "maps.app.goo.gl link resolves to google.com/maps/place/Star+of+Texas+Veterinary+Hospital (place listing); hasMap goo.gl same place; close call since link text is the address",
+   "reviewSites": "maps.app.goo.gl link resolves to google.com/maps/place/Star+of+Texas+Veterinary+Hospital (place listing); hasMap goo.gl same place; close call since link text is the address [count 1: maps.app.goo.gl/AohfU2ApoMZK5v9r7, which resolves to the Google Maps place 'Star of Texas Veterinary Hospital' (close call: address link)]",
    "https": "final URL https://staroftexasvet.com/",
-   "schema": "JSON-LD type VeterinaryCare + LocalBusiness"
+   "schema": "JSON-LD type VeterinaryCare + LocalBusiness",
+   "focus": "services are anchors on one page (/services/#Acupuncture, #Nutritional_Consults); /fear-free-care/, /cat-friendly/, /end-of-life/ read as approach/resource pages (close call)",
+   "seen": "0 place(s): social only (fb, tiktok, insta, pinterest, youtube)"
   }
  },
  "center4chiropractic.com": {
@@ -1309,7 +1490,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "No portfolio; services, forms, team pages only",
@@ -1320,9 +1503,11 @@
    "about": "Links /chiropractors.html and individual doctor bio pages",
    "address": "Call 503-282-8582; 3241 NE Broadway, Portland, OR 97232",
    "reviews": "Quoted patient: \"I always leave in much better shape than before.\" - Angie B.; also SIENA quote and 5 STAR GOOGLE REVIEWS",
-   "reviewSites": "https://share.google/LILtZeMEac8Wv2Ag0 linked as '5 STAR GOOGLE REVIEWS' (Google share link, destination not resolved; likely GBP)",
+   "reviewSites": "https://share.google/LILtZeMEac8Wv2Ag0 linked as '5 STAR GOOGLE REVIEWS' (Google share link, destination not resolved; likely GBP) [count 1: share.google/LILtZeMEac8Wv2Ag0 '5 STAR GOOGLE REVIEWS']",
    "https": "final URL https://www.center4chiropractic.com/",
-   "schema": "JSON-LD section empty"
+   "schema": "JSON-LD section empty",
+   "focus": "links /chiropractors.html, /acupuncturists.html, /massage.html, one page per discipline (close call: may be team-listing pages)",
+   "seen": "0 place(s): none (facebook only)"
   }
  },
  "laurelhurstchiropractic.com": {
@@ -1338,7 +1523,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "Close call: /gallery 'View More Images' is office/stock-style images, no past-work evidence",
@@ -1349,9 +1536,11 @@
    "about": "Links /about, /history, /team",
    "address": "tel:(971) 333-2656; 2705 East Burnside Street in schema; phone in text",
    "reviews": "Close call: 'Here's what our satisfied patients are saying...' but no quotes, stars or widget on home or /reviews page",
-   "reviewSites": "Only maps.google.com/maps?q=address Get Directions link (street-address search, not a listing); sameAs is Facebook/Instagram",
+   "reviewSites": "Only maps.google.com/maps?q=address Get Directions link (street-address search, not a listing); sameAs is Facebook/Instagram [count 0: 'leave a review' goes to own /reviews; the only Google link is a maps.google.com/maps?q=<address> 'Get Directions' query, not a listing (close call)]",
    "https": "final URL https://www.laurelhurstchiropractic.com/",
-   "schema": "JSON-LD LocalBusiness with foundingDate"
+   "schema": "JSON-LD LocalBusiness with foundingDate",
+   "focus": "links /auto-injury-chiropractic-care, /back-pain-chiropractic-treatment, /pediatric-chiropractic-care, /prenatal-chiropractic-care, /massage-therapy-services",
+   "seen": "0 place(s): facebook/instagram only"
   }
  },
  "hartmanoutdoorphotography.com": {
@@ -1367,7 +1556,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": true
   },
   "why": {
    "work": "Link /portfolio/asheville-boone-wedding-photography/ and featured wedding posts (Gini + Jordan, Emily + Will)",
@@ -1378,9 +1569,11 @@
    "about": "Link /about-shelley-hartman-asheville-wedding-elopement-photographer/",
    "address": "Only zip 28804 and email; no phone or street address",
    "reviews": "\"Shelley, YOU ARE AMAZING! These photos are breathtaking\" - Erica; /reviews page testimonials",
-   "reviewSites": "Link weddingwire.com/reviews/hartman-outdoor-photography-raleigh/... (own WeddingWire reviews profile)",
+   "reviewSites": "Link weddingwire.com/reviews/hartman-outdoor-photography-raleigh/... (own WeddingWire reviews profile) [count 1: weddingwire.com/reviews/hartman-outdoor-photography-raleigh/... (plus a bare weddingwire.com link)]",
    "https": "final URL https://www.hartmanoutdoorphotography.com/",
-   "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite"
+   "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite",
+   "focus": "nav is About/Blog/FAQ/Clients/Portfolio/Contact; the homepage links are blog posts, not offering pages",
+   "seen": "1 place(s): junebugweddings.com/best-wedding-photographers/top-photographers/ (best-of list)"
   }
  },
  "kathybeaverphotography.com": {
@@ -1396,7 +1589,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Portfolio nav link and gallery images alt 'Hannah & Kevan Engagement | Max Patch', 'Jay & Aubrey'",
@@ -1407,9 +1602,11 @@
    "about": "Link /about-the-artist/",
    "address": "Close call: phone only as malformed href 'http://8287122457' on 'by phone', number not visible and not tel:; email obfuscated",
    "reviews": "\"Our experience with Kathy was amazing... 5 stars is not enough!\" - Marguerite M",
-   "reviewSites": "No Google/Yelp/WeddingWire links; Facebook/Instagram only",
+   "reviewSites": "No Google/Yelp/WeddingWire links; Facebook/Instagram only [count 0: testimonials unlinked; no review-platform links]",
    "https": "final URL https://kathybeaverphotography.com/",
-   "schema": "JSON-LD Organization (Kathy Beaver Photography)"
+   "schema": "JSON-LD Organization (Kathy Beaver Photography)",
+   "focus": "links /wedding-pricing/, /asheville-engagement-photographer-2/, /asheville-family-portrait-pricing/, /creative-shoppe/",
+   "seen": "2+ place(s): 'as seen on' glitterybride.com/whimsical-inspired-wedding-at-asheville-glamping/, glamourandgraceblog.com/2019/painting-inspired-wedding-ideas/ (southernliving.com/weddings is a generic section)"
   }
  },
  "kirstenalexandriaphotography.com": {
@@ -1425,7 +1622,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Homepage shows own wedding/elopement photos (alt: 'bride and groom sharing private vows on a mountain')",
@@ -1436,9 +1635,11 @@
    "about": "/about/ link (ABOUT, ABOUT ME)",
    "address": "Phone (828) 222-0113 in footer text",
    "reviews": "'Kind Words' section with three quoted client reviews",
-   "reviewSites": "Close call false: only exploreasheville/bestofavl/romanticasheville directory listings, no Google/Yelp/Knot profile; sameAs is FB/IG/Pinterest",
+   "reviewSites": "Close call false: only exploreasheville/bestofavl/romanticasheville directory listings, no Google/Yelp/Knot profile; sameAs is FB/IG/Pinterest [count 0: 'Kind Words' testimonials unlinked]",
    "https": "https://kirstenalexandriaphotography.com/",
-   "schema": "Organization and ProfessionalService JSON-LD"
+   "schema": "Organization and ProfessionalService JSON-LD",
+   "focus": "links /asheville-wedding-packages/, /asheville-elopement-photographer/, /asheville-engagement-photographer/, /film-wedding-photographer/",
+   "seen": "2+ place(s): photobugcommunity.com (Junebug honorable mention), bestofavl.com/listing/2023/photographer, travelguidesasheville.com, romanticasheville.com, exploreasheville.com/listings/..."
   }
  },
  "crosspestcontrol.com": {
@@ -1454,7 +1655,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Close call false: only stock-style service images, no portfolio/projects",
@@ -1465,9 +1668,11 @@
    "about": "/about-us link",
    "address": "813-982-1922 tel link; '10784 Florence Ave Thonotosassa FL'",
    "reviews": "'4.9 Star Rating 1190 Reviews' plus three 5 Star Review quotes",
-   "reviewSites": "https://maps.google.com/maps?cid=4809712127713306840 (View Google Ratings)",
+   "reviewSites": "https://maps.google.com/maps?cid=4809712127713306840 (View Google Ratings) [count 1: maps.google.com/maps?cid=4809712127713306840 ('View Google Ratings'); bbb.org/ is the bare root, not a profile (close call)]",
    "https": "https://www.crosspestcontrol.com/",
-   "schema": "LocalBusiness JSON-LD"
+   "schema": "LocalBusiness JSON-LD",
+   "focus": "links /services/bed-bug-control, /services/mosquito-control, /services/rodent-control, /services/termite-control",
+   "seen": "2+ place(s): linkedin.com/company/cross-pest-control-of-tampa, npmapestworld.org, npmaqualitypro.org, flpma.org (association logos)"
   }
  },
  "tri-spestcontrol.com": {
@@ -1483,7 +1688,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "Close call false: only stock Getty pest images, no past work",
@@ -1494,9 +1701,11 @@
    "about": "/about-tri-s-pest-control (About Us)",
    "address": "(813) 936-5850 tel link; '802 W Waters Ave Tampa, Florida 33604'",
    "reviews": "Five-star quoted customer reviews and '402 Reviews'",
-   "reviewSites": "https://www.google.com/maps/place/Tri-S+Pest+Control/@28.0250852,... in links",
+   "reviewSites": "https://www.google.com/maps/place/Tri-S+Pest+Control/@28.0250852,... in links [count 1: google.com/maps/place/Tri-S+Pest+Control/... (plus a google.com/search rating link; both Google)]",
    "https": "https://www.tri-spestcontrol.com/",
-   "schema": "LocalBusiness JSON-LD"
+   "schema": "LocalBusiness JSON-LD",
+   "focus": "links /mosquitos, /cockroaches, /termite-company, /lawn-care, /chinch-bugs",
+   "seen": "1 place(s): linkedin.com/company/pest-control-tampa/about/"
   }
  },
  "alleycatpestcontrol.com": {
@@ -1505,27 +1714,31 @@
    "work": false,
    "track": true,
    "people": false,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "No portfolio, only blog posts and tiny offer graphics",
    "track": "'over 30 years industry experience'",
    "people": "Close call false: 'Staff' link only, no person named on homepage",
-   "credentials": "'over 30 years industry experience' (years in business)",
+   "credentials": "'over 30 years industry experience' (years in business) -> no since 2026-10-02: years in business count only in Track record",
    "trade": "'Tampa Pest Control and Integrated Pest Management services'",
    "about": "/about-us/ and /staff/ links",
    "address": "813-671-3838 tel link; '605 W. Bloomingdale Ave., Suite K, Brandon, FL'",
    "reviews": "Close call false: no testimonials, stars or review count",
-   "reviewSites": "No review-site links",
+   "reviewSites": "No review-site links [count 0: none]",
    "https": "https://www.alleycatpestcontrol.com/",
-   "schema": "Organization in JSON-LD @graph"
+   "schema": "Organization in JSON-LD @graph",
+   "focus": "only /services/ and /silverfish-pest-control/; /wood-destroying-organisms/ etc. sit under 'Pest Info' (close call)",
+   "seen": "0 place(s): pestworldforkids.org 'Fun for kids' is an education site, not a listing"
   }
  },
  "qhtattoos.com": {
@@ -1541,7 +1754,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "Close call false: images are studio/storefront/aftercare, no tattoo portfolio on homepage",
@@ -1552,9 +1767,11 @@
    "about": "/welcome and /staff links; 'Our Story' section",
    "address": "Close call false: phone only in JSON-LD (+16152565051), no visible phone or street address",
    "reviews": "'Google Reviews' section with six quoted reviews",
-   "reviewSites": "Close call false: 'Reviews sourced from Google Business Profile' but no link; only Facebook/Instagram",
+   "reviewSites": "Close call false: 'Reviews sourced from Google Business Profile' but no link; only Facebook/Instagram [count 0: Google reviews widget with no link out ('Reviews sourced from Google Business Profile')]",
    "https": "https://qhtattoos.com/",
-   "schema": "TattooParlor and Organization JSON-LD"
+   "schema": "TattooParlor and Organization JSON-LD",
+   "focus": "only /tattoos and /piercing; /aftercare is product care advice (close call)",
+   "seen": "0 place(s): facebook/instagram only; 'award-winning' unlinked"
   }
  },
  "pilgrimagetattoo.com": {
@@ -1563,27 +1780,31 @@
    "work": true,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "alt: 'Psychedelic neo-traditional panther ... tattooed on a calf by English Cousins'; Portfolio links",
    "track": "222 five-star Google reviews; 'tattooing since 2011'",
    "people": "English Cousins, Christopher Cousins, Nathan Fite, Jessica Fox in text and schema",
-   "credentials": "'Est. 2024' / foundingDate 2024 (founding year counts)",
+   "credentials": "'Est. 2024' / foundingDate 2024 (founding year counts) -> no since 2026-10-02: years in business count only in Track record",
    "trade": "Custom Tattoo Studio in Nashville, Tennessee",
    "about": "Close call: footer 'About' and 'Our story' are same-page anchors (#studio, #story); no separate page",
    "address": "(615) 621-3097 tel: link; 4803 Gallatin Pike",
    "reviews": "'222 perfect five-star reviews'; schema aggregateRating (quote cards are placeholders)",
-   "reviewSites": "maps.app.goo.gl link 'Read them on Google' resolves to /maps/place/Pilgrimage+Tattoo; also hasMap/sameAs",
+   "reviewSites": "maps.app.goo.gl link 'Read them on Google' resolves to /maps/place/Pilgrimage+Tattoo; also hasMap/sameAs [count 1: maps.app.goo.gl/jHyowUCcKvt7PgEe7 ('Read them on Google', resolves to Pilgrimage Tattoo place; also in sameAs)]",
    "https": "https://www.pilgrimagetattoo.com/",
-   "schema": "TattooParlor + LocalBusiness JSON-LD"
+   "schema": "TattooParlor + LocalBusiness JSON-LD",
+   "focus": "one-page site: nav is anchors (#artists, #booking, #aftercare); only internal page is guest-artist.html; artist bios are team, not offerings",
+   "seen": "0 place(s): only instagram.com profiles, getporter.io booking, flodesk/mailchimp lists"
   }
  },
  "black13tattoo.com": {
@@ -1599,7 +1820,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "Close call: untitled MainTattoos_*.jpg gallery images and /artists links; no alt text",
@@ -1610,9 +1833,11 @@
    "about": "Nav is Home/Artists/Contact/FAQ/Appointments/Walk-ins/News/Merch; no About or Team page (Artists is close call)",
    "address": "615-750-3741 tel: link; 1313 DICKERSON PIKE",
    "reviews": "no reviews, stars or quotes",
-   "reviewSites": "only instagram sameAs",
+   "reviewSites": "only instagram sameAs [count 0: no review platform links]",
    "https": "https://www.black13tattoo.com/",
-   "schema": "Organization and LocalBusiness JSON-LD"
+   "schema": "Organization and LocalBusiness JSON-LD",
+   "focus": "links /artists/<name> (team bios), /appointment, /walkins, /faq, /news; no per-offering pages",
+   "seen": "0 place(s): 'Voted Nashville Scene's Best of Nashville' text has no link; only instagram.com/black13tattoo and own merch domain black13brand.com"
   }
  },
  "bigriveryoga.com": {
@@ -1621,27 +1846,31 @@
    "work": false,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": true,
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "no portfolio or gallery; stock-like class photos only",
    "track": "5 customer testimonials (Daniel, Cynthia, Jessica, Mary, Lillian)",
    "people": "About page: Meet Chris and Nora Gordon, owners",
-   "credentials": "About page: started in 2010 (founding year); no licence/award",
+   "credentials": "About page: started in 2010 (founding year); no licence/award -> no since 2026-10-02: years in business count only in Track record",
    "trade": "'local, independently owned yoga studio in the Seward neighborhood of Minneapolis'",
    "about": "/best-wellness-studio-locally-owned-yoga 'Who We Are'",
    "address": "3336 East 25th St. Minneapolis, MN 55406 in text",
    "reviews": "'This is undoubtedly my favorite studio that I have ever attended.'",
-   "reviewSites": "'directions' maps.app.goo.gl resolves to google.com/maps/place/Big+River+Yoga (business listing)",
+   "reviewSites": "'directions' maps.app.goo.gl resolves to google.com/maps/place/Big+River+Yoga (business listing) [count 1: maps.app.goo.gl/GY5ZW6CWZXdqmvJN7 (resolves to Big River Yoga place) + About page 'Read more reviews' google.com/search ...#mpd=.../customers/reviews (same platform)]",
    "https": "https://www.bigriveryoga.com/",
-   "schema": "Organization and LocalBusiness JSON-LD"
+   "schema": "Organization and LocalBusiness JSON-LD",
+   "focus": "links /private-yoga-events-retreats, /yoga-on-demand, /minneapolis-thai-massage-therapy-chris-gordon, /yoga-workshops-retreats-enrollment, /yelapa-mexico-yoga-retreat-2027",
+   "seen": "0 place(s): only facebook.com/BigRiverYoga, instagram.com/bigriveryoga, momence booking"
   }
  },
  "nokomisyoga.com": {
@@ -1657,7 +1886,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "no portfolio or gallery",
@@ -1668,9 +1899,11 @@
    "about": "Close call: links to instructor.htm 'Instructors' and location.htm; no page called About",
    "address": "612-770-2467; 2722 East 50th Street, Minneapolis",
    "reviews": "none",
-   "reviewSites": "only Facebook link",
+   "reviewSites": "only Facebook link [count 0: no review platform links]",
    "https": "https://nokomisyoga.com/",
-   "schema": "no JSON-LD"
+   "schema": "no JSON-LD",
+   "focus": "links kidsyoga.htm 'Mom & Baby', yogatherapy.htm 'Yoga Therapy', yogaworkshops.htm 'Workshops/Events' (plus classes.htm) (close call: old site, workshops page is events)",
+   "seen": "0 place(s): only facebook.com/Nokomis-Yoga-61503333092"
   }
  },
  "kenwoodyogastudio.com": {
@@ -1686,7 +1919,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "no portfolio",
@@ -1697,9 +1932,11 @@
    "about": "Close call: nav 'About' link points to site root (one-page Wix site, About section on page)",
    "address": "2101 Penn Ave. S. Minneapolis, MN 55405",
    "reviews": "none",
-   "reviewSites": "only Instagram",
+   "reviewSites": "only Instagram [count 0: no review platform links]",
    "https": "https://www.kenwoodyogastudio.com/",
-   "schema": "WebSite JSON-LD only"
+   "schema": "WebSite JSON-LD only",
+   "focus": "every nav item (Schedule, Class Descriptions, About) links back to the homepage; classes described inline; only other page /sign-up",
+   "seen": "0 place(s): only instagram.com/kenwoodyoga"
   }
  },
  "bloemdecor.com": {
@@ -1715,7 +1952,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "Nav links /gallery and wedding/dailies galleries",
@@ -1726,9 +1965,11 @@
    "about": "https://bloemdecor.com/about-us/",
    "address": "tel:9164472001; 1016 10th Street, Sacramento",
    "reviews": "Review rated 5 out of 5 stars. So bright and beautiful!",
-   "reviewSites": "google.com/maps?q=place_id:ChIJ... and yelp.com/biz/ links",
+   "reviewSites": "google.com/maps?q=place_id:ChIJ... and yelp.com/biz/ links [count 2: google.com/maps?q=place_id:ChIJYUrGnCnRmoARBgzHzAlaLCc, yelp.com/biz/iJl3w0J1S2HjUcyA5lRRWQ (footer + sameAs); BloomNation on-page reviews not counted (platform vendor)]",
    "https": "https://bloemdecor.com/",
-   "schema": "JSON-LD Florist/LocalBusiness/Organization"
+   "schema": "JSON-LD Florist/LocalBusiness/Organization",
+   "focus": "links category pages /celebrations-of-life/, /occasions/anniversary/, /occasions/birthday/, /occasions/get-well/, /occasions/sympathy-and-funeral/, /flower/peonies/",
+   "seen": "0 place(s): bloomnation.com/florist/bloem-dcor-florist/ is the site's own platform/marketplace vendor (close call); rest are instagram/facebook/tiktok/youtube/pinterest"
   }
  },
  "everestflowers.com": {
@@ -1744,7 +1985,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: only product catalog; no gallery/portfolio link",
@@ -1755,9 +1998,11 @@
    "about": "https://everestflowers.com/about-us/",
    "address": "tel:9163314151; 7137 Walerga Rd Ste 7",
    "reviews": "472 Reviews; 'Review rated 5 out of 5 stars. Thank you for your fast service.'",
-   "reviewSites": "google.com/maps?cid=17996270347065720973 and yelp.com/biz/everest-florist... links",
+   "reviewSites": "google.com/maps?cid=17996270347065720973 and yelp.com/biz/everest-florist... links [count 2: google.com/maps?cid=17996270347065720973, yelp.com/biz/everest-florist-and-gifts-sacramento (footer + sameAs)]",
    "https": "https://everestflowers.com/",
-   "schema": "JSON-LD Florist/LocalBusiness/Organization"
+   "schema": "JSON-LD Florist/LocalBusiness/Organization",
+   "focus": "links /anniversary-flowers/, /birthday-flowers/, /sympathy-and-funeral-flowers/, /wedding-flowers/, /funerals/, /weddings/ plus product-type categories",
+   "seen": "0 place(s): bloomnation.com/florist/everest-florist-gifts/ is the platform/marketplace vendor (close call); rest social"
   }
  },
  "sacflower.net": {
@@ -1773,7 +2018,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: product catalog only; no gallery/portfolio link",
@@ -1784,9 +2031,11 @@
    "about": "https://sacflower.net/about-us/",
    "address": "tel:9168231449; 6880 65th street, UNIT 20",
    "reviews": "Review rated 5 out of 5 stars. Such a great company to work with.",
-   "reviewSites": "google.com/maps?cid=16718992210265116145 and yelp.com/biz/the-flower-shop-sacramento-5 links",
+   "reviewSites": "google.com/maps?cid=16718992210265116145 and yelp.com/biz/the-flower-shop-sacramento-5 links [count 2: google.com/maps?cid=16718992210265116145, yelp.com/biz/the-flower-shop-sacramento-5 (footer + sameAs)]",
    "https": "https://sacflower.net/",
-   "schema": "JSON-LD Florist/LocalBusiness/Organization"
+   "schema": "JSON-LD Florist/LocalBusiness/Organization",
+   "focus": "links /anniversary-flowers/, /birthday-flowers/, /get-well-flowers/, /sympathy-and-funeral-flowers/, /wedding-flowers/, /custom-flower-arrangements/",
+   "seen": "0 place(s): bloomnation.com/florist/the-flower-shop-9/ is the platform/marketplace vendor (close call); otherwise only instagram"
   }
  },
  "landvisiondesigns.com": {
@@ -1802,7 +2051,9 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "work": "nav link /see-our-work/ ('See Our Work')",
@@ -1813,9 +2064,11 @@
    "about": "https://www.landvisiondesigns.com/about-us/",
    "address": "tel:9198472578; 10809 Honeycutt Road Raleigh",
    "reviews": "'We have been using Landvision for 35 years' - Cecil Burt (3 testimonials)",
-   "reviewSites": "https://www.houzz.com/pro/landvisiondesigns (Follow link)",
+   "reviewSites": "https://www.houzz.com/pro/landvisiondesigns (Follow link) [count 1: houzz.com/pro/landvisiondesigns (Houzz pro profile carries reviews) (close call: same link also counted under seen)]",
    "https": "https://www.landvisiondesigns.com/",
-   "schema": "JSON-LD Organization + LocalBusiness"
+   "schema": "JSON-LD Organization + LocalBusiness",
+   "focus": "links /landscape-design-installation/, /masonry-construction/, /decks/, /custom-pools-spas/, /outdoor-kitchens/, /landscape-lighting/ and more",
+   "seen": "1 place(s): houzz.com/pro/landvisiondesigns (Houzz profile, shown as a 'Follow' icon) (close call)"
   }
  },
  "hardisonlandscaping.com": {
@@ -1831,7 +2084,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "nav /portfolio and 'VIEW OUR WORK' link",
@@ -1842,9 +2097,11 @@
    "about": "/ourteam 'Meet The Team' (About Us link is # only)",
    "address": "tel:19198201838; 919.820.1838",
    "reviews": "close call: heading 'Previous Client's Explain What They Love' but no review text/stars/count in saved page",
-   "reviewSites": "google.com/maps/place/Hardison+Landscaping+LLC/... link",
+   "reviewSites": "google.com/maps/place/Hardison+Landscaping+LLC/... link [count 1: google.com/maps/place/Hardison+Landscaping+LLC/...]",
    "https": "https://www.hardisonlandscaping.com/",
-   "schema": "JSON-LD LocalBusiness"
+   "schema": "JSON-LD LocalBusiness",
+   "focus": "links /holly-springs-nc/landscape-design, /landscape-installation, /outdoor-living, /patios, /sod-installation, /landscape-installation/landscape-lighting (service pages under a city path)",
+   "seen": "0 place(s): only facebook, instagram, youtube"
   }
  },
  "norrislandscaping.com": {
@@ -1860,7 +2117,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "'Our Work' with /gallery-commercial-landscaping links; Portfolio menu",
@@ -1871,9 +2130,11 @@
    "about": "https://norrislandscaping.com/about-us/",
    "address": "tel:919-934-3938; 65 Glen Road, PMB 169, Garner",
    "reviews": "close call: AngiesList.png badge image only; no review text, stars or count",
-   "reviewSites": "http://www.bbb.org/raleigh-durham/business-reviews/landscapers/norris-landscaping-services-in-clayton-nc-90073952",
+   "reviewSites": "http://www.bbb.org/raleigh-durham/business-reviews/landscapers/norris-landscaping-services-in-clayton-nc-90073952 [count 1: bbb.org/raleigh-durham/business-reviews/landscapers/norris-landscaping-services-in-clayton-nc-90073952]",
    "https": "https://norrislandscaping.com/",
-   "schema": "JSON-LD Organization (name, url, description)"
+   "schema": "JSON-LD Organization (name, url, description)",
+   "focus": "links /commercial-industrial-grounds-maintenance/, /irrigation/, /hydroseeding/, /outdoor-living-hardscapes/, /water-features/, /outdoor-lighting/",
+   "seen": "0 place(s): NCNLA, Angie's List badges are images with no link; About lists NCNLA membership as text only; social icons are '#'"
   }
  },
  "angelinaspastries.com": {
@@ -1889,7 +2150,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "close call: only menu PDF and 'Latest Goodies' photo with no alt; no portfolio",
@@ -1900,9 +2163,11 @@
    "about": "close call: 'About Us' is a same-page heading, not a link",
    "address": "tel:7245147562 and '657 Morganza Road, Canonsburg'",
    "reviews": "no reviews, stars or widget",
-   "reviewSites": "only Facebook and Instagram links",
+   "reviewSites": "only Facebook and Instagram links [count 0: no review platform links]",
    "https": "https://angelinaspastries.com/",
-   "schema": "JSON-LD @type LocalBusiness"
+   "schema": "JSON-LD @type LocalBusiness",
+   "focus": "single page; 'Check out our daily menu' is an anchor (#3e57...) and a menu PDF",
+   "seen": "0 place(s): only facebook and instagram"
   }
  },
  "atamcmurray.com": {
@@ -1918,7 +2183,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "link /videos-&-photo-gallery 'Videos Photo Gallery'",
@@ -1929,9 +2196,11 @@
    "about": "link /staff 'Staff' (people page)",
    "address": "tel:7249429522 and '2510 Washington Road, Canonsburg'",
    "reviews": "close call: 'Why Families Choose' heading but no quotes, stars or count",
-   "reviewSites": "only Facebook, Instagram, TikTok",
+   "reviewSites": "only Facebook, Instagram, TikTok [count 0: no review platform links]",
    "https": "https://atamcmurray.com/",
-   "schema": "JSON-LD @type LocalBusiness"
+   "schema": "JSON-LD @type LocalBusiness",
+   "focus": "links /ata-tigers-ages-4-7, /karate-kids-ages-7-13, /weapons-program, /xtreme-martial-arts-xma, /brazilian-jiu-jitsu, /birthday-parties",
+   "seen": "0 place(s): only facebook, instagram, tiktok; GoDaddy builder link"
   }
  },
  "blueskycsi.com": {
@@ -1947,7 +2216,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "no portfolio or past work; locations/resources only",
@@ -1958,9 +2229,11 @@
    "about": "link /about-blue-sky 'About Blue Sky'",
    "address": "'Tel: 412-595-7263' and '2940 South Park Road, Bethel Park'",
    "reviews": "close call: Reviews page only asks customers to review on Google/BBB/Yelp; no reviews shown",
-   "reviewSites": "https://www.bbb.org/us/pa/bethel-park/profile/title-agent/blue-sky-closing-services-inc-...",
+   "reviewSites": "https://www.bbb.org/us/pa/bethel-park/profile/title-agent/blue-sky-closing-services-inc-... [count 3: homepage bbb.org/us/pa/bethel-park/profile/title-agent/blue-sky-closing-services-inc-...; saved /review page: 'Review on Google' google.com/search?...#lrd=0x8834f9a76d9d8069..., 'Review on Yelp' yelp.com/biz/blue-sky-closing-services-bethel-park, BBB /customer-reviews]",
    "https": "https://www.blueskycsi.com/",
-   "schema": "JSON-LD @type LocalBusiness"
+   "schema": "JSON-LD @type LocalBusiness",
+   "focus": "nav is About, Reviews, Team, Resources, FAQ, Wire Fraud Alert, Locations; /fidelity-national-title-insurance and /first-american-title-insurance are underwriter info pages (only 2 anyway)",
+   "seen": "0 place(s): only facebook and instagram; BBB counted as review"
   }
  },
  "cts-pgh.com": {
@@ -1976,7 +2249,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "no portfolio; links are unlabeled services pages",
@@ -1987,9 +2262,11 @@
    "about": "close call: links are contact.html, experience.html (no text), services.html; no About",
    "address": "'Phone: 724-350-6958 1926 Route 136, Eighty Four, PA'",
    "reviews": "none",
-   "reviewSites": "none",
+   "reviewSites": "none [count 0: no review platform links]",
    "https": "https://www.cts-pgh.com/",
-   "schema": "no JSON-LD"
+   "schema": "no JSON-LD",
+   "focus": "image links to cabling.html, seccam.html, accesscontrol.html, itman.html, avinstall.html, techconsult.html, pcbuild.html",
+   "seen": "0 place(s): image-map icon to linkedin.com/pub/computec-technical-solutions-inc/... is a /pub/ (personal-style) profile, not a /company/ page (close call); other is facebook"
   }
  },
  "southwestcommunitieschamber.org": {
@@ -2005,12 +2282,17 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "https": "final URL https://rtpserdadu4dhoki.com/",
    "trade": "close-call false: spam page 'Dadu4d Link Rtp Tergacor', gambling promo, no real business type",
-   "schema": "only WebSite JSON-LD"
+   "schema": "only WebSite JSON-LD",
+   "focus": "domain now redirects to rtpserdadu4dhoki.com, an Indonesian gambling spam page (dadu4d); no offering pages (close call: fixture is not the real chamber site)",
+   "seen": "0 place(s): only ael.ink/... 'DAFTARKAN SEKARANG' spam link",
+   "reviewSites": "[count 0: no review platform links]"
   }
  },
  "confluencefp.com": {
@@ -2026,7 +2308,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": true
   },
   "why": {
    "track": "schema foundingDate 2018 (8 years)",
@@ -2036,9 +2320,11 @@
    "about": "link /about/ 'Who We Are' and /about/team/",
    "address": "'T: 724.271.8801' and '732 E McMurray Road'",
    "reviews": "close-call false: reviews page is Amplify widget 'Loading ...', no review text/rating in saved page",
-   "reviewSites": "close-call false: only google.com/maps?q= address-search links, sameAs is social + SEC",
+   "reviewSites": "close-call false: only google.com/maps?q= address-search links, sameAs is social + SEC [count 0: client reviews are an Amplify Reviews widget with no link out; google.com/maps?q=<address> links are directions, not a listing]",
    "https": "https://www.confluencefp.com/",
-   "schema": "FinancialService/Organization JSON-LD"
+   "schema": "FinancialService/Organization JSON-LD",
+   "focus": "links /services/individuals-and-families/financial-planning/, /investment-management/, /services/retirement-plan-services/, /services/non-profit-organizations/",
+   "seen": "1 place(s): linkedin.com/company/confluence-financial-partners/ (sameAs adviserinfo.sec.gov is the bare regulator homepage, not a profile; Steelers mention has no link)"
   }
  },
  "jeffhancher.com": {
@@ -2054,7 +2340,9 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close-call false: no portfolio/case studies; testimonials are not own work",
@@ -2066,7 +2354,10 @@
    "address": "close-call false: only info@ email; street address in schema only",
    "reviews": "'CLIENT TESTIMONIALS' section, 5 video testimonials (close call: no quoted text)",
    "https": "https://www.jeffhancher.com/",
-   "schema": "LocalBusiness JSON-LD 'Jeff Hancher Enterprises'"
+   "schema": "LocalBusiness JSON-LD 'Jeff Hancher Enterprises'",
+   "focus": "links /leadership-system, /workshops, /speaking-engagements (+ /keynote-speaking), /executive-forum, /products",
+   "seen": "0 place(s): linkedin.com/in/jeff-hancher/ is a personal profile; firmfeedbackbook.com is his own book domain; podcast is on-site (/allposts)",
+   "reviewSites": "[count 0: video testimonials on-site, no review platform links]"
   }
  },
  "millersace.com": {
@@ -2082,18 +2373,22 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "credentials": "'certified service repair center for STIHL'; 'Authorized STIHL Service Center'",
    "trade": "'Miller's Ace Hardware ... home improvement, repairs'",
    "about": "link /about-us/ 'About Us'",
    "address": "'(724) 941-7970'; '4275 Washington Rd, Canonsburg'",
-   "reviewSites": "'Get Directions' short link resolves to google.com/maps/place/Millers+Ace+Hardware (close call: Directions label)",
+   "reviewSites": "'Get Directions' short link resolves to google.com/maps/place/Millers+Ace+Hardware (close call: Directions label) [count 1: maps.app.goo.gl/zNmZCPdxzLtEd5To8 'Get Directions' (resolves to Millers Ace Hardware place)]",
    "https": "https://millersace.com/",
    "schema": "only WebPage/BreadcrumbList/WebSite",
    "people": "About page: Owned and operated by Greg and Chip Gold",
-   "track": "About page: Serving our community for 130+ years; first store 1889"
+   "track": "About page: Serving our community for 130+ years; first store 1889",
+   "focus": "only hub pages /departments/, /services/, /featured-products/, /featured-brands/; department tiles (grills, paint, outdoor power) and service icons are not linked; millersace.stihldealer.net is a vendor subsite (close call)",
+   "seen": "0 place(s): About page mentions Washington County Chamber of Commerce and J.D. Power awards with no link; only facebook"
   }
  },
  "ajbuerkle.com": {
@@ -2109,7 +2404,9 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "close call: no portfolio/gallery; only service pages and a video splash",
@@ -2120,9 +2417,11 @@
    "about": "link /about | About",
    "address": "tel:(412) 531-4456; 41 McMurray Rd, Pittsburgh",
    "reviews": "close call: 'what our satisfied customers are saying' but only unlabelled '62566', no quotes or stars; /reviews page empty",
-   "reviewSites": "yelp.com/biz/a-j-buerkle...; bbb.org/.../profile/plumber/...; google.com/maps/place/AJ+Buerkle",
+   "reviewSites": "yelp.com/biz/a-j-buerkle...; bbb.org/.../profile/plumber/...; google.com/maps/place/AJ+Buerkle [count 3: google.com/maps/place/AJ+Buerkle+Plumbing+Heating+%26+Air+Conditioning/..., yelp.com/biz/a-j-buerkle-plumbing-heating-air-conditioning-pittsburgh-3, bbb.org/us/pa/pittsburgh/profile/plumber/a-j-buerkle-...]",
    "https": "https://www.ajbuerkle.com/",
-   "schema": "JSON-LD @type LocalBusiness"
+   "schema": "JSON-LD @type LocalBusiness",
+   "focus": "links /plumbing, /heating, /air-conditioning, /bathroom-remodeling (city plumbing pages excluded)",
+   "seen": "0 place(s): only facebook; BBB counted as review; Rotary/BBB association listed as text only"
   }
  },
  "aladdinseatery.com": {
@@ -2131,27 +2430,31 @@
    "work": false,
    "track": true,
    "people": true,
-   "credentials": true,
+   "credentials": false,
    "trade": true,
    "about": true,
    "address": false,
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "menu and catering links only, no past-work gallery",
    "track": "About page: more than 30 locations; open since 1994",
    "people": "About page: Fady Chamoun arrived in the US from Lebanon in 1972... Fady and his wife Sally opened",
-   "credentials": "About page: In 1994 Fady and his wife Sally opened the first Aladdin's Eatery (founding year)",
+   "credentials": "About page: In 1994 Fady and his wife Sally opened the first Aladdin's Eatery (founding year) -> no since 2026-10-02: years in business count only in Track record",
    "trade": "gift card text: 'Lebanese-American cuisine'; Menu, Catering, Order Now",
    "about": "link https://aladdins.com/about-us/ | About",
    "address": "close call: no phone or street address on page; locations are behind a Locations link",
    "reviews": "no reviews, stars or widget",
-   "reviewSites": "only Facebook, Twitter, Instagram links",
+   "reviewSites": "only Facebook, Twitter, Instagram links [count 0: no review platform links]",
    "https": "https://aladdins.com/",
-   "schema": "JSON-LD section is empty"
+   "schema": "JSON-LD section is empty",
+   "focus": "only /our-menu/ and /catering-menu/ (2 menu pages); /locations/, /franchising/, gift-card vendor are not offering categories (close call)",
+   "seen": "0 place(s): only facebook, twitter, instagram"
   }
  },
  "bareskin-laser.com": {
@@ -2167,7 +2470,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "nav link /before-and-after/ | Before & After",
@@ -2178,16 +2483,18 @@
    "about": "link /about-us/ | ABOUT",
    "address": "tel:724-338-4256; 100 Adios Drive, Ste. 1070, Washington, PA 15301",
    "reviews": "no testimonials, stars or widget; only Instagram feed loading",
-   "reviewSites": "close call: goo.gl/maps short link resolves to /maps/place/ of the street address only, no cid or review profile",
+   "reviewSites": "close call: goo.gl/maps short link resolves to /maps/place/ of the street address only, no cid or review profile [count 0: goo.gl/maps/HS4HATRd9reNgR629 resolves to the street address '100 Adios Dr #1070', not the business listing (close call)]",
    "https": "https://bareskin-laser.com/",
-   "schema": "JSON-LD @type Organization 'BARE Skin & Laser'"
+   "schema": "JSON-LD @type Organization 'BARE Skin & Laser'",
+   "focus": "links /injectable-botox-and-neuro-modulators/, /dermal-fillers/, /rejuvenation-co2-lasers/, /rejuvenation-skinpen/, /body-laser-hair-removal/, /rejuvenation-chemical-peel/",
+   "seen": "0 place(s): noonaesthetics.com, zoskinhealth.com practice-ref, skinbetter.pro are product vendors; rest social"
   }
  },
  "bergerchiropracticwellness.com": {
   "group": "third",
   "expect": {
    "work": false,
-   "track": true,
+   "track": false,
    "people": true,
    "credentials": false,
    "trade": true,
@@ -2196,20 +2503,24 @@
    "reviews": true,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "work": "no portfolio; only a virtual office tour link",
-   "track": "3 quoted patient testimonials (Debbie, Stacey, Troy)",
+   "track": "3 quoted patient testimonials (Debbie, Stacey, Troy) -> no since 2026-10-02: testimonials count only in Reviews on your site",
    "people": "Dr. E. Joseph Berger is a chiropractor serving McMurray",
    "credentials": "close call: 'Dr.' title only, no degree letters, licence or membership; NEJM quote is a study citation",
    "trade": "Your McMurray Chiropractor; Chiropractor in McMurray, PA",
    "about": "link /about-ushtml | About Us; Meet the Chiropractor",
    "address": "tel:7249691051; 3805 Washington Rd., Ste. 2 McMurray, PA 15317",
    "reviews": "'Dr. Berger is a miracle worker who helped me tremendously.' Debbie",
-   "reviewSites": "close call: schema sameAs lists only bare yelp.com/google.com homepages, not a business profile",
+   "reviewSites": "close call: schema sameAs lists only bare yelp.com/google.com homepages, not a business profile [count 0: sameAs https://www.yelp.com and https://www.google.com are bare template placeholders, not this business]",
    "https": "https://www.bergerchiropracticwellness.com/",
-   "schema": "JSON-LD @type MedicalClinic"
+   "schema": "JSON-LD @type MedicalClinic",
+   "focus": "one /services-techniqueshtml page; 'Phase 1: Relief Care / Phase 2: Corrective Care / Phase 3: Wellness Care' are stages of one care plan in the New Patient Center, not separate offerings (close call)",
+   "seen": "0 place(s): sameAs and 'Button Text' icons are placeholder root domains (linkedin.com, psychologytoday.com), not profiles of this clinic"
   }
  },
  "berniceaschweissllc.com": {
@@ -2225,7 +2536,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "credentials": "Title: \"Top Ranked CPA Firm\" (ranking claim)",
@@ -2235,7 +2548,10 @@
    "people": "About page: Bernice Schweiss CPA, CGMA, MST, Founder President; Stan Kleja, Vice President",
    "https": "final URL https://www.berniceaschweissllc.com/",
    "schema": "close call false: JSON-LD section empty",
-   "track": "About page: Founded in 2017; founder 'more than four decades of public accounting experience'"
+   "track": "About page: Founded in 2017; founder 'more than four decades of public accounting experience'",
+   "focus": "Advisory and Consulting / Accounting / Taxes are anchors on one page (/our-services#Accounting, #Taxes)",
+   "seen": "0 place(s): AICPA/PICPA memberships and awards on About are text only, no links",
+   "reviewSites": "[count 0: no review platform links]"
   }
  },
  "binbath.com": {
@@ -2251,12 +2567,17 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": false,
+   "seen": false
   },
   "why": {
    "trade": "\"We clean, sanitize and deodorize your residential trash bins\"",
    "https": "final URL https://binbath.com/",
-   "address": "close call false: Contact Us link is # only, no phone or street"
+   "address": "close call false: Contact Us link is # only, no phone or street",
+   "focus": "homepage is a city picker: /boston, /cleveland, /detroit, /omaha, /pittsburgh (location pages)",
+   "seen": "0 place(s): no outside links",
+   "reviewSites": "[count 0: no review platform links]"
   }
  },
  "bootcampfit360.com": {
@@ -2272,7 +2593,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": false
+   "schema": false,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "trade": "\"Bootcamp Gym in McMurray, PA\"",
@@ -2280,10 +2603,12 @@
    "address": "tel:(724)603-1236; \"190 Gallery Drive McMurray, PA 15317\"",
    "https": "final URL https://www.bootcampfit360.com/",
    "track": "close call false: \"Hundreds of McMurray, PA Residents\" is not a 20+ count",
-   "reviewSites": "close call false: Get Directions is a Google Maps link to a street address (/maps/place/190+Gallery+Dr), not a review listing",
+   "reviewSites": "close call false: Get Directions is a Google Maps link to a street address (/maps/place/190+Gallery+Dr), not a review listing [count 0: maps.app.goo.gl/DYBnru29kbYcrRDCA resolves to '190 Gallery Dr' address, not the business listing (close call)]",
    "credentials": "close call false: CrossFit Journal link/logo is a publication, not a credential",
    "reviews": "close call false: 'Trusted and Loved' heading only, no quotes, stars or count",
-   "people": "About page: Casie Niederberger Head Coach, Owner; Chuck Caldwell Coach; Kait Kicinski Coach"
+   "people": "About page: Casie Niederberger Head Coach, Owner; Chuck Caldwell Coach; Kait Kicinski Coach",
+   "focus": "links /programs/bootcamp, /programs/small-group-strength-training, /programs/nutrition-coaching, /programs/team-training, /programs/summer-kid-camps, /programs/preschool-classes",
+   "seen": "0 place(s): journal.crossfit.com icon is a template leftover, not a listing of this gym; rest facebook/instagram, pushpress vendor"
   }
  },
  "capstonequalityservices.com": {
@@ -2299,7 +2624,9 @@
    "reviews": false,
    "reviewSites": false,
    "https": true,
-   "schema": true
+   "schema": true,
+   "focus": true,
+   "seen": false
   },
   "why": {
    "work": "link /gallery | View More Projects; gallery-home alts of real kitchens, decks",
@@ -2311,8 +2638,10 @@
    "schema": "JSON-LD @type LocalBusiness",
    "people": "close call false: only email ethan@ in schema, no full name or Person",
    "reviews": "close call false: \"what our satisfied customers are saying\" intro but no quotes/stars on home or /reviews",
-   "reviewSites": "close call false: only maps.google.com?q=street address link; sameAs is Facebook/Instagram",
-   "track": "close call false: \"years of experience\" with no number; no counts"
+   "reviewSites": "close call false: only maps.google.com?q=street address link; sameAs is Facebook/Instagram [count 0: maps.google.com/maps?q=204+Old+Oak+Road... is an address directions link; saved /reviews page has no outside review links]",
+   "track": "close call false: \"years of experience\" with no number; no counts",
+   "focus": "links /attic-conversions, /bathroom-remodeling, /kitchen-remodeling, /home-additions, /deck-construction, /tile-installation and more",
+   "seen": "0 place(s): only facebook and instagram (also sameAs)"
   }
  }
 }

@@ -145,6 +145,8 @@ export function reviewSiteOf(url: string): string | null {
     if (/^place_id:/i.test(q.get('q') ?? '')) return 'Google'
     // A business's Google panel, where share.google links land: /search?kgmid=/g/…
     if (path === '/search' && q.get('kgmid')) return 'Google'
+    // The review panel of a search result: /search?…#lrd=0x…
+    if (path === '/search' && /(?:^|[#&])lrd=/.test(u.hash)) return 'Google'
     const place = path.match(/\/maps\/place\/([^/]+)/)?.[1]
     if (place && !/^\d/.test(decodeURIComponent(place))) return 'Google'
     return null
@@ -166,7 +168,8 @@ export function reviewSiteOf(url: string): string | null {
   if (host === 'weddingwire.com' && /^\/(?:biz|reviews)\//.test(path)) return 'WeddingWire'
   if (host === 'opentable.com' && path.startsWith('/r/')) return 'OpenTable'
   if (host === 'clutch.co' && path.startsWith('/profile/')) return 'Clutch'
-  if (host === 'g2.com' && path.startsWith('/products/')) return 'G2'
+  if (host === 'g2.com' && /^\/(?:products|sellers)\//.test(path)) return 'G2'
+  if (host === 'capterra.com' && /^\/(?:p|reviews|services\/sp)\//.test(path)) return 'Capterra'
   return null
 }
 

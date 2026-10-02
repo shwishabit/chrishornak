@@ -9,7 +9,8 @@ import { resolveAndCheck, safeFetch, USER_AGENT, type FetchResult } from './fetc
 import { readReviewSignals, readReviewsPage, reviewSiteOf, reviewSitesEvidence, type ReviewRead } from './review-signals'
 import { readExperienceSignals } from './experience-signals'
 import { extractText, findAboutPage, findJsonLdBlocks, isHttpsUrl, readProofEvidence, readProofSignals } from './proof-signals'
-import { PROOF_CHECKS, proofFromSignals, type ProofId, type SiteResult } from './authority-check'
+import { PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult } from './authority-check'
+import { findOfferPages, findSeenElsewhere } from './standing-signals'
 
 export const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 
@@ -75,11 +76,19 @@ export function readProof(
   html: string,
   finalUrl: string,
   rep: Reputation,
-): { proof: ProofId[]; evidence: NonNullable<SiteResult['evidence']>; trackLevel: 0 | 1 | 2 } {
+): {
+  proof: ProofId[]
+  evidence: NonNullable<SiteResult['evidence']>
+  trackLevel: 0 | 1 | 2
+  reviewSiteCount: number
+  seen: string[]
+} {
   const text = extractText(html)
   const blocks = findJsonLdBlocks(html)
   const https = isHttpsUrl(finalUrl)
   const exp = readExperienceSignals(html, finalUrl)
+  const offers = findOfferPages(html, finalUrl)
+  const seen = findSeenElsewhere([{ html, url: finalUrl }])
   const proof = proofFromSignals({
     ...readProofSignals(html, text, blocks, finalUrl),
     isHttps: https,
@@ -87,6 +96,8 @@ export function readProof(
     hasReviewSites: rep.sites.length > 0,
     hasWorkShown: !!exp.workShown,
     hasTrackRecord: !!exp.trackRecord,
+    hasFocus: offers.length >= 3,
+    hasSeen: seen.length > 0,
   })
   const found = {
     ...readProofEvidence(html, text, blocks, finalUrl),
@@ -95,13 +106,26 @@ export function readProof(
     ...(rep.sites.length ? { hasReviewSites: reviewSitesEvidence(rep.sites) } : {}),
     ...(exp.workShown ? { hasWorkShown: exp.workShown } : {}),
     ...(exp.trackRecord ? { hasTrackRecord: exp.trackRecord } : {}),
+    ...(offers.length >= 3 ? { hasFocus: offersEvidence(offers) } : {}),
+    ...(seen.length ? { hasSeen: seenEvidence(seen) } : {}),
   }
   const evidence: NonNullable<SiteResult['evidence']> = {}
-  for (const c of PROOF_CHECKS) {
+  for (const c of [...PROOF_CHECKS, ...SHOWN_CHECKS]) {
     const e = found[c.signal as keyof typeof found]
     if (proof.includes(c.id) && e) evidence[c.id] = e
   }
-  return { proof, evidence, trackLevel: exp.trackLevel }
+  return { proof, evidence, trackLevel: exp.trackLevel, reviewSiteCount: rep.sites.length, seen }
+}
+
+/** "5 pages: /services/seo, /services/ppc, /services/web-design …" */
+function offersEvidence(pages: string[]): string {
+  return `${pages.length} offer pages: ${pages.slice(0, 4).join(', ')}${pages.length > 4 ? ' …' : ''}`
+}
+
+/** "Links to LinkedIn and Crunchbase" */
+function seenEvidence(names: string[]): string {
+  const list = names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+  return `${names.length === 1 ? 'A link' : 'Links'} to ${list}`
 }
 
 /* ── The About page ─────────────────────────────────────────────────────────
@@ -133,19 +157,26 @@ function addFromAbout(read: Read, about: FetchResult): void {
     read.evidence[id] = `On your About page (${where.slice(0, 50)}): ${found[0].toLowerCase()}${found.slice(1)}`
   }
   if (signals.hasPeople) add('people', evidence.hasPeople)
-  if (signals.hasCredentials) add('credentials', evidence.hasCredentials)
+  if (signals.hasLicences) add('credentials', evidence.hasLicences)
   if (exp.trackRecord && !read.proof.includes('track')) {
     add('track', exp.trackRecord)
     read.trackLevel = exp.trackLevel
   }
-  read.proof = PROOF_CHECKS.map((c) => c.id).filter((id) => read.proof.includes(id))
+  // Places that list or feature the business, often linked only from the About page.
+  const more = findSeenElsewhere([{ html, url: about.finalUrl }]).filter((n) => !read.seen.includes(n))
+  if (more.length) {
+    read.seen.push(...more)
+    if (!read.proof.includes('seen')) read.proof.push('seen')
+    read.evidence.seen = seenEvidence(read.seen)
+  }
+  read.proof = [...PROOF_CHECKS, ...SHOWN_CHECKS].map((c) => c.id).filter((id) => read.proof.includes(id))
 }
 
 /** One homepage → its checks: the review read, the extra reads (reviews page, About page), then the checks. */
 export async function readSite(page: FetchResult, reader: Reader = liveReader) {
   const html = page.body
   const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
-  const missing = !home.hasPeople || !home.hasCredentials || !readExperienceSignals(html, page.finalUrl).trackRecord
+  const missing = !home.hasPeople || !home.hasLicences || !readExperienceSignals(html, page.finalUrl).trackRecord
   const aboutUrl = missing ? findAboutPage(html, page.finalUrl) : null
   const [rep, about] = await Promise.all([
     readReputation(readReviewSignals(html, page.finalUrl), reader),
