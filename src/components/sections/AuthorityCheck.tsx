@@ -30,6 +30,7 @@ import {
 } from '@/lib/authority-check'
 import { ToolQuestions } from './ToolQuestions'
 import { toolEnding } from '@/lib/data'
+import { useTheme } from '@/components/ui/ThemeToggle'
 import '@/styles/authority-check.css'
 
 /* ── Authority Check ────────────────────────────────────────────────────────
@@ -38,13 +39,11 @@ import '@/styles/authority-check.css'
  * an overall score out of 100 and one row per E-E-A-T letter, the 11 checks
  * open below, the phrase behind each ✓), the first 3 moves, the 15-minute
  * offer, "How to grow each score", the three questions and how we score.
- * Opens on white, switch to dark; prints clean; the URL is the share link.
+ * Follows the sitewide light / dark theme; prints clean; the URL is the share link.
  * Mock: drafts/authority-check-results-v4-comp.html (round 4, 2026-10-01).
  * ─────────────────────────────────────────────────────────────────────── */
 
 const RIVAL_INPUT_ID = 'ac-r1'
-const THEME_KEY = 'ac-theme'
-type Theme = 'light' | 'dark'
 
 function focusRival() {
   const el = document.getElementById(RIVAL_INPUT_ID) as HTMLInputElement | null
@@ -830,7 +829,8 @@ function Moves({ r }: { r: AuthorityResult }) {
 
 /* ── Offer ──────────────────────────────────────────────────────────────── */
 
-function Offer({ theme }: { theme: Theme }) {
+function Offer() {
+  const theme = useTheme()
   return (
     <aside
       aria-labelledby="ac-offer"
@@ -993,47 +993,20 @@ function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof
   )
 }
 
-/* ── Report header: the answer, then Copy link / Print / theme ─────────── */
+/* ── Report header: the answer, then Copy link / Print ─────────────────── */
 
-function ReportHead({
-  r,
-  example,
-  theme,
-  setTheme,
-}: {
-  r: AuthorityResult
-  example: boolean
-  theme: Theme
-  setTheme: (t: Theme) => void
-}) {
+function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
   const n = r.rivals.length
   const [note, setNote] = useState('')
   const btn =
     'inline-flex items-center gap-1.5 rounded-lg border border-line-strong bg-panel px-3 py-[7px] text-sm font-medium text-foreground hover:border-muted-foreground [&>svg]:h-4 [&>svg]:w-4'
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="m-0 text-sm text-muted-foreground">
-          {example ? 'Example · ' : ''}
-          <b className="font-medium text-body-soft">{r.you.domain}</b>{' '}
-          {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`} · {fmtDate(r.checkedAt)}
-        </p>
-        <div className="ac-noprint inline-flex gap-0.5 rounded-full border border-line-strong p-[3px]" role="group" aria-label="Theme">
-          {(['light', 'dark'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={theme === t}
-              onClick={() => setTheme(t)}
-              className={`rounded-full px-3 py-1 text-[13px] font-medium capitalize ${
-                theme === t ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="m-0 text-sm text-muted-foreground">
+        {example ? 'Example · ' : ''}
+        <b className="font-medium text-body-soft">{r.you.domain}</b>{' '}
+        {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`} · {fmtDate(r.checkedAt)}
+      </p>
       <h2 id="ac-result" className="m-0 max-w-[36ch] font-heading text-[clamp(24px,3.4vw,32px)] leading-tight font-bold text-balance">
         {summary(r)}
       </h2>
@@ -1081,26 +1054,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AuthorityResult | null>(null)
   const [pending, setPending] = useState(0)
-  const [theme, setThemeState] = useState<Theme>('light')
   const resultRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY)
-      if (saved === 'dark' || saved === 'light') setThemeState(saved)
-    } catch {}
-  }, [])
-  // The theme wrapper is the page's (#ac-page in authority-check/page.tsx), so the menu and footer follow it.
-  useEffect(() => {
-    const page = document.getElementById('ac-page')
-    if (page) page.dataset.acTheme = theme
-  }, [theme])
-  const setTheme = (t: Theme) => {
-    setThemeState(t)
-    try {
-      localStorage.setItem(THEME_KEY, t)
-    } catch {}
-  }
 
   async function run(youRaw: string, rivalRaws: string[]) {
     const me = parseSite(youRaw)
@@ -1198,12 +1152,12 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
                 : ''}
           </p>
           <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 ${loading ? 'opacity-50 transition-opacity' : ''}`}>
-            <ReportHead r={shown} example={!result} theme={theme} setTheme={setTheme} />
+            <ReportHead r={shown} example={!result} />
             <CompareTable r={shown} onAddRival={addRival} loading={loading} />
             {result && result.rivals.length === 0 && <SoloAddRival onAddRival={addRival} loading={loading} />}
             <Moves r={shown} />
           </div>
-          <Offer theme={theme} />
+          <Offer />
           <Grow />
           <div className="ac-noprint">
             <ToolQuestions current="/authority-check" />

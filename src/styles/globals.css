@@ -80,6 +80,73 @@
   --duration-slower: 600ms;
 }
 
+/* -- Light / dark ----------------------------------------------------------
+ * Dark is the site as designed and the default. <html data-theme> is set
+ * before first paint by the inline script in layout.tsx: the visitor's saved
+ * pick, else the device setting, else dark. The switch is ThemeToggle.tsx.
+ * Light re-points the same tokens, so components need no light classes; use
+ * `light:` only where a component paints a fixed colour (client logos).
+ * Teal text on white is #08775a (5.0:1 or more on every light surface); the
+ * bright #2dd4a8 stays in the wordmark, cursor and decoration.
+ * ------------------------------------------------------------------------ */
+
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
+:root {
+  color-scheme: dark;
+  --glass-bg: hsl(0 0% 100% / 0.04);
+  --glass-card-bg: hsl(0 0% 100% / 0.05);
+  --glass-edge: hsl(0 0% 100% / 0.08);
+  --glass-shadow: hsl(0 0% 0% / 0.2);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-background: #ffffff;
+  --color-foreground: #141716;
+  --color-muted: #f1f3f2;
+  --color-muted-foreground: #5f6663;
+  --color-border: #e6e9e7;
+  --color-ring: #c4cac7;
+  --color-primary: #08775a;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f3f2;
+  --color-secondary-foreground: #141716;
+  --color-accent: #08775a;
+  --color-accent-foreground: #08775a;
+  --color-panel: #ffffff;
+  --color-well: #f5f7f6;
+  --color-field: #ffffff;
+  --color-field-edge: #8b938f; /* 3.1:1 on white (WCAG 1.4.11) */
+  --color-line-strong: #d5dad7;
+  --color-body-soft: #3a3f3d;
+  --color-primary-deep: #eaf7f2;
+  --color-primary-line: #bfe6d8;
+  --color-grid: #eef2f0;
+  --color-caution: #a15f00;
+  --color-caution-line: #ecd3a8;
+  --color-danger: #c0392f;
+  --color-success: #047857;
+  --color-warning: #b45309;
+  --color-destructive: #b91c1c;
+  --color-info: #08775a;
+  /* Status text in the tools uses the 400 shades, which fail on white */
+  --color-emerald-400: #047857;
+  --color-emerald-500: #047857;
+  --color-amber-400: #b45309;
+  --color-red-400: #b91c1c;
+  --color-red-500: #b91c1c;
+  --glass-bg: hsl(0 0% 100% / 0.82);
+  --glass-card-bg: hsl(0 0% 100% / 0.9);
+  --glass-edge: hsl(150 6% 10% / 0.1);
+  --glass-shadow: hsl(150 6% 10% / 0.06);
+}
+
+/* The wordmark: Logo.tsx renders both, CSS shows the one for the theme */
+.logo-on-light { display: none; }
+:root[data-theme='light'] .logo-on-dark { display: none; }
+:root[data-theme='light'] .logo-on-light { display: block; }
+
 /* -- Base Styles ---------------------------------------------------------- */
 
 *,
@@ -155,32 +222,36 @@ body {
 /* -- Glassmorphism Utilities ---------------------------------------------- */
 
 .glass {
-  background: hsl(0 0% 100% / 0.04);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid hsl(0 0% 100% / 0.08);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius-xl);
 }
 
+:root[data-theme='light'] .glass {
+  box-shadow: 0 2px 12px var(--glass-shadow);
+}
+
 .glass-card {
-  background: hsl(0 0% 100% / 0.05);
+  background: var(--glass-card-bg);
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid hsl(0 0% 100% / 0.08);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius-2xl);
-  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2);
+  box-shadow: 0 8px 32px var(--glass-shadow);
 }
 
 /* -- Audit form glow ------------------------------------------------------ */
 
 @keyframes audit-glow {
   0%, 100% {
-    border-color: hsl(0 0% 100% / 0.08);
-    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 0 0 transparent;
+    border-color: var(--glass-edge);
+    box-shadow: 0 8px 32px var(--glass-shadow), 0 0 0 0 transparent;
   }
   50% {
     border-color: hsl(168 76% 50% / 0.35);
-    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 20px hsl(168 76% 50% / 0.12);
+    box-shadow: 0 8px 32px var(--glass-shadow), 0 0 20px hsl(168 76% 50% / 0.12);
   }
 }
 
@@ -193,7 +264,7 @@ body {
 .audit-form-glow:hover {
   animation: none;
   border-color: hsl(168 76% 50% / 0.45);
-  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2), 0 0 24px hsl(168 76% 50% / 0.15);
+  box-shadow: 0 8px 32px var(--glass-shadow), 0 0 24px hsl(168 76% 50% / 0.15);
 }
 
 /* -- Focus Styles --------------------------------------------------------- */

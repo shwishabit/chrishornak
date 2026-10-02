@@ -159,7 +159,7 @@ export function SignalPageClient() {
             {clients.map((client) => (
               <div
                 key={client.name}
-                className={`flex h-12 items-center justify-center transition-all duration-300 ${client.noInvert ? 'opacity-30 grayscale' : 'opacity-30 brightness-0 invert grayscale'}`}
+                className={`flex h-12 items-center justify-center transition-all duration-300 ${client.noInvert ? 'opacity-30 grayscale' : 'opacity-30 brightness-0 invert grayscale light:invert-0'}`}
               >
                 <Image
                   src={client.logo}

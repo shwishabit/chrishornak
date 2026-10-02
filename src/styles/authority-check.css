@@ -1,8 +1,7 @@
-/* ── Authority Check: page theme, standing colours, print ────────────────
- * The report opens on white (Chris, 2026-10-01: "it looks more like a
- * report"), with a switch to the site's dark look. Light values re-point the
- * site's own tokens inside .ac-theme only; the brand teal is darkened for
- * text on white. Green only ever means "ahead" (round 4).
+/* ── Authority Check: standing colours, print ────────────────────────────
+ * Light / dark is the sitewide theme (<html data-theme>, globals.css); the
+ * report's own white-default switch was folded into it (2026-10-01).
+ * Green only ever means "ahead" (round 4).
  * Mock: drafts/authority-check-results-v4-comp.html.
  * ─────────────────────────────────────────────────────────────────────── */
 
@@ -18,49 +17,14 @@
   color: var(--color-foreground);
 }
 
-.ac-theme[data-ac-theme='light'] {
-  color-scheme: light;
-  --color-background: #ffffff;
-  --color-foreground: #141716;
-  --color-muted: #f1f3f2;
-  --color-muted-foreground: #5f6663;
-  --color-border: #e6e9e7;
-  --color-panel: #ffffff;
-  --color-well: #f5f7f6;
-  --color-field: #ffffff;
-  --color-field-edge: #8b938f;
-  --color-line-strong: #d5dad7;
-  --color-body-soft: #3a3f3d;
-  --color-primary: #0b8565;
-  --color-primary-foreground: #ffffff;
-  --color-primary-deep: #eaf7f2;
-  --color-primary-line: #bfe6d8;
-  --color-grid: #eef2f0;
-  --color-caution: #a15f00;
-  --color-caution-line: #ecd3a8;
-  --color-danger: #c0392f;
-  --ac-ahead: #0b8565;
+:root[data-theme='light'] .ac-theme {
+  --ac-ahead: #08775a;
   --ac-behind: #a15f00;
   --ac-low: #c0392f;
   --ac-same: #4a4f4c;
   --ac-none: #b3b9b6;
-  --ac-you: rgba(11, 133, 101, 0.055);
+  --ac-you: rgba(8, 119, 90, 0.055);
   --ac-tint: #f5f7f6;
-}
-
-.ac-theme[data-ac-theme='dark'] {
-  color-scheme: dark;
-}
-
-/* The black wordmark on white (Logo.tsx renders both, the light one hidden) */
-.ac-theme[data-ac-theme='light'] img.logo-on-dark { display: none; }
-.ac-theme[data-ac-theme='light'] img.logo-on-light { display: block; }
-
-/* The site menu's glass bar, readable on white */
-.ac-theme[data-ac-theme='light'] .glass {
-  background: hsl(0 0% 100% / 0.82);
-  border-color: hsl(150 6% 10% / 0.1);
-  box-shadow: 0 2px 12px hsl(150 6% 10% / 0.06);
 }
 
 /* Standing: set --s on a cell, numbers and bars read it */

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react'
 import { navLinks, toolLinks } from '@/lib/data'
 import { Logo } from '@/components/ui/Logo'
+import { ThemeSwitchRow, ThemeToggle } from '@/components/ui/ThemeToggle'
 import { ease } from '@/lib/animations'
 
 /** Desktop "Tools" menu: a button that opens the three free tools. Closes on Escape, outside click or a pick. */
@@ -78,7 +79,7 @@ function ToolsMenu() {
   )
 }
 
-export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) {
+export function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -90,7 +91,7 @@ export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) 
         className="glass fixed top-4 right-4 left-4 z-50 mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:top-6 md:right-6 md:left-6"
       >
         <a href="/" className="text-foreground">
-          <Logo className="h-10 w-auto" withLight={lightLogo} />
+          <Logo className="h-10 w-auto" />
         </a>
 
         {/* Desktop nav */}
@@ -105,6 +106,7 @@ export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) 
             </a>
           ))}
           <ToolsMenu />
+          <ThemeToggle />
           <a
             href="/#connect"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
@@ -168,6 +170,9 @@ export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) 
               >
                 How the three checks fit together <span aria-hidden="true">→</span>
               </a>
+            </div>
+            <div className="border-t border-border pt-4">
+              <ThemeSwitchRow />
             </div>
             <a
               href="/#connect"

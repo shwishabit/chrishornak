@@ -34,7 +34,7 @@ export function ClientLogos({ className = '' }: { className?: string }) {
         {clients.map((client) => (
           <div
             key={client.name}
-            className={`flex h-14 items-center justify-center transition-all duration-300 md:h-16 ${client.noInvert ? 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0' : 'opacity-40 brightness-0 invert grayscale hover:opacity-100 hover:brightness-0 hover:invert hover:grayscale-0 hover:sepia hover:saturate-[10] hover:hue-rotate-[120deg]'}`}
+            className={`flex h-14 items-center justify-center transition-all duration-300 md:h-16 ${client.noInvert ? 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0' : 'opacity-40 brightness-0 invert grayscale hover:opacity-100 hover:brightness-0 hover:invert hover:grayscale-0 hover:sepia hover:saturate-[10] hover:hue-rotate-[120deg] light:invert-0 light:hover:brightness-100 light:hover:invert-0 light:hover:sepia-0 light:hover:saturate-100 light:hover:hue-rotate-0'}`}
           >
             <Image
               src={client.logo}

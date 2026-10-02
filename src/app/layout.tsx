@@ -5,6 +5,7 @@ import '@/styles/globals.css'
 import { siteConfig } from '@/lib/data'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { CustomCursor } from '@/components/ui/CustomCursor'
+import { THEME_SCRIPT } from '@/lib/theme'
 
 const sora = Sora({
   subsets: ['latin'],
@@ -21,7 +22,10 @@ const inter = Inter({
 })
 
 export const viewport: Viewport = {
-  themeColor: '#0a0a0a',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
 }
 
 // Share title without the site name: og:site_name carries it (Apple TN3156).
@@ -84,6 +88,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
+        {/* Sets <html data-theme> before first paint, so no flash of the wrong theme */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <link rel="preconnect" href="https://app.cal.com" />
         <link rel="preload" as="image" href="/images/wordmark-dark.svg" />
       </head>
