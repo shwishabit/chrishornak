@@ -9,12 +9,12 @@ import {
   TIE_GAP,
   authorityOf,
   authoritySource,
-  badgeOf,
   band,
   checksIn,
   firstMoves,
   fmtAuthority,
   isGap,
+  level,
   ordinal,
   parseSite,
   ranked,
@@ -36,7 +36,7 @@ import '@/styles/authority-check.css'
 /* ── Authority Check ────────────────────────────────────────────────────────
  * Hero form (Your site vs Rival, up to 3 rivals, or your site alone), then
  * the report: the answer in a sentence, one table (sites sorted 1st → 4th,
- * an overall score out of 100 and one row per E-E-A-T letter, the 11 checks
+ * an overall score out of 100 and one row per E-E-A-T letter, the 12 checks
  * open below, the phrase behind each ✓), the first 3 moves, the 15-minute
  * offer, "How to grow each score", the three questions and how we score.
  * Follows the sitewide light / dark theme; prints clean; the URL is the share link.
@@ -44,6 +44,8 @@ import '@/styles/authority-check.css'
  * ─────────────────────────────────────────────────────────────────────── */
 
 const RIVAL_INPUT_ID = 'ac-r1'
+/** The 11 homepage checks + the Domain Rating row. */
+const CHECK_COUNT = PROOF_CHECKS.length + 1
 
 function focusRival() {
   const el = document.getElementById(RIVAL_INPUT_ID) as HTMLInputElement | null
@@ -267,7 +269,7 @@ function Hero({
           <ul className="m-0 grid list-none gap-2.5 p-0">
             {LETTERS.map((l) => (
               <li key={l.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5">
-                <Badge letter={l.badge} />
+                <Badge id={l.id} />
                 <span className="min-w-0 text-sm leading-snug">
                   <b className="font-semibold">{l.label}</b>
                   <small className="block text-[13px] text-muted-foreground">{HERO_PLAIN[l.id]}</small>
@@ -290,15 +292,21 @@ function Hero({
 
 const sClass = (s: Standing | null) => (s ? `ac-s-${s}` : '')
 
-function Badge({ letter, small = false }: { letter: string; small?: boolean }) {
+/** Each part's icon (the same ones as "How to grow each score"), in place of E-E-A-T letters. */
+const BADGE_SIZE = {
+  sm: 'h-5 w-5 text-muted-foreground [&>svg]:h-3.5 [&>svg]:w-3.5',
+  md: 'h-6 w-6 text-foreground [&>svg]:h-4 [&>svg]:w-4',
+  /** The score rows: 50% bigger than md. */
+  lg: 'h-9 w-9 text-foreground [&>svg]:h-6 [&>svg]:w-6',
+}
+
+function Badge({ id, size = 'md' }: { id: Letter; size?: keyof typeof BADGE_SIZE }) {
   return (
     <span
       aria-hidden="true"
-      className={`ac-tint inline-grid flex-none place-items-center rounded-md border border-line-strong font-heading font-bold ${
-        small ? 'h-5 w-5 text-[11px]' : 'h-6 w-6 text-[13px]'
-      }`}
+      className={`ac-tint inline-grid flex-none place-items-center rounded-md border border-line-strong ${BADGE_SIZE[size]}`}
     >
-      {letter}
+      {LETTER_ICON[id]}
     </span>
   )
 }
@@ -359,13 +367,19 @@ function CheckMark({
   )
 }
 
-function Legend() {
-  const items: [Standing, string][] = [
-    ['ahead', 'Leads'],
-    ['same', 'Tie'],
-    ['behind', 'Behind'],
-    ['low', 'Far behind'],
-  ]
+function Legend({ solo }: { solo: boolean }) {
+  const items: [Standing, string][] = solo
+    ? [
+        ['ahead', 'Strong'],
+        ['behind', 'Fair'],
+        ['low', 'Needs work'],
+      ]
+    : [
+        ['ahead', 'Leads'],
+        ['same', 'Tie'],
+        ['behind', 'Behind'],
+        ['low', 'Far behind'],
+      ]
   return (
     <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Colours">
       {items.map(([s, label]) => (
@@ -393,11 +407,56 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
   const overall = order.map((o) => o.scores?.overall ?? null)
   const auths = order.map((o) => (o.scores ? authorityOf(o.site, r) : null))
   const part = (l: Letter) => order.map((o) => (o.scores ? o.scores[l] : null))
+  /** Alone (or every rival's homepage unread): colour by the score's own level. With rivals: against the row. */
+  const alone = order.filter((o) => o.scores).length < 2
+  const tone = (pts: number | null, max: number, value: number | null, values: (number | null)[], tie = 0) =>
+    alone ? level(pts, max) : standing(value, values, tie)
+  const letterTone = (l: (typeof LETTERS)[number], o: Ranked, values: (number | null)[]) => {
+    if (!o.scores) return null
+    if (l.id !== 'authority') return tone(o.scores[l.id], l.points, o.scores[l.id], values)
+    return src ? tone(o.scores.authority, l.points, authorityOf(o.site, r), values, TIE_GAP) : null
+  }
 
-  /** The 11 check rows, each with its "what we found" row on tap. Shared by the desktop table and the phone grid. */
+  /** Authority's row in the checks: the Domain Rating itself, a number rather than a ✓. */
+  const AUTH = LETTERS.find((l) => l.id === 'authority')!
+  const drRow = (compact: boolean) => (
+    <tr className="ac-tint">
+      <th
+        scope="row"
+        className={`border-t border-border text-left font-normal text-body-soft ${
+          compact ? 'px-2.5 py-1.5 text-[13px] leading-snug' : 'px-3 py-2.5 text-sm sm:px-4'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          <Badge id="authority" size="sm" />
+          <span className="min-w-0">{src === 'opr' ? 'Open PageRank' : 'Domain Rating'}</span>
+        </span>
+      </th>
+      {order.map((o, i) => (
+        <td
+          key={o.site.domain}
+          className={`border-t border-border text-center ${compact ? 'px-0 py-1' : 'px-1.5 py-1.5'} ${o.index === 0 ? 'ac-you' : ''}`}
+        >
+          {auths[i] === null ? (
+            <span className="text-muted-foreground" role="img" aria-label="no score">
+              –
+            </span>
+          ) : (
+            <span className={`ac-num font-heading font-semibold ${compact ? 'text-[13px]' : 'text-[15px]'} ${sClass(letterTone(AUTH, o, auths))}`}>
+              {fmtAuthority(auths[i]!)}
+            </span>
+          )}
+        </td>
+      ))}
+    </tr>
+  )
+  const firstTrust = PROOF_CHECKS.findIndex((c) => c.group === 'trust')
+
+  /** The check rows (11 from the homepage + Domain Rating), each ✓ opening a "what we found" row. Shared by the desktop table and the phone grid. */
   const checkRows = (compact = false) =>
-    PROOF_CHECKS.map((c) => (
+    PROOF_CHECKS.map((c, i) => (
       <Fragment key={c.id}>
+        {i === firstTrust && drRow(compact)}
         <tr className="ac-tint">
           <th
             scope="row"
@@ -406,7 +465,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
             }`}
           >
             <span className="flex items-center gap-2">
-              <Badge letter={badgeOf(c.group)} small />
+              <Badge id={c.group} size="sm" />
               <span className="min-w-0">{c.label}</span>
             </span>
           </th>
@@ -450,7 +509,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       <tr key={l.id}>
         <th scope="row" className={rowHead}>
           <span className="flex items-center gap-2.5">
-            <Badge letter={l.badge} />
+            <Badge id={l.id} size="lg" />
             <span className="min-w-0">
               {l.label}
               <small className="block text-[13px] font-normal text-muted-foreground">
@@ -483,12 +542,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
             )
           const pts = o.scores[l.id]
           const a = auths[i]
-          const s =
-            l.id === 'authority'
-              ? src
-                ? standing(a, values, TIE_GAP)
-                : null
-              : standing(pts, values)
+          const s = letterTone(l, o, values)
           return (
             <td key={o.site.domain} className={td(o, sClass(s))}>
               <span className="ac-num font-heading text-[21px] leading-tight font-semibold">
@@ -515,7 +569,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
         <h2 id="ac-ct" className="m-0 font-heading text-[22px] font-bold">
           {solo ? 'Your score' : 'How you compare'}
         </h2>
-        {!solo && <Legend />}
+        <Legend solo={alone} />
       </div>
       {src !== 'ahrefs' && (
         <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
@@ -529,7 +583,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
         <ol className="m-0 grid list-none gap-2.5 p-0">
           {order.map((o) => {
             const s = o.scores
-            const ov = solo ? null : standing(s?.overall ?? null, overall)
+            const ov = tone(s?.overall ?? null, 100, s?.overall ?? null, overall)
             return (
               <li
                 key={o.site.domain}
@@ -557,7 +611,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                       {LETTERS.map((l) => {
                         const values = l.id === 'authority' ? auths : part(l.id)
                         const a = authorityOf(o.site, r)
-                        const st = l.id === 'authority' ? (src ? standing(a, values, TIE_GAP) : null) : standing(s[l.id], values)
+                        const st = letterTone(l, o, values)
                         return (
                           <div key={l.id} className={`ac-tint grid gap-0.5 rounded-md px-1 py-2 text-center ${sClass(st)}`}>
                             <dt className="truncate text-[11px] font-semibold text-muted-foreground">{l.label}</dt>
@@ -589,12 +643,12 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
           onClick={() => setOpen(!open)}
           className="ac-noprint rounded-lg border border-line-strong px-3 py-3 text-sm font-medium text-body-soft hover:bg-muted hover:text-foreground"
         >
-          {open ? 'Hide the checks ▴' : `Show all ${PROOF_CHECKS.length} checks ▾`}
+          {open ? 'Hide the checks ▴' : `Show all ${CHECK_COUNT} checks ▾`}
         </button>
         {open && (
           <div id="ac-checks-m" className="overflow-hidden rounded-xl border border-line-strong bg-panel">
             <table className="w-full table-fixed border-collapse text-sm">
-              <caption className="sr-only">The {PROOF_CHECKS.length} checks for each site</caption>
+              <caption className="sr-only">The {CHECK_COUNT} checks for each site</caption>
               <colgroup>
                 <col />
                 {order.map((o) => (
@@ -636,7 +690,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
           <thead>
             <tr>
               <th scope="col" className="px-3 pt-4 pb-3 text-left align-bottom text-[13px] font-normal text-muted-foreground sm:px-4">
-                E-E-A-T, our score
+                Our score
               </th>
               {order.map((o) => (
                 <th
@@ -668,7 +722,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
               </th>
               {order.map((o) => {
                 const v = o.scores?.overall ?? null
-                const s = solo ? null : standing(v, overall)
+                const s = tone(v, 100, v, overall)
                 return (
                   <td key={o.site.domain} className={td(o, `py-4 ${sClass(s)}`)}>
                     {v === null ? (
@@ -696,7 +750,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                   onClick={() => setOpen(!open)}
                   className="w-full px-3 py-3 text-sm font-medium text-body-soft hover:bg-muted hover:text-foreground"
                 >
-                  {open ? 'Hide the checks ▴' : `Show all ${PROOF_CHECKS.length} checks ▾`}
+                  {open ? 'Hide the checks ▴' : `Show all ${CHECK_COUNT} checks ▾`}
                 </button>
               </td>
             </tr>
@@ -709,16 +763,6 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <p className="m-0 max-w-[64ch] text-[13px] text-muted-foreground">
           {solo ? '' : 'An amber ✕ means a rival has it and you don’t. '}Tap a ✓ to see what we found.
-          {src === 'ahrefs' && (
-            <>
-              {' '}
-              Authority: Domain Rating by{' '}
-              <a href="https://ahrefs.com/" target="_blank" rel="noopener" className="underline underline-offset-2">
-                Ahrefs
-              </a>
-              .
-            </>
-          )}
         </p>
         {!solo && <RivalControl r={r} onAddRival={onAddRival} loading={loading} />}
       </div>
@@ -861,47 +905,40 @@ function Offer() {
 
 const ICON = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
-const GROW: { id: Letter; text: string; icon: React.ReactNode }[] = [
-  {
-    id: 'experience',
-    text: 'Show real jobs on a projects page, and say how long you have done this work.',
-    icon: (
-      <svg viewBox="0 0 24 24" {...ICON}>
-        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-        <circle cx="12" cy="13" r="3.5" />
-      </svg>
-    ),
-  },
-  {
-    id: 'expertise',
-    text: 'Name the people behind the business, and list licenses and awards.',
-    icon: (
-      <svg viewBox="0 0 24 24" {...ICON}>
-        <circle cx="12" cy="9" r="5" />
-        <path d="M9 13.5 8 21l4-2 4 2-1-7.5" />
-      </svg>
-    ),
-  },
-  {
-    id: 'authority',
-    text: 'Get local news, partners and associations to link to you. It takes months.',
-    icon: (
-      <svg viewBox="0 0 24 24" {...ICON}>
-        <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
-        <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
-      </svg>
-    ),
-  },
-  {
-    id: 'trust',
-    text: 'Fix the homepage gaps, and show proof of your reviews. Most take an afternoon.',
-    icon: (
-      <svg viewBox="0 0 24 24" {...ICON}>
-        <path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z" />
-        <path d="m9 12 2 2 4-4" />
-      </svg>
-    ),
-  },
+/** One icon per part: briefcase (work and track record), ribbon (credentials), link (who links to you), shield (trust). */
+const LETTER_ICON: Record<Letter, React.ReactNode> = {
+  experience: (
+    <svg viewBox="0 0 24 24" {...ICON}>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M3 13h18" />
+    </svg>
+  ),
+  expertise: (
+    <svg viewBox="0 0 24 24" {...ICON}>
+      <circle cx="12" cy="9" r="5" />
+      <path d="M9 13.5 8 21l4-2 4 2-1-7.5" />
+    </svg>
+  ),
+  authority: (
+    <svg viewBox="0 0 24 24" {...ICON}>
+      <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
+      <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+    </svg>
+  ),
+  trust: (
+    <svg viewBox="0 0 24 24" {...ICON}>
+      <path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  ),
+}
+
+const GROW: { id: Letter; text: string }[] = [
+  { id: 'experience', text: 'Show real jobs on a projects page, and say how long you have done this work.' },
+  { id: 'expertise', text: 'Name the people behind the business, and list licenses and awards.' },
+  { id: 'authority', text: 'Get local news, partners and associations to link to you. It takes months.' },
+  { id: 'trust', text: 'Fix the homepage gaps, and show proof of your reviews. Most take an afternoon.' },
 ]
 
 function Grow() {
@@ -919,7 +956,7 @@ function Grow() {
                 className="ac-tint grid h-10 w-10 place-items-center rounded-[10px] border border-line-strong text-primary [&>svg]:h-[22px] [&>svg]:w-[22px]"
                 aria-hidden="true"
               >
-                {g.icon}
+                {LETTER_ICON[g.id]}
               </span>
               <h3 className="m-0 font-heading text-[17px] font-bold">
                 {l.label} <span className="ml-1 font-sans text-[13px] font-medium text-muted-foreground">{l.points}</span>
@@ -964,7 +1001,8 @@ function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof
           Experience 20, Expertise 20, Authority 20, Trust 40. Experience: your work shown is 10 points; a track
           record is 6, or 10 when it is strong (5+ testimonials, 50+ reviews, 20+ years, or two signs together). Authority points
           grow fastest at the start: Domain Rating 9 gets 7, 30 gets 13, {AUTHORITY_FULL} or more gets all 20. 70 and
-          up overall is strong, 40 to 69 is fair, under 40 needs work. Authority scores less than {TIE_GAP} points
+          up overall is strong, 40 to 69 is fair, under 40 needs work. A site checked alone gets each part coloured
+          the same way, as a share of that part&apos;s points. Authority scores less than {TIE_GAP} points
           apart count as a tie.
         </p>
         <p className="m-0">

@@ -95,15 +95,14 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     signal: 'hasCredentials',
     move: { title: 'Show your credentials', body: 'List your licenses, awards, memberships or the year you started.' },
   },
+  /* Trust, in a visitor's order: what you do and who you are, then proof,
+   * then the behind-the-scenes checks (Chris picked the order, 2026-10-01). */
   {
-    id: 'https',
+    id: 'trade',
     group: 'trust',
-    label: 'Secure site',
-    signal: 'isHttps',
-    move: {
-      title: 'Turn on HTTPS',
-      body: 'Ask your host for a free SSL certificate, so browsers stop calling your site "Not secure".',
-    },
+    label: 'What you do',
+    signal: 'hasBusinessType',
+    move: { title: 'Say what you do', body: 'Name your trade in plain words, like "plumber" or "bakery".' },
   },
   {
     id: 'about',
@@ -118,23 +117,6 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     label: 'How to reach you',
     signal: 'hasAddressInfo',
     move: { title: 'Show how to reach you', body: 'Put your address, phone number or service area on the homepage.' },
-  },
-  {
-    id: 'schema',
-    group: 'trust',
-    label: 'Business details for Google',
-    signal: 'hasOrgSchema',
-    move: {
-      title: 'Tell Google who you are',
-      body: 'Add a few lines of hidden code (called schema) with your business name, address and trade.',
-    },
-  },
-  {
-    id: 'trade',
-    group: 'trust',
-    label: 'What you do',
-    signal: 'hasBusinessType',
-    move: { title: 'Say what you do', body: 'Name your trade in plain words, like "plumber" or "bakery".' },
   },
   {
     id: 'reviews',
@@ -153,25 +135,43 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
       body: 'Link to your Google Business Profile, Yelp or BBB page, so visitors can read what customers say.',
     },
   },
+  {
+    id: 'https',
+    group: 'trust',
+    label: 'Secure site',
+    signal: 'isHttps',
+    move: {
+      title: 'Turn on HTTPS',
+      body: 'Ask your host for a free SSL certificate, so browsers stop calling your site "Not secure".',
+    },
+  },
+  {
+    id: 'schema',
+    group: 'trust',
+    label: 'Business details for Google',
+    signal: 'hasOrgSchema',
+    move: {
+      title: 'Tell Google who you are',
+      body: 'Add a few lines of hidden code (called schema) with your business name, address and trade.',
+    },
+  },
 ]
 
 export interface LetterInfo {
   id: Letter
-  badge: 'E' | 'A' | 'T'
   label: string
   hint: string
   points: number
 }
 
 export const LETTERS: readonly LetterInfo[] = [
-  { id: 'experience', badge: 'E', label: 'Experience', hint: 'your work and track record', points: 20 },
-  { id: 'expertise', badge: 'E', label: 'Expertise', hint: 'people and credentials', points: 20 },
-  { id: 'authority', badge: 'A', label: 'Authority', hint: 'who links to you', points: 20 },
-  { id: 'trust', badge: 'T', label: 'Trust', hint: '7 checks, incl. review proof', points: 40 },
+  { id: 'experience', label: 'Experience', hint: 'your work and track record', points: 20 },
+  { id: 'expertise', label: 'Expertise', hint: 'people and credentials', points: 20 },
+  { id: 'authority', label: 'Authority', hint: 'who links to you', points: 20 },
+  { id: 'trust', label: 'Trust', hint: '7 checks, incl. review proof', points: 40 },
 ]
 
 export const checksIn = (g: ProofGroup) => PROOF_CHECKS.filter((c) => c.group === g)
-export const badgeOf = (g: ProofGroup) => LETTERS.find((l) => l.id === g)!.badge
 
 /* ── Result shape (the API's JSON) ─────────────────────────────────────── */
 
@@ -324,6 +324,16 @@ export function standing(value: number | null, values: (number | null)[], tie = 
   if (nums.length < 2 || max - min <= tie) return 'same'
   if (value >= max - tie) return 'ahead'
   return value >= max / 2 ? 'behind' : 'low'
+}
+
+/**
+ * Colour for a site checked alone (no row to compare against): the score's own
+ * level, same cut-offs as band() — 70%+ green, 40–69% amber, under 40% red.
+ */
+export function level(value: number | null, max: number): Standing | null {
+  if (value === null) return null
+  const pct = (value / max) * 100
+  return pct >= 70 ? 'ahead' : pct >= 40 ? 'behind' : 'low'
 }
 
 export function ordinal(n: number): string {
