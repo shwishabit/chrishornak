@@ -28,7 +28,13 @@ const OFFER_MENU_RE =
   /^(?:our )?(?:services?|products?|solutions?|practice areas?|areas of practice|treatments?|procedures?|therapies|classes|programs?|features?|capabilities|offerings?|what we do|specialties|shop|menu|courses?|packages?)$/i
 // Pages that are not an offer even when they sit in a menu: posts, places, people, the usual pages.
 const NOT_OFFER_RE =
-  /\/(?:(?:our|meet|the)-)?(?:index|home|blog|news|articles?|posts?|case-stud(?:y|ies)|portfolio|work|gallery|photos?|videos?|media|press|podcasts?|locations?|areas?-we-serve|service-areas?|cities|directions|hours|team|staff|doctors?|providers|people|about|story|history|mission|values|why|process|approach|results|awards|community|partners|contact|careers?|jobs|faqs?|reviews?|testimonials?|privacy|terms|accessibility|sitemap|search|login|sign-?in|sign-?up|register|cart|checkout|account|tag|category|author|resources|newsletter|events?|calendar|schedule|book|booking|appointments?|request|quote|estimate|free-|pricing|rates|specials|coupons|offers|deals|promotions|financing|payments?|insurance|forms|new-patients?|patient-|gift-?cards?|order|reservations?|donate|membership|members|refer|careers|wp-|feed|cdn-cgi|welcome|what-to-expect|(?:your-)?first-visit|how-|tips|helpful|guides?|learn|education|library|links|recalls?|alerts?|wire-fraud|aftercare|featured|brands|departments|franchis|loyalty|join|clients|online-forms?)(?:[\/.?#-]|$)/i
+  /\/(?:(?:our|meet|the)-)?(?:index|home|blog|news|articles?|posts?|case-stud(?:y|ies)|portfolio|work|gallery|photos?|videos?|media|press|podcasts?|locations?|areas?-we-serve|service-areas?|cities|directions|hours|team|staff|doctors?|providers|people|about|story|history|mission|values|why|process|approach|results|awards|community|partners|contact|careers?|jobs|employment|warrant(?:y|ies)|ourteam|faqs?|reviews?|testimonials?|privacy|terms|accessibility|sitemap|search|login|sign-?in|sign-?up|register|cart|checkout|account|tag|category|author|resources|newsletter|events?|calendar|schedule|book|booking|appointments?|request|quote|estimate|free-|pricing|rates|specials|coupons|offers|deals|promotions|financing|payments?|insurance|forms|new-patients?|patient-|gift-?cards?|order|reservations?|donate|membership|members|refer|careers|wp-|feed|cdn-cgi|welcome|what-to-expect|(?:your-)?first-visit|how-|tips|helpful|guides?|learn|education|library|links|recalls?|alerts?|wire-fraud|aftercare|featured|brands|departments|franchis|loyalty|join|clients|online-forms?)(?:[\/.?#-]|$)/i
+
+// A town page: the last part of the address ends in a US state ("/plumbing-mt-lebanon-pa",
+// "/roof-repair-boise-id") or says "near me". It's a place, not an offer (ajbuerkle.com, live test 2026-10-02).
+const TOWN_PAGE_RE =
+  /-(?:al|ak|az|ar|ca|co|ct|de|dc|fl|ga|hi|id|il|in|ia|ks|ky|la|me|md|ma|mi|mn|ms|mo|mt|ne|nv|nh|nj|nm|ny|nc|nd|oh|ok|or|pa|ri|sc|sd|tn|tx|ut|vt|va|wa|wv|wi|wy)$|-near-me$/
+const isTownPage = (path: string) => TOWN_PAGE_RE.test(path.split('/').filter(Boolean).pop() ?? '')
 
 /** The links in the site's menu: inside <nav> or <header>, else the first list with 4+ links. */
 function menuHtml(html: string): string {
@@ -68,7 +74,7 @@ export function findOfferPages(html: string, pageUrl: string): string[] {
   const pages = new Set<string>()
   for (const a of anchors(html)) {
     const path = sitePath(a.href, host)
-    if (path && OFFER_PARENT_RE.test(path) && !NOT_OFFER_RE.test(path)) pages.add(path)
+    if (path && OFFER_PARENT_RE.test(path) && !NOT_OFFER_RE.test(path) && !isTownPage(path)) pages.add(path)
   }
   // A menu item named for the offers, then the first list after it: its links are the offers.
   const menuItem = /<a\b[^>]*>([\s\S]{0,120}?)<\/a>|<(?:span|button|div)\b[^>]*>([^<]{0,40})<\/(?:span|button|div)>/gi
@@ -80,14 +86,14 @@ export function findOfferPages(html: string, pageUrl: string): string[] {
     if (!list) continue
     for (const a of anchors(list)) {
       const path = sitePath(a.href, host)
-      if (path && !NOT_OFFER_RE.test(path)) pages.add(path)
+      if (path && !NOT_OFFER_RE.test(path) && !isTownPage(path)) pages.add(path)
     }
   }
   // The menu's own pages, other than the usual ones (about, contact, blog…): sites that keep
   // their offers at the top level (/plumbing, /heating, /brand-strategy) list them there.
   for (const a of anchors(menuHtml(html))) {
     const path = sitePath(a.href, host)
-    if (path && !NOT_OFFER_RE.test(path) && path.split('/').length <= 4) pages.add(path)
+    if (path && !NOT_OFFER_RE.test(path) && !isTownPage(path) && path.split('/').length <= 4) pages.add(path)
   }
   // The parent pages themselves (/services) aren't offers.
   for (const p of [...pages]) if ([...pages].some((q) => q !== p && q.startsWith(`${p}/`)) && p.split('/').length === 2) pages.delete(p)

@@ -167,9 +167,22 @@ function onSite(href: string, host: string): boolean {
     return false
   }
 }
+/**
+ * The site's best About link: one whose words say "About" or whose page is named about…
+ * first, then any address with "about", then team / story / company pages. Which link wins
+ * changes only the evidence shown, never the ✓ (webfx.com showed "/about/results/", live test).
+ */
 const findAboutLink = (html: string, pageUrl?: string) => {
   const host = hostOf(pageUrl)
-  return aboutLinksOf(html).find((a) => onSite(a.href, host))
+  const rank = (a: { href: string; inner: string }) => {
+    const path = a.href.replace(/^https?:\/\/[^/]+/i, '').split(/[?#]/)[0]
+    const last = path.split('/').filter(Boolean).pop() ?? ''
+    // A real page beats a "#" link with the right words.
+    return (/^#|^$/.test(a.href) ? -3 : 0) + (ABOUT_WORDS_RE.test(extractText(a.inner).trim()) ? 2 : 0) + (/^about/i.test(last) ? 2 : 0) + (/about/i.test(path) ? 1 : 0)
+  }
+  let best: { href: string; inner: string } | undefined
+  for (const a of aboutLinksOf(html)) if (onSite(a.href, host) && (!best || rank(a) > rank(best))) best = a
+  return best
 }
 
 /**

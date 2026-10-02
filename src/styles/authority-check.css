@@ -54,3 +54,18 @@
   .ac-print-tight { padding-top: 0 !important; }
   .ac-theme section, .ac-theme aside { break-inside: avoid; }
 }
+
+/* The "checking" panel and the framed example (2026-10-02). */
+.ac-progress { display: block; height: 8px; width: 100%; border-radius: 4px; overflow: hidden; background: var(--color-border); }
+.ac-progress > i { display: block; height: 100%; border-radius: 4px; background: var(--color-primary); transition: width 250ms linear; }
+.ac-dot { display: block; height: 8px; width: 8px; border-radius: 50%; background: var(--color-primary); }
+.ac-dot-idle { background: var(--color-border); }
+.ac-pulse { animation: ac-pulse 1.4s ease-in-out infinite; }
+@keyframes ac-pulse { 50% { opacity: .35; } }
+.ac-example { border: 2px dashed var(--color-line-strong); border-radius: 18px; padding: 16px; }
+@media (min-width: 640px) { .ac-example { padding: 24px; } }
+@media (prefers-reduced-motion: reduce) {
+  .ac-progress > i { transition: none; }
+  .ac-pulse { animation: none; }
+}
+@media print { .ac-example { border: 0; padding: 0; } }

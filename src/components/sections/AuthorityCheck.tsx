@@ -1160,6 +1160,78 @@ function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
   )
 }
 
+/* ── Before a check: the sample is framed and labelled, so it can't pass for a real
+ * report. While a check runs: a "checking" panel takes the report's place (Chris,
+ * 2026-10-02: the dimmed sample looked like a result). ────────────────── */
+
+function ExampleBanner() {
+  return (
+    <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-muted px-3.5 py-2.5 text-sm text-body-soft">
+      <b className="rounded bg-foreground px-1.5 py-1 font-heading text-[11px] leading-none font-bold tracking-[.08em] text-background uppercase">
+        Example
+      </b>
+      <span className="min-w-0">
+        A sample report with made-up sites. Enter your site above to see your own.
+      </span>
+    </p>
+  )
+}
+
+/** Rough timing of one check (homepages, Ahrefs, extra pages and records run side by side). */
+const CHECK_ETA = 15
+const CHECK_STEPS = [
+  { at: 0, text: 'Reading each homepage' },
+  { at: 2, text: 'Looking up link strength' },
+  { at: 4, text: 'Reading About and reviews pages' },
+  { at: 7, text: 'Checking public records' },
+  { at: 10, text: 'Scoring and ranking' },
+]
+
+function Checking({ sites }: { sites: string[] }) {
+  const [t, setT] = useState(0)
+  useEffect(() => {
+    const start = Date.now()
+    const id = setInterval(() => setT((Date.now() - start) / 1000), 250)
+    return () => clearInterval(id)
+  }, [])
+  // The bar runs to 92% over the usual time, then waits for the answer.
+  const pct = Math.min(92, (t / CHECK_ETA) * 92)
+  const left = Math.ceil(CHECK_ETA - t)
+  const step = CHECK_STEPS.filter((s) => t >= s.at).length - 1
+  const rivals = sites.length - 1
+  return (
+    <div role="status" className="grid gap-4 rounded-xl border border-line-strong bg-panel p-5 sm:p-7">
+      <p className="m-0 font-heading text-xs font-bold tracking-[.08em] text-primary uppercase">Checking now</p>
+      <h2 className="m-0 font-heading text-[clamp(22px,3vw,28px)] leading-tight font-bold [overflow-wrap:anywhere]">
+        Checking {sites[0]}
+        {rivals > 0 ? ` and ${rivals} rival${rivals > 1 ? 's' : ''}` : ''}…
+      </h2>
+      <div className="grid gap-1.5">
+        <span className="ac-progress" aria-hidden="true">
+          <i style={{ width: `${pct}%` }} />
+        </span>
+        <p className="m-0 text-[13px] text-muted-foreground tabular-nums">
+          {left > 0 ? `About ${left} second${left > 1 ? 's' : ''} left` : 'Almost done…'}
+        </p>
+      </div>
+      <ol className="m-0 grid list-none gap-2 p-0 text-sm">
+        {CHECK_STEPS.map((s, i) => (
+          <li
+            key={s.text}
+            className={`flex items-center gap-2.5 ${i < step ? 'text-body-soft' : i === step ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
+          >
+            <span aria-hidden="true" className={`inline-grid h-5 w-5 flex-none place-items-center ${i === step ? 'ac-pulse' : ''}`}>
+              {i < step ? <span className="text-primary">✓</span> : i === step ? <span className="ac-dot" /> : <span className="ac-dot ac-dot-idle" />}
+            </span>
+            {s.text}
+          </li>
+        ))}
+      </ol>
+      <p className="m-0 text-[13px] text-muted-foreground">Your report appears here when it’s ready.</p>
+    </div>
+  )
+}
+
 /* ── Root ───────────────────────────────────────────────────────────────── */
 
 export function AuthorityCheck({ example }: { example: AuthorityResult }) {
@@ -1168,7 +1240,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AuthorityResult | null>(null)
-  const [pending, setPending] = useState(0)
+  const [pending, setPending] = useState<string[]>([])
   const resultRef = useRef<HTMLElement>(null)
 
   async function run(youRaw: string, rivalRaws: string[]) {
@@ -1197,7 +1269,12 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
 
     setError(null)
     setLoading(true)
-    setPending(bares.length)
+    setPending(bares)
+    // Show the "checking" panel right away, where the report will appear.
+    requestAnimationFrame(() => {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      resultRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    })
     const query = shareQuery(
       me.host,
       others.map((o) => o.host),
@@ -1261,18 +1338,23 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
         <div className="ac-print-tight mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-10 px-4 pt-10 pb-[72px] sm:px-6">
           <p className="sr-only" aria-live="polite">
             {loading
-              ? `Checking ${pending} site${pending > 1 ? 's' : ''}.`
+              ? `Checking ${pending.length} site${pending.length > 1 ? 's' : ''}.`
               : result
                 ? `Check done for ${result.you.domain}.`
                 : ''}
           </p>
-          <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 ${loading ? 'opacity-50 transition-opacity' : ''}`}>
-            <ReportHead r={shown} example={!result} />
-            <CompareTable r={shown} onAddRival={addRival} loading={loading} />
-            <CantSee />
-            {result && result.rivals.length === 0 && <SoloAddRival onAddRival={addRival} loading={loading} />}
-            <Moves r={shown} />
-          </div>
+          {loading ? (
+            <Checking sites={pending} />
+          ) : (
+            <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 ${result ? '' : 'ac-example'}`}>
+              {!result && <ExampleBanner />}
+              <ReportHead r={shown} example={!result} />
+              <CompareTable r={shown} onAddRival={addRival} loading={loading} />
+              <CantSee />
+              {result && result.rivals.length === 0 && <SoloAddRival onAddRival={addRival} loading={loading} />}
+              <Moves r={shown} />
+            </div>
+          )}
           <Offer />
           <Grow />
           <div className="ac-noprint">
