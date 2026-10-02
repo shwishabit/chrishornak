@@ -998,7 +998,7 @@
    "reviews": false,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": false
   },
   "why": {
    "work": "services icons only, no portfolio/gallery",
@@ -1011,7 +1011,7 @@
    "reviews": "no quoted reviews or ratings on page",
    "reviewSites": "schema sameAs google.com/maps/place/TJ+Dental business listing",
    "https": "https://tjdentalpa.com/",
-   "schema": "JSON-LD @type Dentist"
+   "schema": "JSON-LD @type Dentist, but the block doesn't parse (stray text after a value); since 2026-10-02 the block must parse"
   }
  },
  "victoriousseo.com": {
@@ -1222,7 +1222,7 @@
    "reviews": true,
    "reviewSites": true,
    "https": true,
-   "schema": true
+   "schema": false
   },
   "why": {
    "work": "Services pages and stock-style photos only; no portfolio/gallery",
@@ -1235,7 +1235,7 @@
    "reviews": "Quoted customers e.g. 'I don't think I could've found a better clinic for my fearful... dog'",
    "reviewSites": "https://www.yelp.com/biz/allandale-veterinary-clinic-austin 'See Our Reviews on Yelp'; google.com/maps/place link",
    "https": "https://www.allandalevetclinic.com/",
-   "schema": "JSON-LD VeterinaryCare + LocalBusiness"
+   "schema": "JSON-LD VeterinaryCare + LocalBusiness, but the block starts with a '// Pablo BB' comment so it doesn't parse; since 2026-10-02 the block must parse"
   }
  },
  "farwestvet.com": {

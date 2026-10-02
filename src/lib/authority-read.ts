@@ -81,7 +81,7 @@ export function readProof(
   const https = isHttpsUrl(finalUrl)
   const exp = readExperienceSignals(html, finalUrl)
   const proof = proofFromSignals({
-    ...readProofSignals(html, text, blocks),
+    ...readProofSignals(html, text, blocks, finalUrl),
     isHttps: https,
     hasReviewsShown: !!rep.shown,
     hasReviewSites: rep.sites.length > 0,
@@ -89,7 +89,7 @@ export function readProof(
     hasTrackRecord: !!exp.trackRecord,
   })
   const found = {
-    ...readProofEvidence(html, text, blocks),
+    ...readProofEvidence(html, text, blocks, finalUrl),
     ...(https ? { isHttps: `Loads over “https://”` } : {}),
     ...(rep.shown ? { hasReviewsShown: rep.shown } : {}),
     ...(rep.sites.length ? { hasReviewSites: reviewSitesEvidence(rep.sites) } : {}),
@@ -120,8 +120,8 @@ type Read = ReturnType<typeof readProof>
 function addFromAbout(read: Read, about: FetchResult): void {
   const html = about.body
   const blocks = findJsonLdBlocks(html)
-  const signals = readProofSignals(html, extractText(html), blocks)
-  const evidence = readProofEvidence(html, extractText(html), blocks)
+  const signals = readProofSignals(html, extractText(html), blocks, about.finalUrl)
+  const evidence = readProofEvidence(html, extractText(html), blocks, about.finalUrl)
   const exp = readExperienceSignals(html, about.finalUrl)
   let where = about.finalUrl
   try {
@@ -144,7 +144,7 @@ function addFromAbout(read: Read, about: FetchResult): void {
 /** One homepage → its checks: the review read, the extra reads (reviews page, About page), then the checks. */
 export async function readSite(page: FetchResult, reader: Reader = liveReader) {
   const html = page.body
-  const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html))
+  const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
   const missing = !home.hasPeople || !home.hasCredentials || !readExperienceSignals(html, page.finalUrl).trackRecord
   const aboutUrl = missing ? findAboutPage(html, page.finalUrl) : null
   const [rep, about] = await Promise.all([

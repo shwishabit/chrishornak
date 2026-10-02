@@ -116,7 +116,7 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     group: 'trust',
     label: 'How to reach you',
     signal: 'hasAddressInfo',
-    move: { title: 'Show how to reach you', body: 'Put your address, phone number or service area on the homepage.' },
+    move: { title: 'Show how to reach you', body: 'Put your phone number or street address on the homepage.' },
   },
   {
     id: 'reviews',

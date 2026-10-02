@@ -599,6 +599,7 @@ function parseAI(page: FetchedPage): AuditItem[] {
   if (jsonLdBlocks && jsonLdBlocks.length > 0) {
     const types: string[] = []
     const missingFields: string[] = []
+    let broken = 0
 
     for (const block of jsonLdBlocks) {
       const content = block.replace(/<[^>]+>/g, '')
@@ -623,7 +624,9 @@ function parseAI(page: FetchedPage): AuditItem[] {
           }
         }
       } catch {
-        // Malformed JSON-LD — still count the block, extract types via regex
+        // Malformed JSON-LD: still list its types, but flag it. A block that doesn't parse can't be
+        // read as data (SEO panel review, round 5, 2026-10-02).
+        broken++
         const typeMatch = content.match(/"@type"\s*:\s*"([^"]+)"/g)
         if (typeMatch) {
           types.push(...typeMatch.map((t) => t.replace(/"@type"\s*:\s*"/, '').replace('"', '')))
@@ -631,7 +634,17 @@ function parseAI(page: FetchedPage): AuditItem[] {
       }
     }
 
-    if (missingFields.length > 0) {
+    if (broken > 0) {
+      items.push({
+        label: 'Structured data',
+        status: 'warn',
+        value: `${broken} of ${jsonLdBlocks.length} JSON-LD block${jsonLdBlocks.length > 1 ? 's' : ''} won't load`,
+        extracted: [types.length > 0 ? `Schema types: ${types.join(', ')}` : '', ...missingFields].filter(Boolean).join('; ') || undefined,
+        weight: 1.5,
+        recommendation:
+          'Some of your structured data has a code error, so search engines and AI tools skip it. Paste your page into Google\'s Rich Results Test (search.google.com/test/rich-results) to find the broken block, then fix it in your site builder or SEO plugin.',
+      })
+    } else if (missingFields.length > 0) {
       items.push({
         label: 'Structured data',
         status: 'warn',
@@ -714,8 +727,9 @@ function parseAI(page: FetchedPage): AuditItem[] {
     hasOrgSchema,
     hasPeople,
     hasAddressInfo,
+    hasServiceArea,
     hasBusinessType,
-  } = readProofSignals(html, pageText, jsonLdBlocks)
+  } = readProofSignals(html, pageText, jsonLdBlocks, page.url)
 
   const signalList = [
     hasAboutLink && 'About/team page linked',
@@ -786,10 +800,11 @@ function parseAI(page: FetchedPage): AuditItem[] {
   }
 
   // 5. Entity clarity — business type, location, specialties clearly stated
-  const hasLocalBusiness =
-    jsonLdBlocks?.some((b) => /LocalBusiness|Organization|Person/i.test(b)) ?? false
-  // hasAddressInfo + hasBusinessType come from readProofSignals above.
-  const entitySignals = [hasLocalBusiness, hasAddressInfo, hasBusinessType].filter(Boolean).length
+  // The business entry in the JSON-LD (hasOrgSchema, the strict rule shared with the Authority
+  // Check): until 2026-10-02 any block containing "Person" passed, a blog author included.
+  // Location: a phone, street or tel: link, or a named place it serves ("Serving Allegheny County").
+  // All three come from readProofSignals above.
+  const entitySignals = [hasOrgSchema, hasAddressInfo || hasServiceArea, hasBusinessType].filter(Boolean).length
 
   if (entitySignals >= 2) {
     items.push({

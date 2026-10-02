@@ -114,12 +114,14 @@ export interface ProofSignals {
   hasTestimonials: boolean
   /** Trust signals: licenses, awards, years in business. */
   hasCredentials: boolean
-  /** Trust signals: Organization / LocalBusiness / Person / ProfessionalService JSON-LD. */
+  /** Trust signals: a business entry in valid JSON-LD (businessEntry). */
   hasOrgSchema: boolean
   /** Trust signals: a named person who works there (findPerson). */
   hasPeople: boolean
-  /** Entity clarity: address, location, phone, service area words. */
+  /** Entity clarity: a phone number, tel: link or street address. */
   hasAddressInfo: boolean
+  /** Entity clarity: a named place it serves or is based in ("Serving Allegheny County"). */
+  hasServiceArea: boolean
   /** Entity clarity: a plain business-type word (plumber, bakery, agency…). */
   hasBusinessType: boolean
 }
@@ -129,9 +131,12 @@ export interface ProofSignals {
 // About links (widened 2026-10-02): by a path segment, or by the link's words ("MORE ABOUT ME"),
 // on the site itself: not linkedin.com/company/…/about, not an image file ("…/isteam/…").
 // The word starts the page name ("/company/", "/our-team/", "/meet-the-team/"), so service
-// pages like "/michigan-seo-company/" or "/thought-leadership/" don't count.
+// pages like "/michigan-seo-company/" or "/thought-leadership/" don't count. Only "about" may
+// run on ("/about-the-firm/"); the other words end the name or take -us / -team / -members /
+// -page, so "/practice-areas/", "/company-news/" and "/team-building/" don't count either
+// (SEO panel review + scoring spec, 2026-10-02).
 const ABOUT_PATH_RE =
-  /\/(?:our-|meet-(?:the-|our-)?|the-)?(?:about|team|who-we-are|story|company|people|mission|history|staff|leadership|founders?|owners?|why-us|culture|values|firm|attorneys|lawyers|doctors|dentists|providers|practice)(?:[\/.?#-]|$)/i
+  /\/(?:our-|meet-(?:the-|our-)?|the-)?(?:about[\w-]*|(?:team|who-we-are|story|company|people|mission|history|staff|leadership|founders?|owners?|why-us|culture|values|firm|attorneys|lawyers|doctors|dentists|providers|practice)(?:-(?:us|team|members|page))?)(?:[\/.?#]|$)/i
 const ABOUT_WORDS_RE =
   /^(?:(?:more |learn more )?about(?: us| me)?|about (?:the|our) (?:company|team|firm|practice|story|people|doctors?|attorneys?)|our (?:story|team|people|company|firm|practice|history|mission|staff|doctors|attorneys)|meet (?:the |our |dr\.? )?\w+|who we are|company|the team|team)$/i
 const NOT_SITE_RE =
@@ -139,7 +144,29 @@ const NOT_SITE_RE =
 const isAboutLink = (a: { href: string; inner: string }) =>
   !NOT_SITE_RE.test(a.href) &&
   (ABOUT_PATH_RE.test(a.href.replace(/^https?:\/\/[^/]+/i, '')) || ABOUT_WORDS_RE.test(extractText(a.inner).trim()))
-const findAboutLink = lastOf((html: string): { href: string; inner: string } | undefined => anchors(html).find(isAboutLink))
+const aboutLinksOf = lastOf((html: string) => anchors(html).filter(isAboutLink))
+const bareHost = (h: string) => h.toLowerCase().replace(/^www\./, '')
+/** The page's host, or '' when the address can't be read (then links aren't checked for it). */
+function hostOf(pageUrl: string | undefined): string {
+  try {
+    return pageUrl ? bareHost(new URL(pageUrl).hostname) : ''
+  } catch {
+    return ''
+  }
+}
+/** A relative link, or an absolute one to the page's own host: another company's /about/ doesn't count. */
+function onSite(href: string, host: string): boolean {
+  if (!host || !/^(?:https?:)?\/\//i.test(href)) return true
+  try {
+    return bareHost(new URL(href, `https://${host}/`).hostname) === host
+  } catch {
+    return false
+  }
+}
+const findAboutLink = (html: string, pageUrl?: string) => {
+  const host = hostOf(pageUrl)
+  return aboutLinksOf(html).find((a) => onSite(a.href, host))
+}
 
 /**
  * The site's own About page to read (Authority Check only): a real page on the
@@ -153,7 +180,7 @@ export function findAboutPage(html: string, pageUrl: string): string | null {
   } catch {
     return null
   }
-  const bare = (h: string) => h.toLowerCase().replace(/^www\./, '')
+  const bare = bareHost
   // Best first: a page named about… ("/about", "/about-us/"), then any address or words with "about"
   // ("/about/results/" on webfx.com is a results page), then team / company / story.
   let second: string | null = null
@@ -184,24 +211,116 @@ const CREDENTIALS_RE =
 // The same, read from what images are called: alt, title, file name (badges are images).
 const IMAGE_CREDENTIALS_RE =
   /\b(badges?|certified|certification|accredited|awards?|winner|aaha|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo|official|preferred|authorized|select) partner|inc\.? ?5000|clutch|upcity|designrush|goodfirms|bbb|best of \d{4}|top rated)\b/i // not "David Kadosh | Partner" (a client's job title)
-const ORG_SCHEMA_RE = /Organization|LocalBusiness|Person|ProfessionalService/i
-// schema.org's LocalBusiness subtypes, named as an @type on their own ("Dentist", "AutoRepair",
-// "LegalService", "HVACBusiness"): by suffix, then the ones with no shared ending. Plain "Service"
-// (an offer, not a business) doesn't count.
-const ORG_SUBTYPE_RE =
-  /"@type"\s*:\s*(?:\[(?:\s*"[^"]*"\s*,)*\s*)?"(?:\w*(?:Business|Store|Shop|Contractor|Salon|Agency|Restaurant|Establishment|Clinic)|Dentist|Physician|Attorney|Notary|Plumber|Electrician|Locksmith|HousePainter|MovingCompany|Bakery|Brewery|Winery|Distillery|BarOrPub|Florist|Hotel|Motel|Resort|Hostel|BedAndBreakfast|DaySpa|HealthClub|ExerciseGym|TattooParlor|AutoRepair|AutoDealer|AutoRental|AutoWash|GasStation|MotorcycleDealer|MotorcycleRepair|ChildCare|Optician|Pharmacy|VeterinaryCare|RealEstateAgent|AccountingService|FinancialService|LegalService|EmergencyService|BankOrCreditUnion|DryCleaningOrLaundry|SelfStorage|Corporation|NGO|SportsActivityLocation|GolfCourse)"/
-const isOrgSchema = (block: string) => ORG_SCHEMA_RE.test(block) || ORG_SUBTYPE_RE.test(block)
-const ADDRESS_RE = /\b(address|location|phone|tel|headquarter|based in|serving|office)\b/i
-// The things themselves, not only the words (9 of 39 fixture sites showed a number or street with
-// neither word, 2026-10-02): a phone number, a tel: link, a street address.
+/* ── Business details for Google: a real business entry in the JSON-LD ─────
+ * Until 2026-10-02 this was a text search over each block, so a blog post's
+ * author {"@type":"Person"} or the word "Person" in a review passed. Now the
+ * block has to parse, and one of its top-level entries (or @graph entries)
+ * has to be the business itself: an Organization-family type or a Person (a
+ * one-person business), with a name the page also shows, plus a url on this
+ * site, a sameAs, a phone or an address. A phone in the code that differs
+ * from every phone on the page fails: Google asks for structured data that
+ * matches the visible text (SEO panel review, rounds 4-5, 2026-10-02).
+ * ─────────────────────────────────────────────────────────────────────── */
+
+// schema.org's business types, by name: the Organization family by suffix, LocalBusiness subtypes
+// with no shared ending ("Dentist", "AutoRepair", "LegalService"). Plain "Service" (an offer) doesn't count.
+const ORG_TYPE_RE =
+  /^(?:Person|LocalBusiness|ProfessionalService|\w*(?:Organization|Business|Store|Shop|Contractor|Salon|Agency|Restaurant|Establishment|Clinic)|Dentist|Physician|Attorney|Notary|Plumber|Electrician|Locksmith|HousePainter|MovingCompany|Bakery|Brewery|Winery|Distillery|BarOrPub|Florist|Hotel|Motel|Resort|Hostel|BedAndBreakfast|DaySpa|HealthClub|ExerciseGym|TattooParlor|AutoRepair|AutoDealer|AutoRental|AutoWash|GasStation|MotorcycleDealer|MotorcycleRepair|ChildCare|Optician|Pharmacy|VeterinaryCare|RealEstateAgent|AccountingService|FinancialService|LegalService|EmergencyService|BankOrCreditUnion|DryCleaningOrLaundry|SelfStorage|Corporation|NGO|SportsActivityLocation|GolfCourse)$/
+
+// Words that don't name a business: "the", "&", legal endings.
+const NAME_STOP = /^(?:a|an|and|of|the|to|at|in|for|llc|inc|ltd|co|corp|pllc|pc|lp|llp)$/
+const nameWords = (s: string) =>
+  s.toLowerCase().replace(/&amp;|&/g, ' ').split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !NAME_STOP.test(w))
+/**
+ * Does the page show this name? Its first word, and most of its words. Schema names run longer
+ * than the page's ("Roots to Petals Studio & Shop" vs "Roots To Petals") or carry a tagline after
+ * a dash ("Norris Landscaping Services, Inc. - Raleigh NC … (919) 934-3938"), so the name is cut
+ * at " - " / " | " / "(" and needs 2 in 3 of its words, not the exact string.
+ */
+function pageShowsName(name: string, pageWords: Set<string>): boolean {
+  const words = nameWords(name.split(/\s+[-–—|]\s+|\s*\(/)[0])
+  if (!words.length || !pageWords.has(words[0])) return false
+  return words.filter((w) => pageWords.has(w)).length / words.length >= 2 / 3
+}
+
+type Node = Record<string, unknown>
+/** A JSON-LD block's top-level entries (an array, an @graph, or the one object), or null when it doesn't parse. */
+function topNodes(block: string): Node[] | null {
+  let data: unknown
+  try {
+    data = JSON.parse(block.replace(/^<script[^>]*>|<\/script>$/gi, '').trim())
+  } catch {
+    return null
+  }
+  const list = Array.isArray(data) ? data : [data]
+  return list.flatMap((d) => {
+    if (!d || typeof d !== 'object') return []
+    const graph = (d as Node)['@graph']
+    return [d as Node, ...(Array.isArray(graph) ? (graph as Node[]) : [])]
+  })
+}
+
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
+const typesOf = (n: Node): string[] => [n['@type']].flat().map(str).filter(Boolean)
+const digitsOf = (s: string) => s.replace(/\D/g, '').slice(-10)
+
+/** The page's business entry: its type and name, or null. */
+function businessEntry(
+  blocks: RegExpMatchArray | null,
+  pageText: string,
+  host: string,
+): { type: string; name: string } | null {
+  const pageWords = new Set(nameWords(pageText))
+  const pagePhones = (pageText.match(new RegExp(PHONE_RE.source, 'g')) ?? []).map(digitsOf)
+  for (const block of blocks ?? []) {
+    for (const n of topNodes(block) ?? []) {
+      const type = typesOf(n).find((t) => ORG_TYPE_RE.test(t))
+      const name = str(n.name)
+      if (!type || !name || !pageShowsName(name, pageWords)) continue
+      const url = str(n.url)
+      const ownUrl = !!url && onSite(url, host)
+      const sameAs = [n.sameAs].flat().some((s) => str(s))
+      const phone = str(n.telephone)
+      const address = !!n.address
+      if (!ownUrl && !sameAs && !phone && !address) continue
+      if (phone && pagePhones.length && !pagePhones.includes(digitsOf(phone))) continue
+      return { type, name }
+    }
+  }
+  return null
+}
+const businessEntryOf = (() => {
+  let key: unknown[] = []
+  let value: { type: string; name: string } | null = null
+  return (blocks: RegExpMatchArray | null, pageText: string, host: string) => {
+    if (key[0] !== blocks || key[1] !== pageText || key[2] !== host) {
+      value = businessEntry(blocks, pageText, host)
+      key = [blocks, pageText, host]
+    }
+    return value
+  }
+})()
+
+// The things themselves, not words like "location" or "phone" (those passed menus, "photography
+// location" and "Business Phone Services": all 4 false yeses in the fixture test, 2026-10-02):
+// a phone number, a tel: link, a street address.
 const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\b[2-9]\d{2}\)?[\s.-]\d{3}[\s.-]\d{4}\b/
 const TEL_LINK_RE = /href\s*=\s*["']?tel:/i
 const STREET_RE =
   /\b\d{1,6}\s+(?:[NSEW]\.?\s+)?(?:(?:[A-Z][a-z]+\.?|\d+(?:st|nd|rd|th))\s+){1,3}(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive|Ln|Lane|Way|Pkwy|Parkway|Ct|Court|Pl|Place|Hwy|Highway|Pike|Sq|Square|Ter|Terrace|Cir|Circle)\b/
 const hasReachInfo = (html: string, pageText: string) =>
-  ADDRESS_RE.test(pageText) || PHONE_RE.test(pageText) || STREET_RE.test(pageText) || TEL_LINK_RE.test(html)
+  PHONE_RE.test(pageText) || STREET_RE.test(pageText) || TEL_LINK_RE.test(html)
+// A place it serves or is based in, named ("Serving Allegheny County", "Offices in Pittsburgh, PA"),
+// or a stated reach for a business that isn't local ("Serving businesses nationwide"): location for
+// Findability's Entity clarity, not a way to reach you.
+const SERVICE_AREA_RE =
+  /\b(?:(?:[Bb]ased|[Ll]ocated|[Hh]eadquartered|[Oo]ffices?) in|(?:[Pp]roudly )?[Ss]erving|[Ss]ervice [Aa]reas?:?)\s+(?:the\s+)?(?:[Gg]reater\s+)?[A-Z][a-z]+|\b[Ss]erving (?:[a-z]+ ){0,3}?(?:nationwide|worldwide|globally|across the (?:US|U\.S\.|country|world))\b/ // no i flag: the place must be capitalised
+// Whole words with their real endings: until 2026-10-02 stems like "plumb" and "account" sat inside
+// \b…\b, so "plumber" and "accountant" never matched and "My Account" did. "company" is gone too:
+// it names no kind of business (cts-pgh.com passed on "our company"), unless a trade comes first
+// ("marketing company", "IT services").
 const BUSINESS_TYPE_RE =
-  /\b(agency|company|firm|consultant|freelanc|studio|practice|shop|store|restaurant|salon|spa|clinic|gym|church|school|contractor|dentist|doctor|lawyer|attorney|plumb|electric|mover|moving|clean|bakery|brewery|florist|veterinar|daycare|auto|insurance|account|roofing|hvac|landscap|photograph|catering|fitness|wellness|therapy|coaching|nonprofit|realtor|real estate|architect|engineer|construct|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|optometrists?|pharmacy|grooming)\b/i
+  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming)\b/i
 
 /* ── Real people: a named person who works there ──────────────────────────
  * Until 2026-10-02 any "About us", "our team" or "partner" passed, so 20 of
@@ -357,21 +476,24 @@ function readPerson(html: string, jsonLdBlocks: RegExpMatchArray | null): string
   return null
 }
 
+/** pageUrl (the address the page was read from) keeps About links and schema urls on the site itself. */
 export function readProofSignals(
   html: string,
   pageText: string,
   jsonLdBlocks: RegExpMatchArray | null,
+  pageUrl?: string,
 ): ProofSignals {
-  const hasAboutLink = findAboutLink(html) !== undefined
+  const hasAboutLink = findAboutLink(html, pageUrl) !== undefined
   const hasTestimonials =
     TESTIMONIAL_RE.test(html) ||
     (html.match(/<blockquote/gi) ?? []).length >= 2
   const hasCredentials =
     CREDENTIALS_RE.test(pageText) || DEGREE_RE.test(pageText) || imageWords(html).some((w) => IMAGE_CREDENTIALS_RE.test(w))
-  const hasOrgSchema = jsonLdBlocks?.some(isOrgSchema) ?? false
+  const hasOrgSchema = businessEntryOf(jsonLdBlocks, pageText, hostOf(pageUrl)) !== null
   const hasPeople = findPerson(html, jsonLdBlocks) !== null
 
   const hasAddressInfo = hasReachInfo(html, pageText)
+  const hasServiceArea = SERVICE_AREA_RE.test(pageText)
   const hasBusinessType = BUSINESS_TYPE_RE.test(pageText)
 
   return {
@@ -381,6 +503,7 @@ export function readProofSignals(
     hasOrgSchema,
     hasPeople,
     hasAddressInfo,
+    hasServiceArea,
     hasBusinessType,
   }
 }
@@ -415,10 +538,11 @@ export function readProofEvidence(
   html: string,
   pageText: string,
   jsonLdBlocks: RegExpMatchArray | null,
+  pageUrl?: string,
 ): ProofEvidence {
   const out: ProofEvidence = {}
 
-  const about = findAboutLink(html)
+  const about = findAboutLink(html, pageUrl)
   if (about) {
     const words = extractText(about.inner).trim()
     out.hasAboutLink = `A link to “${about.href.slice(0, 60)}”${words ? ` (“${words.slice(0, 30)}”)` : ''}`
@@ -440,18 +564,15 @@ export function readProofEvidence(
     inText(DEGREE_RE, pageText) ??
     (badge ? `An image called “${badge.slice(0, 70)}”` : undefined)
 
-  const block = jsonLdBlocks?.find(isOrgSchema)
-  if (block) {
-    const type = ORG_SCHEMA_RE.exec(block)?.[0] ?? ORG_SUBTYPE_RE.exec(block)![0].match(/"(\w+)"$/)![1]
-    out.hasOrgSchema = `Code that says this is a “${type}”`
-  }
+  const entry = businessEntryOf(jsonLdBlocks, pageText, hostOf(pageUrl))
+  if (entry) out.hasOrgSchema = `Code that says this is a “${entry.type}” named “${entry.name.slice(0, 60)}”`
 
   out.hasPeople = findPerson(html, jsonLdBlocks) ?? undefined
   out.hasAddressInfo =
     inText(PHONE_RE, pageText) ??
     inText(STREET_RE, pageText) ??
-    (TEL_LINK_RE.test(html) ? 'A tap-to-call phone link' : undefined) ??
-    inText(ADDRESS_RE, pageText)
+    (TEL_LINK_RE.test(html) ? 'A tap-to-call phone link' : undefined)
+  out.hasServiceArea = inText(SERVICE_AREA_RE, pageText)
   out.hasBusinessType = inText(BUSINESS_TYPE_RE, pageText)
 
   for (const k of Object.keys(out) as (keyof ProofSignals)[]) if (!out[k]) delete out[k]
