@@ -36,7 +36,9 @@
 .ac-bar { display: block; height: 6px; width: 100%; max-width: 120px; border-radius: 3px; overflow: hidden; background: var(--color-border); }
 .ac-bar > i { display: block; height: 100%; border-radius: 3px; background: var(--s, var(--color-muted-foreground)); }
 .ac-pill { color: var(--s); background: color-mix(in srgb, var(--s) 13%, transparent); }
-.ac-you { background: var(--ac-you); }
+/* "You": a light wash of your own standing colour (green leads, amber behind, red far behind). */
+.ac-you { background: color-mix(in srgb, var(--you, var(--ac-same)) 10%, transparent); }
+:root[data-theme='light'] .ac-theme .ac-you { background: color-mix(in srgb, var(--you, var(--ac-same)) 7%, transparent); }
 .ac-tint { background: var(--ac-tint); }
 .ac-yes { color: var(--ac-ahead); }
 .ac-gap { color: var(--ac-behind); }
@@ -69,3 +71,21 @@
   .ac-pulse { animation: none; }
 }
 @media print { .ac-example { border: 0; padding: 0; } }
+
+/* Motion (2026-10-02): bars grow, the report fades in, rows highlight. Calm and short; none
+ * with reduced motion, none in print. */
+.ac-grow { transform-origin: left center; animation: ac-grow 1000ms cubic-bezier(.25, .7, .25, 1) var(--d, 0ms) both; }
+@keyframes ac-grow { from { transform: scaleX(0); } }
+.ac-reveal { animation: ac-reveal 360ms ease-out both; }
+@keyframes ac-reveal { from { opacity: 0; transform: translateY(6px); } }
+.ac-row > th, .ac-row > td { transition: box-shadow 120ms ease; }
+.ac-row:hover > th, .ac-row:hover > td { box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--color-foreground) 5%, transparent); }
+.ac-tap { transition: transform 120ms ease, background-color 120ms ease; }
+.ac-tap:hover { transform: scale(1.08); }
+@media (prefers-reduced-motion: reduce) {
+  .ac-grow, .ac-reveal { animation: none; }
+  .ac-tap:hover { transform: none; }
+}
+@media print {
+  .ac-grow, .ac-reveal { animation: none; }
+}

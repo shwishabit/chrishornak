@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   LETTERS,
   LINK_BANDS,
@@ -11,6 +11,7 @@ import {
   SHOWN_CHECKS,
   TIE_GAP,
   authorityFrom,
+  authorityPoints,
   authorityOf,
   authoritySource,
   oprStandIns,
@@ -326,6 +327,36 @@ function YouTag() {
 
 type Shown = { id: ProofId; index: number } | null
 
+/**
+ * The overall score, counting up with its bar (900 ms). Shows the number at once when the
+ * viewer prefers reduced motion, and on the server, so nothing is missing before it runs.
+ */
+function CountUp({ value }: { value: number }) {
+  const [n, setN] = useState(value)
+  useLayoutEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return setN(value)
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / 900)
+      setN(Math.round(value * (1 - (1 - p) ** 3)))
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    setN(0)
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value])
+  return <>{n}</>
+}
+
+/** The colour a standing stands for, for the "you" column's tint. */
+const STANDING_VAR: Record<Standing, string> = {
+  ahead: 'var(--ac-ahead)',
+  same: 'var(--ac-same)',
+  behind: 'var(--ac-behind)',
+  low: 'var(--ac-low)',
+}
+
 /** ✓ (a button that shows the phrase we found), ✕ amber when a rival has it and you don't, ✕ grey, or – when unread. */
 function CheckMark({
   r,
@@ -366,7 +397,7 @@ function CheckMark({
       aria-expanded={open}
       aria-label={`yes: show what we found on ${site.domain}`}
       onClick={() => setShown(open ? null : { id, index })}
-      className={`ac-yes inline-flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold hover:bg-primary-deep ${
+      className={`ac-yes ac-tap inline-flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold hover:bg-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
         open ? 'bg-primary-deep ring-1 ring-primary-line' : ''
       }`}
     >
@@ -425,8 +456,10 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
     return tone(o.scores[l.id], l.points, o.scores[l.id], values)
   }
 
+  /** The Domain Rating row's colour: DR against the others' DR (ties within TIE_GAP), or its band alone. */
+  const drTone = (o: Ranked, a: number | null) =>
+    !o.scores || a === null || !src ? null : alone ? level(authorityPoints(a), LINK_POINTS) : standing(a, auths, TIE_GAP)
   /** Authority's row in the checks: the Domain Rating itself, a number rather than a ✓. */
-  const AUTH = LETTERS.find((l) => l.id === 'authority')!
   const drRow = (compact: boolean) => (
     <tr className="ac-tint">
       <th
@@ -450,7 +483,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
               –
             </span>
           ) : (
-            <span className={`ac-num font-heading font-semibold ${compact ? 'text-[13px]' : 'text-[15px]'} ${sClass(letterTone(AUTH, o, auths))}`}>
+            <span className={`ac-num font-heading font-semibold ${compact ? 'text-[13px]' : 'text-[15px]'} ${sClass(drTone(o, auths[i]))}`}>
               {fmtAuthority(auths[i]!)}
               {src === 'ahrefs' && authorityFrom(o.site, r) === 'opr' && (
                 <small className="ml-0.5 font-sans text-[10px] font-normal text-muted-foreground">OPR</small>
@@ -482,7 +515,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
             </th>
           </tr>
         )}
-        <tr className="ac-tint">
+        <tr className="ac-tint ac-row">
           <th
             scope="row"
             className={`border-t border-border text-left font-normal text-body-soft ${
@@ -517,7 +550,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
         {shown?.id === c.id && (
           <tr>
             <td colSpan={cols} className="px-3 pb-3 sm:px-4">
-              <p className="m-0 flex items-start justify-between gap-3 rounded-md border border-primary-line bg-primary-deep px-3 py-2 text-[13px]">
+              <p className="ac-reveal m-0 flex items-start justify-between gap-3 rounded-md border border-primary-line bg-primary-deep px-3 py-2 text-[13px]">
                 <span className="min-w-0 [overflow-wrap:anywhere]">
                   <b className="font-semibold text-foreground">{allSitesByIndex(r, shown.index).domain}:</b>{' '}
                   <span className="text-body-soft">
@@ -597,8 +630,13 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
     )
   }
 
+  // The "you" column is tinted with your own standing: green when you lead, amber behind, red far behind.
+  const mine = order.find((o) => o.index === 0)?.scores?.overall ?? null
+  const myTone = tone(mine, 100, mine, overall, OVERALL_TIE - 1)
+  const youStyle = { '--you': myTone ? STANDING_VAR[myTone] : 'var(--ac-same)' } as CSSProperties
+
   return (
-    <section aria-labelledby="ac-ct" className="grid min-w-0 gap-3.5">
+    <section aria-labelledby="ac-ct" className="grid min-w-0 gap-3.5" style={youStyle}>
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <h2 id="ac-ct" className="m-0 font-heading text-[22px] font-bold">
           {solo ? 'Your score' : 'How you compare'}
@@ -621,7 +659,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       {/* Phones: one card per site (sorted, yours highlighted), then the checks as a narrow grid. */}
       <div className="grid gap-2.5 sm:hidden">
         <ol className="m-0 grid list-none gap-2.5 p-0">
-          {order.map((o) => {
+          {order.map((o, col) => {
             const s = o.scores
             const ov = tone(s?.overall ?? null, 100, s?.overall ?? null, overall, OVERALL_TIE - 1)
             return (
@@ -638,14 +676,14 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                     </span>
                   </span>
                   <span className={`ac-num flex-none font-heading text-[26px] leading-none font-bold ${sClass(ov)}`}>
-                    {s ? s.overall : '–'}
+                    {s ? <CountUp value={s.overall} /> : '–'}
                     <small className="ml-0.5 font-sans text-xs font-normal text-muted-foreground">/ 100</small>
                   </span>
                 </div>
                 {s ? (
                   <>
                     <span className={`ac-bar mt-2.5 max-w-none! ${sClass(ov)}`} aria-hidden="true">
-                      <i style={{ width: `${s.overall}%` }} />
+                      <i className="ac-grow" style={{ width: `${s.overall}%`, '--d': `${col * 90}ms` } as CSSProperties} />
                     </span>
                     <dl className="m-0 mt-3 grid grid-cols-4 gap-1.5">
                       {LETTERS.map((l) => {
@@ -760,7 +798,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                 Overall score
                 <small className="block text-[13px] font-normal text-muted-foreground">out of 100</small>
               </th>
-              {order.map((o) => {
+              {order.map((o, col) => {
                 const v = o.scores?.overall ?? null
                 const s = tone(v, 100, v, overall, OVERALL_TIE - 1)
                 return (
@@ -769,9 +807,11 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                       <span className="text-muted-foreground">–</span>
                     ) : (
                       <span className="grid justify-items-center gap-1.5">
-                        <span className="ac-num font-heading text-[30px] leading-none font-bold">{v}</span>
+                        <span className="ac-num font-heading text-[30px] leading-none font-bold">
+                          <CountUp value={v} />
+                        </span>
                         <span className="ac-bar" aria-hidden="true">
-                          <i style={{ width: `${v}%` }} />
+                          <i className="ac-grow" style={{ width: `${v}%`, '--d': `${col * 90}ms` } as CSSProperties} />
                         </span>
                         {solo && <small className="text-xs text-muted-foreground">{band(v)}</small>}
                       </span>
@@ -1346,7 +1386,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
           {loading ? (
             <Checking sites={pending} />
           ) : (
-            <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 ${result ? '' : 'ac-example'}`}>
+            <div key={shown.checkedAt} className={`ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10 ${result ? '' : 'ac-example'}`}>
               {!result && <ExampleBanner />}
               <ReportHead r={shown} example={!result} />
               <CompareTable r={shown} onAddRival={addRival} loading={loading} />
