@@ -46,3 +46,6 @@ lighthouse-*.json
 # audit-tool test harness output (regenerable via `npx tsx scripts/test-real-sites.ts`)
 scripts/test-output/
 scripts/test-output-*/
+
+# Authority Check fixture pages (other people's HTML; labels.json + RUBRIC.md stay tracked)
+scripts/ac-fixtures/pages/

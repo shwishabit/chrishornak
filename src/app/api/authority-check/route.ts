@@ -18,35 +18,16 @@ import {
   pageErrorMessage,
   resolveAndCheck,
   rivalPageError,
-  safeFetch,
-  USER_AGENT,
 } from '@/lib/fetch-guard'
-import {
-  readReviewSignals,
-  readReviewsPage,
-  reviewSiteOf,
-  reviewSitesEvidence,
-  type ReviewRead,
-} from '@/lib/review-signals'
 import { lookupOpenPageRank } from '@/lib/open-pagerank'
 import { lookupDomainRating } from '@/lib/ahrefs'
-import { readExperienceSignals } from '@/lib/experience-signals'
-import {
-  extractText,
-  findJsonLdBlocks,
-  isHttpsUrl,
-  readProofEvidence,
-  readProofSignals,
-} from '@/lib/proof-signals'
+import { MAX_HTML, readSite } from '@/lib/authority-read'
 import {
   MAX_RIVALS,
-  PROOF_CHECKS,
   linksScore,
   parseSite,
-  proofFromSignals,
   type AuthorityResult,
   type LinksStatus,
-  type ProofId,
   type SiteInput,
   type SiteResult,
 } from '@/lib/authority-check'
@@ -55,84 +36,8 @@ import { getSupabase } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
 
-const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
-
 // Each check is up to 4 page reads + 1 API call, so 5 a minute per IP.
 const isRateLimited = createRateLimiter(5, 60_000)
-
-// The second-round reads are shorter, so a check stays inside maxDuration.
-const REVIEWS_PAGE_TIMEOUT = 5_000
-const SHORT_LINK_TIMEOUT = 3_000
-
-/** Reputation, after the extra reads: what shows reviews, and which review sites are linked. */
-interface Reputation {
-  shown: string | null
-  sites: string[]
-}
-
-/** Where a Google short link goes, as a review site (a business listing), or null (an address, or no answer). */
-async function followShortLink(url: string): Promise<string | null> {
-  const ctrl = new AbortController()
-  const timeout = setTimeout(() => ctrl.abort(), SHORT_LINK_TIMEOUT)
-  try {
-    const res = await fetch(url, { redirect: 'manual', signal: ctrl.signal, headers: { 'User-Agent': USER_AGENT } })
-    const to = res.headers.get('location')
-    return to ? reviewSiteOf(to) : null
-  } catch {
-    return null
-  } finally {
-    clearTimeout(timeout)
-  }
-}
-
-/** The homepage's review read, plus its reviews page and short links when those are needed. */
-async function readReputation(rr: ReviewRead): Promise<Reputation> {
-  const page = async () => {
-    if (rr.shown || !rr.reviewsPage) return rr.shown
-    if (await resolveAndCheck(new URL(rr.reviewsPage).hostname)) return null
-    const res = await safeFetch(rr.reviewsPage, MAX_HTML, REVIEWS_PAGE_TIMEOUT)
-    return res && res.status >= 200 && res.status < 300 ? readReviewsPage(res.body, res.finalUrl) : null
-  }
-  const short = async () => (rr.sites.length ? [] : Promise.all(rr.shortLinks.map(followShortLink)))
-  const [shown, more] = await Promise.all([page(), short()])
-  const sites = [...rr.sites]
-  for (const s of more) if (s && !sites.includes(s)) sites.push(s)
-  return { shown, sites }
-}
-
-/** The homepage checks found, and the phrase behind each one. */
-function readProof(
-  html: string,
-  finalUrl: string,
-  rep: Reputation,
-): { proof: ProofId[]; evidence: SiteResult['evidence']; trackLevel: 0 | 1 | 2 } {
-  const text = extractText(html)
-  const blocks = findJsonLdBlocks(html)
-  const https = isHttpsUrl(finalUrl)
-  const exp = readExperienceSignals(html, finalUrl)
-  const proof = proofFromSignals({
-    ...readProofSignals(html, text, blocks),
-    isHttps: https,
-    hasReviewsShown: !!rep.shown,
-    hasReviewSites: rep.sites.length > 0,
-    hasWorkShown: !!exp.workShown,
-    hasTrackRecord: !!exp.trackRecord,
-  })
-  const found = {
-    ...readProofEvidence(html, text, blocks),
-    ...(https ? { isHttps: `Loads over “https://”` } : {}),
-    ...(rep.shown ? { hasReviewsShown: rep.shown } : {}),
-    ...(rep.sites.length ? { hasReviewSites: reviewSitesEvidence(rep.sites) } : {}),
-    ...(exp.workShown ? { hasWorkShown: exp.workShown } : {}),
-    ...(exp.trackRecord ? { hasTrackRecord: exp.trackRecord } : {}),
-  }
-  const evidence: NonNullable<SiteResult['evidence']> = {}
-  for (const c of PROOF_CHECKS) {
-    const e = found[c.signal as keyof typeof found]
-    if (proof.includes(c.id) && e) evidence[c.id] = e
-  }
-  return { proof, evidence, trackLevel: exp.trackLevel }
-}
 
 /* ── Log (domains + scores only) ────────────────────────────────────────── */
 
@@ -216,17 +121,13 @@ export async function GET(request: NextRequest) {
     return bad(yourError ?? 'We couldn’t read your homepage.', 502)
   }
 
-  // Reputation's extra reads, for every homepage that was read, in parallel.
+  // Each homepage's checks (with Reputation's extra reads), for every homepage that was read, in parallel.
   const errors = sites.map((s, i) => (i === 0 ? null : rivalPageError(pages[i], s.bare)))
-  const reputations = await Promise.all(
-    pages.map((page, i) => (page && !errors[i] ? readReputation(readReviewSignals(page.body, page.finalUrl)) : null)),
-  )
+  const reads = await Promise.all(pages.map((page, i) => (page && !errors[i] ? readSite(page) : null)))
 
   const results: SiteResult[] = sites.map((s, i) => {
-    const page = pages[i]
     const err = errors[i]
-    const rep = reputations[i]
-    const read = page && !err && rep ? readProof(page.body, page.finalUrl, rep) : null
+    const read = reads[i]
     return {
       domain: s.bare,
       links: linksOf(s.bare),

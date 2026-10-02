@@ -12,18 +12,21 @@
  * imports.
  * ─────────────────────────────────────────────────────────────────────── */
 
-import { extractText } from './proof-signals'
+import { anchors, extractText, findJsonLdBlocks } from './proof-signals'
+import { countTestimonials, signedReview } from './experience-signals'
 
 /* ── Reviews on your site ───────────────────────────────────────────────── */
 
+// A count never ends a phone number: "(971) 333-2656 Reviews" is a phone and a menu word (laurelhurstchiropractic.com).
 // "4.8 stars", "4.9 out of 5 stars", "4.9 / 5", "5-star reviews", "rated 4.9", "1,600+ reviews", "200 Google reviews", ★★★★★
 const RATING_RE =
-  /\b[1-5](?:\.\d)?(?:\s*out of 5)?\s*stars\b|\b[1-5]\.\d\s*\/\s*5\b|\b(?:5|five)[- ]star (?:reviews?|ratings?)\b|\brated\s+[1-5]\.\d\b|\b\d[\d,]*\+?\s+(?:(?:google|yelp|5-star|five-star|verified|customer|client|patient|happy)\s+)*reviews\b|[★⭐]{3,}/i
+  /\b[1-5](?:\.\d)?(?:\s*out of 5)?\s*stars\b|\b[1-5]\.\d\s*\/\s*5\b|\b(?:5|five)[- ]star (?:reviews?|ratings?)\b|\brated\s+[1-5]\.\d\b|(?<![\d)][-.\s]?)\b\d[\d,]*\+?\s+(?:(?:google|yelp|5-star|five-star|verified|customer|client|patient|happy)\s+)*reviews\b|[★⭐]{3,}/i
 // A reviews section heading, in text that isn't a link (menu items are links). Not on a reviews page (its own title would match).
 const HEADING_RE =
   /\b(?:testimonials|what (?:our |your |my )?(?:customers|clients|patients|guests|neighbors|homeowners) (?:say|are saying)|(?:customer|client|patient|google) reviews|kind words|reviews from)\b/i
 // Repeated review blocks: class="review__content", "testimonial-item" and the like.
 const REVIEW_CLASS_RE = /<[a-z]+[^>]*\bclass=["'][^"']*\b(?:testimonial|review)[\w-]*/gi
+const QUOTE_CLASS_RE = /<[a-z]+[^>]*\bclass=["'][^"']*\b(?<!(?:a|get|request|free|your)-)quote\b/gi
 // Widgets that only show reviews. Their reviews load by script, so the widget itself is the proof.
 const WIDGETS: [string, RegExp][] = [
   ['Trustindex', /trustindex\.io/i],
@@ -76,6 +79,14 @@ function reviewsOnPage(html: string, onReviewsPage: boolean): string | null {
   }
   if ((html.match(/<blockquote/gi) ?? []).length >= 2) return 'Two or more quotes on the page'
   if ((html.match(REVIEW_CLASS_RE) ?? []).length >= 3) return 'Reviews shown on the page'
+  // On the reviews page only, "quote" blocks too (class="st-quote", seerinteractive.com); on a homepage
+  // "quote" is mostly "get-a-quote" buttons.
+  if (onReviewsPage && (html.match(QUOTE_CLASS_RE) ?? []).length >= 3) return 'Quotes shown on the page'
+  // Customer quotes in plain text: 2+ quoted sentences, or one review signed "Gary G." (fixture test, 2026-10-02).
+  const quotes = countTestimonials(html)
+  if (quotes >= 2) return `${quotes} quotes from customers`
+  const signed = signedReview(html)
+  if (signed) return `A signed review: “${signed}”`
   return null
 }
 
@@ -88,9 +99,8 @@ function findReviewsPage(html: string, pageUrl: string): string | null {
     return null
   }
   const bare = (h: string) => h.toLowerCase().replace(/^www\./, '')
-  for (const m of html.matchAll(/<a\b[^>]*?\bhref=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const href = m[1].replace(/&amp;/g, '&').trim()
-    const words = extractText(m[2])
+  for (const { href, inner } of anchors(html)) {
+    const words = extractText(inner)
     let u: URL
     try {
       u = new URL(href, base)
@@ -109,9 +119,9 @@ function findReviewsPage(html: string, pageUrl: string): string | null {
 
 /* ── Independent reviews ────────────────────────────────────────────────── */
 
-/** Short Google Maps links: where they go (a business or just an address) needs one redirect read. */
+/** Short Google links (Maps, and Google's share.google links): where they go needs one redirect read. */
 export function isGoogleShortLink(url: string): boolean {
-  return /^https?:\/\/(?:maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(url)
+  return /^https?:\/\/(?:maps\.app\.goo\.gl|goo\.gl\/maps|share\.google)\//i.test(url)
 }
 
 /** The review site a link points to, or null. */
@@ -133,6 +143,8 @@ export function reviewSiteOf(url: string): string | null {
     // A business listing, not a street address or an area map.
     if (q.get('cid') || q.get('ludocid') || q.get('placeid') || q.get('place_id')) return 'Google'
     if (/^place_id:/i.test(q.get('q') ?? '')) return 'Google'
+    // A business's Google panel, where share.google links land: /search?kgmid=/g/…
+    if (path === '/search' && q.get('kgmid')) return 'Google'
     const place = path.match(/\/maps\/place\/([^/]+)/)?.[1]
     if (place && !/^\d/.test(decodeURIComponent(place))) return 'Google'
     return null
@@ -151,7 +163,7 @@ export function reviewSiteOf(url: string): string | null {
   if (host === 'martindale.com' && /^\/(?:attorney|organization)\//.test(path)) return 'Martindale'
   if (/(?:^|\.)tripadvisor\.[a-z.]+$/.test(host) && /_Review-/.test(path)) return 'Tripadvisor'
   if (host === 'theknot.com' && path.startsWith('/marketplace/')) return 'The Knot'
-  if (host === 'weddingwire.com' && path.startsWith('/biz/')) return 'WeddingWire'
+  if (host === 'weddingwire.com' && /^\/(?:biz|reviews)\//.test(path)) return 'WeddingWire'
   if (host === 'opentable.com' && path.startsWith('/r/')) return 'OpenTable'
   if (host === 'clutch.co' && path.startsWith('/profile/')) return 'Clutch'
   if (host === 'g2.com' && path.startsWith('/products/')) return 'G2'
@@ -181,9 +193,13 @@ export interface ReviewRead {
 
 export function readReviewSignals(html: string, pageUrl: string): ReviewRead {
   const urls = [
-    ...[...html.matchAll(/\b(?:href|src)\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]),
+    ...[...html.matchAll(/\b(?:href|src)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'>]+))/gi)].map((m) => m[1] ?? m[2] ?? m[3]),
     ...[...html.matchAll(/"sameAs"\s*:\s*(\[[^\]]*\]|"[^"]*")/g)].flatMap((m) =>
       [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1].replace(/\\\//g, '/')),
+    ),
+    // Any other address in the schema code, e.g. "hasMap": "https://maps.google.com/?cid=…" (thriveagency.com).
+    ...(findJsonLdBlocks(html) ?? []).flatMap((b) =>
+      [...b.matchAll(/"(https?:(?:\\?\/){2}[^"\s]+)"/g)].map((x) => x[1].replace(/\\\//g, '/')),
     ),
   ]
   const sites: string[] = []
