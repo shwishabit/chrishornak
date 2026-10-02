@@ -382,7 +382,7 @@ export function StrategyFirstGuide() {
       </p>
 
       <p>
-        The Findability Check measures your technical signals. These guides explain the strategic reality behind them. Together, they give you the complete picture: where your signal is strong, where it&apos;s weak, and what to do about it — in the right sequence.
+        The <Link href="/tools" className="guide-cta text-primary no-underline hover:underline">three free checks</Link> measure your signals: whether you&apos;re found, how you&apos;re seen, and how you stack up against rivals. These guides explain the strategic reality behind them. Together, they give you the complete picture: where your signal is strong, where it&apos;s weak, and what to do about it — in the right sequence.
       </p>
 
       <p>

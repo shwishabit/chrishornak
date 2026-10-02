@@ -208,13 +208,13 @@ export function WebsiteTrustGuide() {
               Does your website match your reputation?
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-              The Findability Check scores your technical trust signals — HTTPS, security headers, page speed, structured data. It won&apos;t judge your design, but it&apos;ll tell you whether the foundation is solid.
+              The Authority Check reads your homepage for the proof people look for: reviews, the people behind the business, credentials and contact details. Then it puts you next to up to three rivals.
             </p>
             <Link
-              href="/audit"
+              href="/authority-check"
               className="guide-cta mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground no-underline shadow-lg shadow-primary/20 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/30"
             >
-              Check your trust signals <ArrowRight className="h-4 w-4" />
+              Compare your trust signals <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -351,14 +351,14 @@ export function WebsiteTrustGuide() {
           How strong are your trust signals?
         </p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-          The Findability Check scores the technical side of trust — HTTPS, security headers, speed, structured data. Your reputation handles the rest. Make sure the foundation matches.
+          The Authority Check shows the proof your homepage gives, next to up to three rivals. For the technical side of trust, like HTTPS and security headers, run the <Link href="/audit" className="guide-cta text-primary no-underline hover:underline">Findability Check</Link>.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/audit"
+            href="/authority-check"
             className="guide-cta inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground no-underline shadow-lg shadow-primary/20 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/30"
           >
-            Check your trust signals <ArrowRight className="h-4 w-4" />
+            Compare your trust signals <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/#connect"

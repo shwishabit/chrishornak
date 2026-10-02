@@ -47,7 +47,7 @@ export function Ventures() {
             </a>{' '}
             and{' '}
             <a
-              href="https://swiftgrowthmarketing.com"
+              href="https://swiftgrowth.marketing"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-foreground underline decoration-primary/30 underline-offset-4 transition-colors duration-200 hover:text-primary"

@@ -58,12 +58,20 @@ function ToolsMenu() {
                   onClick={() => setOpen(false)}
                   className="grid gap-0.5 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-muted focus-visible:bg-muted"
                 >
+                  <span className="font-code text-[11px] tracking-[.08em] text-primary uppercase">{t.step}</span>
                   <span className="text-sm font-semibold text-foreground">{t.label}</span>
                   <span className="text-[13px] text-muted-foreground">{t.question}</span>
                 </a>
               </li>
             ))}
           </ul>
+          <a
+            href="/tools"
+            onClick={() => setOpen(false)}
+            className="mt-1 block rounded-lg border-t border-border px-3 pt-2.5 pb-2 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground"
+          >
+            How the three checks fit together <span aria-hidden="true">→</span>
+          </a>
         </div>
       )}
     </div>
@@ -148,10 +156,18 @@ export function Navigation({ lightLogo = false }: { lightLogo?: boolean } = {}) 
                   onClick={() => setMobileOpen(false)}
                   className="grid gap-0.5 text-foreground transition-colors duration-200 hover:text-primary"
                 >
+                  <span className="font-code text-[11px] tracking-[.08em] text-primary uppercase">{t.step}</span>
                   <span className="text-lg font-medium">{t.label}</span>
                   <span className="text-[13px] text-muted-foreground">{t.question}</span>
                 </a>
               ))}
+              <a
+                href="/tools"
+                onClick={() => setMobileOpen(false)}
+                className="text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              >
+                How the three checks fit together <span aria-hidden="true">→</span>
+              </a>
             </div>
             <a
               href="/#connect"

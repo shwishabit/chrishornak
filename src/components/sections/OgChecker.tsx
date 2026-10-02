@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import { LINK_CARDS, PREVIEW_GROUNDS, type PreviewTabId } from '@/components/blog/SharePreviewTabs'
+import { NextCheck, ToolQuestions } from '@/components/sections/ToolQuestions'
+import { toolEnding } from '@/lib/data'
 import {
   buildGoogleRows,
   buildTagBlock,
@@ -675,9 +677,10 @@ function GooglePreview({ r, src, favicon }: { r: OgCheckResult; src: string | nu
       </div>
 
       <p className="m-0 max-w-[64ch] text-xs leading-normal text-[#4d5156]">
-        Drawn from your page&apos;s code. Google picks the title and description itself and can change them for each
-        search. Google does not publish a length limit, so the cut is our estimate: 2 lines in a column about 600 px
-        wide on a computer.
+        {g.description && !g.nosnippet
+          ? 'This uses your title tag and your meta description. Google often shows them, but it can rewrite either one for some searches.'
+          : 'This uses your title tag. With no meta description, Google takes text from your page, so we show your first paragraph.'}{' '}
+        Google does not publish a length limit, so the cut is our estimate: 2 lines, about 600 px wide on a computer.
       </p>
 
       <div className="border-t border-[#dadce0] pt-3">
@@ -1114,13 +1117,13 @@ function Offer() {
       className="mt-11 grid items-center gap-x-10 gap-y-6 rounded-[10px] border border-primary-line bg-primary-deep p-7 md:grid-cols-[minmax(0,1fr)_auto]"
     >
       <div>
-        <p className="mb-2.5 font-code text-xs tracking-[.12em] text-primary uppercase">Free share card</p>
+        <p className="mb-2.5 font-code text-xs tracking-[.12em] text-primary uppercase">Free share card included</p>
         <h2 id="offer-h" className="mb-2 font-heading text-[26px] leading-[1.15] font-bold tracking-[-.015em] text-balance">
-          Want a better card? I&apos;ll make you one, free.
+          {toolEnding.heading}
         </h2>
         <p className="m-0 max-w-[60ch] text-body-soft">
-          Book 15 minutes with me. We look at your link together. Then I make you a 1200 × 630
-          card from your real logo and colors, plus the tags to add it.
+          Book 15 minutes with me. We look at your link together and pick the fix that matters most.
+          Then I make you a 1200 × 630 card from your real logo and colors, free, plus the tags to add it.
         </p>
       </div>
       <div className="grid justify-items-start gap-3">
@@ -1134,16 +1137,8 @@ function Offer() {
           Book 15 minutes
         </button>
         <p className="m-0 text-[13px] text-muted-foreground">
-          <a href="/audit" className="text-muted-foreground underline underline-offset-[3px] hover:text-foreground">
-            Check your whole site
-          </a>
-          {' · '}
           <a href="/blog/og-image" className="text-muted-foreground underline underline-offset-[3px] hover:text-foreground">
             How to design a card
-          </a>
-          {' · '}
-          <a href="/authority-check" className="text-muted-foreground underline underline-offset-[3px] hover:text-foreground">
-            Compare to your rivals
           </a>
         </p>
       </div>
@@ -1196,6 +1191,7 @@ function Result({
 
       <Fixes r={r} />
       <Judge r={r} />
+      <NextCheck current="/og-image-checker" className="mt-10" />
     </>
   )
 }
@@ -1265,6 +1261,7 @@ export function OgChecker({ example }: { example: OgCheckResult }) {
             )}
           </div>
           <Offer />
+          <ToolQuestions current="/og-image-checker" className="mt-12" />
         </div>
       </section>
     </>

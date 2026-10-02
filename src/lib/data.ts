@@ -20,14 +20,39 @@ export const navLinks: NavLink[] = [
 ]
 
 /**
- * The free tools, in order, as the owner's three questions. One list for the
- * "Tools" menu, the footer and the strip at the end of each tool page.
+ * The free tools, in order, as the owner's three questions: Found → Seen →
+ * Chosen (Chris, 2026-10-01; /signal's "find you, trust you, and choose you").
+ * Then the 4th step is a call ("What should you fix first?"). One list for the
+ * "Free tools" menu, the footer, /tools and the strip at the end of each tool.
  */
 export const toolLinks = [
-  { label: 'Findability Check', question: 'Can your website be found?', href: '/audit' },
-  { label: 'Open Graph Checker', question: 'What do people see when they find you?', href: '/og-image-checker' },
-  { label: 'Authority Check', question: 'How do you stack up?', href: '/authority-check' },
+  {
+    step: 'Found',
+    label: 'Findability Check',
+    question: 'Can your website be found?',
+    href: '/audit',
+    summary: 'Whether search engines and AI can read your site and list it.',
+  },
+  {
+    step: 'Seen',
+    label: 'Open Graph Checker',
+    question: 'What do people see when they find you?',
+    href: '/og-image-checker',
+    summary: 'How your link looks in Google and when it is shared, and what to fix.',
+  },
+  {
+    step: 'Chosen',
+    label: 'Authority Check',
+    question: 'How do you stack up?',
+    href: '/authority-check',
+    summary: 'Your site next to up to 3 rivals: one score out of 100 each.',
+  },
 ] as const
+
+/** The shared ending on every tool: the 4th step is a person. */
+export const toolEnding = {
+  heading: 'What should you fix first?',
+} as const
 
 export const heroContent = {
   headline: 'Your next customer is looking for you.',

@@ -187,14 +187,18 @@ export function AuditPageClient() {
             </figure>
 
             <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
-              This checks the on-page factors you can control right now — not
-              page speed, backlink authority, or competitor positioning.
-              That&apos;s the deeper work.
+              This checks the on-page factors you can control right now. To see
+              who links to you and how you compare to rivals, run the{' '}
+              <a href="/authority-check" className="font-semibold text-foreground underline underline-offset-[3px] hover:text-primary">
+                Authority Check
+              </a>
+              .
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
               <a
-                href="#"
+                // A real target (the page's main), not an empty "#" link.
+                href="#main-content"
                 onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/20"
               >
@@ -267,9 +271,12 @@ export function AuditPageClient() {
             </figure>
 
             <p className="mt-10 text-sm leading-relaxed text-muted-foreground/80">
-              This checks the on-page factors you can control right now — not
-              page speed, backlink authority, or competitor positioning.
-              That&apos;s the deeper work.
+              This checks the on-page factors you can control right now. To see
+              who links to you and how you compare to rivals, run the{' '}
+              <a href="/authority-check" className="font-semibold text-foreground underline underline-offset-[3px] hover:text-primary">
+                Authority Check
+              </a>
+              .
             </p>
 
             <div className="mt-10 flex flex-wrap items-center justify-center gap-5">

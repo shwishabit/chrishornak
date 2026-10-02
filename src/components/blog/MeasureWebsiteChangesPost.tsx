@@ -176,8 +176,9 @@ export function MeasureWebsiteChangesPost() {
 
       <p>
         If you want a quick before for how machines read a page, my free{' '}
-        <Link href="/audit">findability grader</Link> gives you a score you can save. Save it, make
-        the change, then run it again.
+        <Link href="/audit">Findability Check</Link> gives you a score you can save. For how you
+        compare to rivals, the <Link href="/authority-check">Authority Check</Link> gives you a report
+        you can save as a PDF. Save it, make the change, then run it again.
       </p>
 
       <h2 id="when-not-to">When is measuring not worth it?</h2>

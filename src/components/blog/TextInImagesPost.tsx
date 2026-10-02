@@ -188,7 +188,8 @@ export function TextInImagesPost() {
         </li>
         <li>
           <strong>Share cards.</strong> A social preview is an image by definition. The card for
-          this post is text in an image, and that&apos;s fine.
+          this post is text in an image, and that&apos;s fine. To see how yours looks in each app,
+          use the <Link href="/og-image-checker">Open Graph Checker</Link>.
         </li>
         <li>
           <strong>Screenshots used as evidence.</strong> A picture of a real dashboard proves
@@ -199,7 +200,7 @@ export function TextInImagesPost() {
       <p>
         The test for everything else: is the picture of the words the point, or just the words? If
         it&apos;s just the words, set them as text. My free{' '}
-        <Link href="/audit">findability grader</Link> checks whether your images carry alt text.
+        <Link href="/audit">Findability Check</Link> looks at whether your images carry alt text.
         It can&apos;t tell you whether the words belonged in the picture at all. That call is still
         yours.
       </p>

@@ -371,7 +371,7 @@ export function AiReadinessGuide() {
           Is AI recommending your competitors?
         </p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-          The Findability Check measures your AI readiness alongside five other signals. See where you stand — before your competitors pull further ahead.
+          The Findability Check measures your AI readiness alongside six other signals. See where you stand — before your competitors pull further ahead.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link

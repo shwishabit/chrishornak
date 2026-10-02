@@ -209,7 +209,7 @@ export function ProductPageAuditPost() {
       <p>
         And it doesn&apos;t scale by hand. Past a few dozen products, you want the product issues
         Merchant Center reports and a crawler, not a phone and a document. My free{' '}
-        <Link href="/audit">findability grader</Link> checks how machines read your page. Reading for
+        <Link href="/audit">Findability Check</Link> reads your page the way machines do. Reading for
         two lines that disagree is still a job for a person.
       </p>
 

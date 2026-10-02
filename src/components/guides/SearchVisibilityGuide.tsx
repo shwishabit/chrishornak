@@ -281,7 +281,7 @@ export function SearchVisibilityGuide() {
               Is your site sitting in the dark?
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-              The Findability Check tests for every issue on this list — title tags, sitemap, structured data, page speed, and more. Takes under a minute. No signup.
+              The Findability Check tests for every issue on this list — title tags, sitemap, structured data, page speed, and more. Takes under a minute. No signup. To see how one page&apos;s title and description will likely look in Google, use the <Link href="/og-image-checker" className="guide-cta text-primary no-underline hover:underline">Open Graph Checker</Link>.
             </p>
             <Link
               href="/audit"

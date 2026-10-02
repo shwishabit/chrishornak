@@ -49,6 +49,14 @@ export function Footer({ lightLogo = false }: { lightLogo?: boolean } = {}) {
                   </a>
                 </li>
               ))}
+              <li>
+                <a
+                  href="/tools"
+                  className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                >
+                  All free tools
+                </a>
+              </li>
             </ul>
           </div>
 

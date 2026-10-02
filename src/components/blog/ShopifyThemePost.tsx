@@ -109,7 +109,7 @@ export function ShopifyThemePost() {
 
       <p>
         That last one is also the fastest thing to check from the outside, which is part of why I
-        built the <Link href="/audit">free findability grader</Link> the way I did.
+        built the free <Link href="/audit">Findability Check</Link> the way I did.
       </p>
 
       <p>

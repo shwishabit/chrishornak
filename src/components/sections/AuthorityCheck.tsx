@@ -29,6 +29,7 @@ import {
   type Standing,
 } from '@/lib/authority-check'
 import { ToolQuestions } from './ToolQuestions'
+import { toolEnding } from '@/lib/data'
 import '@/styles/authority-check.css'
 
 /* ── Authority Check ────────────────────────────────────────────────────────
@@ -837,9 +838,11 @@ function Offer({ theme }: { theme: Theme }) {
     >
       <div>
         <h2 id="ac-offer" className="m-0 mb-1.5 font-heading text-[22px] font-bold">
-          Read your results with me.
+          {toolEnding.heading}
         </h2>
-        <p className="m-0 max-w-[60ch] text-body-soft">15 minutes, free. We pick the one move that matters most.</p>
+        <p className="m-0 max-w-[60ch] text-body-soft">
+          15 minutes, free. We read your results together and pick the one move that matters most.
+        </p>
       </div>
       <button
         type="button"

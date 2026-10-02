@@ -9,7 +9,7 @@ import { submitContact, type ContactFormState } from '@/app/actions'
 
 const steps = [
   { num: '1', title: 'Conversation', detail: 'We talk about your business, your goals, and what\'s not working.' },
-  { num: '2', title: 'Diagnosis', detail: 'I dig into the data, your market, and your competition.' },
+  { num: '2', title: 'Diagnosis', detail: 'I dig into the data, your market, and your competition.', link: { href: '/tools', label: 'Start it yourself: three free checks' } },
   { num: '3', title: 'Strategy', detail: 'A clear plan — what to do, why, and in what order.' },
   { num: '4', title: 'Execution', detail: 'Hands-on or with a team. I stay involved until it\'s working.' },
 ]
@@ -83,6 +83,14 @@ export function Connect() {
                   <div>
                     <p className="text-sm font-semibold">{step.title}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{step.detail}</p>
+                    {'link' in step && step.link && (
+                      <a
+                        href={step.link.href}
+                        className="mt-1 inline-block text-xs font-semibold text-primary underline-offset-[3px] hover:underline"
+                      >
+                        {step.link.label}&nbsp;<span aria-hidden="true">→</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}

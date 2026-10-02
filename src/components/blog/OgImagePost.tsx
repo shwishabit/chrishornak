@@ -279,7 +279,7 @@ export function OgImagePost() {
       <p>Neither problem jumps out when you look at the card on its own. It took the check to catch both.</p>
 
       <p>
-        My free <Link href="/audit">findability grader</Link> checks the technical half. It looks
+        My free <Link href="/audit">Findability Check</Link> covers the technical half. It looks
         for a share title, description and image, and tests that the image address actually loads.
         It can&apos;t tell you whether the card keeps the page&apos;s promise. That part is still a
         human read.
@@ -287,7 +287,7 @@ export function OgImagePost() {
 
       <CheckerCta
         title="Want to see your own card?"
-        body="Paste a link into my free OG image checker. It measures your image, runs the square crop test and shows your preview in 4 apps, with the source for every rule."
+        body="Paste a link into my free Open Graph Checker. It measures your image, runs the square crop test and shows your link in 4 apps and Google, with the source for every rule."
       />
 
       <h2 id="matters-less">When does the OG image matter less?</h2>
@@ -317,7 +317,7 @@ export function OgImagePost() {
       <CheckerCta
         closing
         title="Check your link before you share it"
-        body="The OG image checker shows your card the way 4 apps do, flags what's off and hands you the tags to fix it. Free, no sign-up."
+        body="The Open Graph Checker shows your card the way 4 apps and Google do, flags what's off and hands you the tags to fix it. Free, no sign-up."
       />
     </>
   )

@@ -37,6 +37,8 @@ import {
 import { parseAudit, type FetchedPage } from '@/lib/audit-parser'
 import { getPreviousResult, saveAuditResult, type AuditHistoryEntry } from '@/lib/audit-history'
 import { BenchmarkBadge } from '@/components/sections/BenchmarkBadge'
+import { NextCheck } from '@/components/sections/ToolQuestions'
+import { toolEnding } from '@/lib/data'
 
 /* ── Category icon map ───────────────────────────────────────────────── */
 
@@ -1201,11 +1203,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
             <div className="glass-card mt-6 p-8 text-center">
               <h3 className="font-heading text-lg font-bold">
                 Your site scored {overallScore}.{' '}
-                {overallScore >= 80
-                  ? "Here\u2019s how to build on that."
-                  : overallScore >= 50
-                    ? "Here\u2019s where I\u2019d start."
-                    : "Here\u2019s where I\u2019d start."}
+                {overallScore >= 100 ? 'Here\u2019s how to build on that.' : toolEnding.heading}
               </h3>
               {benchmark && benchmark.avg != null && (
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -1235,15 +1233,18 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                   Clean across the board — you&apos;re findable. The real question now is whether visitors are taking action. That&apos;s the conversation.
                 </p>
               )}
+              <p className="mt-2 text-sm text-muted-foreground">
+                15 minutes with me, free. We read your results together and pick the one move that matters most.
+              </p>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
-                  data-cal-link="chris-hornak/30min"
-                  data-cal-namespace="30min"
+                  data-cal-link="chris-hornak/findability"
+                  data-cal-namespace="findability"
                   data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}'
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
                 >
-                  Let&apos;s walk through it
+                  Book 15 minutes
                 </button>
                 <button
                   type="button"
@@ -1254,6 +1255,7 @@ export function AuditTool({ onResult }: AuditToolProps = {}) {
                   {copied ? 'Link copied!' : 'Share results'}
                 </button>
               </div>
+              <NextCheck current="/audit" className="mt-5 border-t border-border pt-4" />
             </div>
           </motion.div>
         )}
