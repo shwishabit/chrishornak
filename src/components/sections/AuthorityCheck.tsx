@@ -7,8 +7,10 @@ import {
   MAX_RIVALS,
   PROOF_CHECKS,
   TIE_GAP,
+  authorityFrom,
   authorityOf,
   authoritySource,
+  oprStandIns,
   band,
   checksIn,
   firstMoves,
@@ -256,7 +258,7 @@ function Hero({
               Or check your site alone
             </button>
             <span aria-hidden="true">· </span>
-            It reads each homepage once and looks up each site&apos;s authority score.
+            It reads each homepage once (plus its About and reviews pages when it needs them) and looks up each site&apos;s authority score.
           </p>
         </div>
         <section
@@ -397,6 +399,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
   const [open, setOpen] = useState(false)
   const [shown, setShown] = useState<Shown>(null)
   const src = authoritySource(r)
+  const standIns = oprStandIns(r)
   const cols = order.length + 1
   const failed = r.rivals.filter((s) => s.pageError)
 
@@ -444,6 +447,9 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
           ) : (
             <span className={`ac-num font-heading font-semibold ${compact ? 'text-[13px]' : 'text-[15px]'} ${sClass(letterTone(AUTH, o, auths))}`}>
               {fmtAuthority(auths[i]!)}
+              {src === 'ahrefs' && authorityFrom(o.site, r) === 'opr' && (
+                <small className="ml-0.5 font-sans text-[10px] font-normal text-muted-foreground">OPR</small>
+              )}
             </span>
           )}
         </td>
@@ -553,7 +559,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                 {l.id === 'authority'
                   ? a === null
                     ? 'No score'
-                    : `${src === 'ahrefs' ? 'DR' : 'OPR'} ${fmtAuthority(a)}`
+                    : `${authorityFrom(o.site, r) === 'ahrefs' ? 'DR' : 'OPR'} ${fmtAuthority(a)}`
                   : `${o.scores.found[l.id]} of ${checksIn(l.id).length}`}
               </small>
             </td>
@@ -576,6 +582,12 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
           {src === 'opr'
             ? 'Ahrefs scores are busy right now, so Authority uses Open PageRank for this check.'
             : 'Authority scores are not available right now, so Authority counts 0 for every site. Try again in a minute.'}
+        </p>
+      )}
+      {standIns.length > 0 && (
+        <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
+          Ahrefs has no Domain Rating for {standIns.map((s) => s.domain).join(' or ')}, so{' '}
+          {standIns.length > 1 ? 'their' : 'its'} Authority uses Open PageRank (marked OPR) instead.
         </p>
       )}
       {/* Phones: one card per site (sorted, yours highlighted), then the checks as a narrow grid. */}
@@ -621,7 +633,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                             </dd>
                             {l.id === 'authority' && a !== null && (
                               <dd className="m-0 text-[10px] text-muted-foreground">
-                                {src === 'ahrefs' ? 'DR' : 'OPR'} {fmtAuthority(a)}
+                                {authorityFrom(o.site, r) === 'ahrefs' ? 'Ahrefs DR' : 'OPR'} {fmtAuthority(a)}
                               </dd>
                             )}
                           </div>
@@ -1006,11 +1018,11 @@ function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof
           apart count as a tie.
         </p>
         <p className="m-0">
-          We read each homepage once. Expertise and most Trust checks use the same rules as{' '}
+          We read each homepage once, plus its About page and reviews page when the homepage doesn&apos;t show enough. Expertise and most Trust checks use the same rules as{' '}
           <a href="/audit" className="text-primary underline underline-offset-[3px]">
             the Findability Check
           </a>
-          . Track record means 5 or more years in practice, a count of 20 or more clients or jobs, 20 or more reviews, or 3 or more testimonials on your homepage.
+          . Track record means 5 or more years in practice, a count of 20 or more clients or jobs, 20 or more reviews, or 3 or more testimonials on your homepage or About page.
         </p>
         <p className="m-0">
           Authority:{' '}

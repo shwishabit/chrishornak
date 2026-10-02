@@ -3,8 +3,9 @@
  * score, built from Google's public guidance; Google gives no E-E-A-T score):
  *   Experience 20 = your work shown + track record (experience-signals.ts)
  *   Expertise  20 = real people + credentials (the Findability Check's rules)
- *   Authority  20 = Ahrefs Domain Rating, full points at 30; Open PageRank
- *                   (×10) is the backup when Ahrefs is down
+ *   Authority  20 = Ahrefs Domain Rating on a curve, full points at DR 70;
+ *                   Open PageRank (×10) is the backup when Ahrefs is down, or
+ *                   for a site Ahrefs has no rating for
  *   Trust      40 = 7 checks: 5 Findability rules + 2 review proofs
  *                   (review-signals.ts). Trust counts double because Google:
  *                   "Of these aspects, trust is most important."
@@ -231,15 +232,32 @@ export function authoritySource(r: AuthorityResult): AuthoritySource | null {
   return null
 }
 
-/** A site's authority out of 100 from this check's source. null = no score. */
-export function authorityOf(s: SiteResult, r: AuthorityResult): number | null {
+/** Open PageRank ×10 for one site, one decimal, or null when it has none. */
+function oprOf(s: SiteResult, r: AuthorityResult): number | null {
+  if (r.linksStatus !== 'ok') return null
+  if (typeof s.opr === 'number') return Math.round(s.opr * 100) / 10
+  return s.links
+}
+
+/**
+ * Where one site's authority comes from: the check's source, or Open PageRank for a site
+ * Ahrefs had no Domain Rating for. Until 2026-10-02 that site scored 0 (scoring spec item 19).
+ */
+export function authorityFrom(s: SiteResult, r: AuthorityResult): AuthoritySource | null {
   const src = authoritySource(r)
-  if (src === 'ahrefs') return typeof s.dr === 'number' ? s.dr : null
-  if (src === 'opr') {
-    if (typeof s.opr === 'number') return Math.round(s.opr * 100) / 10
-    return s.links
-  }
-  return null
+  if (src === 'ahrefs' && typeof s.dr === 'number') return 'ahrefs'
+  return src && oprOf(s, r) !== null ? 'opr' : null
+}
+
+/** A site's authority out of 100: its Domain Rating, else Open PageRank ×10. null = no score. */
+export function authorityOf(s: SiteResult, r: AuthorityResult): number | null {
+  const from = authorityFrom(s, r)
+  return from === 'ahrefs' ? (s.dr as number) : from === 'opr' ? oprOf(s, r) : null
+}
+
+/** Sites scored by Open PageRank although the check used Ahrefs (Ahrefs had no rating for them). */
+export function oprStandIns(r: AuthorityResult): SiteResult[] {
+  return authoritySource(r) === 'ahrefs' ? allSites(r).filter((s) => s.proof && authorityFrom(s, r) === 'opr') : []
 }
 
 /** 2.8 · 9 · 14 (one decimal under 10, whole numbers above). */
