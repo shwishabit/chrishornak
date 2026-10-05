@@ -525,7 +525,8 @@ export function shareQuery(you: string, rivals: string[]): string {
 /* ── First 3 moves ──────────────────────────────────────────────────────── */
 
 export interface Move {
-  id: ProofId
+  /** The check, or 'links' for link strength (the Domain Rating row has no check of its own). */
+  id: ProofId | 'links'
   title: string
   body: string
   /** Who shows it, e.g. "rival-a.com and rival-b.com show this". null on a solo check. */
@@ -533,6 +534,8 @@ export interface Move {
   /** The most points it can add ("+15 points"; graded checks read "up to +10"). */
   points: number
   graded: boolean
+  /** missing = a check you don't pass · upgrade = one you pass for part of its points. */
+  kind: 'missing' | 'upgrade'
 }
 
 /** Checks that can earn less than full points (see pointsFor). */
@@ -568,7 +571,90 @@ export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
             : `${joinNames(have)} ${have.length === 1 ? 'shows' : 'show'} this`,
       points: c.points,
       graded: GRADED.has(c.id),
+      kind: 'missing' as const,
     }))
+}
+
+/**
+ * Points you have part of: link strength under its top band, a track record of one sign,
+ * fewer than 3 review profiles, one place that features you (Chris, 2026-10-05: a site that
+ * passes every check but scores 95 still needs to know how to reach 100). Each gain is the
+ * next step's exact points, never a guess.
+ */
+export function upgrades(r: AuthorityResult): Move[] {
+  const s = r.you
+  if (!s.proof) return []
+  const out: Move[] = []
+  const up = (id: Move['id'], points: number, title: string, body: string) =>
+    points > 0 && out.push({ id, title, body, who: null, points, graded: false, kind: 'upgrade' })
+
+  const a = authorityOf(s, r)
+  if (a !== null) {
+    const pts = authorityPoints(a)
+    const next = [...LINK_BANDS].reverse().find((b) => b.from > a)
+    const top = LINK_BANDS[0]
+    const src = authorityFrom(s, r) === 'ahrefs' ? 'DR' : 'OPR'
+    if (next)
+      up(
+        'links',
+        next.points - pts,
+        'Earn more links',
+        // Chris, 2026-10-05: name the strategy (digital PR, link-worthy content), not just "get links".
+        `Two ways that work: pitch a story to local news or trade sites (digital PR), and publish something others want to cite, like your own price survey, local data or a free guide. At ${src} ${next.from} you earn ${next.points - pts} more points${next.from < top.from ? `; ${src} ${top.from} earns all ${top.points}` : ''}. It takes months.`,
+      )
+  }
+  // Each card says what we found, then one concrete thing to add (Chris, 2026-10-05: "vague").
+  // Examples name only sites the rules count (review-signals.ts, standing-signals.ts).
+  const ev = (id: ProofId) => (s.evidence?.[id] ?? '').replace(/^(?:a )?links? to /i, '').replace(/^found /i, '')
+  if (s.proof.includes('track') && s.trackLevel !== 2) {
+    const found = ev('track')
+    const hasYears = /\bsince\b|\bestablished\b|\bfounded\b|\best\.|\byears?\b|\b(?:19|20)\d\d\b/i.test(found)
+    up(
+      'track',
+      PROOF_CHECKS.find((c) => c.id === 'track')!.points - 6,
+      hasYears ? 'Add a count next to your years' : 'Add the year you started',
+      `${found ? `We found ${found}. ` : ''}${
+        hasYears ? 'Put how many jobs or clients next to it' : 'Put the year you started next to it'
+      }, like “Since 2009 · over 400 roofs replaced.” Years plus a count earns full points.`,
+    )
+  }
+  if (s.proof.includes('reviewSites')) {
+    const n = Math.min(Math.max(s.reviewSiteCount ?? 1, 1), 3)
+    const found = ev('reviewSites')
+    const ideas = ['Yelp', 'BBB', 'Trustpilot'].filter((x) => !new RegExp(`\\b${x}\\b`, 'i').test(found)).slice(0, 2)
+    up(
+      'reviewSites',
+      5 - [0, 2, 4, 5][n],
+      'Link one more review site',
+      `${found ? `You link to ${found}. ` : ''}Add a link to one more site where customers review you, like your ${ideas.join(' or ')} page, next to the others in your footer. Houzz, Angi, Avvo, Healthgrades, Clutch and G2 count too.`,
+    )
+  }
+  if (s.proof.includes('seen') && (s.seenCount ?? 1) < 2) {
+    const found = ev('seen')
+    const ideas = [
+      /linkedin/i.test(found) ? null : 'your LinkedIn company page',
+      'your chamber of commerce listing',
+      'a news story or podcast episode about you',
+    ].filter(Boolean)
+    up(
+      'seen',
+      PROOF_CHECKS.find((c) => c.id === 'seen')!.points - 2,
+      'Link one more place that lists you',
+      `${found ? `You link to ${found}. ` : ''}Add a link to one more, like ${ideas.slice(0, -1).join(', ')} or ${ideas[ideas.length - 1]}. Put it on your About page or in your footer.`,
+    )
+  }
+  return out
+}
+
+/**
+ * Your next moves: the checks you miss (most rivals first, then points), then the points you
+ * have part of. Alone, everything is sorted by points, a missing check first on a tie.
+ */
+export function nextMoves(r: AuthorityResult, limit = 3): Move[] {
+  const missing = firstMoves(r, PROOF_CHECKS.length)
+  const ups = upgrades(r).sort((a, b) => b.points - a.points)
+  const all = r.rivals.length === 0 ? [...missing, ...ups].sort((a, b) => b.points - a.points) : [...missing, ...ups]
+  return all.slice(0, limit)
 }
 
 /** A rival's report card: the scored checks it passes and you don't, most points first. */

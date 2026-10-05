@@ -20,6 +20,7 @@ import {
   beatsYou,
   checksIn,
   firstMoves,
+  nextMoves,
   fmtAuthority,
   isGap,
   level,
@@ -1258,14 +1259,20 @@ function LinkWords({ a, you, src }: { a: number; you: boolean; src: 'DR' | 'OPR'
   )
 }
 
-/** Your card: the first 3 fixes, each with the points it adds. */
+/**
+ * Your card: the first 3 moves, each with the points it adds: checks you miss, then points you
+ * have part of (link strength, a stronger track record, more review profiles, one more place
+ * that features you). With nothing missing, the heading says how to reach 100.
+ */
 function Fixes({ r }: { r: AuthorityResult }) {
-  const moves = firstMoves(r)
-  const title = moves.length === 3 ? 'Your first 3 fixes' : moves.length === 1 ? 'Your first fix' : 'Your first fixes'
+  const moves = nextMoves(r)
+  const anyMissing = moves.some((m) => m.kind === 'missing')
+  const count = moves.length === 3 ? 'Your first 3 fixes' : moves.length === 1 ? 'Your first fix' : 'Your first fixes'
+  const title = anyMissing ? count : 'How to reach 100'
   if (moves.length === 0)
     return (
       <div className="rounded-xl border border-line-strong p-[18px]">
-        <p className="m-0 font-heading text-[17px] font-bold">Your site shows every check we read.</p>
+        <p className="m-0 font-heading text-[17px] font-bold">Your site shows every check we read, with full points.</p>
         <p className="m-0 mt-2 text-[15px] text-body-soft">
           For the full list,{' '}
           <a href="/audit" className="text-primary underline underline-offset-[3px]">
@@ -1284,7 +1291,7 @@ function Fixes({ r }: { r: AuthorityResult }) {
             <span className="flex items-baseline justify-between gap-2">
               <span className="font-heading text-[13px] font-semibold text-muted-foreground">{i + 1}</span>
               <span className="font-heading text-[15px] font-bold whitespace-nowrap text-primary">
-                {upTo(m.points, m.graded)} points
+                {upTo(m.points, m.graded)} {m.points === 1 && !m.graded ? 'point' : 'points'}
               </span>
             </span>
             <b className="font-heading text-[16px] leading-snug">{m.title}</b>
