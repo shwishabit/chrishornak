@@ -338,7 +338,7 @@
    "credentials": true,
    "trade": true,
    "about": true,
-   "address": false,
+   "address": true,
    "reviews": true,
    "reviewSites": false,
    "https": true,
@@ -353,7 +353,7 @@
    "credentials": "\"12 Stevie 5 Inc 5000 3 Fortune\" awards; Google Premier Partner badge",
    "trade": "\"Full-Service Digital Marketing Performance Growth Agency\"",
    "about": "https://hawkemedia.com/about-us/",
-   "address": "CLOSE CALL false: phone +13104517295 only in JSON-LD; no visible phone or street address (only city names LA/NY/Chicago)",
+   "address": "Contact page (/contact/) shows (310) 451-7295 (rule since 2026-10-05: homepage or contact page)",
    "reviews": "5 quoted client testimonials, e.g. \"Hawke did a stellar job identifying our lowest hanging fruit\"",
    "reviewSites": "CLOSE CALL false: only Google Partners and Microsoft partner directory profile links, not review sites; sameAs social only [count 0: trustpilot logo image only, no link]",
    "https": "https://hawkemedia.com/",
@@ -1552,7 +1552,7 @@
    "credentials": true,
    "trade": true,
    "about": true,
-   "address": false,
+   "address": true,
    "reviews": true,
    "reviewSites": true,
    "https": true,
@@ -1567,7 +1567,7 @@
    "credentials": "Images titled Fearless Awards, Junebug Weddings hotlist, Best Asheville Wedding Photographer, The Knot",
    "trade": "\"Asheville Wedding Photographer\"; elopement and wedding photography",
    "about": "Link /about-shelley-hartman-asheville-wedding-elopement-photographer/",
-   "address": "Only zip 28804 and email; no phone or street address",
+   "address": "Contact page shows 630-373-3001 (rule since 2026-10-05: homepage or contact page)",
    "reviews": "\"Shelley, YOU ARE AMAZING! These photos are breathtaking\" - Erica; /reviews page testimonials",
    "reviewSites": "Link weddingwire.com/reviews/hartman-outdoor-photography-raleigh/... (own WeddingWire reviews profile) [count 1: weddingwire.com/reviews/hartman-outdoor-photography-raleigh/... (plus a bare weddingwire.com link)]",
    "https": "final URL https://www.hartmanoutdoorphotography.com/",
@@ -1585,7 +1585,7 @@
    "credentials": true,
    "trade": true,
    "about": true,
-   "address": false,
+   "address": true,
    "reviews": true,
    "reviewSites": false,
    "https": true,
@@ -1600,7 +1600,7 @@
    "credentials": "\"Twelve years in\" business; licensed drone coverage; 'as seen on' press logos (Southern Living)",
    "trade": "\"Asheville Wedding Photographer\"",
    "about": "Link /about-the-artist/",
-   "address": "Close call: phone only as malformed href 'http://8287122457' on 'by phone', number not visible and not tel:; email obfuscated",
+   "address": "Contact page shows 41 N Merrimon Avenue #107 (rule since 2026-10-05: homepage or contact page)",
    "reviews": "\"Our experience with Kathy was amazing... 5 stars is not enough!\" - Marguerite M",
    "reviewSites": "No Google/Yelp/WeddingWire links; Facebook/Instagram only [count 0: testimonials unlinked; no review-platform links]",
    "https": "final URL https://kathybeaverphotography.com/",
@@ -2433,7 +2433,7 @@
    "credentials": false,
    "trade": true,
    "about": true,
-   "address": false,
+   "address": true,
    "reviews": false,
    "reviewSites": false,
    "https": true,
@@ -2448,7 +2448,7 @@
    "credentials": "About page: In 1994 Fady and his wife Sally opened the first Aladdin's Eatery (founding year) -> no since 2026-10-02: years in business count only in Track record",
    "trade": "gift card text: 'Lebanese-American cuisine'; Menu, Catering, Order Now",
    "about": "link https://aladdins.com/about-us/ | About",
-   "address": "close call: no phone or street address on page; locations are behind a Locations link",
+   "address": "Contact page shows (216) 226-2020 (rule since 2026-10-05: homepage or contact page)",
    "reviews": "no reviews, stars or widget",
    "reviewSites": "only Facebook, Twitter, Instagram links [count 0: no review platform links]",
    "https": "https://aladdins.com/",
@@ -2642,6 +2642,17 @@
    "track": "close call false: \"years of experience\" with no number; no counts",
    "focus": "links /attic-conversions, /bathroom-remodeling, /kitchen-remodeling, /home-additions, /deck-construction, /tile-installation and more",
    "seen": "0 place(s): only facebook and instagram (also sameAs)"
+  }
+ },
+ "monexglobal.com": {
+  "group": "reported",
+  "expect": {
+   "people": true,
+   "address": true
+  },
+  "why": {
+   "people": "Team page /about/analyst-team names analysts (not linked from home or About; in the sitemap). Reported by Chris 2026-10-05",
+   "address": "Contact page /contact lists phones and office addresses. Reported by Chris 2026-10-05"
   }
  }
 }

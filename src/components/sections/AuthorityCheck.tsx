@@ -340,7 +340,7 @@ function Hero({
             </p>
           )}
           <p id="ac-hint" className="mt-3 max-w-[62ch] text-[13px] text-muted-foreground">
-            It reads each homepage once (plus its About and reviews pages when it needs them) and looks up each site&apos;s authority score.
+            It reads each homepage once (plus its About, contact, reviews and team pages when it needs them) and looks up each site&apos;s authority score.
           </p>
         </div>
         <section
@@ -1707,7 +1707,7 @@ const CHECK_ETA = 15
 const CHECK_STEPS = [
   { at: 0, text: 'Reading each homepage' },
   { at: 2, text: 'Looking up link strength' },
-  { at: 4, text: 'Reading About and reviews pages' },
+  { at: 4, text: 'Reading About, contact and team pages' },
   { at: 7, text: 'Checking public records' },
   { at: 10, text: 'Scoring and ranking' },
 ]

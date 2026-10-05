@@ -62,8 +62,9 @@ export default function PrivacyPage() {
               <p>
                 If you use the Authority Check, the sites you enter (yours and up to three
                 rivals) are sent to a server I operate, which reads each site&apos;s homepage
-                once, and sometimes its About page, its reviews page and up to two Google short
-                links it points to. The domains are also sent to two third-party services to get
+                once, and sometimes its About page, its contact page, its reviews page, its
+                sitemap and one team page listed there, and up to two Google short links it
+                points to. The domains are also sent to two third-party services to get
                 their link scores: Ahrefs (ahrefs.com), for Domain Rating, and Open PageRank
                 (openpagerank.keywordseverywhere.com); and to two public records: RDAP (rdap.org),
                 for when each domain was registered, and Wikidata (wikidata.org). Your IP address

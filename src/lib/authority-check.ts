@@ -172,7 +172,7 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     label: 'How to reach you',
     signal: 'hasAddressInfo',
     points: 13,
-    move: { title: 'Show how to reach you', body: 'Put your phone number or street address on the homepage.' },
+    move: { title: 'Show how to reach you', body: 'Put your phone number or street address on your homepage or contact page.' },
   },
   {
     id: 'about',
