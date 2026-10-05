@@ -60,6 +60,7 @@ export type ProofId =
   | 'name'
   | 'age'
   | 'wikidata'
+  | 'updated'
 export type Letter = 'experience' | 'expertise' | 'authority' | 'trust'
 export type ProofGroup = Letter
 
@@ -239,7 +240,34 @@ export const SHOWN_CHECKS: readonly ShownCheck[] = [
     label: 'Known entity (Wikidata)',
     note: 'A Wikidata entry that names your site. Most small businesses don’t have one, so it can only add.',
   },
+  {
+    // SEO panel round 2 (Shepard, Shaw, Fishkin: shown only; King: CMSs stamp every page with
+    // today's date). Built 2026-10-05 at Chris's ask. ✓ = a real date in the last 2 months (Chris).
+    id: 'updated',
+    label: 'Recently updated',
+    note: 'A page date in your sitemap from the last 2 months. Not scored: many sites stamp every page with today’s date.',
+  },
 ]
+
+/** A ✓ for "Recently updated": the newest sitemap date is this recent (2 months, Chris 2026-10-05). */
+export const FRESH_DAYS = 61
+
+/** The site's newest trusted date (freshness.ts readFreshness). */
+export interface Updated {
+  /** YYYY-MM-DD from the blog feed's newest post, or a sitemap date its page confirms. null = none. */
+  newest: string | null
+  /** The post or page with that date. */
+  path?: string
+  source?: 'feed' | 'page'
+  /**
+   * With no date: none = no sitemap or feed found · no-dates = the sitemap has no dates ·
+   * stamped = most pages share one date · unconfirmed = the newest page shows no matching date.
+   */
+  why?: 'none' | 'no-dates' | 'stamped' | 'unconfirmed'
+  /** unconfirmed: what the sitemap said. */
+  claimed?: string
+  claimedPath?: string
+}
 
 export interface LetterInfo {
   id: Letter
@@ -282,6 +310,8 @@ export interface SiteResult {
   evidence?: Partial<Record<ProofId, string>>
   /** Why a rival's homepage could not be read, in a few words. */
   pageError?: string
+  /** The sitemap's newest date (shown only). Missing when there's no sitemap. */
+  updated?: Updated
 }
 
 /** ok = scores came back · busy = the source said 429 · unavailable = anything else. */

@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import {
+  FRESH_DAYS,
   LETTERS,
   LINK_BANDS,
   LINK_POINTS,
@@ -1077,7 +1078,6 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
     ? PROOF_CHECKS.filter((c) => site.proof!.includes(c.id)).sort((x, y) => pointsFor(y, site) - pointsFor(x, site))
     : []
   const missing = s ? PROOF_CHECKS.filter((c) => !site.proof!.includes(c.id)).sort((x, y) => y.points - x.points) : []
-  const good = SHOWN_CHECKS.filter((c) => site.proof?.includes(c.id))
   const tone = s ? level(s.overall, 100) : null
   const h3 = 'm-0 font-heading text-[17px] font-bold'
   const li = 'grid grid-cols-[22px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-border py-2.5 first:border-t-0'
@@ -1217,18 +1217,79 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </p>
       </div>
 
-      {good.length > 0 && (
-        <p className="m-0 text-sm text-muted-foreground">
-          <b className="font-semibold text-body-soft">Good to know (not scored):</b>{' '}
-          {good.map((c, i) => (
-            <Fragment key={c.id}>
-              {i > 0 && ' · '}
-              {c.label}: {site.evidence?.[c.id] ?? 'yes'}
-            </Fragment>
-          ))}
-        </p>
+      {s && isYou && <FreshTip site={site} checkedAt={r.checkedAt} />}
+
+      {s && (
+        <section aria-label="Good to know, not scored" className="grid gap-2 border-t border-border pt-5">
+          <h3 className={h3}>
+            Good to know{' '}
+            <span className="ml-1 font-sans text-sm font-medium text-muted-foreground">not scored</span>
+          </h3>
+          <ul className="m-0 grid list-none p-0 md:grid-cols-2 md:gap-x-7">
+            {SHOWN_CHECKS.map((c) => {
+              const yes = site.proof!.includes(c.id)
+              const said = c.id === 'updated' && !yes ? updatedWords(site.updated) : null
+              return (
+                <li key={c.id} className="grid grid-cols-[22px_minmax(0,1fr)] items-baseline gap-2 border-t border-border py-2.5 md:[&:nth-child(2)]:border-t-0 first:border-t-0">
+                  <span className={yes ? 'ac-yes font-semibold' : 'text-muted-foreground'} aria-label={yes ? 'yes' : 'no'}>
+                    {yes ? '✓' : '–'}
+                  </span>
+                  <span className="min-w-0 text-[15px]">
+                    {c.label}
+                    <small className="block text-[13px] text-muted-foreground [overflow-wrap:anywhere]">
+                      {yes ? (site.evidence?.[c.id] ?? 'Found') : (said ?? c.note)}
+                    </small>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       )}
     </article>
+  )
+}
+
+const fmtDay = (day: string) =>
+  new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+
+/** Why "Recently updated" has no ✓, in plain words. */
+function updatedWords(u: SiteResult['updated']): string {
+  const where = (p?: string) => (p && p !== '/' ? ` (${p.slice(0, 50)})` : '')
+  if (u?.newest)
+    return `${u.source === 'feed' ? 'Newest post in your blog feed' : 'Newest page your sitemap and the page agree on'}: ${fmtDay(u.newest)}${where(u.path)}. Not scored.`
+  switch (u?.why) {
+    case 'unconfirmed':
+      return `Your sitemap says ${u.claimedPath && u.claimedPath !== '/' ? u.claimedPath.slice(0, 50) : 'your newest page'} changed on ${u.claimed ? fmtDay(u.claimed) : 'a recent date'}, but the page shows no date to confirm it, and we found no blog feed. Not scored.`
+    case 'stamped':
+      return 'Most pages in your sitemap share one date, likely set by your website software, and we found no blog feed, so we can’t tell. Not scored.'
+    case 'no-dates':
+      return 'Your sitemap has no page dates and we found no blog feed, so we can’t tell. Not scored.'
+    default:
+      return 'We found no sitemap or blog feed, so we can’t tell. Not scored.'
+  }
+}
+
+/**
+ * Your card: when the newest real sitemap date is over 2 months old (FRESH_DAYS), one tip to freshen the
+ * site (Chris, 2026-10-05). Not points: freshness is shown only (SEO panel).
+ */
+function FreshTip({ site, checkedAt }: { site: SiteResult; checkedAt: string }) {
+  const u = site.updated
+  if (!u?.newest) return null
+  const days = (Date.parse(checkedAt) - Date.parse(u.newest)) / 86_400_000
+  if (days <= FRESH_DAYS) return null
+  const months = Math.floor(days / 30.44)
+  return (
+    <aside aria-label="Keep your site fresh" className="grid gap-1.5 rounded-xl border border-dashed border-line-strong p-4">
+      <b className="font-heading text-[16px]">Keep your site fresh</b>
+      <p className="m-0 text-[15px] text-body-soft">
+        {u.source === 'feed' ? 'Your newest blog post is from' : 'Your newest updated page is from'} {fmtDay(u.newest)},{' '}
+        {months} months ago. Update one older page with new
+        prices, photos or recent jobs, or publish a new article that answers a question your customers ask. A site
+        with recent work on it looks open for business. This doesn&apos;t change your score.
+      </p>
+    </aside>
   )
 }
 

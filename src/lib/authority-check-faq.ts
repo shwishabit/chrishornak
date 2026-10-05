@@ -72,7 +72,7 @@ export const AUTHORITY_FAQ: FaqItem[] = [
     id: 'data',
     q: 'Where does the data come from?',
     a: [
-      'We read each homepage once. When the homepage doesn’t show enough, we also read its About page, reviews page and contact page, and look in its sitemap for one team page. Expertise and most Trust checks use the same rules as the Findability Check.',
+      'We read each homepage once. When the homepage doesn’t show enough, we also read its About page, reviews page and contact page, and look in its sitemap for one team page. For “Recently updated” (shown, not scored) we read the blog feed and the sitemap named in robots.txt; a sitemap date counts only when the page itself shows the same date. Expertise and most Trust checks use the same rules as the Findability Check.',
       'Link strength is the Domain Rating by Ahrefs. When Ahrefs is busy, we use Open PageRank instead, built from Common Crawl’s map of the web.',
     ],
     links: [

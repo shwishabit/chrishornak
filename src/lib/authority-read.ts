@@ -9,8 +9,9 @@ import { resolveAndCheck, safeFetch, USER_AGENT, type FetchResult } from './fetc
 import { readReviewSignals, readReviewsPage, reviewSiteOf, reviewSitesEvidence, type ReviewRead } from './review-signals'
 import { readExperienceSignals } from './experience-signals'
 import { anchors, extractText, findAboutPage, findJsonLdBlocks, isHttpsUrl, readProofEvidence, readProofSignals } from './proof-signals'
-import { PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult } from './authority-check'
+import { FRESH_DAYS, PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult, type Updated } from './authority-check'
 import { findOfferPages, findSeenElsewhere } from './standing-signals'
+import { readFreshness, resolveSitemap, startFreshness } from './freshness'
 
 export const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 
@@ -19,6 +20,8 @@ const REVIEWS_PAGE_TIMEOUT = 5_000
 const SHORT_LINK_TIMEOUT = 3_000
 // The sitemap's follow-up reads run one after another, so each gets less time.
 const SITEMAP_TIMEOUT = 3_000
+// No new read starts after this long (homepage ~8 s + 13 s + one last 3 s read < 25 s maxDuration).
+const EXTRA_READS_BUDGET = 13_000
 
 /** The extra reads one check may make after the homepage. */
 export interface Reader {
@@ -84,6 +87,8 @@ export function readProof(
   trackLevel: 0 | 1 | 2
   reviewSiteCount: number
   seen: string[]
+  /** Set by readSite from the sitemap (shown only). */
+  updated?: Updated
 } {
   const text = extractText(html)
   const blocks = findJsonLdBlocks(html)
@@ -304,6 +309,22 @@ async function readTeamPage(first: FetchResult | null, reader: Reader): Promise<
   return ok(page) ? page : null
 }
 
+/* ── Recently updated (shown only): see freshness.ts ──────────────────── */
+
+/** Adds the "Recently updated" row when the site's newest trusted date is recent (FRESH_DAYS). */
+function addUpdated(read: Read, updated: Updated, now: number): void {
+  read.updated = updated
+  if (!updated.newest) return
+  const days = (now - Date.parse(updated.newest)) / 86_400_000
+  if (days > FRESH_DAYS) return
+  const when = new Date(updated.newest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+  const where = updated.path && updated.path !== '/' ? ` (${updated.path.slice(0, 50)})` : ''
+  read.proof.push('updated')
+  read.evidence.updated =
+    updated.source === 'feed' ? `Newest post in your blog feed: ${when}${where}` : `Your sitemap and the page agree: updated ${when}${where}`
+  reorder(read)
+}
+
 function addFromTeam(read: Read, team: FetchResult): void {
   const html = team.body
   const blocks = findJsonLdBlocks(html)
@@ -318,30 +339,31 @@ function addFromTeam(read: Read, team: FetchResult): void {
  * contact page, sitemap), then the checks. The first round runs side by side; the sitemap's
  * team page is read only when neither the homepage nor the About page named anyone.
  */
-export async function readSite(page: FetchResult, reader: Reader = liveReader) {
+export async function readSite(page: FetchResult, reader: Reader = liveReader, now = Date.now()) {
+  // Later reads only start inside this budget, so a check stays inside the route's 25 s.
+  const deadline = Date.now() + EXTRA_READS_BUDGET
   const html = page.body
   const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
   const missing = !home.hasPeople || !home.hasLicences || !readExperienceSignals(html, page.finalUrl).trackRecord
   const aboutUrl = missing ? findAboutPage(html, page.finalUrl) : null
   const contactUrl = home.hasAddressInfo ? null : findContactPage(html, page.finalUrl)
-  let sitemapUrl: string | null = null
-  if (!home.hasPeople) {
-    try {
-      sitemapUrl = new URL('/sitemap.xml', page.finalUrl).toString()
-    } catch {}
-  }
-  const [rep, about, contact, sitemap] = await Promise.all([
+  // robots.txt, /sitemap.xml and the blog feed start now, beside the other first-round reads.
+  const fresh = startFreshness(page, reader)
+  const [rep, about, contact] = await Promise.all([
     readReputation(readReviewSignals(html, page.finalUrl), reader),
     aboutUrl ? reader.page(aboutUrl) : null,
     contactUrl ? reader.page(contactUrl) : null,
-    sitemapUrl ? reader.page(sitemapUrl, SITEMAP_TIMEOUT) : null,
   ])
   const read = readProof(html, page.finalUrl, rep)
   if (ok(about)) addFromAbout(read, about)
   if (ok(contact)) addFromContact(read, contact)
-  if (!read.proof.includes('people')) {
-    const team = await readTeamPage(sitemap, reader)
-    if (team) addFromTeam(read, team)
-  }
+  // The sitemap serves both the team page (when nobody is named) and Recently updated.
+  const sitemap = await resolveSitemap(page, fresh, reader, deadline)
+  const [team, updated] = await Promise.all([
+    !read.proof.includes('people') && Date.now() <= deadline ? readTeamPage(sitemap, reader) : null,
+    readFreshness(sitemap, fresh, reader, now, deadline),
+  ])
+  if (team) addFromTeam(read, team)
+  addUpdated(read, updated, now)
   return read
 }

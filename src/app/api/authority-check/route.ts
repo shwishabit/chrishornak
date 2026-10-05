@@ -218,6 +218,7 @@ async function readSites(sites: SiteInput[]) {
       ...(read?.reviewSiteCount ? { reviewSiteCount: read.reviewSiteCount } : {}),
       ...(read?.seen.length ? { seenCount: read.seen.length } : {}),
       ...(read ? { evidence: read.evidence } : {}),
+      ...(read?.updated ? { updated: read.updated } : {}),
       ...(err ? { pageError: err } : {}),
     }
   })
