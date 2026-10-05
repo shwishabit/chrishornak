@@ -6,6 +6,7 @@ import { AuthorityCheck } from '@/components/sections/AuthorityCheck'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { siteConfig } from '@/lib/data'
 import { AUTHORITY_CHECK_EXAMPLE } from '@/lib/authority-check-example'
+import { AUTHORITY_FAQ } from '@/lib/authority-check-faq'
 
 // Not "Domain Authority Checker": that is Moz's product name, and the tool doesn't show it (SEO
 // panel, 6 of 6, 2026-10-02). The description still says it, so the search phrase stays. og:title asks the question.
@@ -70,6 +71,18 @@ export default function AuthorityCheckPage() {
             isAccessibleForFree: true,
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
             author: { '@type': 'Person', name: 'Chris Hornak', url: siteConfig.domain },
+          }}
+        />
+        {/* The same questions and answers as the "Questions" list at the end of the page. */}
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: AUTHORITY_FAQ.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a.join(' ') },
+            })),
           }}
         />
         {/* The 15-minute call's Cal.com pop-up. Same idempotent loader as

@@ -38,6 +38,7 @@ import {
   type SiteResult,
   type Standing,
 } from '@/lib/authority-check'
+import { AUTHORITY_FAQ, FAQ_LEAD } from '@/lib/authority-check-faq'
 import { ToolQuestions } from './ToolQuestions'
 import { toolEnding } from '@/lib/data'
 import { useTheme } from '@/components/ui/ThemeToggle'
@@ -1585,94 +1586,65 @@ function Grow() {
   )
 }
 
-/* ── What this can't see: so the score isn't read as a ranking (SEO panel, 6 of 6; the AI
- * wording is the line all six would sign, rounds 3 and 5). The panel put it under the table;
- * Chris moved it near the bottom, above how we score (2026-10-05). ─── */
+/* ── Questions (end of the page): one open/close list in place of the old "What this can't
+ * see" box and "Based on Google's public guidance" (Chris, 2026-10-05). The one line the SEO
+ * panel wanted seen (6 of 6) stays above the list, never folded away. Text and FAQPage schema
+ * share lib/authority-check-faq.ts. Native <details>: no script, the answers stay in the HTML
+ * for search and AI tools, and every answer opens before printing. ─── */
 
-function CantSee({ solo = false }: { solo?: boolean }) {
+function Questions({ asOf, src }: { asOf: string | null; src: ReturnType<typeof authoritySource> }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const openAll = () => ref.current?.querySelectorAll('details').forEach((d) => (d.open = true))
+    window.addEventListener('beforeprint', openAll)
+    return () => window.removeEventListener('beforeprint', openAll)
+  }, [])
   return (
-    <section aria-labelledby="ac-cant" className="grid gap-2 rounded-xl border border-dashed border-line-strong px-4 py-3.5 text-sm">
-      <h2 id="ac-cant" className="m-0 font-heading text-[15px] font-bold">
-        What this can&apos;t see
+    <section aria-labelledby="ac-faq" className="grid gap-3.5 border-t border-border pt-10">
+      <h2 id="ac-faq" className="m-0 font-heading text-[22px] font-bold">
+        Questions
       </h2>
-      <p className="m-0 max-w-[75ch] text-body-soft">
-        This checks what your website shows{solo ? '' : ', next to the rivals you pick'}. It can&apos;t see your Google Business
-        Profile, how close you are to the person searching, your Google rating, how many reviews you have and how
-        recent they are, or whether visitors stay on your site. Those drive Google Maps more than anything here, so a
-        rival can beat you in Maps with a weaker website.
-      </p>
-      <p className="m-0 max-w-[75ch] text-body-soft">
-        No AI tool publishes how it picks the businesses it mentions, and its answers change from one ask to the next.
-        So no score, ours included, can tell you whether ChatGPT, Gemini or Google&apos;s AI answers will name you. This
-        is our score, not Google&apos;s, and it doesn&apos;t predict rankings.
-      </p>
-    </section>
-  )
-}
-
-/* ── How we score (end of the page). Wording kept legal-safe: our own
- * score, Google quoted, never "Google's score" (backlog.md, 2026-10-01). ─── */
-
-const GOOGLE_HELPFUL = 'https://developers.google.com/search/docs/fundamentals/creating-helpful-content'
-
-function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof authoritySource> }) {
-  return (
-    <section aria-labelledby="ac-hs" className="grid gap-3.5 border-t border-border pt-10">
-      <h2 id="ac-hs" className="m-0 font-heading text-[22px] font-bold">
-        Based on Google&apos;s public guidance
-      </h2>
-      <p className="m-0 max-w-[70ch] text-body-soft">
-        Google calls it E-E-A-T: &ldquo;experience, expertise, authoritativeness, and trustworthiness.&rdquo; Google also
-        says &ldquo;E-E-A-T itself isn&apos;t a specific ranking factor.&rdquo; So this is our own score, built from the
-        parts a website can show. Trust counts double, because Google says:
-      </p>
-      <blockquote className="m-0 max-w-[70ch] border-l-[3px] border-line-strong pl-3.5 text-body-soft">
-        &ldquo;Of these aspects, trust is most important. The others contribute to trust.&rdquo;
-      </blockquote>
-      <div className="grid gap-1.5 text-[13px] text-muted-foreground">
-        <p className="m-0">
-          Quotes: Google Search Central,{' '}
-          <a href={GOOGLE_HELPFUL} target="_blank" rel="noopener" className="underline underline-offset-2">
-            Creating helpful, reliable, people-first content
-          </a>
-          . Not made, checked or endorsed by Google. Google does not give sites an E-E-A-T score.
-        </p>
-        <p className="m-0">
-          Experience 20, Expertise 20, Authority 20, Trust 40, from 11 checks. Experience: your work shown 10, a
-          track record 6, or 10 when it is strong (20+ years, or years plus a client count). Expertise: real people 8,
-          credentials 6, a page for each offer 6. Authority: link strength up to {LINK_POINTS} (Domain Rating{' '}
-          {[...LINK_BANDS]
-            .reverse()
-            .filter((b) => b.points > 0)
-            .map((b) => `${b.from} gets ${b.points}`)
-            .join(', ')}
-          ), review spread up to 5 (1 review site 2, 2 sites 4, 3 or more 5) and seen elsewhere up to 4. Trust:
-          reviews on your site 15, how to reach you 13, About page 8, secure site 4. 70 and up overall is strong, 40
-          to 69 is fair, under 40 needs work. Totals less than {OVERALL_TIE} points apart read as about the same, and
-          Domain Ratings less than {TIE_GAP} apart count as a tie. A site checked alone gets each part coloured as a
-          share of that part&apos;s points. &ldquo;Good to know&rdquo; rows are shown, never scored.
-        </p>
-        <p className="m-0">
-          We read each homepage once, plus its About page and reviews page when the homepage doesn&apos;t show enough. Expertise and most Trust checks use the same rules as{' '}
-          <a href="/audit" className="text-primary underline underline-offset-[3px]">
-            the Findability Check
-          </a>
-          . Track record means 5 or more years in practice, or a count of 20 or more clients or jobs. Testimonials and review counts count once, under Reviews on your site.
-        </p>
-        <p className="m-0">
-          Authority:{' '}
-          {src === 'opr' ? (
-            <>Open PageRank (Ahrefs was busy), built from Common Crawl&apos;s map of the web{asOf && `, as of ${asOf}`}.</>
-          ) : (
-            <>
-              Domain Rating by{' '}
-              <a href="https://ahrefs.com/" target="_blank" rel="noopener" className="underline underline-offset-2">
-                Ahrefs
-              </a>
-              . When Ahrefs is busy, we use Open PageRank instead.
-            </>
-          )}
-        </p>
+      <p className="m-0 max-w-[70ch] text-body-soft">{FAQ_LEAD}</p>
+      <div ref={ref} className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
+        {AUTHORITY_FAQ.map((f) => (
+          <details key={f.id} className="group border-t border-border first:border-t-0">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 font-heading text-[16px] font-semibold hover:bg-muted sm:px-5 [&::-webkit-details-marker]:hidden">
+              {f.q}
+              <span
+                aria-hidden="true"
+                className="flex-none text-xl leading-none font-normal text-muted-foreground transition-transform duration-150 group-open:rotate-45 motion-reduce:transition-none"
+              >
+                +
+              </span>
+            </summary>
+            <div className="grid max-w-[75ch] gap-2.5 px-4 pb-5 text-[15px] text-body-soft sm:px-5">
+              {f.a.map((p) => (
+                <p key={p} className="m-0">
+                  {p}
+                </p>
+              ))}
+              {f.id === 'data' && src === 'opr' && (
+                <p className="m-0">
+                  For this check Ahrefs was busy, so link strength uses Open PageRank{asOf ? `, as of ${asOf}` : ''}.
+                </p>
+              )}
+              {f.links && (
+                <p className="m-0 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+                  {f.links.map((l) => (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      {...(l.href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}
+                      className="underline underline-offset-2 hover:text-foreground"
+                    >
+                      {l.label}
+                    </a>
+                  ))}
+                </p>
+              )}
+            </div>
+          </details>
+        ))}
       </div>
     </section>
   )
@@ -2011,8 +1983,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
           <div className="ac-noprint">
             <ToolQuestions current="/authority-check" />
           </div>
-          <CantSee solo={solo} />
-          <HowWeScore asOf={(result ?? example).asOf} src={authoritySource(result ?? example)} />
+          <Questions asOf={(result ?? example).asOf} src={authoritySource(result ?? example)} />
         </div>
       </section>
     </div>
