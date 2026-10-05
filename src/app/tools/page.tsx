@@ -31,7 +31,7 @@ const QUESTIONS = [
 const YOU_GET: Record<(typeof toolLinks)[number]['href'], string> = {
   '/audit': 'A score out of 100 across 7 signals, with what to fix first.',
   '/og-image-checker': '8 checks, plus your link drawn in Facebook, LinkedIn, X, a text and Google.',
-  '/authority-check': 'One score out of 100 for you and each rival, ranked, with your first 3 moves.',
+  '/authority-check': 'A report card out of 100 for your site, or you and up to 3 rivals ranked, with your first 3 fixes.',
 }
 
 export const metadata: Metadata = {

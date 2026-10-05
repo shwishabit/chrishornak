@@ -530,7 +530,13 @@ export interface Move {
   body: string
   /** Who shows it, e.g. "rival-a.com and rival-b.com show this". null on a solo check. */
   who: string | null
+  /** The most points it can add ("+15 points"; graded checks read "up to +10"). */
+  points: number
+  graded: boolean
 }
+
+/** Checks that can earn less than full points (see pointsFor). */
+export const GRADED: ReadonlySet<ProofId> = new Set(['track', 'reviewSites', 'seen'])
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
@@ -540,10 +546,12 @@ function joinNames(names: string[]): string {
 
 /**
  * The user's missing checks: the ones most rivals show first, then the ones
- * worth the most points, then table order. Empty when the user shows all.
+ * worth the most points, then table order. Empty when the user shows all, or
+ * when the user's homepage couldn't be read.
  */
 export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
-  const found = new Set(r.you.proof ?? [])
+  if (!r.you.proof) return []
+  const found = new Set(r.you.proof)
   return PROOF_CHECKS.filter((c) => !found.has(c.id))
     .map((c, order) => ({ c, order, have: r.rivals.filter((s) => s.proof?.includes(c.id)).map((s) => s.domain) }))
     .sort((a, b) => b.have.length - a.have.length || b.c.points - a.c.points || a.order - b.order)
@@ -558,7 +566,17 @@ export function firstMoves(r: AuthorityResult, limit = 3): Move[] {
           : have.length === 0
             ? 'No rival shows this yet, so it sets you apart'
             : `${joinNames(have)} ${have.length === 1 ? 'shows' : 'show'} this`,
+      points: c.points,
+      graded: GRADED.has(c.id),
     }))
+}
+
+/** A rival's report card: the scored checks it passes and you don't, most points first. */
+export function beatsYou(r: AuthorityResult, site: SiteResult): { check: ProofCheck; points: number }[] {
+  if (!site.proof || !r.you.proof) return []
+  return PROOF_CHECKS.filter((c) => site.proof!.includes(c.id) && !r.you.proof!.includes(c.id))
+    .map((check) => ({ check, points: pointsFor(check, site) }))
+    .sort((a, b) => b.points - a.points)
 }
 
 /** A check a rival shows and you don't (an amber ✕ in your column). */

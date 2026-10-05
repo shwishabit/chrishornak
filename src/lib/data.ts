@@ -45,7 +45,7 @@ export const toolLinks = [
     label: 'Authority Check',
     question: 'How do you stack up?',
     href: '/authority-check',
-    summary: 'Your site next to up to 3 rivals: one score out of 100 each.',
+    summary: 'Your site’s score out of 100, alone or next to up to 3 rivals.',
   },
 ] as const
 

@@ -9,10 +9,12 @@ import { AUTHORITY_CHECK_EXAMPLE } from '@/lib/authority-check-example'
 
 // Not "Domain Authority Checker": that is Moz's product name, and the tool doesn't show it (SEO
 // panel, 6 of 6, 2026-10-02). The description still says it, so the search phrase stays. og:title asks the question.
-const PAGE_TITLE = 'Free Authority Check: Compare Your Website to Your Rivals'
-const TITLE = 'How do you stack up? Your site next to your rivals.'
+// Two jobs, two equal tabs (Grill Me, 2026-10-05): check one site, or compare it to rivals.
+// Title (Chris, 2026-10-05): the search phrase first, then E-E-A-T for marketers who know it.
+const PAGE_TITLE = 'Free Website Authority & E-E-A-T Checker: Compare Rivals'
+const TITLE = 'How strong is your website? Check it alone, or next to your rivals.'
 const DESCRIPTION =
-  "Free website authority check: compare your link strength, reviews and homepage proof with up to 3 rivals. Not Moz's Domain Authority. No sign-up."
+  "Free website authority check: score your link strength, reviews and proof of expertise, or compare with up to 3 rivals. Not Moz's Domain Authority."
 const OG_ALT =
   "Authority Check card: the headline 'How do you stack up? Your site next to your rivals.' above an example ranking of four sites, with yourshop.com in third place, highlighted in teal."
 const URL = `${siteConfig.domain}/authority-check`

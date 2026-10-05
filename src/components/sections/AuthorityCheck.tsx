@@ -15,7 +15,9 @@ import {
   authorityOf,
   authoritySource,
   oprStandIns,
+  GRADED,
   band,
+  beatsYou,
   checksIn,
   firstMoves,
   fmtAuthority,
@@ -23,7 +25,9 @@ import {
   level,
   ordinal,
   parseSite,
+  pointsFor,
   ranked,
+  scoresOf,
   shareQuery,
   standing,
   summary,
@@ -40,14 +44,26 @@ import { useTheme } from '@/components/ui/ThemeToggle'
 import '@/styles/authority-check.css'
 
 /* ── Authority Check ────────────────────────────────────────────────────────
- * Hero form (Your site vs Rival, up to 3 rivals, or your site alone), then
- * the report: the answer in a sentence, one table (sites sorted 1st → 4th,
- * an overall score out of 100 and one row per E-E-A-T letter, the 12 checks
- * open below, the phrase behind each ✓), the first 3 moves, the 15-minute
- * offer, "How to grow each score", the three questions and how we score.
+ * Hero: two equal tabs, "Check my site" (open first) and "Compare with
+ * rivals" (up to 3). Before a check: a small preview of each. A check of one
+ * site: the answer in a sentence, then its report card (score, 4 parts, what
+ * it does well, what's missing, first 3 fixes with points, link strength),
+ * then "Now add a rival" (checks only the new site). A comparison: one table
+ * (sites sorted 1st → 4th, the 12 checks open below, the phrase behind each
+ * ✓), then a report card for any site you click (a rival's shows where it
+ * beats you). Then the 15-minute offer, "How to grow each score", the three
+ * questions and how we score.
  * Follows the sitewide light / dark theme; prints clean; the URL is the share link.
- * Mock: drafts/authority-check-results-v4-comp.html (round 4, 2026-10-01).
+ * Mocks: drafts/authority-check-results-v4-comp.html (table, 2026-10-01),
+ * drafts/authority-check-report-card-comp.html (tabs + report cards, 2026-10-05).
  * ─────────────────────────────────────────────────────────────────────── */
+
+type Mode = 'solo' | 'compare'
+
+const MODES: { id: Mode; label: string; sub: string }[] = [
+  { id: 'solo', label: 'Check my site', sub: 'One score, what’s missing, your first 3 fixes' },
+  { id: 'compare', label: 'Compare with rivals', sub: `You next to up to ${MAX_RIVALS} rivals, ranked` },
+]
 
 const RIVAL_INPUT_ID = 'ac-r1'
 /** The 11 homepage checks + the Domain Rating row. */
@@ -82,26 +98,31 @@ const INPUT =
   'h-11 w-full min-w-0 bg-transparent pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none'
 
 function Hero({
+  mode,
+  setMode,
   you,
   setYou,
   rivals,
   setRivals,
+  onCheck,
   onCompare,
-  onAlone,
   loading,
   error,
 }: {
+  mode: Mode
+  setMode: (m: Mode) => void
   you: string
   setYou: (v: string) => void
   rivals: string[]
   setRivals: (v: string[]) => void
+  onCheck: () => void
   onCompare: () => void
-  onAlone: () => void
   loading: boolean
   error: string | null
 }) {
   const extraRefs = useRef<(HTMLInputElement | null)[]>([])
   const addRef = useRef<HTMLButtonElement>(null)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [focusNew, setFocusNew] = useState(false)
 
   useEffect(() => {
@@ -111,6 +132,32 @@ function Hero({
   }, [focusNew, rivals.length])
 
   const setRival = (i: number, v: string) => setRivals(rivals.map((r, j) => (j === i ? v : r)))
+
+  const yourSite = (
+    <div className={`${FIELD} border-primary-line`}>
+      <label htmlFor="ac-site" className={`${FIELD_LABEL} text-primary`}>
+        Your site
+      </label>
+      <input
+        id="ac-site"
+        type="text"
+        inputMode="url"
+        autoComplete="url"
+        spellCheck={false}
+        autoCapitalize="none"
+        placeholder="yoursite.com"
+        value={you}
+        onChange={(e) => setYou(e.target.value)}
+        aria-describedby={error ? 'ac-error' : 'ac-hint'}
+        aria-invalid={error ? true : undefined}
+        className={INPUT}
+      />
+    </div>
+  )
+  const FORM =
+    'grid max-w-[640px] gap-1.5 rounded-md border border-field-edge bg-field p-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(45,212,168,.18)]'
+  const SUBMIT =
+    'h-[46px] w-full rounded-[4px] border border-primary bg-primary px-[22px] font-code text-[13px] font-semibold tracking-[.08em] whitespace-nowrap text-primary-foreground uppercase disabled:opacity-70 sm:w-auto'
 
   return (
     <section
@@ -122,43 +169,85 @@ function Hero({
           <p className="mb-[18px] font-code text-xs tracking-[.12em] text-primary uppercase">Free tool · No sign-up</p>
           <h1
             id="ac-h1"
-            className="mb-5 max-w-[16ch] font-heading text-[clamp(34px,5vw,60px)] leading-[1.05] font-bold tracking-[-.025em] text-balance"
+            className="mb-5 max-w-[18ch] font-heading text-[clamp(34px,5vw,60px)] leading-[1.05] font-bold tracking-[-.025em] text-balance"
           >
-            How do you stack up?{' '}
-            <span className="font-semibold text-muted-foreground">Your site next to your rivals.</span>
+            How strong is your website?{' '}
+            <span className="font-semibold text-muted-foreground">Check it alone, or next to your rivals.</span>
           </h1>
           <p className="mb-7 max-w-[56ch] text-base text-body-soft sm:text-lg">
-            Put your site next to a rival or three. Get one score out of 100 for each, sorted 1st to 4th, and
-            the first 3 things to fix.
+            One score out of 100 from 11 checks, what&apos;s missing, and your first 3 fixes. Add up to {MAX_RIVALS}{' '}
+            rivals to see who leads.
           </p>
+          {/* Two equal tabs: the same "Your site" box, with or without rivals. */}
+          <div role="tablist" aria-label="What to check" className="mb-3 grid max-w-[640px] gap-2 sm:grid-cols-2">
+            {MODES.map((m, i) => {
+              const on = mode === m.id
+              return (
+                <button
+                  key={m.id}
+                  ref={(el) => {
+                    tabRefs.current[i] = el
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`ac-tab-${m.id}`}
+                  aria-selected={on}
+                  aria-controls="ac-form"
+                  tabIndex={on ? 0 : -1}
+                  onClick={() => setMode(m.id)}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+                    e.preventDefault()
+                    const next = MODES[(i + 1) % MODES.length]
+                    setMode(next.id)
+                    tabRefs.current[MODES.indexOf(next)]?.focus()
+                  }}
+                  className={`grid gap-0.5 rounded-lg border-[1.5px] px-4 py-3 text-left transition-colors duration-150 ${
+                    on ? 'border-primary bg-primary-deep' : 'border-line-strong bg-panel hover:border-muted-foreground'
+                  }`}
+                >
+                  <b className="flex items-center gap-2 font-heading text-[16px] font-semibold">
+                    <span aria-hidden="true" className={`h-2 w-2 flex-none rounded-full ${on ? 'bg-primary' : 'bg-line-strong'}`} />
+                    {m.label}
+                  </b>
+                  <small className="text-sm text-muted-foreground">{m.sub}</small>
+                </button>
+              )
+            })}
+          </div>
+          {mode === 'solo' ? (
+            <form
+              id="ac-form"
+              role="tabpanel"
+              aria-labelledby="ac-tab-solo"
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault()
+                onCheck()
+              }}
+              className={FORM}
+            >
+              <div className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                {yourSite}
+                <button type="submit" disabled={loading} className={SUBMIT}>
+                  {loading ? 'Checking…' : 'Check my site'}
+                </button>
+              </div>
+            </form>
+          ) : (
           <form
+            id="ac-form"
+            role="tabpanel"
+            aria-labelledby="ac-tab-compare"
             noValidate
             onSubmit={(e) => {
               e.preventDefault()
               onCompare()
             }}
-            className="grid max-w-[640px] gap-1.5 rounded-md border border-field-edge bg-field p-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(45,212,168,.18)]"
+            className={FORM}
           >
             <div className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
-              <div className={`${FIELD} border-primary-line`}>
-                <label htmlFor="ac-site" className={`${FIELD_LABEL} text-primary`}>
-                  Your site
-                </label>
-                <input
-                  id="ac-site"
-                  type="text"
-                  inputMode="url"
-                  autoComplete="url"
-                  spellCheck={false}
-                  autoCapitalize="none"
-                  placeholder="yoursite.com"
-                  value={you}
-                  onChange={(e) => setYou(e.target.value)}
-                  aria-describedby={error ? 'ac-error' : 'ac-hint'}
-                  aria-invalid={error ? true : undefined}
-                  className={INPUT}
-                />
-              </div>
+              {yourSite}
               <span
                 className="justify-self-center px-1.5 font-code text-xs font-semibold tracking-[.1em] text-primary uppercase"
                 aria-hidden="true"
@@ -238,30 +327,18 @@ function Hero({
               ) : (
                 <span />
               )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="h-[46px] w-full rounded-[4px] border border-primary bg-primary px-[22px] font-code text-[13px] font-semibold tracking-[.08em] whitespace-nowrap text-primary-foreground uppercase disabled:opacity-70 sm:w-auto"
-              >
+              <button type="submit" disabled={loading} className={SUBMIT}>
                 {loading ? 'Checking…' : 'Compare'}
               </button>
             </div>
           </form>
+          )}
           {error && (
             <p id="ac-error" role="alert" className="mt-3 max-w-[640px] text-sm text-caution">
               {error}
             </p>
           )}
           <p id="ac-hint" className="mt-3 max-w-[62ch] text-[13px] text-muted-foreground">
-            <button
-              type="button"
-              onClick={onAlone}
-              disabled={loading}
-              className="mr-1.5 border-0 bg-transparent p-0 text-body-soft underline decoration-line-strong underline-offset-[3px] hover:text-foreground"
-            >
-              Or check your site alone
-            </button>
-            <span aria-hidden="true">· </span>
             It reads each homepage once (plus its About and reviews pages when it needs them) and looks up each site&apos;s authority score.
           </p>
         </div>
@@ -430,7 +507,21 @@ function Legend({ solo }: { solo: boolean }) {
   )
 }
 
-function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRival: (v: string) => void; loading: boolean }) {
+function CompareTable({
+  r,
+  onAddRival,
+  loading,
+  openDomain,
+  onOpen,
+}: {
+  r: AuthorityResult
+  onAddRival: (v: string) => void
+  loading: boolean
+  /** The site whose report card is open under the table. */
+  openDomain?: string
+  /** Click a site's name: open its report card. */
+  onOpen?: (domain: string) => void
+}) {
   const order = ranked(r)
   const solo = r.rivals.length === 0
   const [open, setOpen] = useState(false)
@@ -438,14 +529,15 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
   const src = authoritySource(r)
   const standIns = oprStandIns(r)
   const cols = order.length + 1
-  const failed = r.rivals.filter((s) => s.pageError)
+  const failed = [r.you, ...r.rivals].filter((s) => s.pageError)
 
   const td = (o: Ranked, extra = '') =>
     `border-t border-border px-1.5 py-3.5 text-center align-middle sm:px-3 ${o.index === 0 ? 'ac-you' : ''} ${extra}`
   const rowHead = 'border-t border-border px-3 py-3.5 text-left align-middle font-medium sm:px-4'
 
   const overall = order.map((o) => o.scores?.overall ?? null)
-  const auths = order.map((o) => (o.scores ? authorityOf(o.site, r) : null))
+  // Link strength shows even when a homepage couldn't be read (a 403 site still has a Domain Rating).
+  const auths = order.map((o) => authorityOf(o.site, r))
   const part = (l: Letter) => order.map((o) => (o.scores ? o.scores[l] : null))
   /** Alone (or every rival's homepage unread): colour by the score's own level. With rivals: against the row. */
   const alone = order.filter((o) => o.scores).length < 2
@@ -458,7 +550,7 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
 
   /** The Domain Rating row's colour: DR against the others' DR (ties within TIE_GAP), or its band alone. */
   const drTone = (o: Ranked, a: number | null) =>
-    !o.scores || a === null || !src ? null : alone ? level(authorityPoints(a), LINK_POINTS) : standing(a, auths, TIE_GAP)
+    a === null || !src ? null : alone ? level(authorityPoints(a), LINK_POINTS) : standing(a, auths, TIE_GAP)
   /** Authority's row in the checks: the Domain Rating itself, a number rather than a ✓. */
   const drRow = (compact: boolean) => (
     <tr className="ac-tint">
@@ -603,14 +695,19 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
           </span>
         </th>
         {order.map((o, i) => {
+          const a = auths[i]
           if (!o.scores)
             return (
               <td key={o.site.domain} className={td(o, 'text-muted-foreground')}>
                 –
+                {l.id === 'authority' && a !== null && (
+                  <small className="block text-xs">
+                    {authorityFrom(o.site, r) === 'ahrefs' ? 'DR' : 'OPR'} {fmtAuthority(a)}
+                  </small>
+                )}
               </td>
             )
           const pts = o.scores[l.id]
-          const a = auths[i]
           const s = letterTone(l, o, values)
           return (
             <td key={o.site.domain} className={td(o, sClass(s))}>
@@ -708,7 +805,22 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                     </dl>
                   </>
                 ) : (
-                  <p className="m-0 mt-1.5 text-xs text-muted-foreground">We couldn&apos;t read this homepage.</p>
+                  <p className="m-0 mt-1.5 text-xs text-muted-foreground">
+                    We couldn&apos;t read this homepage.
+                    {auths[col] !== null &&
+                      ` ${authorityFrom(o.site, r) === 'ahrefs' ? 'Ahrefs DR' : 'OPR'} ${fmtAuthority(auths[col]!)}.`}
+                  </p>
+                )}
+                {onOpen && (
+                  <button
+                    type="button"
+                    onClick={() => onOpen(o.site.domain)}
+                    aria-pressed={openDomain === o.site.domain}
+                    aria-controls="ac-cards"
+                    className="ac-noprint mt-3 w-full rounded-md border border-line-strong px-3 py-2 text-left text-[13px] font-medium text-primary hover:border-primary-line aria-pressed:border-primary"
+                  >
+                    {openDomain === o.site.domain ? 'Report card open below ▾' : 'See report card ▾'}
+                  </button>
                 )}
               </li>
             )
@@ -776,18 +888,45 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
                   scope="col"
                   className={`px-1.5 pt-4 pb-3 text-center align-bottom sm:px-3 ${o.index === 0 ? 'ac-you' : ''}`}
                 >
-                  {!solo && (
-                    <span className="block font-heading text-[15px] font-bold">{o.place ? ordinal(o.place) : '–'}</span>
+                  {onOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpen(o.site.domain)}
+                      aria-pressed={openDomain === o.site.domain}
+                      aria-controls="ac-cards"
+                      aria-label={`${o.place ? `${ordinal(o.place)}, ` : ''}${o.site.domain}: open its report card`}
+                      className="grid w-full justify-items-center gap-1 rounded-lg border border-transparent px-1 py-1.5 hover:border-line-strong hover:bg-muted aria-pressed:border-primary"
+                    >
+                      {!solo && (
+                        <span className="block font-heading text-[15px] font-bold">{o.place ? ordinal(o.place) : '–'}</span>
+                      )}
+                      <span
+                        className={`block max-w-[18ch] truncate text-sm ${
+                          o.index === 0 ? 'font-semibold text-foreground' : 'text-body-soft'
+                        }`}
+                        title={o.site.domain}
+                      >
+                        {o.index === 0 && <YouTag />}
+                        {o.site.domain}
+                      </span>
+                      <span className="ac-noprint text-xs font-medium text-primary">Report card ▾</span>
+                    </button>
+                  ) : (
+                    <>
+                      {!solo && (
+                        <span className="block font-heading text-[15px] font-bold">{o.place ? ordinal(o.place) : '–'}</span>
+                      )}
+                      <span
+                        className={`mx-auto mt-1 block max-w-[18ch] truncate text-sm ${
+                          o.index === 0 ? 'font-semibold text-foreground' : 'text-body-soft'
+                        }`}
+                        title={o.site.domain}
+                      >
+                        {o.index === 0 && <YouTag />}
+                        {o.site.domain}
+                      </span>
+                    </>
                   )}
-                  <span
-                    className={`mx-auto mt-1 block max-w-[18ch] truncate text-sm ${
-                      o.index === 0 ? 'font-semibold text-foreground' : 'text-body-soft'
-                    }`}
-                    title={o.site.domain}
-                  >
-                    {o.index === 0 && <YouTag />}
-                    {o.site.domain}
-                  </span>
                 </th>
               ))}
             </tr>
@@ -849,7 +988,9 @@ function CompareTable({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
       {failed.length > 0 && (
         <ul className="m-0 list-none p-0 text-[13px] text-caution">
           {failed.map((s) => (
-            <li key={s.domain}>{s.pageError} Its scores show as “–”.</li>
+            <li key={s.domain}>
+              {s.pageError} Its scores show as “–”{authorityOf(s, r) !== null ? '; its link strength still shows' : ''}.
+            </li>
           ))}
         </ul>
       )}
@@ -914,39 +1055,427 @@ function RivalControl({ r, onAddRival, loading }: { r: AuthorityResult; onAddRiv
   )
 }
 
-/* ── First moves ────────────────────────────────────────────────────────── */
+/* ── Report card: one site's score, its 4 parts, what it does well, what's
+ * missing, then your first 3 fixes (your card) or where it beats you (a
+ * rival's), and its link strength in plain words. Coloured by its own level,
+ * like a site checked alone. Mock: drafts/authority-check-report-card-comp.html.
+ * ─────────────────────────────────────────────────────────────────────── */
 
-function Moves({ r }: { r: AuthorityResult }) {
-  const moves = firstMoves(r)
-  const title = moves.length === 3 ? 'Your first 3 moves' : moves.length === 1 ? 'Your first move' : 'Your first moves'
+const upTo = (points: number, graded: boolean) => `${graded ? 'up to ' : ''}+${points}`
+
+function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; solo: boolean }) {
+  const order = ranked(r)
+  const me = order.find((o) => o.site.domain === site.domain)!
+  const s = me.scores
+  const isYou = site.domain === r.you.domain
+  const read = order.filter((o) => o.scores).length
+  const a = authorityOf(site, r)
+  const from = authorityFrom(site, r)
+  const passed = s
+    ? PROOF_CHECKS.filter((c) => site.proof!.includes(c.id)).sort((x, y) => pointsFor(y, site) - pointsFor(x, site))
+    : []
+  const missing = s ? PROOF_CHECKS.filter((c) => !site.proof!.includes(c.id)).sort((x, y) => y.points - x.points) : []
+  const good = SHOWN_CHECKS.filter((c) => site.proof?.includes(c.id))
+  const tone = s ? level(s.overall, 100) : null
+  const h3 = 'm-0 font-heading text-[17px] font-bold'
+  const li = 'grid grid-cols-[22px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-border py-2.5 first:border-t-0'
+
   return (
-    <section aria-labelledby="ac-fm" className="grid gap-3.5">
-      <h2 id="ac-fm" className="m-0 font-heading text-[22px] font-bold">
-        {title}
-      </h2>
-      {moves.length === 0 ? (
-        <div className="rounded-lg border border-line-strong bg-panel p-[18px]">
-          <p className="m-0 font-heading text-[17px] font-bold">Your site shows every check we read.</p>
-          <p className="m-0 mt-2 text-[15px] text-body-soft">
-            For the full list,{' '}
-            <a href="/audit" className="text-primary underline underline-offset-[3px]">
-              run the Findability Check
-            </a>
-            .
+    <article aria-label={`Report card for ${site.domain}`} className="ac-reveal grid gap-7 rounded-2xl border border-line-strong bg-panel p-5 sm:p-7">
+      <div className="grid gap-2">
+        <p className="m-0 text-sm text-muted-foreground">
+          {isYou && <YouTag />}
+          <b className="font-semibold text-foreground">{site.domain}</b>
+          {' · '}
+          {solo ? 'checked alone' : me.place ? `${ordinal(me.place)} of ${read}` : 'not read'}
+        </p>
+        {s ? (
+          <p className={`m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 ${sClass(tone)}`}>
+            <span className="ac-num font-heading text-[clamp(56px,8vw,76px)] leading-[.9] font-bold tracking-[-.03em] tabular-nums">
+              <CountUp value={s.overall} />
+            </span>
+            <span className="text-base text-muted-foreground">/ 100</span>
+            <span className="ac-pill rounded-full px-2.5 py-1 text-[13px] font-semibold">{band(s.overall)}</span>
           </p>
+        ) : (
+          <div className="grid gap-1">
+            <p className="m-0 font-heading text-[22px] font-bold">
+              We couldn&apos;t read {isYou ? 'your' : 'this'} homepage, so there&apos;s no score.
+            </p>
+            <p className="m-0 max-w-[64ch] text-[15px] text-body-soft">
+              {site.pageError} {a !== null ? 'Its link strength still shows below.' : ''}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {s && (
+        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+          {LETTERS.map((l, i) => {
+            const v = s[l.id]
+            const t = level(v, l.points)
+            return (
+              <li key={l.id} className={`ac-tint grid content-start gap-2 rounded-xl border border-border p-3.5 ${sClass(t)}`}>
+                <span className="flex items-center gap-2 font-heading text-[15px] font-semibold">
+                  <Badge id={l.id} size="sm" />
+                  {l.label}
+                </span>
+                <span className="ac-num font-heading text-[22px] leading-tight font-semibold">
+                  {v}
+                  <small className="ml-0.5 font-sans text-[13px] font-normal text-muted-foreground">/ {l.points}</small>
+                  {l.id === 'authority' && a !== null && (
+                    <small className="ml-2 font-sans text-xs font-normal text-muted-foreground">
+                      {from === 'ahrefs' ? 'DR' : 'OPR'} {fmtAuthority(a)}
+                    </small>
+                  )}
+                </span>
+                <span className="ac-bar max-w-none!" aria-hidden="true">
+                  <i className="ac-grow" style={{ width: `${(v / l.points) * 100}%`, '--d': `${120 + i * 80}ms` } as CSSProperties} />
+                </span>
+                <small className="text-[13px] text-muted-foreground">{l.hint}</small>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {s && (
+        <div className="grid gap-x-7 gap-y-5 md:grid-cols-2">
+          <section aria-label={isYou ? 'What you do well' : 'What they do well'}>
+            <h3 className={`${h3} mb-2`}>
+              {isYou ? 'What you do well' : 'What they do well'}{' '}
+              <span className="ml-1 font-sans text-sm font-medium text-muted-foreground">
+                {passed.length} of {PROOF_CHECKS.length}
+              </span>
+            </h3>
+            <ul className="m-0 grid list-none p-0">
+              {passed.length === 0 && <li className="py-2.5 text-[15px] text-muted-foreground">None of the 11 checks yet.</li>}
+              {passed.map((c) => (
+                <li key={c.id} className={li}>
+                  <span className="ac-yes font-semibold" aria-label="yes">
+                    ✓
+                  </span>
+                  <span className="min-w-0 text-[15px]">
+                    {c.label}
+                    {site.evidence?.[c.id] && (
+                      <small className="block text-[13px] text-muted-foreground [overflow-wrap:anywhere]">{site.evidence[c.id]}</small>
+                    )}
+                  </span>
+                  <span className="font-heading text-sm font-semibold whitespace-nowrap text-body-soft tabular-nums">
+                    {pointsFor(c, site)} pts
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section aria-label="What's missing">
+            <h3 className={`${h3} mb-2`}>
+              What&apos;s missing{' '}
+              <span className="ml-1 font-sans text-sm font-medium text-muted-foreground">
+                {missing.length} of {PROOF_CHECKS.length}
+              </span>
+            </h3>
+            <ul className="m-0 grid list-none p-0">
+              {missing.length === 0 && <li className="py-2.5 text-[15px] text-muted-foreground">Nothing. Every check passed.</li>}
+              {missing.map((c) => {
+                const gap = isYou && !solo && isGap(r, c.id)
+                return (
+                  <li key={c.id} className={li}>
+                    <span className={gap ? 'ac-gap font-semibold' : 'ac-no'} aria-label={gap ? 'no, and a rival has it' : 'no'}>
+                      ✕
+                    </span>
+                    <span className="min-w-0 text-[15px]">{c.label}</span>
+                    <span className="font-heading text-sm font-semibold whitespace-nowrap text-primary tabular-nums">
+                      {upTo(c.points, GRADED.has(c.id))}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
         </div>
-      ) : (
-        <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
-          {moves.map((m, i) => (
-            <li key={m.id} className="grid content-start gap-1.5 rounded-lg border border-line-strong bg-panel p-[18px]">
-              <span className="font-heading text-[13px] font-semibold text-caution">{i + 1}</span>
-              <b className="font-heading text-[17px]">{m.title}</b>
-              <span className="text-[15px] text-body-soft">{m.body}</span>
-              {m.who && <small className="text-[13px] text-muted-foreground">{m.who}</small>}
+      )}
+
+      {s && isYou && <Fixes r={r} />}
+      {s && !isYou && <BeatsYou r={r} site={site} />}
+
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-border pt-5">
+        <span className="row-span-2 font-heading text-[30px] leading-none font-bold tabular-nums">
+          {a === null ? '–' : fmtAuthority(a)}
+        </span>
+        <b className="font-heading text-[15px]">
+          {a === null ? 'Link strength' : from === 'ahrefs' ? 'Domain Rating (Ahrefs)' : 'Open PageRank ×10'}
+        </b>
+        <p className="m-0 max-w-[70ch] text-[15px] text-body-soft">
+          {a === null ? (
+            'Link strength isn’t available for this site right now.'
+          ) : (
+            <LinkWords a={a} you={isYou} src={from === 'ahrefs' ? 'DR' : 'OPR'} />
+          )}
+        </p>
+      </div>
+
+      {good.length > 0 && (
+        <p className="m-0 text-sm text-muted-foreground">
+          <b className="font-semibold text-body-soft">Good to know (not scored):</b>{' '}
+          {good.map((c, i) => (
+            <Fragment key={c.id}>
+              {i > 0 && ' · '}
+              {c.label}: {site.evidence?.[c.id] ?? 'yes'}
+            </Fragment>
+          ))}
+        </p>
+      )}
+    </article>
+  )
+}
+
+/**
+ * Link strength in Authority's own points (out of 20), so it reads against the score above:
+ * "DR 36 gives 9 of the 20 Authority points. At DR 50 it gives 11, the most links can give.
+ * The other 9 come from review sites (5) and where you're featured (4)." Same bands as the score.
+ */
+function LinkWords({ a, you, src }: { a: number; you: boolean; src: 'DR' | 'OPR' }) {
+  const pts = authorityPoints(a)
+  const next = [...LINK_BANDS].reverse().find((b) => b.from > a)
+  const max = LETTERS.find((l) => l.id === 'authority')!.points
+  const top = LINK_BANDS[0]
+  const points = (id: ProofId) => PROOF_CHECKS.find((c) => c.id === id)!.points
+  // Chris, 2026-10-05: "of 11" next to a /20 score read as a mistake. Say the split first.
+  return (
+    <>
+      Authority is out of {max}: link strength up to {LINK_POINTS}, links to {you ? 'your' : 'its'} review profiles up to{' '}
+      {points('reviewSites')}, and places that feature {you ? 'you' : 'it'} up to {points('seen')}. {src} {fmtAuthority(a)}{' '}
+      earns {pts} of the {LINK_POINTS} link points.{' '}
+      {!next
+        ? `That’s all ${LINK_POINTS}.`
+        : next.points === top.points
+          ? `At ${src} ${next.from} it earns all ${top.points}.`
+          : `At ${src} ${next.from} it earns ${next.points}; ${src} ${top.from} earns all ${top.points}.`}{' '}
+      Links grow over months, as other sites link to {you ? 'you' : 'them'}.
+    </>
+  )
+}
+
+/** Your card: the first 3 fixes, each with the points it adds. */
+function Fixes({ r }: { r: AuthorityResult }) {
+  const moves = firstMoves(r)
+  const title = moves.length === 3 ? 'Your first 3 fixes' : moves.length === 1 ? 'Your first fix' : 'Your first fixes'
+  if (moves.length === 0)
+    return (
+      <div className="rounded-xl border border-line-strong p-[18px]">
+        <p className="m-0 font-heading text-[17px] font-bold">Your site shows every check we read.</p>
+        <p className="m-0 mt-2 text-[15px] text-body-soft">
+          For the full list,{' '}
+          <a href="/audit" className="text-primary underline underline-offset-[3px]">
+            run the Findability Check
+          </a>
+          .
+        </p>
+      </div>
+    )
+  return (
+    <section aria-label={title} className="grid gap-3">
+      <h3 className="m-0 font-heading text-[19px] font-bold">{title}</h3>
+      <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+        {moves.map((m, i) => (
+          <li key={m.id} className="grid content-start gap-1.5 rounded-xl border border-line-strong p-4">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="font-heading text-[13px] font-semibold text-muted-foreground">{i + 1}</span>
+              <span className="font-heading text-[15px] font-bold whitespace-nowrap text-primary">
+                {upTo(m.points, m.graded)} points
+              </span>
+            </span>
+            <b className="font-heading text-[16px] leading-snug">{m.title}</b>
+            <span className="text-[15px] text-body-soft">{m.body}</span>
+            {m.who && <small className="text-[13px] text-muted-foreground">{m.who}</small>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+/** A rival's card: the checks it passes and you don't, with what we found on its homepage. */
+function BeatsYou({ r, site }: { r: AuthorityResult; site: SiteResult }) {
+  const beats = beatsYou(r, site)
+  const mine = scoresOf(r.you, r)?.overall ?? null
+  const theirs = scoresOf(site, r)?.overall ?? null
+  const ahead = mine !== null && theirs !== null ? theirs - mine : null
+  const worth = beats.reduce((n, b) => n + b.points, 0)
+  return (
+    <section aria-label="Where they beat you" className="grid gap-2">
+      <h3 className="m-0 font-heading text-[19px] font-bold">Where they beat you</h3>
+      <p className="m-0 text-[15px] text-body-soft">
+        {mine === null
+          ? 'We couldn’t read your homepage, so there’s nothing to set this against.'
+          : beats.length === 0
+            ? `Nowhere. You pass every check they pass${ahead !== null && ahead < 0 ? `, and you’re ${-ahead} points ahead` : ''}.`
+            : `${beats.length} check${beats.length > 1 ? 's' : ''} they pass and you don’t, worth ${worth} points.${
+                ahead !== null && ahead > 0 ? ` They’re ${ahead} points ahead of you.` : ''
+              }`}
+      </p>
+      {beats.length > 0 && (
+        <ul className="m-0 grid list-none p-0">
+          {beats.map(({ check, points }) => (
+            <li
+              key={check.id}
+              className="grid grid-cols-[22px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-border py-2.5 first:border-t-0"
+            >
+              <span className="ac-gap font-semibold" aria-hidden="true">
+                ✕
+              </span>
+              <span className="min-w-0 text-[15px]">
+                {check.label}
+                {site.evidence?.[check.id] && (
+                  <small className="block text-[13px] text-muted-foreground [overflow-wrap:anywhere]">
+                    They show: {site.evidence[check.id]}
+                  </small>
+                )}
+              </span>
+              <span className="font-heading text-sm font-semibold whitespace-nowrap text-body-soft tabular-nums">
+                {points} pts
+              </span>
             </li>
           ))}
-        </ol>
+        </ul>
       )}
+    </section>
+  )
+}
+
+/** Under the compare table: one tab per site (rank order), then that site's report card. */
+function ReportCards({ r, open, setOpen }: { r: AuthorityResult; open: string; setOpen: (d: string) => void }) {
+  const order = ranked(r)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const site = [r.you, ...r.rivals].find((s) => s.domain === open) ?? r.you
+  return (
+    <section id="ac-cards" aria-labelledby="ac-cards-h" className="grid scroll-mt-28 gap-3.5">
+      <h2 id="ac-cards-h" className="m-0 font-heading text-[22px] font-bold">
+        Report cards
+      </h2>
+      <div role="tablist" aria-label="Report card for" className="ac-noprint flex flex-wrap gap-1.5">
+        {order.map((o, i) => {
+          const on = o.site.domain === site.domain
+          return (
+            <button
+              key={o.site.domain}
+              ref={(el) => {
+                tabRefs.current[i] = el
+              }}
+              type="button"
+              role="tab"
+              id={`ac-card-tab-${i}`}
+              aria-selected={on}
+              aria-controls="ac-card-panel"
+              tabIndex={on ? 0 : -1}
+              onClick={() => setOpen(o.site.domain)}
+              onKeyDown={(e) => {
+                if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+                e.preventDefault()
+                const j = (i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length
+                setOpen(order[j].site.domain)
+                tabRefs.current[j]?.focus()
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-[7px] text-sm ${
+                on ? 'border-primary bg-primary-deep text-foreground' : 'border-line-strong bg-panel text-body-soft hover:border-muted-foreground'
+              }`}
+            >
+              <b className="font-heading text-[13px] text-muted-foreground">{o.place ? ordinal(o.place) : '–'}</b>
+              {o.index === 0 && <YouTag />}
+              {o.site.domain}
+            </button>
+          )
+        })}
+      </div>
+      <div id="ac-card-panel" role="tabpanel" aria-labelledby={`ac-card-tab-${order.findIndex((o) => o.site.domain === site.domain)}`}>
+        <ReportCard key={site.domain} r={r} site={site} solo={false} />
+      </div>
+    </section>
+  )
+}
+
+/* ── Before a check: a small preview of each tab, from the example ──────── */
+
+function Previews({ example, mode, onPick }: { example: AuthorityResult; mode: Mode; onPick: (m: Mode) => void }) {
+  const order = ranked(example)
+  const you = scoresOf(example.you, example)!
+  const fix = firstMoves({ ...example, rivals: [] }, 1)[0]
+  const overall = order.map((o) => o.scores?.overall ?? null)
+  const card = (m: Mode) =>
+    `grid content-start gap-3.5 rounded-2xl border bg-panel p-[18px] text-left transition-[border-color,transform] duration-150 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 ${
+      mode === m ? 'border-primary' : 'border-line-strong hover:border-muted-foreground'
+    }`
+  return (
+    <section aria-labelledby="ac-result" className="grid gap-3.5">
+      <h2 id="ac-result" className="m-0 font-heading text-[22px] font-bold">
+        Two ways to check
+      </h2>
+      <div className="grid gap-3.5 md:grid-cols-2">
+        <button type="button" onClick={() => onPick('solo')} className={card('solo')}>
+          <span className="flex items-baseline justify-between gap-2">
+            <b className="font-heading text-[16px] font-semibold">Check my site</b>
+            <span className="text-[13px] text-muted-foreground">Example</span>
+          </span>
+          <span className="ac-tint grid min-h-[172px] content-start gap-2.5 rounded-xl p-3.5" aria-hidden="true">
+            <span className={`flex items-baseline gap-2 ${sClass(level(you.overall, 100))}`}>
+              <span className="ac-num font-heading text-[34px] leading-none font-bold">{you.overall}</span>
+              <span className="text-[13px] text-muted-foreground">/ 100</span>
+              <span className="ac-pill rounded-full px-2.5 py-0.5 text-xs font-semibold">{band(you.overall)}</span>
+            </span>
+            {LETTERS.map((l, i) => (
+              <span key={l.id} className={`grid grid-cols-[82px_minmax(0,1fr)] items-center gap-2 text-xs text-muted-foreground ${sClass(level(you[l.id], l.points))}`}>
+                {l.label}
+                <span className="ac-bar max-w-none!">
+                  <i className="ac-grow" style={{ width: `${(you[l.id] / l.points) * 100}%`, '--d': `${i * 80}ms` } as CSSProperties} />
+                </span>
+              </span>
+            ))}
+            {fix && (
+              <span className="flex justify-between gap-2 border-t border-border pt-2 text-[13px] text-body-soft">
+                1st fix: {fix.title}
+                <b className="font-semibold whitespace-nowrap text-primary">+{fix.points} points</b>
+              </span>
+            )}
+          </span>
+          <span className="text-[15px] text-body-soft">
+            A report card: your score out of 100, what you do well, what&apos;s missing, and your first 3 fixes with
+            the points each one adds.
+          </span>
+        </button>
+        <button type="button" onClick={() => onPick('compare')} className={card('compare')}>
+          <span className="flex items-baseline justify-between gap-2">
+            <b className="font-heading text-[16px] font-semibold">Compare with rivals</b>
+            <span className="text-[13px] text-muted-foreground">Example</span>
+          </span>
+          <span className="ac-tint grid min-h-[172px] content-start gap-1 rounded-xl p-3.5" aria-hidden="true">
+            {order.map((o, i) => {
+              const v = o.scores?.overall ?? 0
+              return (
+                <span
+                  key={o.site.domain}
+                  className={`grid grid-cols-[2.2rem_minmax(0,1fr)_70px_2rem] items-center gap-2 rounded-md px-2 py-[5px] text-[13px] ${
+                    o.index === 0 ? 'shadow-[0_0_0_1.5px_var(--color-foreground)]' : ''
+                  } ${sClass(standing(v, overall, OVERALL_TIE - 1))}`}
+                >
+                  <b className="font-heading">{o.place ? ordinal(o.place) : '–'}</b>
+                  <span className="truncate text-body-soft">{o.site.domain}</span>
+                  <span className="ac-bar">
+                    <i className="ac-grow" style={{ width: `${v}%`, '--d': `${i * 80}ms` } as CSSProperties} />
+                  </span>
+                  <span className="ac-num text-right font-heading text-[15px] font-bold">{v}</span>
+                </span>
+              )
+            })}
+            <span className="mt-1 text-xs text-muted-foreground">Click any site for its report card.</span>
+          </span>
+          <span className="text-[15px] text-body-soft">
+            You and up to {MAX_RIVALS} rivals, ranked 1st to {MAX_RIVALS + 1}th. Click any site to open its own report
+            card.
+          </span>
+        </button>
+      </div>
+      <p className="m-0 text-[13px] text-muted-foreground">Example sites, made-up numbers.</p>
     </section>
   )
 }
@@ -1056,17 +1585,18 @@ function Grow() {
   )
 }
 
-/* ── What this can't see: right under the table, so the score isn't read as a ranking
- * (SEO panel, 6 of 6; the AI wording is the line all six would sign, rounds 3 and 5). ─── */
+/* ── What this can't see: so the score isn't read as a ranking (SEO panel, 6 of 6; the AI
+ * wording is the line all six would sign, rounds 3 and 5). The panel put it under the table;
+ * Chris moved it near the bottom, above how we score (2026-10-05). ─── */
 
-function CantSee() {
+function CantSee({ solo = false }: { solo?: boolean }) {
   return (
     <section aria-labelledby="ac-cant" className="grid gap-2 rounded-xl border border-dashed border-line-strong px-4 py-3.5 text-sm">
       <h2 id="ac-cant" className="m-0 font-heading text-[15px] font-bold">
         What this can&apos;t see
       </h2>
       <p className="m-0 max-w-[75ch] text-body-soft">
-        This checks what your website shows, next to the rivals you pick. It can&apos;t see your Google Business
+        This checks what your website shows{solo ? '' : ', next to the rivals you pick'}. It can&apos;t see your Google Business
         Profile, how close you are to the person searching, your Google rating, how many reviews you have and how
         recent they are, or whether visitors stay on your site. Those drive Google Maps more than anything here, so a
         rival can beat you in Maps with a weaker website.
@@ -1150,7 +1680,7 @@ function HowWeScore({ asOf, src }: { asOf: string | null; src: ReturnType<typeof
 
 /* ── Report header: the answer, then Copy link / Print ─────────────────── */
 
-function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
+function ReportHead({ r }: { r: AuthorityResult }) {
   const n = r.rivals.length
   const [note, setNote] = useState('')
   const btn =
@@ -1158,7 +1688,6 @@ function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
   return (
     <div className="grid gap-3">
       <p className="m-0 text-sm text-muted-foreground">
-        {example ? 'Example · ' : ''}
         <b className="font-medium text-body-soft">{r.you.domain}</b>{' '}
         {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`} · {fmtDate(r.checkedAt)}
       </p>
@@ -1166,24 +1695,22 @@ function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
         {summary(r)}
       </h2>
       <div className="ac-noprint flex flex-wrap items-center gap-2">
-        {!example && (
-          <button
-            type="button"
-            className={btn}
-            onClick={() => {
-              navigator.clipboard
-                .writeText(window.location.href)
-                .then(() => setNote('Link copied.'))
-                .catch(() => setNote(window.location.href))
-            }}
-          >
-            <svg viewBox="0 0 24 24" {...ICON} aria-hidden="true">
-              <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
-              <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
-            </svg>
-            Copy link
-          </button>
-        )}
+        <button
+          type="button"
+          className={btn}
+          onClick={() => {
+            navigator.clipboard
+              .writeText(window.location.href)
+              .then(() => setNote('Link copied.'))
+              .catch(() => setNote(window.location.href))
+          }}
+        >
+          <svg viewBox="0 0 24 24" {...ICON} aria-hidden="true">
+            <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
+            <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+          </svg>
+          Copy link
+        </button>
         <button type="button" className={btn} onClick={() => window.print()}>
           <svg viewBox="0 0 24 24" {...ICON} aria-hidden="true">
             <path d="M6 9V3h12v6" />
@@ -1200,22 +1727,8 @@ function ReportHead({ r, example }: { r: AuthorityResult; example: boolean }) {
   )
 }
 
-/* ── Before a check: the sample is framed and labelled, so it can't pass for a real
- * report. While a check runs: a "checking" panel takes the report's place (Chris,
+/* ── While a check runs: a "checking" panel takes the report's place (Chris,
  * 2026-10-02: the dimmed sample looked like a result). ────────────────── */
-
-function ExampleBanner() {
-  return (
-    <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-muted px-3.5 py-2.5 text-sm text-body-soft">
-      <b className="rounded bg-foreground px-1.5 py-1 font-heading text-[11px] leading-none font-bold tracking-[.08em] text-background uppercase">
-        Example
-      </b>
-      <span className="min-w-0">
-        A sample report with made-up sites. Enter your site above to see your own.
-      </span>
-    </p>
-  )
-}
 
 /** Rough timing of one check (homepages, Ahrefs, extra pages and records run side by side). */
 const CHECK_ETA = 15
@@ -1227,7 +1740,8 @@ const CHECK_STEPS = [
   { at: 10, text: 'Scoring and ranking' },
 ]
 
-function Checking({ sites }: { sites: string[] }) {
+/** `adding`: only new rivals are being read (your result is kept). */
+function Checking({ sites, adding = false }: { sites: string[]; adding?: boolean }) {
   const [t, setT] = useState(0)
   useEffect(() => {
     const start = Date.now()
@@ -1243,8 +1757,9 @@ function Checking({ sites }: { sites: string[] }) {
     <div role="status" className="grid gap-4 rounded-xl border border-line-strong bg-panel p-5 sm:p-7">
       <p className="m-0 font-heading text-xs font-bold tracking-[.08em] text-primary uppercase">Checking now</p>
       <h2 className="m-0 font-heading text-[clamp(22px,3vw,28px)] leading-tight font-bold [overflow-wrap:anywhere]">
-        Checking {sites[0]}
-        {rivals > 0 ? ` and ${rivals} rival${rivals > 1 ? 's' : ''}` : ''}…
+        {adding
+          ? `Checking ${sites.length > 1 ? `${sites.length} new rivals` : sites[0]}…`
+          : `Checking ${sites[0]}${rivals > 0 ? ` and ${rivals} rival${rivals > 1 ? 's' : ''}` : ''}…`}
       </h2>
       <div className="grid gap-1.5">
         <span className="ac-progress" aria-hidden="true">
@@ -1275,13 +1790,27 @@ function Checking({ sites }: { sites: string[] }) {
 /* ── Root ───────────────────────────────────────────────────────────────── */
 
 export function AuthorityCheck({ example }: { example: AuthorityResult }) {
+  const [mode, setMode] = useState<Mode>('solo')
   const [you, setYou] = useState('')
   const [rivals, setRivals] = useState<string[]>([''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AuthorityResult | null>(null)
   const [pending, setPending] = useState<string[]>([])
+  /** The report card open under the compare table; null = yours. */
+  const [card, setCard] = useState<string | null>(null)
   const resultRef = useRef<HTMLElement>(null)
+
+  const scrollToResult = () =>
+    requestAnimationFrame(() => {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      resultRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    })
+
+  function pickMode(m: Mode) {
+    setMode(m)
+    setError(null)
+  }
 
   async function run(youRaw: string, rivalRaws: string[]) {
     const me = parseSite(youRaw)
@@ -1311,10 +1840,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
     setLoading(true)
     setPending(bares)
     // Show the "checking" panel right away, where the report will appear.
-    requestAnimationFrame(() => {
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      resultRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
-    })
+    scrollToResult()
     const query = shareQuery(
       me.host,
       others.map((o) => o.host),
@@ -1327,16 +1853,71 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
         return
       }
       setResult(data as AuthorityResult)
+      setCard(null)
       window.history.replaceState(null, '', `${window.location.pathname}?${query}`)
-      requestAnimationFrame(() => {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        resultRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
-      })
+      scrollToResult()
     } catch {
       setError('We could not reach the checker. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  /**
+   * Rivals added to the check on screen (up to 3 in all): only the new sites are read (?add=),
+   * then joined to your result. The first check's sources stay in charge, so every site is
+   * scored alike. Errors show where the rivals were typed (`onError`), or in the hero.
+   */
+  async function addRivals(raws: string[], onError: (e: string) => void = setError) {
+    const typed = raws.map((s) => s.trim()).filter(Boolean)
+    if (!result) return run(you, [...rivals, ...typed])
+    if (!typed.length) return onError('Type a rival’s site, like rivalsite.com.')
+    const room = MAX_RIVALS - result.rivals.length
+    if (typed.length > room) return onError(`You can add ${room} more rival${room === 1 ? '' : 's'}.`)
+    const added = []
+    const seen = new Set([result.you.domain, ...result.rivals.map((s) => s.domain)])
+    for (const raw of typed) {
+      const p = parseSite(raw)
+      if (!p) return onError(`“${raw}” doesn’t look like a web address. Try rivalsite.com.`)
+      if (seen.has(p.bare)) return onError(`${p.bare} is already in this check.`)
+      seen.add(p.bare)
+      added.push(p)
+    }
+    // Your site as you typed it (keeps www), from the share link.
+    const site = new URLSearchParams(window.location.search).get('site') ?? result.you.domain
+    setError(null)
+    onError('')
+    setLoading(true)
+    setPending(added.map((p) => p.bare))
+    scrollToResult()
+    try {
+      const res = await fetch(`/api/authority-check?${new URLSearchParams({ site, add: added.map((p) => p.host).join(',') })}`)
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data || data.error || !data.rivals?.length) {
+        setError(data?.error ?? 'Something went wrong. Try again in a minute.')
+        return
+      }
+      const merged: AuthorityResult = { ...result, checkedAt: data.checkedAt, rivals: [...result.rivals, ...data.rivals] }
+      const domains = merged.rivals.map((s) => s.domain)
+      setResult(merged)
+      setRivals(domains)
+      setMode('compare')
+      setCard(null)
+      window.history.replaceState(null, '', `${window.location.pathname}?${shareQuery(site, domains)}`)
+      scrollToResult()
+    } catch {
+      setError('We could not reach the checker. Check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function openCard(domain: string) {
+    setCard(domain)
+    requestAnimationFrame(() => {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      document.getElementById('ac-cards')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    })
   }
 
   // Auto-run from ?site=&r= (never useSearchParams: it bails the page out of SSR).
@@ -1351,26 +1932,30 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
       .slice(0, MAX_RIVALS)
     setYou(site)
     setRivals(rs.length ? rs : [''])
+    setMode(rs.length ? 'compare' : 'solo')
     run(site, rs)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const shown = result ?? example
-  const addRival = (rival: string) => {
-    const next = [...rivals.map((s) => s.trim()).filter(Boolean), rival].slice(0, MAX_RIVALS)
-    setRivals(next)
-    run(you || shown.you.domain, next)
-  }
+  const solo = !!result && result.rivals.length === 0
 
   return (
     <div>
       <Hero
+        mode={mode}
+        setMode={pickMode}
         you={you}
         setYou={setYou}
         rivals={rivals}
         setRivals={setRivals}
-        onCompare={() => run(you, rivals)}
-        onAlone={() => run(you, [])}
+        onCheck={() => run(you, [])}
+        onCompare={() => {
+          if (!rivals.some((s) => s.trim())) {
+            setError('Type a rival’s site, or use “Check my site” to check yours alone.')
+            return
+          }
+          run(you, rivals)
+        }}
         loading={loading}
         error={error}
       />
@@ -1384,73 +1969,163 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
                 : ''}
           </p>
           {loading ? (
-            <Checking sites={pending} />
-          ) : (
-            <div key={shown.checkedAt} className={`ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10 ${result ? '' : 'ac-example'}`}>
-              {!result && <ExampleBanner />}
-              <ReportHead r={shown} example={!result} />
-              <CompareTable r={shown} onAddRival={addRival} loading={loading} />
-              <CantSee />
-              {result && result.rivals.length === 0 && <SoloAddRival onAddRival={addRival} loading={loading} />}
-              <Moves r={shown} />
+            <Checking sites={pending} adding={!!result && !pending.includes(result.you.domain)} />
+          ) : result ? (
+            <div key={result.checkedAt} className="ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10">
+              <ReportHead r={result} />
+              {solo ? (
+                <>
+                  <ReportCard r={result} site={result.you} solo />
+                  <SoloAddRival onAdd={addRivals} loading={loading} />
+                </>
+              ) : (
+                <>
+                  <CompareTable
+                    r={result}
+                    onAddRival={(v) => addRivals([v])}
+                    loading={loading}
+                    openDomain={card ?? result.you.domain}
+                    onOpen={openCard}
+                  />
+                  <ReportCards r={result} open={card ?? result.you.domain} setOpen={setCard} />
+                </>
+              )}
             </div>
+          ) : (
+            <Previews
+              example={example}
+              mode={mode}
+              onPick={(m) => {
+                pickMode(m)
+                requestAnimationFrame(() => {
+                  const el = document.getElementById('ac-site') as HTMLInputElement | null
+                  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  el?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' })
+                  el?.focus({ preventScroll: true })
+                })
+              }}
+            />
           )}
           <Offer />
           <Grow />
           <div className="ac-noprint">
             <ToolQuestions current="/authority-check" />
           </div>
-          <HowWeScore asOf={shown.asOf} src={authoritySource(shown)} />
+          <CantSee solo={solo} />
+          <HowWeScore asOf={(result ?? example).asOf} src={authoritySource(result ?? example)} />
         </div>
       </section>
     </div>
   )
 }
 
-/* ── Solo: now add a rival ──────────────────────────────────────────────── */
+/* ── Solo: now add up to 3 rivals ───────────────────────────────────────── */
 
-function SoloAddRival({ onAddRival, loading }: { onAddRival: (v: string) => void; loading: boolean }) {
-  const [value, setValue] = useState('')
+function SoloAddRival({
+  onAdd,
+  loading,
+}: {
+  onAdd: (values: string[], onError: (e: string) => void) => void
+  loading: boolean
+}) {
+  const [values, setValues] = useState<string[]>([''])
+  const [error, setError] = useState('')
+  const refs = useRef<(HTMLInputElement | null)[]>([])
+  const [focusNew, setFocusNew] = useState(false)
+  useEffect(() => {
+    if (!focusNew) return
+    refs.current[values.length - 1]?.focus()
+    setFocusNew(false)
+  }, [focusNew, values.length])
+  const INPUT_BOX =
+    'h-[46px] w-full min-w-0 rounded-[4px] border border-line-strong bg-background px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none'
   return (
     <aside
       aria-labelledby="ac-solo"
-      className="ac-noprint grid items-center gap-x-10 gap-y-4 rounded-xl border border-dashed border-line-strong px-6 py-5 md:grid-cols-2"
+      className="ac-noprint grid items-start gap-x-10 gap-y-4 rounded-xl border border-dashed border-line-strong px-6 py-5 md:grid-cols-2"
     >
       <div>
         <h2 id="ac-solo" className="m-0 mb-1 font-heading text-[20px] font-bold">
-          Now add a rival.
+          Now add your rivals.
         </h2>
-        <p className="m-0 text-body-soft">Your score means more next to someone you compete with. One rival is enough.</p>
+        <p className="m-0 text-body-soft">
+          Your score means more next to someone you compete with. Add up to {MAX_RIVALS}; one is enough. We keep your
+          result and check only the new sites.
+        </p>
       </div>
       <form
         noValidate
         onSubmit={(e) => {
           e.preventDefault()
-          if (value.trim()) onAddRival(value)
+          onAdd(values, setError)
         }}
-        className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_auto]"
+        className="grid gap-1.5"
       >
-        <label htmlFor="ac-solo-rival" className="sr-only">
-          A rival&apos;s site
-        </label>
-        <input
-          id="ac-solo-rival"
-          type="text"
-          inputMode="url"
-          spellCheck={false}
-          autoCapitalize="none"
-          placeholder="a rival's site"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="h-[46px] min-w-0 rounded-[4px] border border-line-strong bg-background px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="h-[46px] rounded-[4px] border border-primary bg-primary px-[22px] font-code text-[13px] font-semibold tracking-[.08em] whitespace-nowrap text-primary-foreground uppercase disabled:opacity-70"
-        >
-          Compare
-        </button>
+        {values.map((v, i) => (
+          <div key={i} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5">
+            <label htmlFor={`ac-solo-rival-${i}`} className="sr-only">
+              Rival {i + 1}&apos;s site
+            </label>
+            <input
+              ref={(el) => {
+                refs.current[i] = el
+              }}
+              id={`ac-solo-rival-${i}`}
+              type="text"
+              inputMode="url"
+              spellCheck={false}
+              autoCapitalize="none"
+              placeholder={i === 0 ? "a rival's site" : "another rival's site"}
+              value={v}
+              onChange={(e) => setValues(values.map((x, j) => (j === i ? e.target.value : x)))}
+              aria-describedby={error ? 'ac-solo-error' : undefined}
+              className={`${INPUT_BOX} ${i === 0 ? 'col-span-2' : ''}`}
+            />
+            {i > 0 && (
+              <button
+                type="button"
+                aria-label={`Remove rival ${i + 1}`}
+                onClick={() => setValues(values.filter((_, j) => j !== i))}
+                className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+        ))}
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
+          {values.length < MAX_RIVALS ? (
+            <button
+              type="button"
+              onClick={() => {
+                setValues([...values, ''])
+                setFocusNew(true)
+              }}
+              className="rounded-[4px] border border-dashed border-line-strong px-3 py-2 text-sm font-medium text-body-soft hover:border-primary-line hover:text-foreground"
+            >
+              <span className="mr-1 text-primary" aria-hidden="true">
+                +
+              </span>
+              Add another rival <small className="ml-1.5 text-xs text-muted-foreground">up to {MAX_RIVALS}</small>
+            </button>
+          ) : (
+            <span />
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="h-[46px] w-full rounded-[4px] border border-primary bg-primary px-[22px] font-code text-[13px] font-semibold tracking-[.08em] whitespace-nowrap text-primary-foreground uppercase disabled:opacity-70 sm:w-auto"
+          >
+            Compare
+          </button>
+        </div>
+        {error && (
+          <p id="ac-solo-error" role="alert" className="m-0 text-sm text-caution">
+            {error}
+          </p>
+        )}
       </form>
     </aside>
   )

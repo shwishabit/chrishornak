@@ -1,5 +1,6 @@
-/* ── GET /api/authority-check?site=&r= ───────────────────────────────────
- * The Authority Check's one server call. For your site and 0–3 rivals:
+/* ── GET /api/authority-check?site=&r=  ·  ?site=&add= ────────────────────
+ * The Authority Check's one server call. For your site and 0–3 rivals
+ * (or, with add=, only the 1–3 new rivals for a check already on screen):
  * Ahrefs Domain Rating (free endpoint, one call per site), one Open PageRank
  * bulk call (the backup), and one homepage read per site, all in parallel.
  * Expertise and most of Trust use the Findability Check's own rules
@@ -88,13 +89,84 @@ export async function GET(request: NextRequest) {
     if (!p) return bad(`“${raw.slice(0, 60)}” doesn’t look like a web address.`)
     rivals.push(p)
   }
-  const bares = [you.bare, ...rivals.map((r) => r.bare)]
+  // ?add=a.com,b.com: 1–3 rivals added to a check already on screen. Only the new sites are
+  // read (one Ahrefs call each); the page keeps your result and joins them (Grill Me, 2026-10-05).
+  const rawAdds = (params.get('add') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (rawAdds.length > MAX_RIVALS) return bad(`Add up to ${MAX_RIVALS} rivals at a time.`)
+  const added: SiteInput[] = []
+  for (const raw of rawAdds) {
+    const p = parseSite(raw)
+    if (!p) return bad(`“${raw.slice(0, 60)}” doesn’t look like a web address.`)
+    added.push(p)
+  }
+  if (added.length && rivals.length) return bad('Send the new rivals as add= only.')
+
+  const bares = [you.bare, ...rivals.map((r) => r.bare), ...added.map((a) => a.bare)]
   if (new Set(bares).size !== bares.length) return bad('Each site needs to be different.')
 
-  // SSRF: every host, before any request.
-  const sites = [you, ...rivals]
+  // SSRF: every host we will read, before any request.
+  const sites = added.length ? added : [you, ...rivals]
   const blocked = await Promise.all(sites.map((s) => resolveAndCheck(s.host)))
   if (blocked.some(Boolean)) return bad('Cannot fetch internal or private addresses')
+
+  const read = await readSites(sites)
+
+  if (added.length) {
+    // Log row: you + the new rivals; your scores stay empty (they're in the first check's row).
+    logCheck({
+      domain: you.bare,
+      rival_domains: added.map((a) => a.bare),
+      links: [null, ...read.results.map((s) => s.links)],
+      linking_sites: [null, ...read.results.map((s) => s.linkingSites ?? null)],
+      proof: [null, ...read.results.map((s) => scoredCount(s.proof))],
+      links_status: read.linksStatus,
+      status: 'completed',
+    })
+    return NextResponse.json(
+      { checkedAt: read.checkedAt, asOf: read.asOf, linksStatus: read.linksStatus, drStatus: read.drStatus, rivals: read.results },
+      { status: 200 },
+    )
+  }
+
+  const mine = read.results[0]
+  const logRow = {
+    domain: you.bare,
+    rival_domains: rivals.map((r) => r.bare),
+    links: read.results.map((s) => s.links),
+    linking_sites: read.results.map((s) => s.linkingSites ?? null),
+    // Scored checks only (0–11, the column's limit): the "good to know" rows aren't counted.
+    proof: read.results.map((s) => scoredCount(s.proof)),
+    links_status: read.linksStatus,
+  }
+
+  // Your homepage couldn't be read: still answer when there's a link score to show (a 403 site
+  // has a Domain Rating); with no score at all, say why it failed, as before.
+  if (!mine.proof) {
+    logCheck({ ...logRow, status: 'error' })
+    const hasAuthority = typeof mine.dr === 'number' || typeof mine.opr === 'number'
+    if (!hasAuthority) return bad(read.yourError ?? 'We couldn’t read your homepage.', 502)
+  } else {
+    logCheck({ ...logRow, status: 'completed' })
+  }
+
+  const result: AuthorityResult = {
+    checkedAt: read.checkedAt,
+    asOf: read.asOf,
+    linksStatus: read.linksStatus,
+    drStatus: read.drStatus,
+    you: mine,
+    rivals: read.results.slice(1),
+  }
+  return NextResponse.json(result, { status: 200 })
+}
+
+/* ── Read sites: Ahrefs + Open PageRank + each homepage, in parallel ─────── */
+
+async function readSites(sites: SiteInput[]) {
+  const bares = sites.map((s) => s.bare)
 
   // The public records for the "good to know" rows start first and run alongside everything else.
   const records = Promise.all(bares.map((b) => Promise.all([domainRegistered(b), wikidataItem(b)])))
@@ -113,22 +185,8 @@ export async function GET(request: NextRequest) {
     return typeof n === 'number' ? Math.round(n) : null
   }
 
-  const yourError = pageErrorMessage(pages[0], you.host)
-  if (!pages[0] || yourError) {
-    logCheck({
-      domain: you.bare,
-      rival_domains: rivals.map((r) => r.bare),
-      links: bares.map(linksOf),
-      linking_sites: bares.map(linkingOf),
-      proof: bares.map(() => null),
-      links_status: opr.status,
-      status: 'error',
-    })
-    return bad(yourError ?? 'We couldn’t read your homepage.', 502)
-  }
-
   // Each homepage's checks (with Reputation's extra reads), for every homepage that was read, in parallel.
-  const errors = sites.map((s, i) => (i === 0 ? null : rivalPageError(pages[i], s.bare)))
+  const errors = sites.map((s, i) => rivalPageError(pages[i], s.bare))
   const reads = await Promise.all(pages.map((page, i) => (page && !errors[i] ? readSite(page) : null)))
   const recs = await records
   reads.forEach((read, i) => {
@@ -164,25 +222,13 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  const result: AuthorityResult = {
+  return {
     checkedAt: new Date().toISOString(),
     asOf: opr.status === 'ok' ? opr.asOf : null,
-    linksStatus: opr.status,
-    drStatus: drs.status,
-    you: results[0],
-    rivals: results.slice(1),
+    linksStatus: opr.status as LinksStatus,
+    drStatus: drs.status as LinksStatus,
+    results,
+    /** The long "why" for the first site, when its homepage failed (shown when there's nothing else). */
+    yourError: pageErrorMessage(pages[0], sites[0].host),
   }
-
-  logCheck({
-    domain: you.bare,
-    rival_domains: rivals.map((r) => r.bare),
-    links: results.map((s) => s.links),
-    linking_sites: results.map((s) => s.linkingSites ?? null),
-    // Scored checks only (0–11, the column's limit): the "good to know" rows aren't counted.
-    proof: results.map((s) => scoredCount(s.proof)),
-    links_status: opr.status,
-    status: 'completed',
-  })
-
-  return NextResponse.json(result, { status: 200 })
 }
