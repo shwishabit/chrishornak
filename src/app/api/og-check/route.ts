@@ -12,6 +12,7 @@ import {
   clientIp,
   createRateLimiter,
   fetchPageWithRetry,
+  hasCheckKey,
   pageErrorMessage,
   resolveAndCheck,
 } from '@/lib/fetch-guard'
@@ -146,7 +147,10 @@ function logCheck(row: {
 /* ── Handler ────────────────────────────────────────────────────────────── */
 
 export async function GET(request: NextRequest) {
-  if (isRateLimited(clientIp(request.headers))) {
+  // A keyed caller (SGM's server) has its own limits and keeps its own log.
+  const keyed = hasCheckKey(request.headers)
+  const log = keyed ? () => {} : logCheck
+  if (!keyed && isRateLimited(clientIp(request.headers))) {
     return NextResponse.json(
       { error: 'Too many checks. Please wait a minute and try again.' },
       { status: 429 },
@@ -179,7 +183,7 @@ export async function GET(request: NextRequest) {
   const page = await fetchPageWithRetry(targetUrl, MAX_HTML)
   const pageError = pageErrorMessage(page, parsed.hostname)
   if (!page || pageError) {
-    logCheck({ domain: bareHost(targetUrl), passed: 0, failed: [], warned: [], status: 'error' })
+    log({ domain: bareHost(targetUrl), passed: 0, failed: [], warned: [], status: 'error' })
     return NextResponse.json({ error: pageError }, { status: 502 })
   }
 
@@ -205,7 +209,7 @@ export async function GET(request: NextRequest) {
 
   const result: OgCheckResult = buildResult({ url: page.finalUrl, html: page.body, image, favicon, xRobots })
 
-  logCheck({
+  log({
     domain: result.domain,
     passed: result.passed,
     failed: result.checks.filter((c) => c.status === 'fail').map((c) => c.id),

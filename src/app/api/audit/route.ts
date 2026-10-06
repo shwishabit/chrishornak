@@ -7,7 +7,10 @@ import {
   fetchPageWithRetry,
   pageErrorMessage,
   checkOgImage,
+  hasCheckKey,
 } from '@/lib/fetch-guard'
+import { parseAudit, type FetchedPage } from '@/lib/audit-parser'
+import { computeCategoryScore, computeOverallScore } from '@/lib/audit-scoring'
 
 /* ── Configuration ──────────────────────────────────────────────────────── */
 
@@ -96,8 +99,9 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting — use forwarded IP or fall back to a default
   const ip = clientIp(request.headers)
+  const keyed = hasCheckKey(request.headers)
 
-  if (isRateLimited(ip)) {
+  if (!keyed && isRateLimited(ip)) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait a minute and try again.' },
       { status: 429, headers },
@@ -221,5 +225,26 @@ export async function GET(request: NextRequest) {
     ogImage: ogImageResult,
   }
 
+  // A keyed caller (SGM's server) gets the scores instead of the raw page: the
+  // browser normally scores it (AuditTool.tsx), a server can't (Grill Me 2026-10-06).
+  if (keyed) return NextResponse.json(scoreAudit(body), { status: 200, headers })
+
   return NextResponse.json(body, { status: 200, headers })
+}
+
+/** The same parse + score the Findability Check runs in the browser, done here. */
+function scoreAudit(page: FetchedPage) {
+  const parsed = parseAudit(page)
+  const categories = parsed.categories.map((c) => ({
+    name: c.name,
+    score: computeCategoryScore({ ...c, icon: null }),
+    items: c.items,
+  }))
+  return {
+    url: page.url,
+    requestedUrl: page.requestedUrl,
+    statusCode: page.statusCode,
+    overall: computeOverallScore(parsed.categories.map((c) => ({ ...c, icon: null }))),
+    categories,
+  }
 }

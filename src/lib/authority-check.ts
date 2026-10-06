@@ -17,6 +17,7 @@
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { ProofSignals } from './proof-signals'
+import type { B2bSignals } from './b2b-signals'
 
 export const MAX_RIVALS = 3
 /** Authority values (DR or Open PageRank ×10) under this far apart read as a tie (colour only). */
@@ -332,6 +333,8 @@ export interface SiteResult {
   pageError?: string
   /** The sitemap's newest date (shown only). Missing when there's no sitemap. */
   updated?: Updated
+  /** profile=b2b only (SGM's check): what a B2B buyer looks for. Reported, never scored. */
+  b2b?: B2bSignals
 }
 
 /** ok = scores came back · busy = the source said 429 · unavailable = anything else. */

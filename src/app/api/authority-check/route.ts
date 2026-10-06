@@ -17,6 +17,7 @@ import {
   clientIp,
   createRateLimiter,
   fetchPageWithRetry,
+  hasCheckKey,
   rivalPageError,
   type FetchResult,
 } from '@/lib/fetch-guard'
@@ -35,6 +36,7 @@ import {
   type SiteInput,
   type SiteResult,
 } from '@/lib/authority-check'
+import { readB2bSignals } from '@/lib/b2b-signals'
 import { getSupabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
@@ -62,7 +64,7 @@ function yourPageError(page: FetchResult | null, host: string): string {
 
 /* ── Log (domains + scores only) ────────────────────────────────────────── */
 
-function logCheck(row: {
+function logRun(row: {
   domain: string
   rival_domains: string[]
   links: (number | null)[]
@@ -88,7 +90,10 @@ function bad(error: string, status = 400) {
 
 export async function GET(request: NextRequest) {
   const started = Date.now()
-  if (isRateLimited(clientIp(request.headers))) {
+  // A keyed caller (SGM's server) has its own limits and keeps its own log.
+  const keyed = hasCheckKey(request.headers)
+  const logCheck = keyed ? () => {} : logRun
+  if (!keyed && isRateLimited(clientIp(request.headers))) {
     return bad('Too many checks. Please wait a minute and try again.', 429)
   }
 
@@ -135,7 +140,9 @@ export async function GET(request: NextRequest) {
   const missing = sites.filter((_, i) => hosts[i] === 'nxdomain').map((s) => s.bare)
   if (missing.length) return bad(`We couldn’t find ${missing.join(' or ')}. Check the spelling and try again.`)
 
-  const read = await readSites(sites, started + READ_BUDGET_MS, !added.length)
+  // profile=b2b (SGM's check) adds the B2B signals beside each result; the scores don't change.
+  const b2b = params.get('profile') === 'b2b'
+  const read = await readSites(sites, started + READ_BUDGET_MS, !added.length, b2b)
 
   if (added.length) {
     // Log row: you + the new rivals; your scores stay empty (they're in the first check's row).
@@ -188,7 +195,7 @@ export async function GET(request: NextRequest) {
 
 /* ── Read sites: Ahrefs + Open PageRank + each homepage, in parallel ─────── */
 
-async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boolean) {
+async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boolean, b2b = false) {
   const bares = sites.map((s) => s.bare)
 
   // The public records for the "good to know" rows start first and run alongside everything else.
@@ -258,6 +265,7 @@ async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boole
       ...(read?.seen.length ? { seenCount: read.seen.length } : {}),
       ...(read ? { evidence: read.evidence } : {}),
       ...(read?.updated ? { updated: read.updated } : {}),
+      ...(b2b && read ? { b2b: readB2bSignals(pages[i]!.body, pages[i]!.finalUrl) } : {}),
       // Your own card gets the owner's wording; a rival's keeps the short one.
       ...(err ? { pageError: i === 0 && firstIsYou && pageFailed(pages[0]) ? yourPageError(pages[0], s.host) : err } : {}),
     }

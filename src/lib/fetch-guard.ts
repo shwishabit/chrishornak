@@ -4,6 +4,7 @@
  * direct-fetch. Extracted from api/audit/route.ts so both tools behave alike.
  * ─────────────────────────────────────────────────────────────────────── */
 import 'server-only'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import dns from 'node:dns/promises'
 import { isIP } from 'node:net'
 
@@ -30,6 +31,21 @@ export function createRateLimiter(limit: number, windowMs: number) {
     rateMap.set(ip, timestamps)
     return false
   }
+}
+
+/* ── Server key (Swift Growth Marketing's check engine) ─────────────────── */
+
+const sha256 = (s: string) => createHash('sha256').update(s).digest()
+
+/** True when the caller sent the right `x-check-key` (env CHECK_API_KEY). A keyed
+ * caller is one server (SGM) that sets its own per-visitor limits, so the routes
+ * skip their per-IP limit for it and log nothing (SGM keeps its own runs; Grill Me
+ * 2026-10-06). No env key set = nobody is keyed. */
+export function hasCheckKey(headers: Headers): boolean {
+  const expected = process.env.CHECK_API_KEY
+  const sent = headers.get('x-check-key')
+  if (!expected || !sent) return false
+  return timingSafeEqual(sha256(sent), sha256(expected))
 }
 
 export function clientIp(headers: Headers): string {
