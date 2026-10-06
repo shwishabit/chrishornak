@@ -1228,25 +1228,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </div>
       )}
 
-      {s && isYou && <Fixes r={r} />}
-      {s && !isYou && <BeatsYou r={r} site={site} />}
-
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-border pt-5">
-        <span className="row-span-2 font-heading text-[30px] leading-none font-bold tabular-nums">
-          {a === null ? '–' : fmtAuthority(a)}
-        </span>
-        <b className="font-heading text-[15px]">
-          {a === null ? 'Link strength' : from === 'ahrefs' ? 'Domain Rating (Ahrefs)' : 'Open PageRank ×10'}
-        </b>
-        <p className="m-0 max-w-[70ch] text-[15px] text-body-soft">
-          {a === null ? (
-            'Link strength isn’t available for this site right now.'
-          ) : (
-            <LinkWords a={a} you={isYou} src={from === 'ahrefs' ? 'DR' : 'OPR'} />
-          )}
-        </p>
-      </div>
-
+      {/* Right under the scored checks, before the fixes and link strength (Chris, 2026-10-06). */}
       {s && (
         <section aria-label="Good to know, not scored" className="grid gap-2 border-t border-border pt-5">
           <h3 className={h3}>
@@ -1273,6 +1255,25 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
           </ul>
         </section>
       )}
+
+      {s && isYou && <Fixes r={r} />}
+      {s && !isYou && <BeatsYou r={r} site={site} />}
+
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-border pt-5">
+        <span className="row-span-2 font-heading text-[30px] leading-none font-bold tabular-nums">
+          {a === null ? '–' : fmtAuthority(a)}
+        </span>
+        <b className="font-heading text-[15px]">
+          {a === null ? 'Link strength' : from === 'ahrefs' ? 'Domain Rating (Ahrefs)' : 'Open PageRank ×10'}
+        </b>
+        <p className="m-0 max-w-[70ch] text-[15px] text-body-soft">
+          {a === null ? (
+            'Link strength isn’t available for this site right now.'
+          ) : (
+            <LinkWords a={a} you={isYou} src={from === 'ahrefs' ? 'DR' : 'OPR'} />
+          )}
+        </p>
+      </div>
     </article>
   )
 }
