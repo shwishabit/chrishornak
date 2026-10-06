@@ -58,15 +58,8 @@
    * "What you do well" list to page 2 and left page 1 half empty. Keep only small pieces
    * together, and keep a heading with what follows it. */
   .ac-theme aside, .ac-theme li, .ac-theme tr { break-inside: avoid; }
-  .ac-theme h2, .ac-theme h3, .ac-theme summary { break-after: avoid; }
-  /* Questions: a long answer may run onto the next page; the frame printed as an empty box
-   * at the foot of a page, and the open / close marks mean nothing on paper. */
-  .ac-print-flat { display: block !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; background: none !important; }
-  .ac-theme summary > span[aria-hidden] { display: none; }
-  .ac-print-flat summary { padding-left: 0 !important; padding-right: 0 !important; }
-  .ac-print-flat details > div { padding-left: 0 !important; padding-right: 0 !important; }
-  /* How we score isn't printed, so a link to it would lead nowhere on paper. */
-  .ac-print-flat a[href^="#"] { display: none; }
+  .ac-theme h2, .ac-theme h3 { break-after: avoid; }
+  /* Questions, How we score and How to grow are not printed (ac-noprint, Chris 2026-10-06). */
   /* Chrome splits grid layouts badly across pages (the offer box printed on top of the link
    * strength text). The page and the report card stack as plain blocks in print. */
   .ac-print-stack { display: block !important; }

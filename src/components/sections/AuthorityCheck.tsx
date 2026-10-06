@@ -1113,7 +1113,8 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
   return (
     <article aria-label={`Report card for ${site.domain}`} className="ac-card ac-reveal grid gap-7 rounded-2xl border border-line-strong bg-panel p-5 sm:p-7">
       <div className="grid gap-2">
-        <p className="m-0 text-sm text-muted-foreground">
+        {/* On a printed solo report this repeats the line above the headline. */}
+        <p className={`m-0 text-sm text-muted-foreground ${solo ? 'print:hidden' : ''}`}>
           {isYou && <YouTag />}
           <b className="font-semibold text-foreground">{site.domain}</b>
           {' · '}
@@ -1121,7 +1122,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </p>
         {s ? (
           <p className={`m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 ${sClass(tone)}`}>
-            <span className="ac-num font-heading text-[clamp(56px,8vw,76px)] leading-[.9] font-bold tracking-[-.03em] tabular-nums">
+            <span className="ac-num font-heading text-[clamp(56px,8vw,76px)] leading-[.9] font-bold tracking-[-.03em] tabular-nums print:text-[48px]">
               <CountUp value={s.overall} />
             </span>
             <span className="text-base text-muted-foreground">/ 100</span>
@@ -1365,15 +1366,15 @@ function Fixes({ r }: { r: AuthorityResult }) {
       <h3 className="m-0 font-heading text-[19px] font-bold">{title}</h3>
       <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3 print:grid-cols-3">
         {moves.map((m, i) => (
-          <li key={m.id} className="grid content-start gap-1.5 rounded-xl border border-line-strong p-4">
+          <li key={m.id} className="grid content-start gap-1.5 rounded-xl border border-line-strong p-4 print:gap-1 print:p-3">
             <span className="flex items-baseline justify-between gap-2">
               <span className="font-heading text-[13px] font-semibold text-muted-foreground">{i + 1}</span>
               <span className="font-heading text-[15px] font-bold whitespace-nowrap text-primary">
                 {upTo(m.points, m.graded)} {m.points === 1 && !m.graded ? 'point' : 'points'}
               </span>
             </span>
-            <b className="font-heading text-[16px] leading-snug">{m.title}</b>
-            <span className="text-[15px] text-body-soft">{m.body}</span>
+            <b className="font-heading text-[16px] leading-snug print:text-[15px]">{m.title}</b>
+            <span className="text-[15px] text-body-soft print:text-[13px] print:leading-snug">{m.body}</span>
             {m.who && <small className="text-[13px] text-muted-foreground">{m.who}</small>}
             {WHY[m.id] && (
               <small className="mt-1 border-t border-border pt-2 text-[13px] text-muted-foreground">
@@ -1716,12 +1717,6 @@ function Plus() {
 }
 
 function HowWeScore() {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const openAll = () => ref.current?.querySelectorAll('details').forEach((d) => (d.open = true))
-    window.addEventListener('beforeprint', openAll)
-    return () => window.removeEventListener('beforeprint', openAll)
-  }, [])
   const rows = (l: Letter) => [
     ...(l === 'authority' ? [{ id: 'links' as const, label: 'Link strength', pts: `up to ${LINK_POINTS}` }] : []),
     ...checksIn(l).map((c) => ({ id: c.id, label: c.label, pts: GRADED.has(c.id) ? `up to ${c.points}` : `${c.points}` })),
@@ -1735,7 +1730,7 @@ function HowWeScore() {
         Every check has a reason you can read for yourself. Most come from the guidelines Google gives the people who rate
         its search results. Open a part to see each check, its points and its source.
       </p>
-      <div ref={ref} className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
+      <div className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
         {LETTERS.map((l) => (
           <details key={l.id} className="group border-t border-border first:border-t-0">
             <summary className={SCORE_SUMMARY}>
@@ -1800,22 +1795,16 @@ function HowWeScore() {
  * see" box and "Based on Google's public guidance" (Chris, 2026-10-05). The one line the SEO
  * panel wanted seen (6 of 6) stays above the list, never folded away. Text and FAQPage schema
  * share lib/authority-check-faq.ts. Native <details>: no script, the answers stay in the HTML
- * for search and AI tools, and every answer opens before printing. ─── */
+ * for search and AI tools. Not printed (Chris, 2026-10-06: the printed report is the report). ─── */
 
 function Questions({ asOf, src }: { asOf: string | null; src: ReturnType<typeof authoritySource> }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const openAll = () => ref.current?.querySelectorAll('details').forEach((d) => (d.open = true))
-    window.addEventListener('beforeprint', openAll)
-    return () => window.removeEventListener('beforeprint', openAll)
-  }, [])
   return (
-    <section aria-labelledby="ac-faq" className="grid gap-3.5 border-t border-border pt-10">
+    <section aria-labelledby="ac-faq" className="ac-noprint grid gap-3.5 border-t border-border pt-10">
       <h2 id="ac-faq" className="m-0 font-heading text-[22px] font-bold">
         Questions
       </h2>
       <p className="m-0 max-w-[70ch] text-body-soft">{FAQ_LEAD}</p>
-      <div ref={ref} className="ac-print-flat grid overflow-hidden rounded-xl border border-line-strong bg-panel">
+      <div className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
         {AUTHORITY_FAQ.map((f) => (
           <details key={f.id} className="group border-t border-border first:border-t-0">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 font-heading text-[16px] font-semibold hover:bg-muted sm:px-5 [&::-webkit-details-marker]:hidden">
@@ -1869,6 +1858,17 @@ function ReportHead({ r }: { r: AuthorityResult }) {
     'inline-flex items-center gap-1.5 rounded-lg border border-line-strong bg-panel px-3 py-[7px] text-sm font-medium text-foreground hover:border-muted-foreground [&>svg]:h-4 [&>svg]:w-4'
   return (
     <div className="grid gap-3">
+      {/* Print only: what this is, for someone who never saw the tool (Chris, 2026-10-06). */}
+      <div className="mb-1 hidden gap-1 border-b border-border pb-3 print:grid">
+        <p className="m-0 flex flex-wrap items-baseline justify-between gap-x-4 font-heading text-[18px] font-bold">
+          Website Authority &amp; E-E-A-T Report
+          <span className="font-sans text-[12px] font-normal text-muted-foreground">Free Authority Check by Chris Hornak · chrishornak.com/authority-check</span>
+        </p>
+        <p className="m-0 text-[13px] text-body-soft">
+          A score out of 100 for how well a website shows experience, expertise, authority and trust (what Google calls{' '}
+          <span className="whitespace-nowrap">E-E-A-T</span>), with the fixes worth the most points. {FAQ_LEAD}
+        </p>
+      </div>
       <p className="m-0 text-sm text-muted-foreground">
         <b className="font-medium text-body-soft">{r.you.domain}</b>{' '}
         {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`} · {fmtDate(r.checkedAt)}
