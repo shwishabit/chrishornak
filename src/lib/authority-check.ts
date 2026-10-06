@@ -147,7 +147,8 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     points: 5,
     move: {
       title: 'Link your review profiles',
-      body: 'Link to your Google listing plus Yelp, BBB, G2 or the review site your customers use.',
+      // Not only local trades: a coach or consultant has no Yelp page (InLight, 2026-10-06).
+      body: 'Link your Google Business Profile, plus one site your customers review you on: Yelp or BBB for local work, Clutch or G2 for agencies and software, Trustpilot for anyone else.',
     },
   },
   {

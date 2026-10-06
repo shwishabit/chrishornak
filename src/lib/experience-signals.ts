@@ -23,8 +23,9 @@ const WORK_PATH_RE =
   /\/(?:[\w-]*-)?(?:case-results|verdicts|settlements|smile-gallery|transformations|gallery|galleries|portfolio|portfolio-items|our-work|see-our-work|recent-work|projects?|case-stud(?:y|ies)|before-(?:and-|&-)?after|success-stories|lookbook|showcase)(?:[\/.?#-]|$)/i
 // A page called just /work/ ("/work/instacart-content-marketing"), not "/how-we-work/".
 const WORK_SEGMENT_RE = /^\/work(?:\/|$)/i
+// "My Clients" / "Our Clients" is a client list, like the client-list headings below (inlightcoaching.com, 2026-10-06).
 const WORK_WORDS_RE =
-  /^(?:our |recent |view (?:our |the )?|see (?:our |the )?|read (?:the )?|explore (?:our )?)?(?:work|gallery|photo gallery|portfolio|projects|case stud(?:y|ies)|case results|smile gallery|before (?:and|&) after|success stories)$/i
+  /^(?:our |recent |view (?:our |the )?|see (?:our |the )?|read (?:the )?|explore (?:our )?)?(?:work|gallery|photo gallery|portfolio|projects|case stud(?:y|ies)|case results|smile gallery|before (?:and|&) after|success stories)$|^(?:my|our) clients$/i
 // A short heading that is only the work section's name (not "All our work is guaranteed").
 const WORK_HEADING_RE =
   /^(?:see |view |explore )?(?:recent (?:projects?|work|jobs|installs?|installations)|our (?:work|projects|portfolio|gallery|creations|cakes|designs)|(?:photo )?gallery|portfolio|before (?:and|&) after|featured projects?|project (?:gallery|spotlight)|case stud(?:y|ies)|(?:our|the) work|work we(?:'|’)ve done|smile gallery|case results|verdicts (?:and|&) settlements|transformations)$/i
@@ -113,7 +114,7 @@ function findWork(html: string, pageUrl: string): string | null {
     if (u.hostname.toLowerCase().replace(/^www\./, '') !== host) continue
     const words = extractText(inner)
     if (WORK_PATH_RE.test(u.pathname) || WORK_SEGMENT_RE.test(u.pathname) || WORK_WORDS_RE.test(words))
-      return `A link to “${(words || u.pathname).slice(0, 40)}” (${u.pathname.slice(0, 40)})`
+      return `A link to “${(words || u.pathname).slice(0, 40)}” (${(u.pathname + u.hash).slice(0, 40)})`
   }
   for (const m of html.matchAll(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/gi)) {
     const t = extractText(m[1]).trim()

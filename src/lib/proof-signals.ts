@@ -429,6 +429,8 @@ const PERSON_RES: { re: RegExp; listed: boolean }[] = [
   // "Hi, I'm Jane", "My name is Jane", "Meet Jane", a byline "By Michael Transon"
   { re: new RegExp(`\\b(?:Hi|Hello),?\\s+I(?:'|’)?m\\s+(${CAP})`), listed: true },
   { re: new RegExp(`\\bMy name is\\s+(${CAP})`), listed: true },
+  // "I'm Jane Smith, and…" without the "Hi"
+  { re: new RegExp(`\\bI(?:'|’)m\\s+${FULL}(?=\\s*[,.]|\\s+and\\b)`), listed: true },
   { re: new RegExp(`\\bMeet\\s+(${CAP})\\b(?!\\s+(?:the|our|us)\\b)`), listed: true },
   { re: new RegExp(`(?<!(?:site|website|designed|developed|powered|built|made|photo|photos|image|images|hosted|managed)\\s)\\bBy\\s+${FULL}`), listed: true },
 ]
@@ -518,6 +520,27 @@ function readPerson(html: string, jsonLdBlocks: RegExpMatchArray | null): string
   }
   const found = named(text)
   if (found) return `Found “${found.name}”: ${around(text, found.at, found.name.length + 20)}`
+  // A personal LinkedIn link whose address spells a name on the page: linkedin.com/in/svetlanawhitener
+  // + "Svetlana Whitener" (inlightcoaching.com, 2026-10-06). Covers first names the Census list lacks.
+  // Reads the text before the quote cut: the link is the site's own (quote blocks are already out),
+  // so the name it spells is staff, and a stray quote mark can't hide it (InLight's did).
+  const ownText = extractText(own)
+  for (const { href } of anchors(own)) {
+    const slug = href.match(/linkedin\.com\/in\/([^/?#]+)/i)?.[1]
+    if (!slug) continue
+    let raw = slug
+    try {
+      raw = decodeURIComponent(slug) // a bad %-escape would throw
+    } catch {}
+    const letters = raw.toLowerCase().split('-').filter((p) => !/\d/.test(p)).join('').replace(/[^a-z]/g, '')
+    if (letters.length < 6) continue
+    for (const m of ownText.matchAll(new RegExp(FULL, 'g'))) {
+      const name = m[1].trim()
+      const flat = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
+      if (!NOT_A_NAME.test(name) && (flat(name) === letters || flat(name.replace(/\s[A-Z]\.\s/, ' ')) === letters))
+        return `Found “${name}”, with a LinkedIn profile (/in/${slug.slice(0, 40)})`
+    }
+  }
   for (const img of own.matchAll(/<img\b[^>]*>/gi)) {
     const attr = (n: string) =>
       img[0].match(new RegExp(`\\s${n}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'>]+))`, 'i'))?.slice(1).find((v) => v !== undefined) ?? ''
