@@ -1128,7 +1128,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
               We couldn&apos;t read {isYou ? 'your' : 'this'} homepage, so there&apos;s no score.
             </p>
             <p className="m-0 max-w-[64ch] text-[15px] text-body-soft">
-              {site.pageError} {a !== null ? 'Its link strength still shows below.' : ''}
+              {site.pageError} {a !== null ? `${isYou ? 'Your' : 'Its'} link strength still shows below.` : ''}
             </p>
           </div>
         )}
