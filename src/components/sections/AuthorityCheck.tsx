@@ -375,7 +375,7 @@ function Hero({
           <ul className="m-0 grid list-none gap-2.5 p-0">
             {LETTERS.map((l) => (
               <li key={l.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5">
-                <Badge id={l.id} />
+                <Badge id={l.id} size="lg" />
                 <span className="min-w-0 text-sm leading-snug">
                   <b className="font-semibold">{l.label}</b>
                   <small className="block text-[13px] text-muted-foreground">{HERO_PLAIN[l.id]}</small>
@@ -401,8 +401,10 @@ const sClass = (s: Standing | null) => (s ? `ac-s-${s}` : '')
 /** Each part's icon (the same ones as "How to grow each score"), in place of E-E-A-T letters. */
 const BADGE_SIZE = {
   sm: 'h-5 w-5 text-muted-foreground [&>svg]:h-3.5 [&>svg]:w-3.5',
+  /** The report card's four part tiles: 50% bigger than sm (Chris, 2026-10-06). */
+  card: 'h-7.5 w-7.5 text-foreground [&>svg]:h-5.25 [&>svg]:w-5.25',
   md: 'h-6 w-6 text-foreground [&>svg]:h-4 [&>svg]:w-4',
-  /** The score rows: 50% bigger than md. */
+  /** The score rows, and the hero's "One score out of 100" list (2026-10-06): 50% bigger than md. */
   lg: 'h-9 w-9 text-foreground [&>svg]:h-6 [&>svg]:w-6',
 }
 
@@ -1143,7 +1145,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
             return (
               <li key={l.id} className={`ac-tint grid content-start gap-2 rounded-xl border border-border p-3.5 ${sClass(t)}`}>
                 <span className="flex items-center gap-2 font-heading text-[15px] font-semibold">
-                  <Badge id={l.id} size="sm" />
+                  <Badge id={l.id} size="card" />
                   {l.label}
                 </span>
                 <span className="ac-num font-heading text-[22px] leading-tight font-semibold">
