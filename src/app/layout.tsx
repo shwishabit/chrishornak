@@ -133,7 +133,7 @@ export default function RootLayout({
             '@type': 'Person',
             name: 'Chris Hornak',
             url: siteConfig.domain,
-            image: `${siteConfig.domain}/images/chris-hornak.jpg`,
+            image: `${siteConfig.domain}/images/chris-hornak-headshot.jpg`,
             jobTitle: 'Marketing Strategist',
             worksFor: [
               { '@type': 'Organization', name: 'Blog Hands' },

@@ -39,9 +39,9 @@ export default function HomePage() {
           name: siteConfig.defaultTitle,
           primaryImageOfPage: {
             '@type': 'ImageObject',
-            url: `${siteConfig.domain}/images/chris-hornak.jpg`,
-            width: 400,
-            height: 400,
+            url: `${siteConfig.domain}/images/chris-hornak-headshot.jpg`,
+            width: 1140,
+            height: 1140,
             caption: 'Chris Hornak — marketing strategist',
           },
         }}

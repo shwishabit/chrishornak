@@ -57,8 +57,8 @@ export function About() {
                 className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full ring-2 ring-primary/30 transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(45,212,168,0.2)] md:h-32 md:w-32"
               >
                 <Image
-                  src="/images/chris-hornak.jpg"
-                  alt="Chris Hornak — marketing strategist"
+                  src="/images/chris-hornak-headshot.jpg"
+                  alt="Headshot of Chris Hornak, marketing strategist"
                   fill
                   className="object-cover"
                   sizes="128px"
