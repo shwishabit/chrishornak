@@ -111,4 +111,6 @@ export const OWN_CHOICES: string[] = [
   'Review spread and Seen elsewhere check the links on your site. Google’s raters look at the review profiles and the coverage themselves, so these two checks stand in for that.',
   'Domain Rating is Ahrefs’ estimate of your links, and Open PageRank is built from public crawl data. Neither is a Google score.',
   'Google’s raters are told many small local businesses have little press or reputation online, and that this is not a sign of low quality.',
+  // Chris, 2026-10-06: Wikidata stays "Good to know", not a bonus.
+  'Known entity (Wikidata) is shown but not scored. Anyone can add a Wikidata entry, including the owner, so having one proves little, and most small businesses don’t have one.',
 ]
