@@ -1,0 +1,283 @@
+<title>Authority Check Evidence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: one reading column; each check is a row (check name + points | the proposed line + its source). */
+:root {
+  --bg: #f6f7f5;
+  --panel: #ffffff;
+  --fg: #1b211e;
+  --soft: #4b5550;
+  --muted: #6d7671;
+  --line: #dde2de;
+  --accent: #116149;
+  --accent-tint: #e5f1ec;
+  --warn: #8a5a00;
+  --warn-tint: #fbf1dc;
+  --bad: #9b2c2c;
+  --bad-tint: #fbe7e5;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614; --panel: #1a201d; --fg: #e8ece9; --soft: #b9c2bd; --muted: #8e9893; --line: #2c3430;
+    --accent: #6cc7a4; --accent-tint: #19322a; --warn: #e3b25c; --warn-tint: #33291a; --bad: #ef8f86; --bad-tint: #3a2120;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e8ece9; --soft: #b9c2bd; --muted: #8e9893; --line: #2c3430;
+  --accent: #6cc7a4; --accent-tint: #19322a; --warn: #e3b25c; --warn-tint: #33291a; --bad: #ef8f86; --bad-tint: #3a2120;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 400 16px/1.55 var(--body); padding: 40px 16px 64px; }
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 5vw, 40px); line-height: 1.1; }
+h2 { font-size: 24px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+h2 small { font: 500 14px var(--body); color: var(--muted); }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.lead { display: grid; gap: 14px; max-width: 66ch; color: var(--soft); }
+.lead p:first-child { color: var(--fg); font-size: 18px; }
+.key { display: flex; flex-wrap: wrap; gap: 8px; }
+.section { display: grid; gap: 14px; }
+.rows { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 24px; padding: 20px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.name { display: grid; align-content: start; gap: 2px; }
+.name b { font-weight: 600; }
+.name span { font: 500 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.body { display: grid; gap: 10px; min-width: 0; }
+.why { font-size: 17px; line-height: 1.45; }
+.why em { font-style: normal; font-weight: 600; color: var(--accent); }
+.src { font-size: 14px; color: var(--soft); overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px/1 var(--mono); padding: 5px 8px; border-radius: 99px; background: var(--accent-tint); color: var(--accent); letter-spacing: 0.02em; }
+.chip.warn { background: var(--warn-tint); color: var(--warn); }
+.chip.bad { background: var(--bad-tint); color: var(--bad); }
+.chip.plain { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.note { font-size: 14px; color: var(--soft); padding-left: 12px; border-left: 2px solid var(--warn); }
+details { font-size: 14px; color: var(--soft); }
+summary { cursor: pointer; color: var(--fg); font-weight: 500; }
+details ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.weight { background: var(--accent-tint); border-radius: 12px; padding: 18px 20px; display: grid; gap: 6px; }
+.weight p:first-child { font-family: var(--display); font-size: 20px; line-height: 1.3; }
+.list { margin: 0; padding-left: 20px; display: grid; gap: 10px; max-width: 70ch; }
+.list b { font-weight: 600; }
+.gaps { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.files { font: 13px var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; }
+}
+</style>
+
+<div class="wrap">
+  <header class="lead">
+    <h1>Authority Check evidence</h1>
+    <p>One proposed "Why:" line for each of the 13 scored checks, with its source. Pick what goes live. Nothing is on the site yet.</p>
+    <p>Research from 4 agents on Oct 6, 2026: 64 sources found, full notes in the files listed at the bottom. Every line says what builds trust. None says "this ranks you higher", because Google says E-E-A-T is not a ranking factor.</p>
+    <div class="key" aria-label="Chip key">
+      <span class="chip">Google's own words</span>
+      <span class="chip plain">Text checked</span>
+      <span class="chip warn">Re-check before live</span>
+      <span class="chip bad">Dated (before 2019)</span>
+    </div>
+  </header>
+
+  <section class="weight" aria-label="Why Trust is 40 points">
+    <p>"Trust is the most important member of the E-E-A-T family."</p>
+    <p class="src">Google Search Quality Rater Guidelines, Sept 2025, p.27. This backs Trust being 40 of the 100 points. Google's own help page says the same: "Of these aspects, trust is most important."</p>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="section" aria-labelledby="h-exp">
+    <h2 id="h-exp">Experience <small>20 points</small></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="name"><b>Your work shown</b><span>10 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters rate original photos made by the site itself as high originality.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 7.1 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Also found</summary><ul>
+            <li>Houzz 2024 (n = 2,866 homeowners): 47% pick a pro with experience in their kind of project. <a href="https://pro.houzz.com/pro-learn/blog/what-homeowners-want-from-pros-right-now">Source</a></li>
+            <li>No survey with a number on job photos. The Houzz "38% hired because of before/after photos" figure has no source page, so it is not used.</li>
+          </ul></details>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Track record</b><span>10 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters count years of hands-on experience as a sign of expertise.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 3.4 and an example that cites "over 20 years of experience" · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <p class="note">The "20 years" example is a forum writer, not a business. The line stays general for that reason.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERTISE -->
+  <section class="section" aria-labelledby="h-xp">
+    <h2 id="h-xp">Expertise <small>20 points</small></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="name"><b>Real people</b><span>8 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters are told every website should make clear who is responsible for it.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 2.5.2 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Also found</summary><ul>
+            <li>DreamHost, Nov 2025 (n = 1,201): 47% say real photos of the team or location build trust. A web host's own survey. <a href="https://www.dreamhost.com/blog/dreamhost-2026-local-business-trust-index/">Source</a></li>
+            <li>Nielsen Norman Group, 2019 (70+ users): people "liked to see photos of real employees". <a href="https://www.nngroup.com/articles/about-us-information-on-websites/">Source</a></li>
+          </ul></details>
+          <p class="note">Google says nothing about photos. The "with a photo" part of the fix rests on DreamHost and Nielsen Norman Group only.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Credentials</b><span>6 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters look for "verifiable credentials", not just claims of "I'm an expert!"</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 5.6 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <p class="note">No modern study on licenses shown on a small-business site was found. A skeptic may cite Zyppy 2023: author info showed no link to traffic.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Focus: offer pages</b><span>6 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google says a logical site structure helps people and search engines understand how your pages relate.</p>
+          <p class="src">Google SEO Starter Guide, 2025 · <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide">Source</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Sharper, but a ranking claim</summary><ul>
+            <li>47 local-search experts rank "a dedicated page for each service" #1 for local organic results. Expert opinion, not data. <a href="https://whitespark.ca/local-search-ranking-factors/">Whitespark, 2025</a></li>
+          </ul></details>
+          <p class="note">Weakest of the 13. Google never says "one page per service".</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTHORITY -->
+  <section class="section" aria-labelledby="h-auth">
+    <h2 id="h-auth">Authority <small>20 points</small></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="name"><b>Link strength</b><span>up to 11</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google says one sign of quality is whether other well-known websites link to or mention the content.</p>
+          <p class="src">Google, How Search Works: Ranking results · <a href="https://www.google.com/intl/en_us/search/howsearchworks/how-search-works/ranking-results/">Source</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <p class="note">Add a footnote: "Domain Rating is Ahrefs' estimate, not a Google score." Ahrefs itself says DR is "purely link-based". Also, cut the tool's line "Links grow over months". No source gives a time.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Review spread</b><span>up to 5</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> The average consumer uses six review sites when choosing a business.</p>
+          <p class="src">BrightLocal Local Consumer Review Survey, 2026 (n = 1,002 US adults) · <a href="https://www.brightlocal.com/research/local-consumer-review-survey/">Source</a></p>
+          <div class="chips"><span class="chip plain">Survey</span><span class="chip warn">Re-check before live</span></div>
+          <p class="note">The tool checks that your site links to the profiles. Google's raters look at the profiles themselves. So this check is a stand-in, and the "How we score" page should say so.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Seen elsewhere</b><span>up to 4</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters look for news articles, expert recommendations and independent ratings about a business.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 3.3.1 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <p class="note">No study with a number shows "as seen in" logos raise trust. Raters are also told small local businesses often have little of this, and that it is not a sign of low quality.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="section" aria-labelledby="h-trust">
+    <h2 id="h-trust">Trust <small>40 points</small></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="name"><b>Reviews on your site</b><span>15 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Reviews from trusted peers are one of the most important things people use to judge a company.</p>
+          <p class="src">Nielsen Norman Group, "About Us" study, 2019 (70+ users) · <a href="https://www.nngroup.com/articles/about-us-information-on-websites/">Source</a></p>
+          <div class="chips"><span class="chip plain">Usability study</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Also found</summary><ul>
+            <li>BrightLocal 2026 (n = 1,002): 49% trust online reviews as much as people they know. About review sites, not reviews on your own site. Re-check before live. <a href="https://www.brightlocal.com/research/local-consumer-review-survey/">Source</a></li>
+            <li>Rater Guidelines 2025, section 3.3.2: many detailed, trustworthy, positive reviews count as evidence of a good reputation.</li>
+          </ul></details>
+          <p class="note">Google tells raters to "be skeptical" of reviews the owner could have written. So the line must not say raters reward testimonials. Real names and real detail matter.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>How to reach you</b><span>11 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters call contact information "extremely important" for sites that handle money.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 2.5.3 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Also found</summary><ul>
+            <li>Stanford Web Credibility, 2002: "A simple way to boost your site's credibility is by making your contact information clear." <a href="https://credibility.stanford.edu/guidelines/index.html">Source</a> (dated)</li>
+          </ul></details>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>About page</b><span>8 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google tells its raters to start at the "About us" page when judging a site.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, section 3.4, p.27 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Secure site</b><span>2 pts</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google asks every site to use HTTPS "to keep everyone safe on the web."</p>
+          <p class="src">Google Search Central blog, 2014 · <a href="https://developers.google.com/search/blog/2014/08/https-as-ranking-signal">Source</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip bad">Dated</span><span class="chip warn">Re-check before live</span></div>
+          <p class="note">Thin evidence, which fits the small 2 points. No "Not secure" survey could be opened.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="name"><b>Recently updated</b><span>up to 4</span></div>
+        <div class="body">
+          <p class="why"><em>Why:</em> Google's raters are told an abandoned website that nobody maintains is a reason for a low quality rating.</p>
+          <p class="src">Search Quality Rater Guidelines, 2025, p.158 · <a href="https://guidelines.raterhub.com/searchqualityevaluatorguidelines.pdf">PDF</a></p>
+          <div class="chips"><span class="chip">Google's own words</span><span class="chip plain">Text checked</span></div>
+          <details><summary>Also found</summary><ul>
+            <li>Stanford Web Credibility, 2002: "People assign more credibility to sites that show they have been recently updated or reviewed." <a href="https://credibility.stanford.edu/guidelines/index.html">Source</a> (dated)</li>
+          </ul></details>
+          <p class="note">The same page says "Freshness is generally less of a concern." And no source sets the 2-month and 6-month windows. Those are our own choice, and the "How we score" page should say so.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="h-chg">
+    <h2 id="h-chg">What the research changes</h2>
+    <ol class="list">
+      <li><b>Cut "Links grow over months, as other sites link to you."</b> No source gives a time.</li>
+      <li><b>Say on "How we score" what is our own choice:</b> the 2- and 6-month windows, and that Review spread and Seen elsewhere check links on your site, not the profiles themselves.</li>
+      <li><b>Before anything goes live, I re-open the 3 sources marked "Re-check"</b> (BrightLocal, Google 2014, and DreamHost if you use it). Their numbers came through a summary tool, not the page text.</li>
+    </ol>
+  </section>
+
+  <section class="gaps" aria-labelledby="h-gaps">
+    <h2 id="h-gaps">What no one could find</h2>
+    <ul class="list" style="margin-top:12px">
+      <li>A study with a number on "years in business" as a trust factor.</li>
+      <li>A study on testimonials shown on a business's own homepage. All review data is about review sites.</li>
+      <li>A modern study on licenses or certifications shown on a small-business site.</li>
+      <li>A study on press logos, podcasts or associations as trust signals for small businesses.</li>
+      <li>A "Not secure" warning survey we could open.</li>
+    </ul>
+  </section>
+
+  <p class="files">Full notes: Projects/chrishornak/research/authority-check-evidence/ experience.md · expertise.md · authority.md · trust.md</p>
+</div>
