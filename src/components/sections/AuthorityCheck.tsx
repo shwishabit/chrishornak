@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { OWN_CHOICES, TRUST_WEIGHT, WHY } from '@/lib/authority-check-evidence'
 import {
+  BAND_FROM,
   FRESH_DAYS,
   LETTERS,
   LINK_BANDS,
@@ -32,6 +33,7 @@ import {
   ranked,
   scoresOf,
   shareQuery,
+  soloHeadline,
   standing,
   summary,
   type AuthorityResult,
@@ -1121,13 +1123,16 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
           {solo ? 'checked alone' : me.place ? `${ordinal(me.place)} of ${read}` : 'not read'}
         </p>
         {s ? (
-          <p className={`m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 ${sClass(tone)}`}>
-            <span className="ac-num font-heading text-[clamp(56px,8vw,76px)] leading-[.9] font-bold tracking-[-.03em] tabular-nums print:text-[48px]">
-              <CountUp value={s.overall} />
-            </span>
-            <span className="text-base text-muted-foreground">/ 100</span>
-            <span className="ac-pill rounded-full px-2.5 py-1 text-[13px] font-semibold">{band(s.overall)}</span>
-          </p>
+          <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
+            <p className={`m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 ${sClass(tone)}`}>
+              <span className="ac-num font-heading text-[clamp(56px,8vw,76px)] leading-[.9] font-bold tracking-[-.03em] tabular-nums print:text-[48px]">
+                <CountUp value={s.overall} />
+              </span>
+              <span className="text-base text-muted-foreground">/ 100</span>
+              <span className="ac-pill rounded-full px-2.5 py-1 text-[13px] font-semibold">{band(s.overall)}</span>
+            </p>
+            {solo && <ScoreScale value={s.overall} />}
+          </div>
         ) : (
           <div className="grid gap-1">
             <p className="m-0 font-heading text-[22px] font-bold">
@@ -1283,6 +1288,62 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </p>
       </div>
     </article>
+  )
+}
+
+/**
+ * Where a solo score sits on 0–100, in the space right of the big number (Chris, 2026-10-06:
+ * picked "scale + next step" over a potential score or moving the parts). Same bands as band().
+ */
+function ScoreScale({ value }: { value: number }) {
+  const segs = [
+    { label: 'Needs work', from: 0, to: BAND_FROM.fair, color: 'var(--ac-low)' },
+    { label: 'Fair', from: BAND_FROM.fair, to: BAND_FROM.strong, color: 'var(--ac-behind)' },
+    { label: 'Strong', from: BAND_FROM.strong, to: 100, color: 'var(--ac-ahead)' },
+  ]
+  const at = Math.max(0, Math.min(100, value))
+  return (
+    <div
+      role="img"
+      aria-label={`${value} on a scale of 0 to 100. Under ${BAND_FROM.fair} needs work, ${BAND_FROM.fair} to ${BAND_FROM.strong - 1} is fair, ${BAND_FROM.strong} and up is strong.`}
+      className="relative grid min-w-[240px] max-w-[460px] flex-1 gap-1.5 pt-4 pb-0.5"
+    >
+      <span
+        aria-hidden="true"
+        className="absolute top-0 h-0 w-0 -translate-x-1/2"
+        style={{
+          left: `${at}%`,
+          borderLeft: '7px solid transparent',
+          borderRight: '7px solid transparent',
+          borderTop: '9px solid var(--color-foreground)',
+        }}
+      />
+      <span aria-hidden="true" className="flex h-2.5 overflow-hidden rounded-full">
+        {segs.map((g) => {
+          const here = value >= g.from && (value < g.to || g.to === 100)
+          return (
+            <i
+              key={g.label}
+              className="block h-full"
+              style={{ width: `${g.to - g.from}%`, background: `color-mix(in srgb, ${g.color} ${here ? 90 : 28}%, transparent)` }}
+            />
+          )
+        })}
+      </span>
+      <span aria-hidden="true" className="flex text-[12px] leading-tight">
+        {segs.map((g) => {
+          const here = value >= g.from && (value < g.to || g.to === 100)
+          return (
+            <span key={g.label} className={`grid ${here ? 'font-semibold text-foreground' : 'text-muted-foreground'}`} style={{ width: `${g.to - g.from}%` }}>
+              {g.label}
+              <small className="text-[11px] font-normal text-muted-foreground tabular-nums">
+                {g.from}–{g.to === 100 ? 100 : g.to - 1}
+              </small>
+            </span>
+          )
+        })}
+      </span>
+    </div>
   )
 }
 
@@ -1874,7 +1935,7 @@ function ReportHead({ r }: { r: AuthorityResult }) {
         {n === 0 ? 'alone' : `vs ${n} rival${n > 1 ? 's' : ''}`} · {fmtDate(r.checkedAt)}
       </p>
       <h2 id="ac-result" className="m-0 max-w-[36ch] font-heading text-[clamp(24px,3.4vw,32px)] leading-tight font-bold text-balance">
-        {summary(r)}
+        {r.rivals.length === 0 ? soloHeadline(r) : summary(r)}
       </h2>
       <div className="ac-noprint flex flex-wrap items-center gap-2">
         <button

@@ -457,8 +457,11 @@ export function scoresOf(s: SiteResult, r: AuthorityResult): Scores | null {
   }
 }
 
+/** Where each overall band starts (the 0–100 scale on a solo report card uses these too). */
+export const BAND_FROM = { fair: 40, strong: 70 } as const
+
 export function band(overall: number): 'Strong' | 'Fair' | 'Needs work' {
-  return overall >= 70 ? 'Strong' : overall >= 40 ? 'Fair' : 'Needs work'
+  return overall >= BAND_FROM.strong ? 'Strong' : overall >= BAND_FROM.fair ? 'Fair' : 'Needs work'
 }
 
 /* ── Order and colours ──────────────────────────────────────────────────── */
@@ -536,6 +539,23 @@ export function summary(r: AuthorityResult): string {
   if (top.scores!.overall - mine < OVERALL_TIE)
     return `You’re about level with ${top.site.domain}: ${top.scores!.overall} to your ${mine}, ${ordinal(me.place!)} of ${n}.`
   return `You’re ${ordinal(me.place!)} of ${n}. ${top.site.domain} leads with ${top.scores!.overall}, you have ${mine}.`
+}
+
+/**
+ * A solo check's headline. The score and its band already show right under it, so the
+ * headline says what the first fixes could add (Chris, 2026-10-06: "Your score is 95 out of
+ * 100: strong" and "95 / 100 Strong" said the same thing). "Up to": graded checks can earn less.
+ */
+export function soloHeadline(r: AuthorityResult): string {
+  const mine = scoresOf(r.you, r)?.overall
+  const moves = nextMoves(r)
+  if (mine === undefined || moves.length === 0) return summary(r)
+  const gain = Math.min(
+    moves.reduce((n, m) => n + m.points, 0),
+    100 - mine,
+  )
+  const lead = moves.length === 1 ? 'Your first fix' : `Your first ${moves.length} fixes`
+  return `${lead} could add up to ${gain} ${gain === 1 ? 'point' : 'points'}.`
 }
 
 /* ── Input ──────────────────────────────────────────────────────────────── */
