@@ -44,6 +44,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.domain),
   alternates: {
     canonical: '/',
+    // The blog feed (feed.xml). Pages that set their own alternates replace this whole
+    // block (no deep merge), so the homepage and pages without their own carry it.
+    types: { 'application/rss+xml': [{ url: '/feed.xml', title: 'Chris Hornak' }] },
   },
   openGraph: {
     type: 'website',

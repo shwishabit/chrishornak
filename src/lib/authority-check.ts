@@ -1,16 +1,17 @@
 /* ── Authority Check: shared logic (client + server) ──────────────────────
  * One score out of 100, in four parts named after Google's E-E-A-T (our own
  * score, built from Google's public guidance; Google gives no E-E-A-T score).
- * 11 scored checks, each worth its own points (SEO panel review, rounds 1–5,
- * 2026-10-02):
+ * 12 scored checks, each worth its own points (SEO panel review, rounds 1–5,
+ * 2026-10-02; Recently updated added 2026-10-05):
  *   Experience 20 = your work shown 10 + track record 6, or 10 when strong
  *   Expertise  20 = real people 8 + credentials 6 + focus (offer pages) 6
  *   Authority  20 = link strength 11 (Ahrefs DR in bands; Open PageRank ×10
- *                   for a site Ahrefs has no rating for, or when Ahrefs is
- *                   down) + review spread 5 + seen elsewhere 4
- *   Trust      40 = reviews on your site 15 + how to reach you 13 + About
- *                   page 8 + secure site 4. Trust counts double because
- *                   Google: "Of these aspects, trust is most important."
+ *                   for a site Ahrefs has no rating for or didn't answer for,
+ *                   or when Ahrefs is down) + review spread 5 + seen elsewhere 4
+ *   Trust      40 = reviews on your site 15 + how to reach you 11 + About
+ *                   page 8 + secure site 2 + recently updated 4 (2 within 6
+ *                   months). Trust counts double because Google: "Of these
+ *                   aspects, trust is most important."
  * Plus "good to know" rows, shown and never scored (schema, what you do,
  * where you work). The weights live in PROOF_CHECKS and LINK_BANDS only.
  * ─────────────────────────────────────────────────────────────────────── */
@@ -76,6 +77,8 @@ export type ProofFacts = ProofSignals & {
   hasTrackRecord: boolean
   hasFocus: boolean
   hasSeen: boolean
+  /** Recently updated: set after the extra reads (authority-read.ts addUpdated), false on the homepage pass. */
+  hasUpdated: boolean
 }
 
 export interface ProofCheck {
@@ -88,7 +91,7 @@ export interface ProofCheck {
   move: { title: string; body: string }
 }
 
-/** The 11 scored checks, in table order (also the last tie-break for the first moves). */
+/** The 12 scored checks, in table order (also the last tie-break for the first moves). */
 export const PROOF_CHECKS: readonly ProofCheck[] = [
   {
     id: 'work',
@@ -172,7 +175,8 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     group: 'trust',
     label: 'How to reach you',
     signal: 'hasAddressInfo',
-    points: 13,
+    // 13 → 11 (2026-10-05): pays for Recently updated, with Secure site 4 → 2.
+    points: 11,
     move: { title: 'Show how to reach you', body: 'Put your phone number or street address on your homepage or contact page.' },
   },
   {
@@ -188,10 +192,25 @@ export const PROOF_CHECKS: readonly ProofCheck[] = [
     group: 'trust',
     label: 'Secure site',
     signal: 'isHttps',
-    points: 4,
+    // 4 → 2 (2026-10-05): almost every site passes (SEO panel, Shepard: "near-gate" at 2).
+    points: 2,
     move: {
       title: 'Turn on HTTPS',
       body: 'Ask your host for a free SSL certificate, so browsers stop calling your site "Not secure".',
+    },
+  },
+  {
+    // Scored from 2026-10-05 (Chris: fresh content is core to growing visibility). The panel
+    // kept it shown-only because sitemap dates are easy to fake; freshness.ts only trusts the
+    // blog feed's newest post or a sitemap date its page confirms. Graded: see pointsFor.
+    id: 'updated',
+    group: 'trust',
+    label: 'Recently updated',
+    signal: 'hasUpdated',
+    points: 4,
+    move: {
+      title: 'Publish something new',
+      body: 'Publish a dated blog post, or update a page with new prices, photos or recent jobs. A new post in your blog feed counts best.',
     },
   },
 ]
@@ -240,17 +259,12 @@ export const SHOWN_CHECKS: readonly ShownCheck[] = [
     label: 'Known entity (Wikidata)',
     note: 'A Wikidata entry that names your site. Most small businesses don’t have one, so it can only add.',
   },
-  {
-    // SEO panel round 2 (Shepard, Shaw, Fishkin: shown only; King: CMSs stamp every page with
-    // today's date). Built 2026-10-05 at Chris's ask. ✓ = a real date in the last 2 months (Chris).
-    id: 'updated',
-    label: 'Recently updated',
-    note: 'A page date in your sitemap from the last 2 months. Not scored: many sites stamp every page with today’s date.',
-  },
 ]
 
-/** A ✓ for "Recently updated": the newest sitemap date is this recent (2 months, Chris 2026-10-05). */
+/** Recently updated: full points when the newest trusted date is this recent (2 months, Chris 2026-10-05)… */
 export const FRESH_DAYS = 61
+/** …half points up to this (6 months). Older earns none. */
+export const FRESH_PART_DAYS = 183
 
 /** The site's newest trusted date (freshness.ts readFreshness). */
 export interface Updated {
@@ -261,9 +275,10 @@ export interface Updated {
   source?: 'feed' | 'page'
   /**
    * With no date: none = no sitemap or feed found · no-dates = the sitemap has no dates ·
-   * stamped = most pages share one date · unconfirmed = the newest page shows no matching date.
+   * stamped = most pages share one date · unconfirmed = the newest pages show no matching date ·
+   * not-read = the sitemap's pages couldn't be read in time, so nothing was checked.
    */
-  why?: 'none' | 'no-dates' | 'stamped' | 'unconfirmed'
+  why?: 'none' | 'no-dates' | 'stamped' | 'unconfirmed' | 'not-read'
   /** unconfirmed: what the sitemap said. */
   claimed?: string
   claimedPath?: string
@@ -280,7 +295,7 @@ export const LETTERS: readonly LetterInfo[] = [
   { id: 'experience', label: 'Experience', hint: 'your work and track record', points: 20 },
   { id: 'expertise', label: 'Expertise', hint: 'people, credentials, offer pages', points: 20 },
   { id: 'authority', label: 'Authority', hint: 'link strength, review sites, mentions', points: 20 },
-  { id: 'trust', label: 'Trust', hint: '4 checks, incl. reviews', points: 40 },
+  { id: 'trust', label: 'Trust', hint: '5 checks, incl. reviews and recent updates', points: 40 },
 ]
 
 export const checksIn = (g: ProofGroup) => PROOF_CHECKS.filter((c) => c.group === g)
@@ -298,8 +313,12 @@ export interface SiteResult {
   linkingSites?: number | null
   /** Ahrefs Domain Rating (0–100). Shown only, never stored (licence). */
   dr?: number | null
+  /** This site's own Ahrefs call failed (timeout, 429, 5xx), as opposed to Ahrefs having no rating. */
+  drFailed?: boolean
   /** Track record level: 1 = one sign (6 points), 2 = strong (10 points). */
   trackLevel?: 0 | 1 | 2
+  /** Recently updated: 2 = a trusted date in the last 2 months (4 points), 1 = in the last 6 (2 points). */
+  freshLevel?: 0 | 1 | 2
   /** How many review sites the homepage links to (Review spread: 1 = 2 points, 2 = 4, 3+ = 5). */
   reviewSiteCount?: number
   /** How many other places list or feature the site (Seen elsewhere: 1 = 2 points, 2+ = 4). */
@@ -410,6 +429,7 @@ export function pointsFor(c: ProofCheck, s: SiteResult): number {
   if (c.id === 'track') return s.trackLevel === 2 ? c.points : 6
   if (c.id === 'reviewSites') return [0, 2, 4, 5][Math.min(Math.max(s.reviewSiteCount ?? 1, 1), 3)]
   if (c.id === 'seen') return (s.seenCount ?? 1) >= 2 ? c.points : 2
+  if (c.id === 'updated') return s.freshLevel === 2 ? c.points : 2
   return c.points
 }
 
@@ -569,7 +589,7 @@ export interface Move {
 }
 
 /** Checks that can earn less than full points (see pointsFor). */
-export const GRADED: ReadonlySet<ProofId> = new Set(['track', 'reviewSites', 'seen'])
+export const GRADED: ReadonlySet<ProofId> = new Set(['track', 'reviewSites', 'seen', 'updated'])
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
@@ -654,7 +674,8 @@ export function upgrades(r: AuthorityResult): Move[] {
     const ideas = ['Yelp', 'BBB', 'Trustpilot'].filter((x) => !new RegExp(`\\b${x}\\b`, 'i').test(found)).slice(0, 2)
     up(
       'reviewSites',
-      5 - [0, 2, 4, 5][n],
+      // The next step only: 1 → 2 sites is +2, 2 → 3 is +1 (audit 2026-10-05: it said +3 for "one more").
+      [0, 2, 4, 5][Math.min(n + 1, 3)] - [0, 2, 4, 5][n],
       'Link one more review site',
       `${found ? `You link to ${found}. ` : ''}Add a link to one more site where customers review you, like your ${ideas.join(' or ')} page, next to the others in your footer. Houzz, Angi, Avvo, Healthgrades, Clutch and G2 count too.`,
     )
@@ -671,6 +692,15 @@ export function upgrades(r: AuthorityResult): Move[] {
       PROOF_CHECKS.find((c) => c.id === 'seen')!.points - 2,
       'Link one more place that lists you',
       `${found ? `You link to ${found}. ` : ''}Add a link to one more, like ${ideas.slice(0, -1).join(', ')} or ${ideas[ideas.length - 1]}. Put it on your About page or in your footer.`,
+    )
+  }
+  if (s.proof.includes('updated') && s.freshLevel !== 2) {
+    const found = s.evidence?.updated
+    up(
+      'updated',
+      PROOF_CHECKS.find((c) => c.id === 'updated')!.points - 2,
+      'Publish something this month',
+      `${found ? `${found}. ` : ''}Publish a dated blog post, or update a page with new prices, photos or recent jobs. A date in the last 2 months earns full points.`,
     )
   }
   return out

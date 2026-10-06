@@ -13,16 +13,16 @@
 
 import { NextRequest, NextResponse, after } from 'next/server'
 import {
+  checkHost,
   clientIp,
   createRateLimiter,
   fetchPageWithRetry,
-  pageErrorMessage,
-  resolveAndCheck,
   rivalPageError,
+  type FetchResult,
 } from '@/lib/fetch-guard'
 import { lookupOpenPageRank } from '@/lib/open-pagerank'
 import { lookupDomainRating } from '@/lib/ahrefs'
-import { MAX_HTML, readSite } from '@/lib/authority-read'
+import { MAX_HTML, liveReader, looksBroken, readSite } from '@/lib/authority-read'
 import { domainRegistered, wikidataItem } from '@/lib/public-records'
 import { extractText } from '@/lib/proof-signals'
 import {
@@ -40,8 +40,25 @@ import { getSupabase } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
 
-// Each check is up to 4 page reads + 1 API call, so 5 a minute per IP.
+// Each check reads up to ~14 pages per site plus one Ahrefs call per site, so 5 a minute per IP.
+// (Per server instance: a shared limit and a daily Ahrefs cap need a shared store; audit 2026-10-05.)
 const isRateLimited = createRateLimiter(5, 60_000)
+// No new page read starts after this long from the start of the request: reads are 3–5 s each,
+// so everything ends inside maxDuration (25 s) with room for the response (audit 2026-10-05).
+const READ_BUDGET_MS = 17_000
+
+/** The homepage read itself failed (no answer, or an error status), as opposed to a page we could not parse. */
+const pageFailed = (page: FetchResult | null) => !page || page.status === 0 || page.status >= 400
+
+/** Why your own homepage couldn't be read, in an owner's words (the long technical text is the Findability Check's). */
+function yourPageError(page: FetchResult | null, host: string): string {
+  if (!page) return `We couldn’t reach ${host}. Check the spelling, and that the site loads in your browser.`
+  if (page.status === 401 || page.status === 403)
+    return 'Your site blocks automated checks, so we can’t read it. Ask your web host or developer to allow our checker, then try again.'
+  if (page.status === 404) return `${host} has no homepage at that address. Check the address and try again.`
+  if (page.status >= 500) return `${host} had a server error. Try again in a minute.`
+  return `${host} answered with an error (${page.status}). Try again in a minute.`
+}
 
 /* ── Log (domains + scores only) ────────────────────────────────────────── */
 
@@ -57,7 +74,9 @@ function logCheck(row: {
   after(async () => {
     const sb = getSupabase()
     if (!sb) return
-    await sb.from('authority_checks').insert({ ...row, rival_count: row.rival_domains.length })
+    const { error } = await sb.from('authority_checks').insert({ ...row, rival_count: row.rival_domains.length })
+    // A failed insert used to vanish (e.g. a check limit the code outgrew); now it shows in the logs.
+    if (error) console.error('authority_checks insert failed:', error.message)
   })
 }
 
@@ -68,6 +87,7 @@ function bad(error: string, status = 400) {
 }
 
 export async function GET(request: NextRequest) {
+  const started = Date.now()
   if (isRateLimited(clientIp(request.headers))) {
     return bad('Too many checks. Please wait a minute and try again.', 429)
   }
@@ -107,12 +127,15 @@ export async function GET(request: NextRequest) {
   const bares = [you.bare, ...rivals.map((r) => r.bare), ...added.map((a) => a.bare)]
   if (new Set(bares).size !== bares.length) return bad('Each site needs to be different.')
 
-  // SSRF: every host we will read, before any request.
+  // SSRF + typos: every host we will read, before any request. A domain that doesn't exist
+  // stops here, before it costs an Ahrefs call (audit 2026-10-05).
   const sites = added.length ? added : [you, ...rivals]
-  const blocked = await Promise.all(sites.map((s) => resolveAndCheck(s.host)))
-  if (blocked.some(Boolean)) return bad('Cannot fetch internal or private addresses')
+  const hosts = await Promise.all(sites.map((s) => checkHost(s.host)))
+  if (hosts.includes('blocked')) return bad('Cannot fetch internal or private addresses')
+  const missing = sites.filter((_, i) => hosts[i] === 'nxdomain').map((s) => s.bare)
+  if (missing.length) return bad(`We couldn’t find ${missing.join(' or ')}. Check the spelling and try again.`)
 
-  const read = await readSites(sites)
+  const read = await readSites(sites, started + READ_BUDGET_MS, !added.length)
 
   if (added.length) {
     // Log row: you + the new rivals; your scores stay empty (they're in the first check's row).
@@ -137,7 +160,7 @@ export async function GET(request: NextRequest) {
     rival_domains: rivals.map((r) => r.bare),
     links: read.results.map((s) => s.links),
     linking_sites: read.results.map((s) => s.linkingSites ?? null),
-    // Scored checks only (0–11, the column's limit): the "good to know" rows aren't counted.
+    // Scored checks only (0–12, the column's limit since migration 0009): "good to know" rows aren't counted.
     proof: read.results.map((s) => scoredCount(s.proof)),
     links_status: read.linksStatus,
   }
@@ -165,7 +188,7 @@ export async function GET(request: NextRequest) {
 
 /* ── Read sites: Ahrefs + Open PageRank + each homepage, in parallel ─────── */
 
-async function readSites(sites: SiteInput[]) {
+async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boolean) {
   const bares = sites.map((s) => s.bare)
 
   // The public records for the "good to know" rows start first and run alongside everything else.
@@ -186,8 +209,22 @@ async function readSites(sites: SiteInput[]) {
   }
 
   // Each homepage's checks (with Reputation's extra reads), for every homepage that was read, in parallel.
-  const errors = sites.map((s, i) => rivalPageError(pages[i], s.bare))
-  const reads = await Promise.all(pages.map((page, i) => (page && !errors[i] ? readSite(page) : null)))
+  // One site's unexpected error (a malformed sitemap, say) can't fail the others (audit 2026-10-05).
+  const errors = sites.map((s, i) =>
+    rivalPageError(pages[i], s.bare) ??
+    (pages[i] && looksBroken(pages[i]!.body) ? `${s.bare}’s page code is broken, so we couldn’t read it.` : null),
+  )
+  const reads = await Promise.all(
+    pages.map((page, i) =>
+      page && !errors[i]
+        ? readSite(page, liveReader, Date.now(), deadline).catch((e: unknown) => {
+            console.error(`authority-check read failed for ${sites[i].bare}:`, e instanceof Error ? e.message : e)
+            errors[i] = `We couldn’t finish reading ${sites[i].bare}.`
+            return null
+          })
+        : null,
+    ),
+  )
   const recs = await records
   reads.forEach((read, i) => {
     if (!read) return
@@ -196,7 +233,7 @@ async function readSites(sites: SiteInput[]) {
       // The site's own start year, when it gives one ("since 1998", "established 2004").
       const said = extractText(pages[i]!.body).match(/\b(?:since|established|est\.?|founded)(?: in)? ((?:19|20)\d\d)\b/i)?.[1]
       read.proof.push('age')
-      read.evidence.age = `First registered in ${year}${said ? `; your site says ${said}${Number(said) < year ? ', older than the domain, which is common' : ''}` : ''}`
+      read.evidence.age = `First registered in ${year}${said ? `; the site says ${said}${Number(said) < year ? ', older than the domain, which is common' : ''}` : ''}`
     }
     if (item) {
       read.proof.push('wikidata')
@@ -213,13 +250,16 @@ async function readSites(sites: SiteInput[]) {
       opr: scores?.get(s.bare)?.score ?? null,
       linkingSites: linkingOf(s.bare),
       dr: drs.status === 'ok' ? (drs.dr.get(s.bare) ?? null) : null,
+      ...(drs.status === 'ok' && drs.failed.has(s.bare) ? { drFailed: true } : {}),
       proof: read?.proof ?? null,
       ...(read?.trackLevel ? { trackLevel: read.trackLevel } : {}),
+      ...(read?.freshLevel ? { freshLevel: read.freshLevel } : {}),
       ...(read?.reviewSiteCount ? { reviewSiteCount: read.reviewSiteCount } : {}),
       ...(read?.seen.length ? { seenCount: read.seen.length } : {}),
       ...(read ? { evidence: read.evidence } : {}),
       ...(read?.updated ? { updated: read.updated } : {}),
-      ...(err ? { pageError: err } : {}),
+      // Your own card gets the owner's wording; a rival's keeps the short one.
+      ...(err ? { pageError: i === 0 && firstIsYou && pageFailed(pages[0]) ? yourPageError(pages[0], s.host) : err } : {}),
     }
   })
 
@@ -229,7 +269,7 @@ async function readSites(sites: SiteInput[]) {
     linksStatus: opr.status as LinksStatus,
     drStatus: drs.status as LinksStatus,
     results,
-    /** The long "why" for the first site, when its homepage failed (shown when there's nothing else). */
-    yourError: pageErrorMessage(pages[0], sites[0].host),
+    /** Why the first site's homepage failed, in an owner's words (shown when there's nothing else). */
+    yourError: pageFailed(pages[0]) ? yourPageError(pages[0], sites[0].host) : (errors[0] ?? null),
   }
 }

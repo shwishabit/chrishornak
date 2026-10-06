@@ -1,13 +1,16 @@
-/* ── Authority Check: "Recently updated" (shown only, for now) ─────────────
+/* ── Authority Check: "Recently updated" (Trust, up to 4 points) ────────────
  * Sitemap dates alone are easy to fake by accident: many sites' software
  * stamps every page with today's date (SEO panel, round 2). So a date counts
  * only from a source a person sets (Chris, 2026-10-05):
  *   1. The blog feed's newest post date (RSS pubDate / Atom published).
- *   2. A sitemap date that its own page confirms: the newest page in the
- *      sitemap shows the same day in its code or text (± 3 days).
+ *   2. A sitemap date that its own page confirms: one of the newest 3 real
+ *      pages in the sitemap shows the same day in its own date tags (± 3 days).
  * Finding them without guessing: the sitemap from robots.txt's "Sitemap:"
  * line, then the usual names; the feed from the homepage's own <link>, else
  * the one address for the site's platform. Authority Check only.
+ * Parsing is one pass with indexOf, never a backtracking regex over a whole
+ * file, and files are cut at PARSE_MAX: a broken or hostile 2 MB sitemap
+ * froze the old regexes for minutes (audit 2026-10-05, measured).
  * ─────────────────────────────────────────────────────────────────────── */
 
 import type { FetchResult } from './fetch-guard'
@@ -18,6 +21,10 @@ const TIMEOUT = 3_000
 const DAY = 86_400_000
 /** How far a page's own date may be from its sitemap date and still confirm it. */
 const CONFIRM_DAYS = 3
+/** Sitemaps, feeds and pages are parsed only this far. */
+const PARSE_MAX = 1_000_000
+/** How many of the newest real sitemap pages are read to find one that confirms its date. */
+const CONFIRM_TRIES = 3
 
 const ok = (r: FetchResult | null): r is FetchResult => !!r && r.status >= 200 && r.status < 300
 const decode = (s: string) => s.replace(/&amp;/g, '&').trim()
@@ -35,6 +42,17 @@ const bareHost = (u: string) => {
     return ''
   }
 }
+/** The same site: one host, or a subdomain of the other (blog.x.com belongs to x.com). */
+const sameSite = (a: string, b: string) => !!a && !!b && (a === b || a.endsWith(`.${b}`) || b.endsWith(`.${a}`))
+/** An absolute URL on the same site, or null. */
+const onSite = (raw: string, base: string): string | null => {
+  try {
+    const u = new URL(decode(raw), base)
+    return ['http:', 'https:'].includes(u.protocol) && sameSite(bareHost(u.toString()), bareHost(base)) ? u.toString() : null
+  } catch {
+    return null
+  }
+}
 /** A date we can use: parses, and isn't in the future (1 day of clock slack). */
 const usable = (s: string | undefined, now: number): number | null => {
   if (!s) return null
@@ -43,18 +61,75 @@ const usable = (s: string | undefined, now: number): number | null => {
 }
 const dayOf = (t: number) => new Date(t).toISOString().slice(0, 10)
 
+/* ── One-pass helpers ────────────────────────────────────────────────────── */
+
+const isTagEnd = (c: string | undefined) => c === undefined || c === '>' || c === '/' || /\s/.test(c)
+
+/** The inside of every <name …>…</name> block, in one pass. Unclosed blocks are skipped. */
+function blocksOf(text: string, name: string): string[] {
+  const s = text.length > PARSE_MAX ? text.slice(0, PARSE_MAX) : text
+  const lower = s.toLowerCase()
+  // Matched against lowercased text, so the tag name is lowercased too (pubDate, dc:date).
+  const open = `<${name.toLowerCase()}`
+  const close = `</${name.toLowerCase()}`
+  const out: string[] = []
+  let i = 0
+  for (;;) {
+    i = lower.indexOf(open, i)
+    if (i === -1) break
+    if (!isTagEnd(lower[i + open.length])) {
+      i += open.length
+      continue
+    }
+    const start = lower.indexOf('>', i)
+    if (start === -1) break
+    const end = lower.indexOf(close, start)
+    if (end === -1) break
+    out.push(s.slice(start + 1, end))
+    i = end + close.length
+  }
+  return out
+}
+
+/** Every <name …> start tag, whole, in one pass. */
+function tagsOf(text: string, name: string): string[] {
+  const s = text.length > PARSE_MAX ? text.slice(0, PARSE_MAX) : text
+  const lower = s.toLowerCase()
+  const open = `<${name.toLowerCase()}`
+  const out: string[] = []
+  let i = 0
+  for (;;) {
+    i = lower.indexOf(open, i)
+    if (i === -1) break
+    const end = lower.indexOf('>', i)
+    if (end === -1) break
+    if (isTagEnd(lower[i + open.length])) out.push(s.slice(i, end + 1))
+    i = end + 1
+  }
+  return out
+}
+
+/** The text inside the first <name>…</name> of a small block. */
+const inner = (block: string, name: string): string | undefined => blocksOf(block, name)[0]?.trim() || undefined
+const attr = (tag: string, name: string) => new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`, 'i').exec(tag)?.[1]
+
 /* ── Sitemap ─────────────────────────────────────────────────────────────── */
 
 /** The usual sitemap addresses, after robots.txt's own lines. */
 export const SITEMAP_PATHS = ['/sitemap.xml', '/sitemap_index.xml', '/wp-sitemap.xml']
 
 export const isSitemap = (r: FetchResult | null): r is FetchResult =>
-  ok(r) && /<(?:urlset|sitemapindex)\b/i.test(r.body)
+  ok(r) && /<(?:urlset|sitemapindex)\b/i.test(r.body.slice(0, 5_000))
 
-/** "Sitemap: https://…" lines in robots.txt, on the site's own host. */
+/** "Sitemap: https://…" lines in robots.txt, on the same site. */
 export function sitemapsFromRobots(txt: string, siteUrl: string): string[] {
-  const host = bareHost(siteUrl)
-  return [...txt.matchAll(/^\s*sitemap\s*:\s*(\S+)/gim)].map((m) => m[1]).filter((u) => bareHost(u) === host)
+  return txt
+    .slice(0, 100_000)
+    .split(/\r?\n/)
+    .map((l) => /^\s*sitemap\s*:\s*(\S+)/i.exec(l)?.[1])
+    .filter((u): u is string => !!u)
+    .map((u) => onSite(u, siteUrl))
+    .filter((u): u is string => !!u)
 }
 
 interface Dated {
@@ -62,27 +137,41 @@ interface Dated {
   url: string
 }
 
-/** Every dated entry: pages in a urlset, or sub-sitemaps in an index. */
-export function sitemapEntries(xml: string, now: number): { entries: Dated[]; isIndex: boolean; urls: number } {
-  const isIndex = /<sitemapindex\b/i.test(xml)
+/** Every dated entry on the same site: pages in a urlset, or sub-sitemaps in an index. */
+export function sitemapEntries(xml: string, now: number, sitemapUrl: string): { entries: Dated[]; isIndex: boolean; urls: number } {
+  const isIndex = /<sitemapindex\b/i.test(xml.slice(0, 5_000))
   const entries: Dated[] = []
   let urls = 0
-  for (const m of xml.matchAll(/<(?:url|sitemap)\b[^>]*>([\s\S]*?)<\/(?:url|sitemap)>/gi)) {
-    const loc = /<loc>\s*([^<]+?)\s*<\/loc>/i.exec(m[1])?.[1]
-    if (!loc) continue
+  for (const block of blocksOf(xml, isIndex ? 'sitemap' : 'url')) {
+    const loc = inner(block, 'loc')
+    const url = loc ? onSite(loc, sitemapUrl) : null
+    if (!url) continue
     urls++
-    const t = usable(/<lastmod>\s*([^<]+?)\s*<\/lastmod>/i.exec(m[1])?.[1], now)
-    if (t !== null) entries.push({ t, url: decode(loc) })
+    const t = usable(inner(block, 'lastmod'), now)
+    if (t !== null) entries.push({ t, url })
   }
   return { entries, isIndex, urls }
 }
 
-/** Most entries share one day: likely stamped by software (5+ dates, 80%+ on one day). */
-export function isStamped(entries: Dated[]): boolean {
-  if (entries.length < 5) return false
+/** The day most entries share, when it's likely stamped by software (5+ dates, 80%+ on it). */
+function stampedDay(entries: Dated[]): string | null {
+  if (entries.length < 5) return null
   const perDay = new Map<string, number>()
   for (const e of entries) perDay.set(dayOf(e.t), (perDay.get(dayOf(e.t)) ?? 0) + 1)
-  return Math.max(...perDay.values()) / entries.length >= 0.8
+  const [day, n] = [...perDay.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))
+  return n / entries.length >= 0.8 ? day : null
+}
+
+export const isStamped = (entries: Dated[]): boolean => stampedDay(entries) !== null
+
+/**
+ * The entries worth trusting: a stamped day's dates are set aside and the rest kept
+ * (a mixed sitemap: build-time dates on most pages, real ones on posts, like chrishornak.com's
+ * before 2026-10-05). Empty when every date is on the stamped day.
+ */
+export function realEntries(entries: Dated[]): Dated[] {
+  const day = stampedDay(entries)
+  return day ? entries.filter((e) => dayOf(e.t) !== day) : entries
 }
 
 const newest = (entries: Dated[]) => entries.reduce<Dated | null>((a, b) => (!a || b.t > a.t ? b : a), null)
@@ -92,25 +181,19 @@ const newest = (entries: Dated[]) => entries.reduce<Dated | null>((a, b) => (!a 
 // WordPress gives every page its own comments feed ("/about/feed/"): not the blog.
 const BLOG_SEGMENT_RE = /^(?:blog|news|articles|insights|posts|journal|updates|stories|resources)$/i
 
-/** The blog feed the homepage points to (<link rel="alternate" type="application/rss+xml">), on its own host. */
+/** The blog feed the homepage points to (<link rel="alternate" type="application/rss+xml">), on the same site. */
 export function findFeedUrl(html: string, pageUrl: string): string | null {
-  const host = bareHost(pageUrl)
-  for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
-    const tag = m[0]
-    if (!/type\s*=\s*["']application\/(?:rss|atom)\+xml["']/i.test(tag)) continue
-    const href = /href\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1]
-    if (!href || /comments/i.test(href) || /comments/i.test(tag)) continue
-    let u: URL
-    try {
-      u = new URL(decode(href), pageUrl)
-    } catch {
-      continue
-    }
-    if (bareHost(u.toString()) !== host) continue
-    const segs = u.pathname.split('/').filter(Boolean)
+  // Feed links sit near the top, but not always inside <head>: Next.js can stream metadata into
+  // the body (chrishornak.com, 2026-10-05). The first 300 KB are scanned, in one pass.
+  for (const tag of tagsOf(html.slice(0, 300_000), 'link')) {
+    if (!/type\s*=\s*["']application\/(?:rss|atom)\+xml["']/i.test(tag) || /comments/i.test(tag)) continue
+    const href = attr(tag, 'href')
+    const url = href ? onSite(href, pageUrl) : null
+    if (!url) continue
+    const segs = new URL(url).pathname.split('/').filter(Boolean)
     // "/<page>/feed/" is a page's comments feed unless the page is the blog.
     if (segs.length === 2 && /^feed$/i.test(segs[1]) && !BLOG_SEGMENT_RE.test(segs[0])) continue
-    return u.toString()
+    return url
   }
   return null
 }
@@ -124,26 +207,26 @@ export function guessFeedUrl(html: string, pageUrl: string): string | null {
       return null
     }
   }
-  if (/\/wp-content\/|\/wp-includes\//i.test(html)) return at('/feed/')
-  if (/static\.wixstatic\.com|wix\.com\b/i.test(html)) return at('/blog-feed.xml')
-  if (/squarespace/i.test(html)) return at('/blog?format=rss')
-  if (/cdn\.shopify\.com/i.test(html)) return at('/blogs/news.atom')
-  if (/<meta[^>]+generator[^>]+ghost/i.test(html)) return at('/rss/')
-  if (/js\.hs-scripts\.com|hubspot/i.test(html)) return at('/blog/rss.xml')
+  const sample = html.slice(0, 300_000)
+  if (/\/wp-content\/|\/wp-includes\//i.test(sample)) return at('/feed/')
+  if (/static\.wixstatic\.com|wix\.com\b/i.test(sample)) return at('/blog-feed.xml')
+  if (/squarespace/i.test(sample)) return at('/blog?format=rss')
+  if (/cdn\.shopify\.com/i.test(sample)) return at('/blogs/news.atom')
+  if (tagsOf(sample, 'meta').some((t) => /generator/i.test(t) && /ghost/i.test(t))) return at('/rss/')
+  if (/js\.hs-scripts\.com|hubspot/i.test(sample)) return at('/blog/rss.xml')
   return null
 }
 
 /** The newest post in an RSS or Atom feed: its publish date (Atom: published, else updated). */
 export function newestFeedPost(xml: string, now: number): Dated | null {
   const posts: Dated[] = []
-  for (const m of xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi)) {
-    const t = usable(/<pubDate>\s*([^<]+?)\s*<\/pubDate>/i.exec(m[1])?.[1] ?? /<dc:date>\s*([^<]+?)\s*<\/dc:date>/i.exec(m[1])?.[1], now)
-    const link = /<link>\s*([^<]+?)\s*<\/link>/i.exec(m[1])?.[1] ?? ''
-    if (t !== null) posts.push({ t, url: decode(link) })
+  for (const item of blocksOf(xml, 'item')) {
+    const t = usable(inner(item, 'pubDate') ?? inner(item, 'dc:date'), now)
+    if (t !== null) posts.push({ t, url: decode(inner(item, 'link') ?? '') })
   }
-  for (const m of xml.matchAll(/<entry\b[^>]*>([\s\S]*?)<\/entry>/gi)) {
-    const t = usable(/<published>\s*([^<]+?)\s*<\/published>/i.exec(m[1])?.[1] ?? /<updated>\s*([^<]+?)\s*<\/updated>/i.exec(m[1])?.[1], now)
-    const link = /<link\b[^>]*href\s*=\s*["']([^"']+)["']/i.exec(m[1])?.[1] ?? ''
+  for (const entry of blocksOf(xml, 'entry')) {
+    const t = usable(inner(entry, 'published') ?? inner(entry, 'updated'), now)
+    const link = tagsOf(entry, 'link').map((l) => attr(l, 'href')).find(Boolean) ?? ''
     if (t !== null) posts.push({ t, url: decode(link) })
   }
   return newest(posts)
@@ -151,24 +234,54 @@ export function newestFeedPost(xml: string, now: number): Dated | null {
 
 /* ── A page's own dates ──────────────────────────────────────────────────── */
 
+const PAGE_META = /(?:property|name|itemprop)\s*=\s*["'](?:article:modified_time|article:published_time|og:updated_time|datemodified|datepublished|last-modified)["']/i
+// Only the page's own JSON-LD node: not a review widget's or an event's dates.
+const PAGE_TYPES = /^(?:Article|BlogPosting|NewsArticle|TechArticle|Report|WebPage|AboutPage|ContactPage|CollectionPage|FAQPage|ItemPage|ProfilePage|Product|Service)$/i
 const MONTHS = 'jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?'
 const VISIBLE_DATE_RE = new RegExp(
-  `(?:updated|published|posted|modified|last edited)(?:\\s+on)?:?\\s+((?:${MONTHS})\\.?\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+(?:${MONTHS})\\.?,?\\s+\\d{4}|\\d{4}-\\d{2}-\\d{2})`,
-  'gi',
+  `(?:updated|published|posted|last edited)(?:\\s+on)?:?\\s+((?:${MONTHS})\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4}|\\d{1,2}\\s+(?:${MONTHS})\\.?,?\\s+\\d{4}|\\d{4}-\\d{2}-\\d{2})`,
+  'i',
 )
 
-/** The dates a page gives itself: article / Open Graph meta, JSON-LD, <time datetime>, "Updated on …" text. */
-export function pageDates(html: string, now: number): number[] {
-  const raw: string[] = []
-  for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
-    if (!/(?:property|name|itemprop)\s*=\s*["'](?:article:modified_time|article:published_time|og:updated_time|datemodified|datepublished|last-modified)["']/i.test(m[0])) continue
-    const c = /content\s*=\s*["']([^"']+)["']/i.exec(m[0])?.[1]
-    if (c) raw.push(c)
+/** JSON-LD nodes of a page type, walking @graph. */
+function pageNodes(json: unknown): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = []
+  const walk = (v: unknown) => {
+    if (Array.isArray(v)) return v.forEach(walk)
+    if (!v || typeof v !== 'object') return
+    const o = v as Record<string, unknown>
+    const types = ([] as unknown[]).concat(o['@type'] ?? [])
+    if (types.some((t) => typeof t === 'string' && PAGE_TYPES.test(t))) out.push(o)
+    if (o['@graph']) walk(o['@graph'])
   }
-  for (const m of html.matchAll(/"date(?:Modified|Published)"\s*:\s*"([^"]+)"/g)) raw.push(m[1])
-  for (const m of html.matchAll(/<time\b[^>]*datetime\s*=\s*["']([^"']+)["']/gi)) raw.push(m[1])
-  const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ')
-  for (const m of text.matchAll(VISIBLE_DATE_RE)) raw.push(m[1].replace(/(\d)(st|nd|rd|th)\b/gi, '$1'))
+  walk(json)
+  return out
+}
+
+/**
+ * The dates a page gives itself: page-level meta tags, the page's own JSON-LD node
+ * (Article / WebPage…, not a review or event inside it), <time datetime> inside
+ * <article> or <main>, and "Updated on …" in the main text.
+ */
+export function pageDates(html: string, now: number): number[] {
+  const page = html.length > PARSE_MAX ? html.slice(0, PARSE_MAX) : html
+  const raw: string[] = []
+  for (const tag of tagsOf(page, 'meta')) if (PAGE_META.test(tag)) raw.push(attr(tag, 'content') ?? '')
+  for (const json of blocksOf(page, 'script')) {
+    const t = json.trimStart()
+    if (!/^[[{]/.test(t) || !t.includes('"@type"') || !/date(?:Modified|Published)/.test(t)) continue
+    try {
+      for (const n of pageNodes(JSON.parse(json))) for (const k of ['dateModified', 'datePublished']) if (typeof n[k] === 'string') raw.push(n[k] as string)
+    } catch {}
+  }
+  const main = [...blocksOf(page, 'article'), ...blocksOf(page, 'main')].join(' ')
+  for (const tag of tagsOf(main, 'time')) raw.push(attr(tag, 'datetime') ?? '')
+  const text = (main || page)
+    .slice(0, 200_000)
+    .replace(/<[^>]{0,2000}>/g, ' ')
+    .replace(/&nbsp;|&#160;| /gi, ' ')
+  const seen = VISIBLE_DATE_RE.exec(text)?.[1]
+  if (seen) raw.push(seen.replace(/(\d)(st|nd|rd|th)\b/gi, '$1'))
   return raw.map((s) => usable(s, now)).filter((t): t is number => t !== null)
 }
 
@@ -199,7 +312,7 @@ export function startFreshness(home: FetchResult, reader: Reader): FreshStart {
 /** The site's sitemap: robots.txt's first, then the usual names. Read side by side; best match wins. */
 export async function resolveSitemap(home: FetchResult, start: FreshStart, reader: Reader, deadline: number): Promise<FetchResult | null> {
   const [robots, first] = await Promise.all([start.robots, start.sitemap])
-  const fromRobots = ok(robots) && !/<html\b/i.test(robots.body) ? sitemapsFromRobots(robots.body, home.finalUrl) : []
+  const fromRobots = ok(robots) && !/<html\b/i.test(robots.body.slice(0, 2_000)) ? sitemapsFromRobots(robots.body, home.finalUrl) : []
   const firstUrl = new URL(SITEMAP_PATHS[0], home.finalUrl).toString()
   // robots.txt names it: that wins, even over /sitemap.xml.
   const wanted = [...fromRobots, ...SITEMAP_PATHS.map((p) => new URL(p, home.finalUrl).toString())].filter(
@@ -216,7 +329,7 @@ export async function resolveSitemap(home: FetchResult, start: FreshStart, reade
   return null
 }
 
-/** "Recently updated": the feed's newest post, or the sitemap's newest page when the page confirms its date. */
+/** "Recently updated": the feed's newest post, or one of the sitemap's newest pages when the page confirms its date. */
 export async function readFreshness(
   sitemap: FetchResult | null,
   start: FreshStart,
@@ -227,26 +340,41 @@ export async function readFreshness(
   const feedRes = await start.feed
   const post = ok(feedRes) ? newestFeedPost(feedRes.body, now) : null
 
-  // The sitemap's newest page, confirmed by the page itself.
+  // The sitemap's newest pages, confirmed by the page itself.
   let page: Dated | null = null
   let claim: Dated | null = null
   let why: Updated['why'] = sitemap ? undefined : 'none'
   if (sitemap) {
-    let { entries, isIndex } = sitemapEntries(sitemap.body, now)
-    if (isIndex) {
+    const top = sitemapEntries(sitemap.body, now, sitemap.finalUrl)
+    let entries = top.entries
+    if (top.isIndex) {
       // The sub-sitemap that changed last (else the first), then its pages.
-      const subs = sitemapEntries(sitemap.body, now)
-      const pick = newest(subs.entries)?.url ?? /<loc>\s*([^<]+?)\s*<\/loc>/i.exec(sitemap.body)?.[1]
-      const sub = pick && Date.now() <= deadline ? await reader.page(decode(pick), TIMEOUT).catch(() => null) : null
-      entries = isSitemap(sub) ? sitemapEntries(sub.body, now).entries : []
+      const pick = newest(top.entries)?.url ?? (blocksOf(sitemap.body, 'loc')[0] ? onSite(blocksOf(sitemap.body, 'loc')[0], sitemap.finalUrl) : null)
+      const sub = pick && Date.now() <= deadline ? await reader.page(pick, TIMEOUT).catch(() => null) : null
+      if (!isSitemap(sub)) why = 'not-read'
+      entries = isSitemap(sub) ? sitemapEntries(sub.body, now, sub.finalUrl).entries : []
     }
-    if (!entries.length) why = 'no-dates'
-    else if (isStamped(entries)) why = 'stamped'
+    const real = realEntries(entries)
+    if (why === 'not-read') {
+      // the sub-sitemap couldn't be read: nothing was checked
+    } else if (!entries.length) why = 'no-dates'
+    else if (!real.length) why = 'stamped'
     else {
-      claim = newest(entries)
-      const res = claim && Date.now() <= deadline ? await reader.page(claim.url, TIMEOUT).catch(() => null) : null
-      if (claim && ok(res) && confirms(res.body, claim.t, now)) page = claim
-      else why = 'unconfirmed'
+      // The newest few real pages, newest first: the first that shows its own date confirms it.
+      const tries = [...real].sort((a, b) => b.t - a.t).slice(0, CONFIRM_TRIES)
+      claim = tries[0]
+      let readAny = false
+      for (const c of tries) {
+        if (Date.now() > deadline) break
+        const res = await reader.page(c.url, TIMEOUT).catch(() => null)
+        if (!ok(res)) continue
+        readAny = true
+        if (confirms(res.body, c.t, now)) {
+          page = c
+          break
+        }
+      }
+      if (!page) why = readAny ? 'unconfirmed' : 'not-read'
     }
   }
 

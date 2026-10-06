@@ -9,7 +9,7 @@ import { resolveAndCheck, safeFetch, USER_AGENT, type FetchResult } from './fetc
 import { readReviewSignals, readReviewsPage, reviewSiteOf, reviewSitesEvidence, type ReviewRead } from './review-signals'
 import { readExperienceSignals } from './experience-signals'
 import { anchors, extractText, findAboutPage, findJsonLdBlocks, isHttpsUrl, readProofEvidence, readProofSignals } from './proof-signals'
-import { FRESH_DAYS, PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult, type Updated } from './authority-check'
+import { FRESH_DAYS, FRESH_PART_DAYS, PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult, type Updated } from './authority-check'
 import { findOfferPages, findSeenElsewhere } from './standing-signals'
 import { readFreshness, resolveSitemap, startFreshness } from './freshness'
 
@@ -69,7 +69,9 @@ export async function readReputation(rr: ReviewRead, reader: Reader = liveReader
     const to = await reader.redirect(url)
     return to ? reviewSiteOf(to) : null
   }
-  const short = async () => (rr.sites.length ? [] : Promise.all(rr.shortLinks.map(follow)))
+  // Always followed (at most 2): a site that links Yelp directly can still link Google by a short
+  // link only (audit 2026-10-05: it was scored 1 review site instead of 2).
+  const short = async () => Promise.all(rr.shortLinks.map(follow))
   const [shown, more] = await Promise.all([page(), short()])
   const sites = [...rr.sites]
   for (const s of more) if (s && !sites.includes(s)) sites.push(s)
@@ -89,6 +91,8 @@ export function readProof(
   seen: string[]
   /** Set by readSite from the sitemap (shown only). */
   updated?: Updated
+  /** Set by readSite: Recently updated's level (SiteResult.freshLevel). */
+  freshLevel?: 0 | 1 | 2
 } {
   const text = extractText(html)
   const blocks = findJsonLdBlocks(html)
@@ -105,6 +109,7 @@ export function readProof(
     hasTrackRecord: !!exp.trackRecord,
     hasFocus: offers.length >= 3,
     hasSeen: seen.length > 0,
+    hasUpdated: false, // added after the extra reads (addUpdated)
   })
   const found = {
     ...readProofEvidence(html, text, blocks, finalUrl),
@@ -175,7 +180,7 @@ function addFromAbout(read: Read, about: FetchResult): void {
   const signals = readProofSignals(html, extractText(html), blocks, about.finalUrl)
   const evidence = readProofEvidence(html, extractText(html), blocks, about.finalUrl)
   const exp = readExperienceSignals(html, about.finalUrl)
-  const where = `On your About page (${pathOf(about.finalUrl).slice(0, 50)})`
+  const where = `On the About page (${pathOf(about.finalUrl).slice(0, 50)})`
   if (signals.hasPeople) addFrom(read, 'people', evidence.hasPeople, where)
   if (signals.hasLicences) addFrom(read, 'credentials', evidence.hasLicences, where)
   if (exp.trackRecord && !read.proof.includes('track')) {
@@ -240,7 +245,7 @@ function addFromContact(read: Read, contact: FetchResult): void {
   const blocks = findJsonLdBlocks(html)
   if (!readProofSignals(html, text, blocks, contact.finalUrl).hasAddressInfo) return
   const found = readProofEvidence(html, text, blocks, contact.finalUrl).hasAddressInfo
-  addFrom(read, 'address', found ?? 'A phone number or street address', `On your contact page (${pathOf(contact.finalUrl).slice(0, 50)})`)
+  addFrom(read, 'address', found ?? 'A phone number or street address', `On the contact page (${pathOf(contact.finalUrl).slice(0, 50)})`)
   reorder(read)
 }
 
@@ -287,41 +292,53 @@ export function findTeamInSitemap(xml: string, siteUrl: string): string | null {
 }
 
 /** A sitemap index: the sub-sitemap with the site's pages (page-sitemap.xml, wp-sitemap-posts-page-1.xml), else the first. */
-function pagesSitemapOf(xml: string): string | null {
+function pagesSitemapOf(xml: string, sitemapUrl: string): string | null {
   if (!/<sitemapindex\b/i.test(xml)) return null
-  const subs = [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => m[1].replace(/&amp;/g, '&'))
+  const host = (u: string) => new URL(u).hostname.replace(/^www\./, '')
+  const subs: string[] = []
+  for (const m of xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)) {
+    try {
+      const u = new URL(m[1].replace(/&amp;/g, '&'), sitemapUrl)
+      if (host(u.toString()) === host(sitemapUrl)) subs.push(u.toString())
+    } catch {}
+  }
   return subs.find((s) => /page/i.test(s.split('/').pop() ?? '')) ?? subs[0] ?? null
 }
 
 /** Real people from the sitemap: the sitemap (or its pages sitemap), then one team page. Up to 3 reads. */
-async function readTeamPage(first: FetchResult | null, reader: Reader): Promise<FetchResult | null> {
+async function readTeamPage(first: FetchResult | null, reader: Reader, deadline: number): Promise<FetchResult | null> {
   if (!ok(first)) return null
   let xml = first.body
-  const sub = pagesSitemapOf(xml)
+  const sub = pagesSitemapOf(xml, first.finalUrl)
   if (sub) {
+    if (Date.now() > deadline) return null
     const r = await reader.page(sub, SITEMAP_TIMEOUT)
     if (!ok(r)) return null
     xml = r.body
   }
   const team = findTeamInSitemap(xml, first.finalUrl)
-  if (!team) return null
+  if (!team || Date.now() > deadline) return null
   const page = await reader.page(team, SITEMAP_TIMEOUT)
   return ok(page) ? page : null
 }
 
-/* ── Recently updated (shown only): see freshness.ts ──────────────────── */
+/* ── Recently updated (Trust, up to 4 points): see freshness.ts ───────────── */
 
-/** Adds the "Recently updated" row when the site's newest trusted date is recent (FRESH_DAYS). */
+/**
+ * Adds Recently updated when the newest trusted date is recent: level 2 within FRESH_DAYS
+ * (full points), level 1 within FRESH_PART_DAYS (half). Older or no trusted date: not passed.
+ */
 function addUpdated(read: Read, updated: Updated, now: number): void {
   read.updated = updated
   if (!updated.newest) return
   const days = (now - Date.parse(updated.newest)) / 86_400_000
-  if (days > FRESH_DAYS) return
+  if (days > FRESH_PART_DAYS) return
+  read.freshLevel = days <= FRESH_DAYS ? 2 : 1
   const when = new Date(updated.newest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
   const where = updated.path && updated.path !== '/' ? ` (${updated.path.slice(0, 50)})` : ''
   read.proof.push('updated')
   read.evidence.updated =
-    updated.source === 'feed' ? `Newest post in your blog feed: ${when}${where}` : `Your sitemap and the page agree: updated ${when}${where}`
+    updated.source === 'feed' ? `Newest blog post: ${when}${where}` : `Sitemap and page agree: updated ${when}${where}`
   reorder(read)
 }
 
@@ -330,8 +347,50 @@ function addFromTeam(read: Read, team: FetchResult): void {
   const blocks = findJsonLdBlocks(html)
   if (!readProofSignals(html, extractText(html), blocks, team.finalUrl).hasPeople) return
   const found = readProofEvidence(html, extractText(html), blocks, team.finalUrl).hasPeople
-  addFrom(read, 'people', found, `On your team page (${pathOf(team.finalUrl).slice(0, 50)})`)
+  addFrom(read, 'people', found, `On the team page (${pathOf(team.finalUrl).slice(0, 50)})`)
   reorder(read)
+}
+
+/** How often `needle` appears (one pass). */
+function countOf(hay: string, needle: string): number {
+  let n = 0
+  for (let i = hay.indexOf(needle); i !== -1; i = hay.indexOf(needle, i + needle.length)) n++
+  return n
+}
+
+/**
+ * Page code so broken it would stall the parser: hundreds of tags opened and never closed.
+ * The shared parsing rules use patterns that slow down badly on that (a broken 200 KB page took
+ * 3 s, audit 2026-10-05), so such a page is treated as unreadable. Real pages close their tags.
+ */
+export function looksBroken(html: string): boolean {
+  const s = html.toLowerCase()
+  const lt = countOf(s, '<')
+  const gt = countOf(s, '>')
+  if (lt > gt * 1.5 + 500) return true
+  if (countOf(s, '<a ') + countOf(s, '<a>') > countOf(s, '</a>') * 2 + 200) return true
+  if (countOf(s, '<script') > countOf(s, '</script') + 20) return true
+  return countOf(s, '<style') > countOf(s, '</style') + 20
+}
+
+/** Each URL read once per check; the homepage itself is never re-read. A read that throws reads as no answer. */
+function memoReader(base: Reader, home: FetchResult): Reader {
+  const seen = new Map<string, Promise<FetchResult | null>>([[home.finalUrl, Promise.resolve(home)]])
+  return {
+    page(url, timeoutMs) {
+      let hit = seen.get(url)
+      if (!hit) {
+        hit = Promise.resolve()
+          .then(() => base.page(url, timeoutMs))
+          // Badly broken page code reads as no answer (looksBroken).
+          .then((r) => (r && looksBroken(r.body) ? null : r))
+          .catch(() => null)
+        seen.set(url, hit)
+      }
+      return hit
+    },
+    redirect: (url) => base.redirect(url).catch(() => null),
+  }
 }
 
 /**
@@ -339,9 +398,14 @@ function addFromTeam(read: Read, team: FetchResult): void {
  * contact page, sitemap), then the checks. The first round runs side by side; the sitemap's
  * team page is read only when neither the homepage nor the About page named anyone.
  */
-export async function readSite(page: FetchResult, reader: Reader = liveReader, now = Date.now()) {
+export async function readSite(
+  page: FetchResult,
+  base: Reader = liveReader,
+  now = Date.now(),
+  deadline = Date.now() + EXTRA_READS_BUDGET,
+) {
+  const reader = memoReader(base, page)
   // Later reads only start inside this budget, so a check stays inside the route's 25 s.
-  const deadline = Date.now() + EXTRA_READS_BUDGET
   const html = page.body
   const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
   const missing = !home.hasPeople || !home.hasLicences || !readExperienceSignals(html, page.finalUrl).trackRecord
@@ -360,7 +424,7 @@ export async function readSite(page: FetchResult, reader: Reader = liveReader, n
   // The sitemap serves both the team page (when nobody is named) and Recently updated.
   const sitemap = await resolveSitemap(page, fresh, reader, deadline)
   const [team, updated] = await Promise.all([
-    !read.proof.includes('people') && Date.now() <= deadline ? readTeamPage(sitemap, reader) : null,
+    !read.proof.includes('people') && Date.now() <= deadline ? readTeamPage(sitemap, reader, deadline) : null,
     readFreshness(sitemap, fresh, reader, now, deadline),
   ])
   if (team) addFromTeam(read, team)

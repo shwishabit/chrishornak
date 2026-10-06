@@ -60,11 +60,11 @@ export const AUTHORITY_FAQ: FaqItem[] = [
     id: 'points',
     q: 'How are the points worked out?',
     a: [
-      `Experience 20, Expertise 20, Authority 20, Trust 40, from ${PROOF_CHECKS.length} checks.`,
+      `Experience 20, Expertise 20, Authority 20, Trust 40, from ${PROOF_CHECKS.length} checks on your site plus your link strength.`,
       `Experience: your work shown ${pts('work')}, a track record 6, or ${pts('track')} when it is strong (20+ years, or years plus a client count). A track record means 5 or more years in practice, or a count of 20 or more clients or jobs.`,
       `Expertise: real people ${pts('people')}, credentials ${pts('credentials')}, a page for each offer ${pts('focus')}.`,
       `Authority: link strength up to ${LINK_POINTS} (${bands}), links to your review profiles up to ${pts('reviewSites')} (1 review site 2, 2 sites 4, 3 or more ${pts('reviewSites')}), and places that feature you up to ${pts('seen')}.`,
-      `Trust: reviews on your site ${pts('reviews')}, how to reach you ${pts('address')}, About page ${pts('about')}, secure site ${pts('https')}. Testimonials and review counts count once, under Reviews on your site.`,
+      `Trust: reviews on your site ${pts('reviews')}, how to reach you ${pts('address')}, About page ${pts('about')}, secure site ${pts('https')}, and recently updated up to ${pts('updated')} (a dated post or page from the last 2 months ${pts('updated')}, from the last 6 months 2). Testimonials and review counts count once, under Reviews on your site.`,
       `70 and up overall is strong, 40 to 69 is fair, under 40 needs work. Totals less than ${OVERALL_TIE} points apart read as about the same, and Domain Ratings less than ${TIE_GAP} apart count as a tie. A site checked alone gets each part coloured as a share of that part’s points. “Good to know” rows are shown, never scored.`,
     ],
   },
@@ -72,7 +72,7 @@ export const AUTHORITY_FAQ: FaqItem[] = [
     id: 'data',
     q: 'Where does the data come from?',
     a: [
-      'We read each homepage once. When the homepage doesn’t show enough, we also read its About page, reviews page and contact page, and look in its sitemap for one team page. For “Recently updated” (shown, not scored) we read the blog feed and the sitemap named in robots.txt; a sitemap date counts only when the page itself shows the same date. Expertise and most Trust checks use the same rules as the Findability Check.',
+      'We read each homepage once. When the homepage doesn’t show enough, we also read its About page, reviews page and contact page, and look in its sitemap for one team page. For “Recently updated” we read the blog feed and the sitemap named in robots.txt. A blog post’s date counts as it is; a sitemap date counts only when the page itself shows the same date, because many sites’ software stamps every page with today’s date. Expertise and most Trust checks use the same rules as the Findability Check.',
       'Link strength is the Domain Rating by Ahrefs. When Ahrefs is busy, we use Open PageRank instead, built from Common Crawl’s map of the web.',
     ],
     links: [

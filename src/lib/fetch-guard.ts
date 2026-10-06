@@ -7,7 +7,7 @@ import 'server-only'
 import dns from 'node:dns/promises'
 import { isIP } from 'node:net'
 
-export const FETCH_TIMEOUT = 8_000 // 8s per fetch (within Vercel's 10s limit)
+export const FETCH_TIMEOUT = 8_000 // 8s per page fetch (each route sets its own maxDuration)
 export const USER_AGENT =
   'Mozilla/5.0 (compatible; SiteCheck/1.0; +https://chrishornak.com/audit)'
 
@@ -17,6 +17,8 @@ export function createRateLimiter(limit: number, windowMs: number) {
   const rateMap = new Map<string, number[]>()
   return function isRateLimited(ip: string): boolean {
     const now = Date.now()
+    // Long-lived instances (Fluid) would keep every IP forever: drop stale ones now and then.
+    if (rateMap.size > 1_000) for (const [k, v] of rateMap) if (!v.some((t) => t > now - windowMs)) rateMap.delete(k)
     const timestamps = (rateMap.get(ip) ?? []).filter((t) => t > now - windowMs)
 
     if (timestamps.length >= limit) {
@@ -46,36 +48,46 @@ const PRIVATE_RANGES = [
   /^172\.(1[6-9]|2\d|3[01])\./, // 172.16.0.0/12
   /^192\.168\./, // 192.168.0.0/16
   /^0\./, // 0.0.0.0/8
-  /^169\.254\./, // link-local
+  /^169\.254\./, // link-local (cloud metadata lives here)
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./, // 100.64.0.0/10 carrier-grade NAT
   /^::1$/, // IPv6 loopback
-  /^fc00:/i, // IPv6 unique local
-  /^fe80:/i, // IPv6 link-local
+  /^f[cd][0-9a-f]{0,2}:/i, // IPv6 unique local fc00::/7 (fc… and fd…)
+  /^fe[89ab][0-9a-f]?:/i, // IPv6 link-local fe80::/10
   /^::$/,  // unspecified
 ]
 
 function isPrivateIP(ip: string): boolean {
-  return PRIVATE_RANGES.some((re) => re.test(ip))
+  // IPv4-mapped IPv6 (::ffff:10.0.0.1) is checked as the IPv4 address inside it.
+  const v4 = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip)?.[1]
+  return PRIVATE_RANGES.some((re) => re.test(v4 ?? ip))
+}
+
+const DNS_TIMEOUT = 2_500
+const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T | 'timeout'> =>
+  Promise.race([p, new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), ms))])
+
+/**
+ * What a hostname resolves to: blocked (an IP or record that's private/internal), nxdomain
+ * (no address at all, so the site doesn't exist: callers skip paid lookups for it), or ok.
+ * A and AAAA are checked side by side, so a public A record can't hide a private AAAA one.
+ * A slow DNS answer counts as ok here; the fetch itself then times out.
+ */
+export async function checkHost(hostname: string): Promise<'ok' | 'blocked' | 'nxdomain'> {
+  if (isIP(hostname)) return isPrivateIP(hostname) ? 'blocked' : 'ok'
+  const answer = await withTimeout(Promise.allSettled([dns.resolve4(hostname), dns.resolve6(hostname)]), DNS_TIMEOUT)
+  if (answer === 'timeout') return 'ok'
+  const found = answer.flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
+  if (found.some(isPrivateIP)) return 'blocked'
+  if (found.length) return 'ok'
+  const gone = answer.every(
+    (r) => r.status === 'rejected' && ['ENOTFOUND', 'ENODATA'].includes((r.reason as { code?: string })?.code ?? ''),
+  )
+  return gone ? 'nxdomain' : 'ok'
 }
 
 /** True when the hostname is (or resolves to) a private/internal address. */
 export async function resolveAndCheck(hostname: string): Promise<boolean> {
-  try {
-    // If hostname is already an IP, check directly
-    if (isIP(hostname)) {
-      return isPrivateIP(hostname)
-    }
-    const addresses = await dns.resolve4(hostname)
-    return addresses.some(isPrivateIP)
-  } catch {
-    // Also try IPv6
-    try {
-      const addresses = await dns.resolve6(hostname)
-      return addresses.some(isPrivateIP)
-    } catch {
-      // DNS resolution failed — let the fetch itself fail later
-      return false
-    }
-  }
+  return (await checkHost(hostname)) === 'blocked'
 }
 
 /* ── Fetch helper ───────────────────────────────────────────────────────── */
@@ -88,6 +100,35 @@ export interface FetchResult {
   responseTimeMs: number
 }
 
+const MAX_REDIRECTS = 5
+
+/** The body as text, read only up to maxBytes characters (a huge or compressed page can't fill memory). */
+async function readCapped(res: Response, maxBytes: number): Promise<string> {
+  if (!res.body) return ''
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let out = ''
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      out += decoder.decode(value, { stream: true })
+      if (out.length >= maxBytes) {
+        reader.cancel().catch(() => {})
+        break
+      }
+    }
+  } catch {
+    // A body cut off mid-read keeps what arrived.
+  }
+  return (out + decoder.decode()).slice(0, maxBytes)
+}
+
+/**
+ * One page read: redirects followed by hand (each hop's host checked against private
+ * addresses, so a public site can't bounce the reader inside the network), and the body read
+ * only up to maxBytes. The first URL's host is checked by the caller.
+ */
 export async function safeFetch(
   url: string,
   maxBytes: number,
@@ -98,28 +139,39 @@ export async function safeFetch(
   const start = Date.now()
 
   try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'text/html,application/xhtml+xml,*/*',
-      },
-      redirect: 'follow',
-    })
-
-    const text = await res.text()
-    clearTimeout(timeout)
-
-    return {
-      body: text.slice(0, maxBytes),
-      status: res.status,
-      finalUrl: res.url,
-      headers: res.headers,
-      responseTimeMs: Date.now() - start,
+    let current = url
+    for (let hop = 0; ; hop++) {
+      const res = await fetch(current, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'text/html,application/xhtml+xml,*/*',
+        },
+        redirect: 'manual',
+      })
+      const location = res.headers.get('location')
+      if (res.status >= 300 && res.status < 400 && location) {
+        res.body?.cancel().catch(() => {})
+        if (hop >= MAX_REDIRECTS) return null
+        const next = new URL(location, current)
+        if (!['http:', 'https:'].includes(next.protocol)) return null
+        if ((await checkHost(next.hostname)) === 'blocked') return null
+        current = next.toString()
+        continue
+      }
+      const body = await readCapped(res, maxBytes)
+      return {
+        body,
+        status: res.status,
+        finalUrl: current,
+        headers: res.headers,
+        responseTimeMs: Date.now() - start,
+      }
     }
   } catch {
-    clearTimeout(timeout)
     return null
+  } finally {
+    clearTimeout(timeout)
   }
 }
 

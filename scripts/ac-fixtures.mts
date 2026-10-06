@@ -132,7 +132,7 @@ async function refresh() {
         return to
       },
     }
-    await readSite(asResult(fx.home), reader)
+    await readSite(asResult(fx.home), reader, Date.parse(fx.fetchedAt) || Date.now(), Number.POSITIVE_INFINITY)
     if (!added.length) continue
     fetched += added.length
     writeFileSync(join(PAGES, f), JSON.stringify(fx))
@@ -189,7 +189,9 @@ async function score(out?: string, group?: string, noAbout = false) {
     const missing: string[] = []
     // --no-about: as if the About page didn't answer, to measure what reading it adds.
     const skip = noAbout ? findAboutPage(fx.home.body, fx.home.finalUrl) : null
-    const read = await readSite(asResult(fx.home), replayReader(fx, missing, skip))
+    // "Now" is the day the site was saved, so Recently updated doesn't drift as months pass.
+    const savedAt = Date.parse(fx.fetchedAt) || Date.now()
+    const read = await readSite(asResult(fx.home), replayReader(fx, missing, skip), savedAt, Number.POSITIVE_INFINITY)
     for (const m of missing) notes.push(`${domain}: MISSING ${m}`)
     runs[domain] = { proof: read.proof, evidence: read.evidence }
     for (const id of ids) {

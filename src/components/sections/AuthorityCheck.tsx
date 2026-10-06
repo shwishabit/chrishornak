@@ -69,8 +69,22 @@ const MODES: { id: Mode; label: string; sub: string }[] = [
 ]
 
 const RIVAL_INPUT_ID = 'ac-r1'
-/** The 11 homepage checks + the Domain Rating row. */
+/** The scored checks + the Domain Rating row. */
 const CHECK_COUNT = PROOF_CHECKS.length + 1
+
+/**
+ * How much one check reads, shown under the hero form (Chris, 2026-10-05: show how thorough
+ * it is). Counts come from the rules. Pages: the homepage, About, contact and reviews pages,
+ * robots.txt, up to 4 sitemap files, the blog feed, the newest page and a team page
+ * (authority-read.ts, freshness.ts). Sources: Ahrefs, Open PageRank, RDAP, Wikidata.
+ */
+const MAX_PAGES = 14
+const SOURCES = ['Ahrefs', 'Open PageRank', 'RDAP', 'Wikidata']
+const THOROUGH: { n: number; label: string }[] = [
+  { n: CHECK_COUNT + SHOWN_CHECKS.length, label: `things checked: ${PROOF_CHECKS.length} scored checks, link strength and ${SHOWN_CHECKS.length} notes` },
+  { n: MAX_PAGES, label: 'pages read per site, at most' },
+  { n: SOURCES.length, label: `outside data sources (${SOURCES.join(', ')})` },
+]
 
 function focusRival() {
   const el = document.getElementById(RIVAL_INPUT_ID) as HTMLInputElement | null
@@ -91,7 +105,7 @@ const HERO_PLAIN: Record<Letter, string> = {
   experience: 'Real work shown, years in business, client counts',
   expertise: 'The people behind it, credentials, a page per offer',
   authority: 'Link strength, review sites, where you’re featured',
-  trust: 'Reviews on your site, how to reach you, About page',
+  trust: 'Reviews on your site, how to reach you, About page, recent updates',
 }
 
 const FIELD =
@@ -178,7 +192,7 @@ function Hero({
             <span className="font-semibold text-muted-foreground">Check it alone, or next to your rivals.</span>
           </h1>
           <p className="mb-7 max-w-[56ch] text-base text-body-soft sm:text-lg">
-            One score out of 100 from 11 checks, what&apos;s missing, and your first 3 fixes. Add up to {MAX_RIVALS}{' '}
+            One score out of 100 from {PROOF_CHECKS.length} checks plus your link strength, what&apos;s missing, and your first 3 fixes. Add up to {MAX_RIVALS}{' '}
             rivals to see who leads.
           </p>
           {/* Two equal tabs: the same "Your site" box, with or without rivals. */}
@@ -341,9 +355,14 @@ function Hero({
               {error}
             </p>
           )}
-          <p id="ac-hint" className="mt-3 max-w-[62ch] text-[13px] text-muted-foreground">
-            It reads each homepage once (plus its About, contact, reviews and team pages when it needs them) and looks up each site&apos;s authority score.
-          </p>
+          <ul id="ac-hint" aria-label="What one check reads" className="m-0 mt-4 grid max-w-[640px] list-none gap-x-6 gap-y-3 p-0 sm:grid-cols-3">
+            {THOROUGH.map((t) => (
+              <li key={t.label} className="grid content-start gap-0.5 border-l-2 border-primary-line pl-3">
+                <b className="font-heading text-[22px] leading-none font-bold tabular-nums">{t.n}</b>
+                <span className="text-[13px] leading-snug text-muted-foreground">{t.label}</span>
+              </li>
+            ))}
+          </ul>
         </div>
         <section
           aria-labelledby="ac-adds-up"
@@ -746,15 +765,19 @@ function CompareTable({
       {src !== 'ahrefs' && (
         <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
           {src === 'opr'
-            ? 'Ahrefs scores are busy right now, so Authority uses Open PageRank for this check.'
+            ? 'Ahrefs didn’t answer this time, so link strength uses Open PageRank for this check.'
             : `Link strength isn’t available right now, so it counts for no one and each total is scaled up from the other ${100 - LINK_POINTS} points. Try again in a minute for the full score.`}
         </p>
       )}
-      {standIns.length > 0 && (
-        <p className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
-          Ahrefs has no Domain Rating for {standIns.map((s) => s.domain).join(' or ')}, so{' '}
-          {standIns.length > 1 ? 'their' : 'its'} Authority uses Open PageRank (marked OPR) instead.
-        </p>
+      {/* A site's own Ahrefs call failing isn't "Ahrefs has no rating" (audit 2026-10-05). */}
+      {[standIns.filter((s) => !s.drFailed), standIns.filter((s) => s.drFailed)].map(
+        (list, k) =>
+          list.length > 0 && (
+            <p key={k} className="m-0 rounded-md border border-dashed border-caution-line px-3 py-2.5 text-sm text-caution">
+              {k === 0 ? 'Ahrefs has no Domain Rating for' : 'Ahrefs didn’t answer for'} {list.map((s) => s.domain).join(' or ')},
+              so {list.length > 1 ? 'their' : 'its'} link strength uses Open PageRank (marked OPR) instead.
+            </p>
+          ),
       )}
       {/* Phones: one card per site (sorted, yours highlighted), then the checks as a narrow grid. */}
       <div className="grid gap-2.5 sm:hidden">
@@ -836,12 +859,12 @@ function CompareTable({
           onClick={() => setOpen(!open)}
           className="ac-noprint rounded-lg border border-line-strong px-3 py-3 text-sm font-medium text-body-soft hover:bg-muted hover:text-foreground"
         >
-          {open ? 'Hide the checks ▴' : `Show all ${CHECK_COUNT} checks ▾`}
+          {open ? 'Hide the checks ▴' : 'Show all checks ▾'}
         </button>
         {open && (
           <div id="ac-checks-m" className="overflow-hidden rounded-xl border border-line-strong bg-panel">
             <table className="w-full table-fixed border-collapse text-sm">
-              <caption className="sr-only">The {CHECK_COUNT} checks for each site</caption>
+              <caption className="sr-only">All the checks for each site</caption>
               <colgroup>
                 <col />
                 {order.map((o) => (
@@ -972,7 +995,7 @@ function CompareTable({
                   onClick={() => setOpen(!open)}
                   className="w-full px-3 py-3 text-sm font-medium text-body-soft hover:bg-muted hover:text-foreground"
                 >
-                  {open ? 'Hide the checks ▴' : `Show all ${CHECK_COUNT} checks ▾`}
+                  {open ? 'Hide the checks ▴' : 'Show all checks ▾'}
                 </button>
               </td>
             </tr>
@@ -1151,7 +1174,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
               </span>
             </h3>
             <ul className="m-0 grid list-none p-0">
-              {passed.length === 0 && <li className="py-2.5 text-[15px] text-muted-foreground">None of the 11 checks yet.</li>}
+              {passed.length === 0 && <li className="py-2.5 text-[15px] text-muted-foreground">None of the {PROOF_CHECKS.length} checks yet.</li>}
               {passed.map((c) => (
                 <li key={c.id} className={li}>
                   <span className="ac-yes font-semibold" aria-label="yes">
@@ -1186,7 +1209,14 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
                     <span className={gap ? 'ac-gap font-semibold' : 'ac-no'} aria-label={gap ? 'no, and a rival has it' : 'no'}>
                       ✕
                     </span>
-                    <span className="min-w-0 text-[15px]">{c.label}</span>
+                    <span className="min-w-0 text-[15px]">
+                      {c.label}
+                      {c.id === 'updated' && (
+                        <small className="block text-[13px] text-muted-foreground [overflow-wrap:anywhere]">
+                          {updatedWords(site.updated, r.checkedAt, isYou)}
+                        </small>
+                      )}
+                    </span>
                     <span className="font-heading text-sm font-semibold whitespace-nowrap text-primary tabular-nums">
                       {upTo(c.points, GRADED.has(c.id))}
                     </span>
@@ -1217,8 +1247,6 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </p>
       </div>
 
-      {s && isYou && <FreshTip site={site} checkedAt={r.checkedAt} />}
-
       {s && (
         <section aria-label="Good to know, not scored" className="grid gap-2 border-t border-border pt-5">
           <h3 className={h3}>
@@ -1228,7 +1256,6 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
           <ul className="m-0 grid list-none p-0 md:grid-cols-2 md:gap-x-7">
             {SHOWN_CHECKS.map((c) => {
               const yes = site.proof!.includes(c.id)
-              const said = c.id === 'updated' && !yes ? updatedWords(site.updated) : null
               return (
                 <li key={c.id} className="grid grid-cols-[22px_minmax(0,1fr)] items-baseline gap-2 border-t border-border py-2.5 md:[&:nth-child(2)]:border-t-0 first:border-t-0">
                   <span className={yes ? 'ac-yes font-semibold' : 'text-muted-foreground'} aria-label={yes ? 'yes' : 'no'}>
@@ -1237,7 +1264,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
                   <span className="min-w-0 text-[15px]">
                     {c.label}
                     <small className="block text-[13px] text-muted-foreground [overflow-wrap:anywhere]">
-                      {yes ? (site.evidence?.[c.id] ?? 'Found') : (said ?? c.note)}
+                      {yes ? (site.evidence?.[c.id] ?? 'Found') : c.note}
                     </small>
                   </span>
                 </li>
@@ -1253,45 +1280,26 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
 const fmtDay = (day: string) =>
   new Date(day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 
-/** Why "Recently updated" has no ✓, in plain words. */
-function updatedWords(u: SiteResult['updated']): string {
+/** Why Recently updated has no ✓ (or not full points), in plain words. `you` = your own card. */
+function updatedWords(u: SiteResult['updated'], checkedAt: string, you = true): string {
+  const its = you ? 'your' : 'its'
   const where = (p?: string) => (p && p !== '/' ? ` (${p.slice(0, 50)})` : '')
   if (u?.newest)
-    return `${u.source === 'feed' ? 'Newest post in your blog feed' : 'Newest page your sitemap and the page agree on'}: ${fmtDay(u.newest)}${where(u.path)}. Not scored.`
+    return `${u.source === 'feed' ? `Newest post in ${its} blog feed` : `Newest page ${its} sitemap and the page agree on`}: ${fmtDay(u.newest)}${where(u.path)}, ${Math.floor((Date.parse(checkedAt) - Date.parse(u.newest)) / (30.44 * 86_400_000))} months ago.`
   switch (u?.why) {
     case 'unconfirmed':
-      return `Your sitemap says ${u.claimedPath && u.claimedPath !== '/' ? u.claimedPath.slice(0, 50) : 'your newest page'} changed on ${u.claimed ? fmtDay(u.claimed) : 'a recent date'}, but the page shows no date to confirm it, and we found no blog feed. Not scored.`
+      return `${you ? 'Your' : 'Its'} sitemap says ${u.claimedPath && u.claimedPath !== '/' ? u.claimedPath.slice(0, 50) : 'your newest page'} changed on ${u.claimed ? fmtDay(u.claimed) : 'a recent date'}, but the page shows no date to confirm it, and we found no blog feed.`
     case 'stamped':
-      return 'Most pages in your sitemap share one date, likely set by your website software, and we found no blog feed, so we can’t tell. Not scored.'
+      return `Most pages in ${its} sitemap share one date, likely set by ${you ? 'your' : 'the'} website software, and we found no blog feed, so we can’t tell.`
     case 'no-dates':
-      return 'Your sitemap has no page dates and we found no blog feed, so we can’t tell. Not scored.'
+      return `${you ? 'Your' : 'Its'} sitemap has no page dates and we found no blog feed, so we can’t tell.`
+    case 'not-read':
+      return `We couldn’t read ${its} newest pages in time, so we can’t tell. Try again in a minute.`
     default:
-      return 'We found no sitemap or blog feed, so we can’t tell. Not scored.'
+      return 'We found no sitemap or blog feed, so we can’t tell.'
   }
 }
 
-/**
- * Your card: when the newest real sitemap date is over 2 months old (FRESH_DAYS), one tip to freshen the
- * site (Chris, 2026-10-05). Not points: freshness is shown only (SEO panel).
- */
-function FreshTip({ site, checkedAt }: { site: SiteResult; checkedAt: string }) {
-  const u = site.updated
-  if (!u?.newest) return null
-  const days = (Date.parse(checkedAt) - Date.parse(u.newest)) / 86_400_000
-  if (days <= FRESH_DAYS) return null
-  const months = Math.floor(days / 30.44)
-  return (
-    <aside aria-label="Keep your site fresh" className="grid gap-1.5 rounded-xl border border-dashed border-line-strong p-4">
-      <b className="font-heading text-[16px]">Keep your site fresh</b>
-      <p className="m-0 text-[15px] text-body-soft">
-        {u.source === 'feed' ? 'Your newest blog post is from' : 'Your newest updated page is from'} {fmtDay(u.newest)},{' '}
-        {months} months ago. Update one older page with new
-        prices, photos or recent jobs, or publish a new article that answers a question your customers ask. A site
-        with recent work on it looks open for business. This doesn&apos;t change your score.
-      </p>
-    </aside>
-  )
-}
 
 /**
  * Link strength in Authority's own points (out of 20), so it reads against the score above:
@@ -1835,6 +1843,8 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
   const [rivals, setRivals] = useState<string[]>([''])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** A failed check or add, shown in the results area where the page has scrolled to (audit 2026-10-05). */
+  const [resultError, setResultError] = useState<string | null>(null)
   const [result, setResult] = useState<AuthorityResult | null>(null)
   const [pending, setPending] = useState<string[]>([])
   /** The report card open under the compare table; null = yours. */
@@ -1877,6 +1887,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
     }
 
     setError(null)
+    setResultError(null)
     setLoading(true)
     setPending(bares)
     // Show the "checking" panel right away, where the report will appear.
@@ -1889,7 +1900,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
       const res = await fetch(`/api/authority-check?${query}`)
       const data = await res.json().catch(() => null)
       if (!res.ok || !data || data.error) {
-        setError(data?.error ?? 'Something went wrong. Try again in a minute.')
+        setResultError(data?.error ?? 'Something went wrong. Try again in a minute.')
         return
       }
       setResult(data as AuthorityResult)
@@ -1897,7 +1908,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
       window.history.replaceState(null, '', `${window.location.pathname}?${query}`)
       scrollToResult()
     } catch {
-      setError('We could not reach the checker. Check your connection and try again.')
+      setResultError('We could not reach the checker. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -1926,6 +1937,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
     // Your site as you typed it (keeps www), from the share link.
     const site = new URLSearchParams(window.location.search).get('site') ?? result.you.domain
     setError(null)
+    setResultError(null)
     onError('')
     setLoading(true)
     setPending(added.map((p) => p.bare))
@@ -1934,7 +1946,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
       const res = await fetch(`/api/authority-check?${new URLSearchParams({ site, add: added.map((p) => p.host).join(',') })}`)
       const data = await res.json().catch(() => null)
       if (!res.ok || !data || data.error || !data.rivals?.length) {
-        setError(data?.error ?? 'Something went wrong. Try again in a minute.')
+        setResultError(data?.error ?? 'Something went wrong. Try again in a minute.')
         return
       }
       const merged: AuthorityResult = { ...result, checkedAt: data.checkedAt, rivals: [...result.rivals, ...data.rivals] }
@@ -1946,7 +1958,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
       window.history.replaceState(null, '', `${window.location.pathname}?${shareQuery(site, domains)}`)
       scrollToResult()
     } catch {
-      setError('We could not reach the checker. Check your connection and try again.')
+      setResultError('We could not reach the checker. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -2008,15 +2020,20 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
                 ? `Check done for ${result.you.domain}.`
                 : ''}
           </p>
-          {loading ? (
-            <Checking sites={pending} adding={!!result && !pending.includes(result.you.domain)} />
-          ) : result ? (
-            <div key={result.checkedAt} className="ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10">
+          {loading && <Checking sites={pending} adding={!!result && !pending.includes(result.you.domain)} />}
+          {!loading && resultError && (
+            <p role="alert" className="m-0 rounded-lg border border-caution-line px-4 py-3 text-[15px] text-caution">
+              {resultError}
+            </p>
+          )}
+          {result ? (
+            <div key={result.checkedAt} hidden={loading} className="ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10">
               <ReportHead r={result} />
               {solo ? (
                 <>
                   <ReportCard r={result} site={result.you} solo />
-                  <SoloAddRival onAdd={addRivals} loading={loading} />
+                  {/* Nothing to compare yet when your own homepage couldn't be read. */}
+                  {result.you.proof && <SoloAddRival onAdd={addRivals} loading={loading} />}
                 </>
               ) : (
                 <>
@@ -2032,6 +2049,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
               )}
             </div>
           ) : (
+            !loading && (
             <Previews
               example={example}
               mode={mode}
@@ -2045,6 +2063,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
                 })
               }}
             />
+            )
           )}
           <Offer />
           <Grow />

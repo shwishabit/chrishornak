@@ -3,19 +3,27 @@ import { siteConfig } from '@/lib/data'
 import { guides } from '@/lib/guides'
 import { getPublishedPosts } from '@/lib/blog'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const guideEntries: MetadataRoute.Sitemap = guides
-    .filter((g) => g.published)
-    .map((g) => ({
-      url: `${siteConfig.domain}/signal/${g.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    }))
+// Real dates only (2026-10-05). `new Date()` stamped every page with the build time, which
+// tells search engines and freshness checks (our own Authority Check included) nothing. Posts
+// and guides use their dateModified; /blog and /signal use their newest one; pages whose
+// changes we don't track leave lastModified out.
+const day = (d: string) => new Date(`${d}T00:00:00`)
+const newest = (dates: string[]) => (dates.length ? day([...dates].sort().at(-1)!) : undefined)
 
-  const postEntries: MetadataRoute.Sitemap = getPublishedPosts().map((p) => ({
+export default function sitemap(): MetadataRoute.Sitemap {
+  const publishedGuides = guides.filter((g) => g.published)
+  const posts = getPublishedPosts()
+
+  const guideEntries: MetadataRoute.Sitemap = publishedGuides.map((g) => ({
+    url: `${siteConfig.domain}/signal/${g.slug}`,
+    lastModified: day(g.dateModified),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
+  const postEntries: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${siteConfig.domain}/blog/${p.slug}`,
-    lastModified: new Date(p.dateModified + 'T00:00:00'),
+    lastModified: day(p.dateModified),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }))
@@ -23,63 +31,55 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: siteConfig.domain,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 1,
     },
     {
       url: `${siteConfig.domain}/signal`,
-      lastModified: new Date(),
+      lastModified: newest(publishedGuides.map((g) => g.dateModified)),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     ...guideEntries,
     {
       url: `${siteConfig.domain}/blog`,
-      lastModified: new Date(),
+      lastModified: newest(posts.map((p) => p.dateModified)),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     ...postEntries,
     {
       url: `${siteConfig.domain}/work`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${siteConfig.domain}/tools`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${siteConfig.domain}/audit`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${siteConfig.domain}/og-image-checker`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${siteConfig.domain}/authority-check`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${siteConfig.domain}/audit/benchmarks`,
-      lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
       url: `${siteConfig.domain}/privacy`,
-      lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.3,
     },

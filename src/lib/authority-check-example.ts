@@ -2,7 +2,8 @@
  * Made-up domains only (never real businesses), labelled "Example" on the
  * page. The same four sites as the approved mock (drafts/authority-check-
  * results-v4-comp.html), re-written 2026-10-02 for the 11 checks of the SEO
- * panel's final spec: they score 84 · 64 · 29 · 8. The phrases behind the ✓
+ * panel's final spec, and 2026-10-05 for Recently updated (HTTPS 2, reach 11):
+ * they score 84 · 62 · 25 · 8. The phrases behind the ✓
  * marks are invented to show what a real check returns, and each one passes
  * today's rule for its check. Renders through the same code as a real check,
  * so places, colours, gaps and moves come out of the rules.
@@ -37,9 +38,10 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
       linkingSites: 12,
       dr: 14,
       trackLevel: 2,
+      freshLevel: 2,
       reviewSiteCount: 2,
       seenCount: 1,
-      proof: ['work', 'track', 'people', 'focus', 'reviewSites', 'seen', 'reviews', 'address', 'about', 'https', 'schema', 'trade', 'area', 'name', 'age'],
+      proof: ['work', 'track', 'people', 'focus', 'reviewSites', 'seen', 'reviews', 'address', 'about', 'https', 'updated', 'schema', 'trade', 'area', 'name', 'age'],
       evidence: {
         work: 'A link to “Our work” (/our-work)',
         track: 'Strong: “since 2004” (22 years) · “Over 300 weddings”',
@@ -55,6 +57,7 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
         trade: 'Found “bakery”: A small-batch bakery in town…',
         area: 'Found “Serving Allegheny County”: Serving Allegheny County since 2004…',
         name: 'Same name in the schema, share name, © line: “Rival A Bakery”',
+        updated: 'Newest post in your blog feed: Sep 24, 2026 (/blog/fall-menu)',
         age: 'First registered in 2004; your site says 2004',
       },
     },
@@ -65,9 +68,11 @@ export const AUTHORITY_CHECK_EXAMPLE: AuthorityResult = {
       linkingSites: 6,
       dr: 8,
       trackLevel: 1,
-      proof: ['track', 'people', 'credentials', 'reviews', 'address', 'about', 'https'],
+      freshLevel: 1,
+      proof: ['track', 'people', 'credentials', 'reviews', 'address', 'about', 'https', 'updated'],
       evidence: {
         track: '“since 2009” (17 years)',
+        updated: 'Your sitemap and the page agree: updated Jun 3, 2026 (/our-story)',
         people: 'Found “Sam Ortiz”: Sam Ortiz, our founder, started…',
         credentials: 'Found “licensed”: Licensed and insured, serving the valley since 2009…',
         reviews: 'Found “Testimonials”: Testimonials from our customers…',
