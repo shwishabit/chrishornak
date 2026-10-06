@@ -93,3 +93,22 @@ export const WHY: Partial<Record<ProofId | 'links', Why>> = {
     href: QRG,
   },
 }
+
+/** Why Trust is 40 of the 100 points (QRG 2025, p.27). Shown at the top of How we score. */
+export const TRUST_WEIGHT: Why = {
+  text: '“Trust is the most important member of the E-E-A-T family.”',
+  source: `${QRG_NAME}, p.27`,
+  href: QRG,
+}
+
+/**
+ * What the sources don't set, said plainly on How we score (evidence sheet, "What the research
+ * changes", approved 2026-10-06). Each line was a NOT FOUND or a caveat in the research.
+ */
+export const OWN_CHOICES: string[] = [
+  'The points for each check are our own weighting. Trust gets the most, because Google calls it the most important part.',
+  'The 2-month and 6-month windows for “Recently updated” are our own. No study sets them, and Google’s raters are told freshness is “generally less of a concern” when they rate page quality.',
+  'Review spread and Seen elsewhere check the links on your site. Google’s raters look at the review profiles and the coverage themselves, so these two checks stand in for that.',
+  'Domain Rating is Ahrefs’ estimate of your links, and Open PageRank is built from public crawl data. Neither is a Google score.',
+  'Google’s raters are told many small local businesses have little press or reputation online, and that this is not a sign of low quality.',
+]

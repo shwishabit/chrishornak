@@ -67,6 +67,7 @@ export const AUTHORITY_FAQ: FaqItem[] = [
       `Trust: reviews on your site ${pts('reviews')}, how to reach you ${pts('address')}, About page ${pts('about')}, secure site ${pts('https')}, and recently updated up to ${pts('updated')} (a dated post or page from the last 2 months ${pts('updated')}, from the last 6 months 2). Testimonials and review counts count once, under Reviews on your site.`,
       `70 and up overall is strong, 40 to 69 is fair, under 40 needs work. Totals less than ${OVERALL_TIE} points apart read as about the same, and Domain Ratings less than ${TIE_GAP} apart count as a tie. A site checked alone gets each part coloured as a share of that part’s points. “Good to know” rows are shown, never scored.`,
     ],
+    links: [{ href: '#how-we-score', label: 'Why each check counts, with sources: How we score' }],
   },
   {
     id: 'data',

@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
-import { WHY } from '@/lib/authority-check-evidence'
+import { OWN_CHOICES, TRUST_WEIGHT, WHY } from '@/lib/authority-check-evidence'
 import {
   FRESH_DAYS,
   LETTERS,
@@ -1678,6 +1678,114 @@ function Grow() {
   )
 }
 
+/* ── How we score: every scored check, its points and the source behind it, one open/close
+ * part per letter, then what is our own choice (Chris, 2026-10-06: on this page, not a modal
+ * or a new page). Native <details>, like Questions: the text stays in the HTML for search and
+ * AI tools, and #how-we-score can be linked. Lines: lib/authority-check-evidence.ts. ─── */
+
+const SCORE_SUMMARY =
+  'flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 font-heading text-[16px] font-semibold hover:bg-muted sm:px-5 [&::-webkit-details-marker]:hidden'
+
+function SourceLink({ why }: { why: { source: string; href: string } }) {
+  return (
+    <a href={why.href} target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-foreground">
+      {why.source}
+    </a>
+  )
+}
+
+function Plus() {
+  return (
+    <span
+      aria-hidden="true"
+      className="flex-none text-xl leading-none font-normal text-muted-foreground transition-transform duration-150 group-open:rotate-45 motion-reduce:transition-none"
+    >
+      +
+    </span>
+  )
+}
+
+function HowWeScore() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const openAll = () => ref.current?.querySelectorAll('details').forEach((d) => (d.open = true))
+    window.addEventListener('beforeprint', openAll)
+    return () => window.removeEventListener('beforeprint', openAll)
+  }, [])
+  const rows = (l: Letter) => [
+    ...(l === 'authority' ? [{ id: 'links' as const, label: 'Link strength', pts: `up to ${LINK_POINTS}` }] : []),
+    ...checksIn(l).map((c) => ({ id: c.id, label: c.label, pts: GRADED.has(c.id) ? `up to ${c.points}` : `${c.points}` })),
+  ]
+  return (
+    <section id="how-we-score" aria-labelledby="ac-how" className="grid scroll-mt-28 gap-3.5 border-t border-border pt-10">
+      <h2 id="ac-how" className="m-0 font-heading text-[22px] font-bold">
+        How we score
+      </h2>
+      <p className="m-0 max-w-[70ch] text-body-soft">
+        Every check has a reason you can read for yourself. Most come from the guidelines Google gives the people who rate
+        its search results. Open a part to see each check, its points and its source.
+      </p>
+      <div ref={ref} className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
+        {LETTERS.map((l) => (
+          <details key={l.id} className="group border-t border-border first:border-t-0">
+            <summary className={SCORE_SUMMARY}>
+              <span>
+                {l.label} <span className="ml-1 font-sans text-[13px] font-medium text-muted-foreground">{l.points} points</span>
+              </span>
+              <Plus />
+            </summary>
+            <div className="grid gap-3 px-4 pb-5 sm:px-5">
+              {l.id === 'trust' && (
+                <p className="m-0 max-w-[75ch] text-[15px] text-body-soft">
+                  Trust gets 40 of the 100 points. {TRUST_WEIGHT.text}{' '}
+                  <small className="text-[13px] text-muted-foreground">
+                    <SourceLink why={TRUST_WEIGHT} />
+                  </small>
+                </p>
+              )}
+              <ul className="m-0 grid list-none p-0">
+                {rows(l.id).map((row) => {
+                  const why = WHY[row.id]
+                  return (
+                    <li
+                      key={row.id}
+                      className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-t border-border py-3 first:border-t-0"
+                    >
+                      <b className="font-heading text-[15px] font-semibold">{row.label}</b>
+                      <span className="font-heading text-sm font-semibold whitespace-nowrap text-body-soft tabular-nums">
+                        {row.pts} pts
+                      </span>
+                      {why && (
+                        <p className="col-span-2 m-0 max-w-[75ch] text-[15px] text-body-soft">
+                          {why.text}{' '}
+                          <small className="text-[13px] text-muted-foreground">
+                            <SourceLink why={why} />
+                          </small>
+                        </p>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </details>
+        ))}
+        <details className="group border-t border-border">
+          <summary className={SCORE_SUMMARY}>
+            What is our own choice
+            <Plus />
+          </summary>
+          <ul className="m-0 grid max-w-[75ch] list-disc gap-2 pr-4 pb-5 pl-9 text-[15px] text-body-soft sm:pr-5 sm:pl-10">
+            {OWN_CHOICES.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </details>
+      </div>
+    </section>
+  )
+}
+
 /* ── Questions (end of the page): one open/close list in place of the old "What this can't
  * see" box and "Based on Google's public guidance" (Chris, 2026-10-05). The one line the SEO
  * panel wanted seen (6 of 6) stays above the list, never folded away. Text and FAQPage schema
@@ -2086,6 +2194,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
           <div className="ac-noprint">
             <ToolQuestions current="/authority-check" />
           </div>
+          <HowWeScore />
           <Questions asOf={(result ?? example).asOf} src={authoritySource(result ?? example)} />
         </div>
       </section>
