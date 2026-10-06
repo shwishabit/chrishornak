@@ -54,7 +54,26 @@
   .ac-theme { --color-background: #fff; --color-foreground: #000; --color-body-soft: #222; --color-muted-foreground: #555; --ac-you: rgba(0, 0, 0, 0.04); }
   .ac-theme [data-ac-checks][hidden] { display: table-row-group !important; }
   .ac-print-tight { padding-top: 0 !important; }
-  .ac-theme section, .ac-theme aside { break-inside: avoid; }
+  /* 2026-10-06 (Chris's printed PDF): keeping whole sections together pushed the tall
+   * "What you do well" list to page 2 and left page 1 half empty. Keep only small pieces
+   * together, and keep a heading with what follows it. */
+  .ac-theme aside, .ac-theme li, .ac-theme tr { break-inside: avoid; }
+  .ac-theme h2, .ac-theme h3, .ac-theme summary { break-after: avoid; }
+  /* Questions: a long answer may run onto the next page; the frame printed as an empty box
+   * at the foot of a page, and the open / close marks mean nothing on paper. */
+  .ac-print-flat { display: block !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; background: none !important; }
+  .ac-theme summary > span[aria-hidden] { display: none; }
+  .ac-print-flat summary { padding-left: 0 !important; padding-right: 0 !important; }
+  .ac-print-flat details > div { padding-left: 0 !important; padding-right: 0 !important; }
+  /* How we score isn't printed, so a link to it would lead nowhere on paper. */
+  .ac-print-flat a[href^="#"] { display: none; }
+  /* Chrome splits grid layouts badly across pages (the offer box printed on top of the link
+   * strength text). The page and the report card stack as plain blocks in print. */
+  .ac-print-stack { display: block !important; }
+  .ac-print-stack > * + * { margin-top: 28px; }
+  /* The report card prints without its frame (Chris: "the grey line around it should be removed"). */
+  .ac-card { display: block !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; background: none !important; }
+  .ac-card > * + * { margin-top: 22px; }
 }
 
 /* The "checking" panel and the framed example (2026-10-02). */

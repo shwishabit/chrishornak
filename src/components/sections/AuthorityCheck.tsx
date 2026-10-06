@@ -375,7 +375,7 @@ function Hero({
           <ul className="m-0 grid list-none gap-2.5 p-0">
             {LETTERS.map((l) => (
               <li key={l.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5">
-                <Badge id={l.id} size="lg" />
+                <Badge id={l.id} size="hero" />
                 <span className="min-w-0 text-sm leading-snug">
                   <b className="font-semibold">{l.label}</b>
                   <small className="block text-[13px] text-muted-foreground">{HERO_PLAIN[l.id]}</small>
@@ -401,10 +401,12 @@ const sClass = (s: Standing | null) => (s ? `ac-s-${s}` : '')
 /** Each part's icon (the same ones as "How to grow each score"), in place of E-E-A-T letters. */
 const BADGE_SIZE = {
   sm: 'h-5 w-5 text-muted-foreground [&>svg]:h-3.5 [&>svg]:w-3.5',
-  /** The report card's four part tiles: 50% bigger than sm (Chris, 2026-10-06). */
-  card: 'h-7.5 w-7.5 text-foreground [&>svg]:h-5.25 [&>svg]:w-5.25',
+  /** The report card's four part tiles: about 15% bigger than sm (Chris, 2026-10-06, after trying 50% and 25%). */
+  card: 'h-[23px] w-[23px] text-foreground [&>svg]:h-[16px] [&>svg]:w-[16px]',
   md: 'h-6 w-6 text-foreground [&>svg]:h-4 [&>svg]:w-4',
-  /** The score rows, and the hero's "One score out of 100" list (2026-10-06): 50% bigger than md. */
+  /** The hero's "One score out of 100" list: about 15% bigger than md (2026-10-06). */
+  hero: 'h-[28px] w-[28px] text-foreground [&>svg]:h-[18px] [&>svg]:w-[18px]',
+  /** The score rows: 50% bigger than md. */
   lg: 'h-9 w-9 text-foreground [&>svg]:h-6 [&>svg]:w-6',
 }
 
@@ -1109,7 +1111,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
   const li = 'grid grid-cols-[22px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-border py-2.5 first:border-t-0'
 
   return (
-    <article aria-label={`Report card for ${site.domain}`} className="ac-reveal grid gap-7 rounded-2xl border border-line-strong bg-panel p-5 sm:p-7">
+    <article aria-label={`Report card for ${site.domain}`} className="ac-card ac-reveal grid gap-7 rounded-2xl border border-line-strong bg-panel p-5 sm:p-7">
       <div className="grid gap-2">
         <p className="m-0 text-sm text-muted-foreground">
           {isYou && <YouTag />}
@@ -1138,7 +1140,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
       </div>
 
       {s && (
-        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4">
           {LETTERS.map((l, i) => {
             const v = s[l.id]
             const t = level(v, l.points)
@@ -1166,6 +1168,9 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
           })}
         </ul>
       )}
+
+      {/* Print only: the fixes right under the four parts, so page one holds the answer (Chris, 2026-10-06). */}
+      {s && <div className="hidden print:block">{isYou ? <Fixes r={r} /> : <BeatsYou r={r} site={site} />}</div>}
 
       {s && (
         <div className="grid gap-x-7 gap-y-5 md:grid-cols-2">
@@ -1259,8 +1264,7 @@ function ReportCard({ r, site, solo }: { r: AuthorityResult; site: SiteResult; s
         </section>
       )}
 
-      {s && isYou && <Fixes r={r} />}
-      {s && !isYou && <BeatsYou r={r} site={site} />}
+      {s && <div className="print:hidden">{isYou ? <Fixes r={r} /> : <BeatsYou r={r} site={site} />}</div>}
 
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-border pt-5">
         <span className="row-span-2 font-heading text-[30px] leading-none font-bold tabular-nums">
@@ -1359,7 +1363,7 @@ function Fixes({ r }: { r: AuthorityResult }) {
   return (
     <section aria-label={title} className="grid gap-3">
       <h3 className="m-0 font-heading text-[19px] font-bold">{title}</h3>
-      <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+      <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3 print:grid-cols-3">
         {moves.map((m, i) => (
           <li key={m.id} className="grid content-start gap-1.5 rounded-xl border border-line-strong p-4">
             <span className="flex items-baseline justify-between gap-2">
@@ -1591,6 +1595,10 @@ function Offer() {
         <p className="m-0 max-w-[60ch] text-body-soft">
           15 minutes, free. We read your results together and pick the one move that matters most.
         </p>
+        {/* Print has no button, so say where to book (Chris, 2026-10-06). */}
+        <p className="m-0 mt-2 hidden font-heading font-semibold print:block">
+          Book your free 15 minutes at chrishornak.com/authority-check
+        </p>
       </div>
       <button
         type="button"
@@ -1653,7 +1661,7 @@ const GROW: { id: Letter; text: string }[] = [
 
 function Grow() {
   return (
-    <section aria-labelledby="ac-grow" className="grid gap-[18px]">
+    <section aria-labelledby="ac-grow" className="ac-noprint grid gap-[18px]">
       <h2 id="ac-grow" className="m-0 font-heading text-[22px] font-bold">
         How to grow each score
       </h2>
@@ -1719,7 +1727,7 @@ function HowWeScore() {
     ...checksIn(l).map((c) => ({ id: c.id, label: c.label, pts: GRADED.has(c.id) ? `up to ${c.points}` : `${c.points}` })),
   ]
   return (
-    <section id="how-we-score" aria-labelledby="ac-how" className="grid scroll-mt-28 gap-3.5 border-t border-border pt-10">
+    <section id="how-we-score" aria-labelledby="ac-how" className="ac-noprint grid scroll-mt-28 gap-3.5 border-t border-border pt-10">
       <h2 id="ac-how" className="m-0 font-heading text-[22px] font-bold">
         How we score
       </h2>
@@ -1807,7 +1815,7 @@ function Questions({ asOf, src }: { asOf: string | null; src: ReturnType<typeof 
         Questions
       </h2>
       <p className="m-0 max-w-[70ch] text-body-soft">{FAQ_LEAD}</p>
-      <div ref={ref} className="grid overflow-hidden rounded-xl border border-line-strong bg-panel">
+      <div ref={ref} className="ac-print-flat grid overflow-hidden rounded-xl border border-line-strong bg-panel">
         {AUTHORITY_FAQ.map((f) => (
           <details key={f.id} className="group border-t border-border first:border-t-0">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 font-heading text-[16px] font-semibold hover:bg-muted sm:px-5 [&::-webkit-details-marker]:hidden">
@@ -2138,7 +2146,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
         error={error}
       />
       <section aria-labelledby="ac-result" className="scroll-mt-28" ref={resultRef}>
-        <div className="ac-print-tight mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-10 px-4 pt-10 pb-[72px] sm:px-6">
+        <div className="ac-print-tight ac-print-stack mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-10 px-4 pt-10 pb-[72px] sm:px-6">
           <p className="sr-only" aria-live="polite">
             {loading
               ? `Checking ${pending.length} site${pending.length > 1 ? 's' : ''}.`
@@ -2153,7 +2161,7 @@ export function AuthorityCheck({ example }: { example: AuthorityResult }) {
             </p>
           )}
           {result ? (
-            <div key={result.checkedAt} hidden={loading} className="ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10">
+            <div key={result.checkedAt} hidden={loading} className="ac-print-stack ac-reveal grid grid-cols-[minmax(0,1fr)] gap-10">
               <ReportHead r={result} />
               {solo ? (
                 <>
