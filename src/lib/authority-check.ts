@@ -650,7 +650,7 @@ export function upgrades(r: AuthorityResult): Move[] {
         next.points - pts,
         'Earn more links',
         // Chris, 2026-10-05: name the strategy (digital PR, link-worthy content), not just "get links".
-        `Two ways that work: pitch a story to local news or trade sites (digital PR), and publish something others want to cite, like your own price survey, local data or a free guide. At ${src} ${next.from} you earn ${next.points - pts} more points${next.from < top.from ? `; ${src} ${top.from} earns all ${top.points}` : ''}. It takes months.`,
+        `Two ways that work: pitch a story to local news or trade sites (digital PR), and publish something others want to cite, like your own price survey, local data or a free guide. At ${src} ${next.from} you earn ${next.points - pts} more points${next.from < top.from ? `; ${src} ${top.from} earns all ${top.points}` : ''}.`,
       )
   }
   // Each card says what we found, then one concrete thing to add (Chris, 2026-10-05: "vague").

@@ -1,6 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { WHY } from '@/lib/authority-check-evidence'
 import {
   FRESH_DAYS,
   LETTERS,
@@ -1324,7 +1325,8 @@ function LinkWords({ a, you, src }: { a: number; you: boolean; src: 'DR' | 'OPR'
         : next.points === top.points
           ? `At ${src} ${next.from} it earns all ${top.points}.`
           : `At ${src} ${next.from} it earns ${next.points}; ${src} ${top.from} earns all ${top.points}.`}{' '}
-      Links grow over months, as other sites link to {you ? 'you' : 'them'}.
+      {/* "Links grow over months" cut 2026-10-06: no source gives a time (research/authority-check-evidence/authority.md). */}
+      {src === 'DR' ? 'Domain Rating is Ahrefs’ estimate, not a Google score.' : 'Open PageRank is an estimate from public crawl data, not a Google score.'}
     </>
   )
 }
@@ -1367,6 +1369,19 @@ function Fixes({ r }: { r: AuthorityResult }) {
             <b className="font-heading text-[16px] leading-snug">{m.title}</b>
             <span className="text-[15px] text-body-soft">{m.body}</span>
             {m.who && <small className="text-[13px] text-muted-foreground">{m.who}</small>}
+            {WHY[m.id] && (
+              <small className="mt-1 border-t border-border pt-2 text-[13px] text-muted-foreground">
+                <b className="font-semibold text-foreground">Why:</b> {WHY[m.id]!.text}{' '}
+                <a
+                  href={WHY[m.id]!.href}
+                  target="_blank"
+                  rel="noopener"
+                  className="underline underline-offset-[3px] hover:text-foreground"
+                >
+                  {WHY[m.id]!.source}
+                </a>
+              </small>
+            )}
           </li>
         ))}
       </ol>
@@ -1626,7 +1641,7 @@ const GROW: { id: Letter; text: string }[] = [
   { id: 'expertise', text: 'Name the people behind the business, list licenses and awards, and give each offer its own page.' },
   {
     id: 'authority',
-    text: 'Get named and linked by local news, partners, associations and lists, and link your review profiles. It takes months.',
+    text: 'Get named and linked by local news, partners, associations and lists, and link your review profiles.',
   },
   {
     id: 'trust',
