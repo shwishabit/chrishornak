@@ -6,6 +6,7 @@
  * with it the Authority Check's own points are unchanged.
  *   Pricing      = a link to a pricing / plans page
  *   Demo path    = a "Book a demo" / "Start free trial" / "Talk to sales" link
+ *   Contact      = a plain contact page link ("Contact us"): a softer next step
  *   Review sites = links or badges for B2B review sites (G2, Capterra,
  *                  TrustRadius, Clutch, GetApp, Software Advice, GoodFirms)
  *   Client logos = a client-list heading ("Trusted by", "Our customers")
@@ -21,6 +22,8 @@ export interface B2bSignals {
   pricing: string | null
   /** The demo / trial / sales link's words ("Book a demo"), or null. */
   demo: string | null
+  /** The contact page found ("Contact us" / /contact), or null. SGM scores it below a direct ask (Chris, 2026-10-07). */
+  contact: string | null
   /** B2B review sites linked or shown as a badge, by name. */
   reviewSites: string[]
   /** How many client logos the logo strip shows (0 = none found). */
@@ -34,8 +37,11 @@ const PRICING_PATH_RE = /\/(?:(?:[\w-]*-)?(?:pricing|prices)|plans(?:-(?:and-)?p
 const PRICING_WORDS_RE = /^(?:see |view |our |compare )?(?:pricing|prices|plans(?: (?:and|&) pricing)?|pricing (?:and|&) plans)$/i
 
 const DEMO_WORDS_RE =
-  /\b(?:(?:book|request|get|schedule|see|watch|take|try) (?:a |the |your )?(?:free |live |product |personali[sz]ed )?(?:demo|tour)|(?:start|begin|get|try) (?:your |a |my )?(?:free |\d+[- ]day )+(?:trial|plan)|free trial|try (?:it |us )?(?:for )?free|(?:talk|speak) (?:to|with) (?:sales|an expert|our team)|contact sales|get a (?:quote|proposal)|book a (?:call|meeting|consultation|strategy call)|start a (?:project|conversation)|let(?:'|’)?s talk|schedule a (?:call|meeting|consultation)|request a (?:quote|proposal|consultation)|get a free (?:quote|audit|consultation|proposal|assessment))\b/i
+  /\b(?:(?:book|request|get|schedule|see|watch|take|try) (?:a |the |your )?(?:free |live |product |personali[sz]ed )?(?:demo|tour)|(?:start|begin|get|try) (?:your |a |my )?(?:free |\d+[- ]day )+(?:trial|plan)|free trial|try (?:it |us )?(?:for )?free|(?:talk|speak|chat) (?:to|with) (?:a |an |our |one of our )?(?:sales|team|experts?|specialists?|strategists?|consultants?|advisors?|advisers?)|contact sales|get a (?:quote|proposal)|book a (?:call|meeting|consultation|strategy call)|start a (?:project|conversation)|let(?:'|’)?s talk|schedule a (?:call|meeting|consultation)|request a (?:quote|proposal|consultation)|get a free (?:quote|audit|consultation|proposal|assessment))\b/i
 const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|trial|signup|sign-up|contact-sales|talk-to-sales)(?:[\/.?#-]|$)/i
+// "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
+const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
+const CONTACT_WORDS_RE = /^(?:contact(?: us)?|get in touch|reach out)$/i
 const MEETING_HOST_RE = /(?:^|\.)(?:calendly\.com|cal\.com|chilipiper\.com|savvycal\.com)$|^meetings\.hubspot\.com$/i
 
 const REVIEW_SITES: [RegExp, string][] = [
@@ -99,6 +105,7 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const pageHost = pathAndHost(pageUrl, pageUrl)?.host ?? ''
   let pricing: string | null = null
   let demo: string | null = null
+  let contact: string | null = null
   let caseStudies: string | null = null
   const reviewSites = new Set<string>()
 
@@ -114,6 +121,7 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
 
     if (!pricing && own && goesSomewhere && (PRICING_PATH_RE.test(at.path) || PRICING_WORDS_RE.test(text))) pricing = at.url
     if (!caseStudies && own && goesSomewhere && (CASE_PATH_RE.test(at.path) || CASE_WORDS_RE.test(text))) caseStudies = at.url
+    if (!contact && own && goesSomewhere && (CONTACT_PATH_RE.test(at.path) || CONTACT_WORDS_RE.test(text))) contact = at.url
     if (!demo) {
       if (text.length <= 60 && DEMO_WORDS_RE.test(text)) demo = text
       else if ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host)) demo = text || 'Demo link'
@@ -127,5 +135,5 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     for (const [re, name] of REVIEW_SITES) if (re.test(at.host)) reviewSites.add(name)
   }
 
-  return { pricing, demo, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies }
+  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies }
 }

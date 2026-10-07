@@ -31,6 +31,7 @@ import {
   linksScore,
   parseSite,
   scoredCount,
+  scoresOf,
   type AuthorityResult,
   type LinksStatus,
   type SiteInput,
@@ -155,8 +156,9 @@ export async function GET(request: NextRequest) {
       links_status: read.linksStatus,
       status: 'completed',
     })
+    const addedResult = { checkedAt: read.checkedAt, asOf: read.asOf, linksStatus: read.linksStatus, drStatus: read.drStatus, rivals: read.results }
     return NextResponse.json(
-      { checkedAt: read.checkedAt, asOf: read.asOf, linksStatus: read.linksStatus, drStatus: read.drStatus, rivals: read.results },
+      keyed ? { ...addedResult, scores: read.results.map((s) => scoresOf(s, { ...addedResult, you: s })) } : addedResult,
       { status: 200 },
     )
   }
@@ -189,6 +191,11 @@ export async function GET(request: NextRequest) {
     drStatus: read.drStatus,
     you: mine,
     rivals: read.results.slice(1),
+  }
+  // A keyed caller (SGM's server) has no browser to score in, so it also gets the four E-E-A-T
+  // parts per site, in the same order as [you, ...rivals]. No key = the same answer as before.
+  if (keyed) {
+    return NextResponse.json({ ...result, scores: [mine, ...result.rivals].map((s) => scoresOf(s, result)) }, { status: 200 })
   }
   return NextResponse.json(result, { status: 200 })
 }
