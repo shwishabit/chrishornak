@@ -12,6 +12,7 @@
  *   Client logos = a client-list heading ("Trusted by", "Our customers")
  *                  followed by 3+ images, or a logo strip/wall of 3+ images
  *   Case studies = a link to case studies / customer stories
+ *   First screen = the headline + the text after it: who it's for, a reason to pick them
  * Homepage only: these all live in the nav, hero or footer. No server-only imports.
  * ─────────────────────────────────────────────────────────────────────── */
 
@@ -30,6 +31,8 @@ export interface B2bSignals {
   clientLogos: number
   /** The case studies / customer stories page found, or null. */
   caseStudies: string | null
+  /** The homepage's first screen: headline, subline, who it's for, why pick them. */
+  firstScreen: FirstScreen
 }
 
 // "/membership-pricing" counts; "/maintenance-plans" and "/payment-plans" don't (fixture test, 2026-10-06).
@@ -101,6 +104,49 @@ function countClientLogos(html: string): number {
   return best >= 3 ? Math.min(best, MAX_LOGOS) : 0
 }
 
+/* ── First screen: is it clear who it's for and why to pick you? ──────────
+ * Free rules on the homepage's headline and the text right after it (the hero),
+ * for SGM's "Is it fast and clear?" step (Chris, 2026-10-07: no AI reads, ever).
+ * They look for signals, not meaning: a named audience and a concrete reason. */
+
+// "for B2B teams", "for law firms", "for growing companies": "for" + up to two words + an audience noun.
+const AUDIENCE_NOUNS =
+  'teams|companies|businesses|brands|firms|founders|owners|leaders|marketers|agencies|start-?ups|practices|clinics|hospitals|schools|colleges|universities|non-?profits|charities|families|homeowners|home owners|parents|kids|children|seniors|patients|pets|contractors|retailers|manufacturers|distributors|restaurants|lawyers|attorneys|dentists|doctors|physicians|accountants|investors|developers|engineers|creators|professionals|organi[sz]ations|enterprises|smbs|cmos|ceos|executives|buyers|landlords|property managers|builders|shops|stores|hotels|venues|churches|governments|municipalities|communities|athletes|students|employers|employees|nurses|therapists|realtors|agents|brokers|insurers|banks|lenders|farms|wineries|breweries'
+const AUDIENCE_RE = new RegExp(`\\bfor (?:(?:your |the )?[a-z0-9&-]+ ){0,2}(?:${AUDIENCE_NOUNS})\\b`, 'i')
+// "B2B", "SaaS", "small business" name the audience on their own.
+const AUDIENCE_WORD_RE = /\b(?:b2b|b2c|saas|small[- ]business(?:es)?|mid-?market|enterprise (?:teams|companies|brands))\b/i
+// A concrete reason: a count, a date, a credential or a promise ("20 years", "since 2006", "Google Partner", "guaranteed").
+const REASON_RE =
+  /\b(?:\d[\d,.]*\+?\s*(?:years?|yrs|clients|customers|companies|businesses|brands|projects|reviews|locations|countries|employees|users|members|homes|families|patients|students|installs|downloads)\b|(?:since|est\.?|established) (?:in )?(?:18|19|20)\d\d\b|award[- ]winning|award|certified|accredited|licensed (?:and|&) insured|guarantee[ds]?\b|top \d+ ?%|#1\b|no\. ?1\b|rated \d|[45](?:\.\d)? ?stars?\b|five[- ]star|the only\b|the first\b|premier partner|(?:google|hubspot|shopify|meta|microsoft|aws|salesforce) (?:premier )?partner|family[- ]owned|veteran[- ]owned|woman[- ]owned|patent(?:ed)?\b|\d+ ?% (?:more|less|faster|fewer|higher|lower|increase|growth|savings?))/i
+
+export interface FirstScreen {
+  /** The page's main headline (first <h1>), or null. */
+  headline: string | null
+  /** The first sentence after it, up to 180 characters, or null. */
+  subline: string | null
+  /** The words that name who it's for ("for B2B teams"), or null. */
+  audience: string | null
+  /** The words that give a reason to pick them ("20 years"), or null. */
+  reason: string | null
+}
+
+/** How much text after the headline counts as the first screen (the hero's subheading, lines and buttons). */
+const FIRST_SCREEN_CHARS = 600
+
+export function readFirstScreen(html: string): FirstScreen {
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)
+  const headline = h1 ? words(h1[1]).slice(0, 200) || null : null
+  const after = h1 ? extractText(html.slice(h1.index! + h1[0].length, h1.index! + h1[0].length + 20_000)) : ''
+  const near = after.slice(0, FIRST_SCREEN_CHARS)
+  const subline = near.match(/^(.{20,180}?[.!?])(?:\s|$)/)?.[1] ?? (near ? near.slice(0, 180).trim() || null : null)
+  // No h1 at all: fall back to the page title, which is still what a buyer reads first in the tab and the search result.
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+  const screen = h1 ? `${headline} ${near}` : `${title ? words(title) : ''} ${extractText(html).slice(0, FIRST_SCREEN_CHARS)}`
+  const audience = screen.match(AUDIENCE_RE)?.[0] ?? screen.match(AUDIENCE_WORD_RE)?.[0] ?? null
+  const reason = screen.match(REASON_RE)?.[0] ?? null
+  return { headline, subline, audience: audience?.trim() ?? null, reason: reason?.trim() ?? null }
+}
+
 export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const pageHost = pathAndHost(pageUrl, pageUrl)?.host ?? ''
   let pricing: string | null = null
@@ -135,5 +181,5 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     for (const [re, name] of REVIEW_SITES) if (re.test(at.host)) reviewSites.add(name)
   }
 
-  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies }
+  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html) }
 }
