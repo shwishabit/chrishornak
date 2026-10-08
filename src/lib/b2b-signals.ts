@@ -126,8 +126,11 @@ const AUDIENCE_RE = new RegExp(
 const AUDIENCE_WORD_RE =
   /\b(?:b2b|b2c|saas|small[- ]business(?:es)?|mid-?market|enterprise (?:teams|companies|brands)|(parent|founder|owner|business|teacher|nurse|doctor|caregiver|veteran|mom|dad|family|patient|leader|marketer|seller|buyer|creator|peer)-to-\1)\b/i
 // A concrete reason: a count, a date, a credential or a promise ("20 years", "since 2006", "Google Partner", "guaranteed").
+// "The only … in/to" keeps up to 6 words after, to the sentence's end, so the quote is whole
+// (bareskin-laser.com: "The only aesthetic practice in southwestern PA to carry NOON");
+// "the first ones to change course" is a habit, not a claim (grazemarketing.com, 2026-10-08), so "one(s)" is skipped.
 const REASON_RE =
-  /\b(?:\d[\d,.]*\+?\s*(?:years?|yrs|clients|customers|companies|businesses|brands|projects|reviews|locations|countries|employees|users|members|homes|families|patients|students|installs|downloads)\b|(?:since|est\.?|established) (?:in )?(?:18|19|20)\d\d\b|award[- ]winning|award|certified|accredited|licensed (?:and|&) insured|guarantee[ds]?\b|top \d+ ?%|#1\b|no\. ?1\b|rated \d|[45](?:\.\d)? ?stars?\b|five[- ]star|the (?:only|first) (?:[\w-]+ ){0,3}(?:to|in) (?!the\b)|premier partner|(?:google|hubspot|shopify|meta|microsoft|aws|salesforce) (?:premier )?partner|family[- ]owned|veteran[- ]owned|woman[- ]owned|patent(?:ed)?\b|\d+ ?% (?:more|less|faster|fewer|higher|lower|increase|growth|savings?))/i
+  /\b(?:\d[\d,.]*\+?\s*(?:years?|yrs|clients|customers|companies|businesses|brands|projects|reviews|locations|countries|employees|users|members|homes|families|patients|students|installs|downloads)\b|(?:since|est\.?|established) (?:in )?(?:18|19|20)\d\d\b|award[- ]winning|award|certified|accredited|licensed (?:and|&) insured|guarantee[ds]?\b|top \d+ ?%|#1\b|no\. ?1\b|rated \d|[45](?:\.\d)? ?stars?\b|five[- ]star|the (?:only|first) (?!ones?\b)(?:[\w-]+ ){0,3}(?:to|in) (?!the\b)[\w'’&-]+(?: (?!and\b|but\b|or\b)[\w'’&-]+){0,5}|premier partner|(?:google|hubspot|shopify|meta|microsoft|aws|salesforce) (?:premier )?partner|family[- ]owned|veteran[- ]owned|woman[- ]owned|patent(?:ed)?\b|\d+ ?% (?:more|less|faster|fewer|higher|lower|increase|growth|savings?))/i
 
 export interface FirstScreen {
   /** The page's main headline (first <h1>), or null. */
