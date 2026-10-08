@@ -40,7 +40,8 @@ const PRICING_PATH_RE = /\/(?:(?:[\w-]*-)?(?:pricing|prices)|plans(?:-(?:and-)?p
 const PRICING_WORDS_RE = /^(?:see |view |our |compare )?(?:pricing|prices|plans(?: (?:and|&) pricing)?|pricing (?:and|&) plans)$/i
 
 const DEMO_WORDS_RE =
-  /\b(?:(?:book|request|get|schedule|see|watch|take|try) (?:a |the |your )?(?:free |live |product |personali[sz]ed )?(?:demo|tour)|(?:start|begin|get|try) (?:your |a |my )?(?:free |\d+[- ]day )+(?:trial|plan)|free trial|try (?:it |us )?(?:for )?free|(?:talk|speak|chat) (?:to|with) (?:a |an |our |one of our )?(?:sales|team|experts?|specialists?|strategists?|consultants?|advisors?|advisers?)|contact sales|get a (?:quote|proposal)|book a (?:call|meeting|consultation|strategy call)|start a (?:project|conversation)|let(?:'|’)?s talk|schedule a (?:call|meeting|consultation)|request a (?:quote|proposal|consultation)|get a free (?:quote|audit|consultation|proposal|assessment))\b/i
+  /\b(?:(?:book|request|get|schedule|see|watch|take|try) (?:a |the |your )?(?:free |live |product |personali[sz]ed )?(?:demo|tour)|(?:start|begin|get|try) (?:your |a |my )?(?:free |\d+[- ]day )+(?:trial|plan)|free trial|try (?:it |us )?(?:for )?free|(?:talk|speak|chat) (?:to|with) (?:a |an |our |one of our )?(?:sales|team|experts?|specialists?|strategists?|consultants?|advisors?|advisers?)|contact sales|get a (?:quote|proposal)|book a (?:call|meeting|consultation|strategy call)|start a (?:project|conversation)|let(?:'|’)?s talk|schedule a (?:call|meeting|consultation)|request a (?:quote|proposal|consultation)|get a free (?:quote|audit|consultation|proposal|assessment)|get started|start here|start now)\b/i
+// "Start here" / "Get started" added 2026-10-07 (Chris, t1dtips.com's "Just Diagnosed? Start Here." is its next step).
 const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|trial|signup|sign-up|contact-sales|talk-to-sales)(?:[\/.?#-]|$)/i
 // "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
 const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
@@ -109,15 +110,24 @@ function countClientLogos(html: string): number {
  * for SGM's "Is it fast and clear?" step (Chris, 2026-10-07: no AI reads, ever).
  * They look for signals, not meaning: a named audience and a concrete reason. */
 
-// "for B2B teams", "for law firms", "for growing companies": "for" + up to two words + an audience noun.
+// "for B2B teams", "for law firms", "to industrial and commercial businesses", "serving manufacturers":
+// a lead word + up to three words ("and" allowed) + an audience noun. Widened 2026-10-07 (Chris:
+// wheelingrubber.com's "to industrial and commercial businesses" was missed). "Trusted by …" is
+// proof, not an audience, so it stays out.
 const AUDIENCE_NOUNS =
-  'teams|companies|businesses|brands|firms|founders|owners|leaders|marketers|agencies|start-?ups|practices|clinics|hospitals|schools|colleges|universities|non-?profits|charities|families|homeowners|home owners|parents|kids|children|seniors|patients|pets|contractors|retailers|manufacturers|distributors|restaurants|lawyers|attorneys|dentists|doctors|physicians|accountants|investors|developers|engineers|creators|professionals|organi[sz]ations|enterprises|smbs|cmos|ceos|executives|buyers|landlords|property managers|builders|shops|stores|hotels|venues|churches|governments|municipalities|communities|athletes|students|employers|employees|nurses|therapists|realtors|agents|brokers|insurers|banks|lenders|farms|wineries|breweries'
-const AUDIENCE_RE = new RegExp(`\\bfor (?:(?:your |the )?[a-z0-9&-]+ ){0,2}(?:${AUDIENCE_NOUNS})\\b`, 'i')
-// "B2B", "SaaS", "small business" name the audience on their own.
-const AUDIENCE_WORD_RE = /\b(?:b2b|b2c|saas|small[- ]business(?:es)?|mid-?market|enterprise (?:teams|companies|brands))\b/i
+  'teams|companies|businesses|brands|firms|founders|owners|leaders|marketers|agencies|caregivers|moms|dads|start-?ups|practices|clinics|hospitals|schools|colleges|universities|non-?profits|charities|families|homeowners|home owners|parents|kids|children|seniors|patients|pets|contractors|retailers|manufacturers|distributors|restaurants|lawyers|attorneys|dentists|doctors|physicians|accountants|investors|developers|engineers|creators|professionals|organi[sz]ations|enterprises|smbs|cmos|ceos|executives|buyers|landlords|property managers|builders|shops|stores|hotels|venues|churches|governments|municipalities|communities|athletes|students|employers|employees|nurses|therapists|realtors|agents|brokers|insurers|banks|lenders|farms|wineries|breweries'
+const AUDIENCE_RE = new RegExp(
+  // "to our clients" / "to our patients" talk about existing customers, not who it's for.
+  `\\b(?:for|to|serv(?:e|es|ing)|help(?:s|ing)?|work(?:s|ing)? with|partner(?:s|ing)? with) (?!(?:our|us)\\b)(?:(?:your |the )?[a-z0-9&-]+,? (?:and |& )?){0,3}(?:${AUDIENCE_NOUNS})\\b`,
+  'i',
+)
+// "B2B", "SaaS", "small business" name the audience on their own; so does "parent-to-parent help"
+// (Chris 2026-10-07, t1dtips.com: it's for parents) and "founder-to-founder", "business-to-business".
+const AUDIENCE_WORD_RE =
+  /\b(?:b2b|b2c|saas|small[- ]business(?:es)?|mid-?market|enterprise (?:teams|companies|brands)|(parent|founder|owner|business|teacher|nurse|doctor|caregiver|veteran|mom|dad|family|patient|leader|marketer|seller|buyer|creator|peer)-to-\1)\b/i
 // A concrete reason: a count, a date, a credential or a promise ("20 years", "since 2006", "Google Partner", "guaranteed").
 const REASON_RE =
-  /\b(?:\d[\d,.]*\+?\s*(?:years?|yrs|clients|customers|companies|businesses|brands|projects|reviews|locations|countries|employees|users|members|homes|families|patients|students|installs|downloads)\b|(?:since|est\.?|established) (?:in )?(?:18|19|20)\d\d\b|award[- ]winning|award|certified|accredited|licensed (?:and|&) insured|guarantee[ds]?\b|top \d+ ?%|#1\b|no\. ?1\b|rated \d|[45](?:\.\d)? ?stars?\b|five[- ]star|the only\b|the first\b|premier partner|(?:google|hubspot|shopify|meta|microsoft|aws|salesforce) (?:premier )?partner|family[- ]owned|veteran[- ]owned|woman[- ]owned|patent(?:ed)?\b|\d+ ?% (?:more|less|faster|fewer|higher|lower|increase|growth|savings?))/i
+  /\b(?:\d[\d,.]*\+?\s*(?:years?|yrs|clients|customers|companies|businesses|brands|projects|reviews|locations|countries|employees|users|members|homes|families|patients|students|installs|downloads)\b|(?:since|est\.?|established) (?:in )?(?:18|19|20)\d\d\b|award[- ]winning|award|certified|accredited|licensed (?:and|&) insured|guarantee[ds]?\b|top \d+ ?%|#1\b|no\. ?1\b|rated \d|[45](?:\.\d)? ?stars?\b|five[- ]star|the (?:only|first) (?:[\w-]+ ){0,3}(?:to|in) (?!the\b)|premier partner|(?:google|hubspot|shopify|meta|microsoft|aws|salesforce) (?:premier )?partner|family[- ]owned|veteran[- ]owned|woman[- ]owned|patent(?:ed)?\b|\d+ ?% (?:more|less|faster|fewer|higher|lower|increase|growth|savings?))/i
 
 export interface FirstScreen {
   /** The page's main headline (first <h1>), or null. */
@@ -128,6 +138,9 @@ export interface FirstScreen {
   audience: string | null
   /** The words that give a reason to pick them ("20 years"), or null. */
   reason: string | null
+  /** Not in the first screen but further down the page (Chris 2026-10-07, amgindustries.com's
+   *  "Why Choose AMG Industries?" section), so the report can say where they are. */
+  later: { audience: string | null; reasons: string[] }
 }
 
 /** How much text after the headline counts as the first screen (the hero's subheading, lines and buttons). */
@@ -144,7 +157,27 @@ export function readFirstScreen(html: string): FirstScreen {
   const screen = h1 ? `${headline} ${near}` : `${title ? words(title) : ''} ${extractText(html).slice(0, FIRST_SCREEN_CHARS)}`
   const audience = screen.match(AUDIENCE_RE)?.[0] ?? screen.match(AUDIENCE_WORD_RE)?.[0] ?? null
   const reason = screen.match(REASON_RE)?.[0] ?? null
-  return { headline, subline, audience: audience?.trim() ?? null, reason: reason?.trim() ?? null }
+  // The rest of the page, for what the first screen is missing.
+  const rest = h1 ? after.slice(FIRST_SCREEN_CHARS) : extractText(html).slice(FIRST_SCREEN_CHARS)
+  const laterAudience = audience ? null : (rest.match(AUDIENCE_RE)?.[0] ?? rest.match(AUDIENCE_WORD_RE)?.[0] ?? null)
+  const reasons: string[] = []
+  if (!reason) {
+    for (const m of rest.matchAll(new RegExp(REASON_RE.source, 'gi'))) {
+      // Keep the word just before it only when it's part of the claim ("ISO-9001 Certified", "Over 120 Years").
+      const before = rest.slice(Math.max(0, m.index! - 24), m.index!).match(/([A-Za-z0-9][\w-]*)\s*$/)?.[1]
+      const named = before && (/\d/.test(before) || /^(over|fortune|top)$/i.test(before))
+      const phrase = (named ? `${before} ${m[0]}` : m[0]).trim()
+      if (!reasons.some((r) => r.toLowerCase() === phrase.toLowerCase())) reasons.push(phrase)
+      if (reasons.length === 2) break
+    }
+  }
+  return {
+    headline,
+    subline,
+    audience: audience?.trim() ?? null,
+    reason: reason?.trim() ?? null,
+    later: { audience: laterAudience?.trim() ?? null, reasons },
+  }
 }
 
 export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
