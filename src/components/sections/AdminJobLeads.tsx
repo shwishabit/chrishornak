@@ -52,6 +52,12 @@ function isFullTime(l: JobLead) {
   return l.work_type === 'full-time'
 }
 
+// A full-time first-marketer role at a small startup can be pitched as a fractional lead,
+// so it also shows on the Open tab.
+function showsOnOpen(l: JobLead) {
+  return !isFullTime(l) || l.tags.includes('pitch as fractional')
+}
+
 function NoteBox({ lead }: { lead: JobLead }) {
   const [value, setValue] = useState(lead.note)
   const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -131,7 +137,7 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
     const needle = q.trim().toLowerCase()
     return rows
       .filter((l) => {
-        if (filter === 'open' && (isClosed(l) || isFullTime(l))) return false
+        if (filter === 'open' && (isClosed(l) || !showsOnOpen(l))) return false
         if (filter === 'fulltime' && (isClosed(l) || !isFullTime(l))) return false
         if (filter === 'closed' && !isClosed(l)) return false
         if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note} ${l.tags.join(' ')}`.toLowerCase().includes(needle)) return false
@@ -143,7 +149,7 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
   const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
   const ftOpen = rows.filter((l) => isFullTime(l) && !isClosed(l))
   const ftHighlighted = ftOpen.filter((l) => l.highlight).length
-  const mainHighlighted = rows.filter((l) => !isFullTime(l) && !isClosed(l) && l.highlight).length
+  const mainHighlighted = rows.filter((l) => showsOnOpen(l) && !isClosed(l) && l.highlight).length
 
   return (
     <>
