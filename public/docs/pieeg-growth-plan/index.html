@@ -62,7 +62,7 @@
         .ds dd b { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 15px; display: block; line-height: 1.1; margin-bottom: 2px; }
 
         /* ---- the three actions ---- */
-        .act { display: grid; grid-template-columns: 30px 1fr 1fr; column-gap: 18px; align-items: start; padding: 12px 0; border-bottom: 1px solid #e6e8ea; }
+        .act { display: grid; grid-template-columns: 30px 1fr 1fr; column-gap: 18px; align-items: start; padding: 10px 0; border-bottom: 1px solid #e6e8ea; }
         .act:last-child { border-bottom: 0; }
         .act .n {
             font-family: 'Sora', sans-serif; font-weight: 800; font-size: 22px; line-height: 1;
@@ -117,6 +117,8 @@
             .act .why { grid-column: 2; }
             .act .lbl { font-size: 9px !important; }
             .two-col { grid-template-columns: 1fr !important; gap: 0.6rem !important; }
+            .who { grid-template-columns: 1fr !important; row-gap: 1rem !important; }
+            .who .cta { font-size: 15px !important; padding: 0.7rem 1rem !important; }
             .inc { grid-template-columns: 16px 1fr !important; }
         }
     </style>
@@ -153,7 +155,7 @@
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-7 pb-5 shrink-0">
+            <div class="px-[0.72in] pt-6 pb-4 shrink-0">
                 <h1 class="font-display font-800 text-[30px] leading-[1.05] tracking-[-0.035em] text-neutral-900 max-w-[92%]" style="text-wrap: balance;">
                     How PiEEG can move forward, very soon.
                 </h1>
@@ -168,7 +170,7 @@
                         <div><dt>Your community</dt><dd><b>2,000+ stars</b>on GitHub, and 1,119 people on Discord</dd></div>
                         <div><dt>Email list</dt><dd><b>No signup</b>on pieeg.com. Cloud sign-in is optional</dd></div>
                         <div><dt>Where sales go</dt><dd><b>Elecrow</b>Every Buy button leaves your site</dd></div>
-                        <div><dt>Findability check</dt><dd><b>70 / 100</b>No structured data, so AI tools can't read your products</dd></div>
+                        <div><dt>Findability check</dt><dd><b>70 / 100</b>No structured data to spell out your products and prices</dd></div>
                     </dl>
                 </div>
             </div>
@@ -195,7 +197,7 @@
                     <span class="n">2</span>
                     <div>
                         <p class="font-display font-700 text-[12px] leading-snug text-neutral-900">Pick the first buyer to win, and make the site say it.</p>
-                        <p class="text-[10.5px] text-neutral-700 leading-relaxed mt-1.5">You've shipped fast: boards, the cloud app, the Agent, Buddy, the Academy, bioIDE. A new visitor can't tell where to start. I'd talk to 10 current users, learn who buys fastest and why they chose you over OpenBCI, then build the homepage and a "which board do I need" chooser around that buyer. And I'd add product structured data so search and AI tools can read your boards and prices.</p>
+                        <p class="text-[10.5px] text-neutral-700 leading-relaxed mt-1.5">You've shipped fast: boards, the cloud app, the Agent, Buddy, the Academy, bioIDE. A new visitor can't tell where to start. I'd talk to 10 current users, learn who buys fastest and why they chose you over OpenBCI, then build the homepage and a "which board do I need" chooser around that buyer. And I'd add structured data that spells out your boards and prices.</p>
                     </div>
                     <div class="why">
                         <p class="lbl">Why</p>
@@ -216,19 +218,28 @@
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-5 shrink-0">
+            <div class="px-[0.72in] pt-3 shrink-0">
                 <div class="flex items-baseline justify-between border-t-2 border-neutral-900 pt-2.5 pb-3">
                     <h2 class="font-display font-800 text-[9px] uppercase tracking-[0.2em] text-neutral-900">Who's writing this</h2>
-                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Over a decade in marketing strategy</span>
+                    <span class="font-display text-[7px] uppercase tracking-[0.18em] text-neutral-400">Chris Hornak &middot; marketing strategist who builds</span>
                 </div>
-                <div class="two-col grid grid-cols-3 gap-x-8">
-                    <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>153 leads at $9.80 each</strong> from Facebook and Instagram ads, in a quarter when the client's net sales rose 92%.</p></div>
-                    <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>A multi-stage email funnel</strong> with gated content for a B2B training company, tied to their CRM.</p></div>
-                    <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>I build and run my own AI product,</strong> Blog Hands. I read your site, cloud app, GitHub and Discord for this page with my own AI research setup.</p></div>
+                <div class="who grid gap-x-9" style="grid-template-columns: 1fr 1.25fr;">
+                    <div>
+                        <p class="text-[10.5px] text-neutral-800 leading-relaxed">I've spent over a decade on growth, content, SEO and paid ads. I also build software: my own AI writing product, Blog Hands, and the free Findability Check that scored pieeg.com. So I can talk with your engineers and with your buyers, and turn both into a plan.</p>
+                        <a href="https://chrishornak.com" target="_blank" rel="noopener" class="cta mt-3 inline-flex items-center gap-2 rounded-[5px] px-4 py-2 text-[10.5px] font-semibold text-white" style="background: var(--dark);">
+                            See my work at chrishornak.com <span style="color: var(--teal);">&rarr;</span>
+                        </a>
+                    </div>
+                    <div class="grid gap-y-[7px]">
+                        <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>153 leads at $9.80 each</strong> from Facebook and Instagram ads, in a quarter when the client's net sales rose 92%.</p></div>
+                        <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>A multi-stage email funnel</strong> with gated content for a B2B training company, tied to their CRM.</p></div>
+                        <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>Shopify builds and SEO</strong> for an e-commerce light-therapy brand.</p></div>
+                        <div class="inc"><span class="yes">&#10003;</span><p class="text-[10px] text-neutral-800 leading-relaxed"><strong>AI in my daily work.</strong> I read your site, cloud app, GitHub and Discord for this page with my own AI research setup.</p></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="px-[0.72in] pt-6 shrink-0">
+            <div class="px-[0.72in] pt-4 shrink-0">
                 <div class="rounded-[5px] px-5 py-3" style="background: var(--light-bg); border: 1px solid #e6e8ea;">
                     <p class="text-[12px] text-neutral-800 leading-relaxed">
                         <strong class="text-neutral-900">If this matches how you think, reply and I'll start with step one this week: the signup flow for the Kaggle launch.</strong>
