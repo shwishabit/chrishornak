@@ -143,11 +143,13 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
   const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
   const ftOpen = rows.filter((l) => isFullTime(l) && !isClosed(l))
   const ftHighlighted = ftOpen.filter((l) => l.highlight).length
+  const mainHighlighted = rows.filter((l) => !isFullTime(l) && !isClosed(l) && l.highlight).length
 
   return (
     <>
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {[
+          ['Worth a look', mainHighlighted],
           ['New', count('new')],
           ['Pitched', count('pitched')],
           ['Replied', count('replied')],
