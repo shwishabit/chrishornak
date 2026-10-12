@@ -193,15 +193,19 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
     }
   }, [rows])
 
+  // A status pick searches every tab: a lead marked Skipped/Passed/Won leaves Open, so filtering
+  // Open by "Skipped" would always come back empty.
+  const statusAcrossTabs = status !== ANY
   const tabRows = useMemo(
     () =>
       rows.filter((l) => {
+        if (statusAcrossTabs) return true
         if (filter === 'open') return !isClosed(l) && showsOnOpen(l)
         if (filter === 'fulltime') return !isClosed(l) && isFullTime(l)
         if (filter === 'closed') return isClosed(l)
         return true
       }),
-    [rows, filter],
+    [rows, filter, statusAcrossTabs],
   )
 
   const shown = useMemo(() => {
@@ -345,6 +349,7 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span aria-live="polite" className="tabular-nums">
               Showing {shown.length} of {tabRows.length}
+              {statusAcrossTabs && ' · status searches all tabs'}
             </span>
             {filtersOn && (
               <button type="button" onClick={clearFilters} className="underline underline-offset-4 hover:text-foreground">
