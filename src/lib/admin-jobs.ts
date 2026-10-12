@@ -27,6 +27,9 @@ export interface JobLead {
   note: string
   added: string
   status_changed: string | null
+  work_type: 'freelance' | 'contract' | 'part-time' | 'fractional' | 'full-time' | 'unknown'
+  highlight: boolean
+  tags: string[]
 }
 
 export interface JobLeadRun {

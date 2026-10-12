@@ -23,7 +23,7 @@ export default async function JobLeadsAdminPage() {
   }
 
   const data = await getJobLeads()
-  const lastRun = data?.runs[0]
+  const lastRuns = data ? data.runs.filter((r) => r.run_date === data.runs[0]?.run_date) : []
 
   return (
     <main id="main-content" className="relative min-h-screen px-6 py-16 md:px-12 lg:px-20">
@@ -33,7 +33,8 @@ export default async function JobLeadsAdminPage() {
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Admin</p>
             <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Job leads</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Hiring posts Claude finds on Bluesky. Set a status and keep notes; changes save on their own.
+              Hiring posts Claude finds on Bluesky and Hacker News. Remote freelance, contract and part-time work up front; full-time
+              has its own tab. Set a status and keep notes; changes save on their own.
             </p>
             <Link href="/audit/admin" className="mt-2 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
               ← Findability usage
@@ -57,11 +58,16 @@ export default async function JobLeadsAdminPage() {
         ) : (
           <>
             <AdminJobLeads leads={data.rows} />
-            {lastRun && (
-              <p className="mt-6 text-xs text-muted-foreground">
-                Last search {lastRun.run_date}: {lastRun.queries} searches over {lastRun.window_days} days,{' '}
-                {lastRun.kept} posts passed the filter, {lastRun.real_leads} real leads. Runs so far: {data.runs.length}.
-              </p>
+            {lastRuns.length > 0 && (
+              <div className="mt-6 space-y-1 text-xs text-muted-foreground">
+                {lastRuns.map((r) => (
+                  <p key={r.source}>
+                    Last {r.source === 'hackernews' ? 'Hacker News' : 'Bluesky'} search {r.run_date}: {r.kept} posts passed the
+                    filter, {r.real_leads} real leads.
+                  </p>
+                ))}
+                <p>Runs so far: {data.runs.length}.</p>
+              </div>
             )}
           </>
         )}

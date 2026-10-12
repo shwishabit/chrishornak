@@ -22,22 +22,34 @@ const FIT_CLASS: Record<JobLead['fit'], string> = {
 }
 
 const KIND_LABEL: Record<JobLead['kind'], string> = {
-  direct: 'Direct ask',
-  board: 'Job board',
+  direct: 'Direct post',
+  board: 'Job-board repost',
   skipped: 'Skipped by Claude',
 }
 
-type Filter = 'open' | 'direct' | 'board' | 'closed' | 'all'
+const SOURCE_LABEL: Record<string, string> = { bluesky: 'Bluesky', hackernews: 'Hacker News' }
+
+function profileUrl(l: JobLead): string | null {
+  if (!l.handle) return null
+  if (l.source === 'hackernews') return `https://news.ycombinator.com/user?id=${encodeURIComponent(l.handle)}`
+  if (l.source === 'bluesky') return `https://bsky.app/profile/${l.handle}`
+  return null
+}
+
+type Filter = 'open' | 'fulltime' | 'closed' | 'all'
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'open', label: 'Open' },
-  { id: 'direct', label: 'Direct asks' },
-  { id: 'board', label: 'Job boards' },
+  { id: 'fulltime', label: 'Full-time' },
   { id: 'closed', label: 'Closed / skipped' },
   { id: 'all', label: 'All' },
 ]
 
 function isClosed(l: JobLead) {
   return CLOSED.includes(l.status) || l.kind === 'skipped'
+}
+
+function isFullTime(l: JobLead) {
+  return l.work_type === 'full-time'
 }
 
 function NoteBox({ lead }: { lead: JobLead }) {
@@ -117,17 +129,20 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return rows.filter((l) => {
-      if (filter === 'open' && isClosed(l)) return false
-      if (filter === 'direct' && l.kind !== 'direct') return false
-      if (filter === 'board' && l.kind !== 'board') return false
-      if (filter === 'closed' && !isClosed(l)) return false
-      if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note}`.toLowerCase().includes(needle)) return false
-      return true
-    })
+    return rows
+      .filter((l) => {
+        if (filter === 'open' && (isClosed(l) || isFullTime(l))) return false
+        if (filter === 'fulltime' && (isClosed(l) || !isFullTime(l))) return false
+        if (filter === 'closed' && !isClosed(l)) return false
+        if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note} ${l.tags.join(' ')}`.toLowerCase().includes(needle)) return false
+        return true
+      })
+      .sort((a, b) => Number(b.highlight) - Number(a.highlight))
   }, [rows, filter, q])
 
-  const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped').length
+  const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
+  const ftOpen = rows.filter((l) => isFullTime(l) && !isClosed(l))
+  const ftHighlighted = ftOpen.filter((l) => l.highlight).length
 
   return (
     <>
@@ -136,7 +151,7 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
           ['New', count('new')],
           ['Pitched', count('pitched')],
           ['Replied', count('replied')],
-          ['Total found', rows.length],
+          ['Full-time worth a look', `${ftHighlighted} of ${ftOpen.length}`],
         ].map(([label, value]) => (
           <div key={label} className="glass-card p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -157,6 +172,7 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
             }`}
           >
             {f.label}
+            {f.id === 'fulltime' && ftOpen.length > 0 && <span className="ml-1.5 tabular-nums opacity-70">{ftOpen.length}</span>}
           </button>
         ))}
         <input
@@ -191,21 +207,41 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
               </tr>
             )}
             {shown.map((l) => (
-              <tr key={l.id} className="border-t border-border align-top">
+              <tr key={l.id} className={`border-t border-border align-top ${l.highlight ? 'bg-primary/5' : ''}`}>
                 <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">{l.posted ?? '—'}</td>
                 <td className="px-4 py-3">
-                  <p className="font-semibold">{l.who}</p>
-                  {l.handle && (
-                    <a
-                      href={`https://bsky.app/profile/${l.handle}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      @{l.handle}
-                    </a>
+                  {l.highlight && (
+                    <span className="mb-1 inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-background">
+                      Worth a look
+                    </span>
                   )}
-                  <p className="mt-1 text-xs text-muted-foreground">{KIND_LABEL[l.kind]}</p>
+                  <p className="font-semibold">{l.who}</p>
+                  {l.handle &&
+                    (profileUrl(l) ? (
+                      <a
+                        href={profileUrl(l)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        @{l.handle}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">@{l.handle}</span>
+                    ))}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {SOURCE_LABEL[l.source] ?? l.source} · {KIND_LABEL[l.kind]}
+                    {l.work_type !== 'unknown' && <> · {l.work_type}</>}
+                  </p>
+                  {l.tags.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {l.tags.map((t) => (
+                        <span key={t} className="rounded-full border border-warning/40 px-2 py-0.5 text-xs text-warning">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </td>
                 <td className="max-w-md px-4 py-3">
                   <p>{l.ask}</p>
