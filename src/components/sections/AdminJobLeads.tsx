@@ -128,23 +128,115 @@ function StatusSelect({ lead, onSaved }: { lead: JobLead; onSaved: (s: JobStatus
   )
 }
 
+const FIT_RANK: Record<JobLead['fit'], number> = { strong: 0, good: 1, weak: 2, skip: 3 }
+
+type Sort = 'best' | 'newest' | 'oldest'
+const SORT_LABEL: Record<Sort, string> = { best: 'Best first', newest: 'Newest posted', oldest: 'Oldest posted' }
+
+const ANY = ''
+
+function FilterSelect({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  id: string
+  label: string
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <label htmlFor={id} className="flex flex-col gap-1 text-xs text-muted-foreground">
+      {label}
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`rounded-lg border bg-background/60 px-2 py-1.5 text-sm text-foreground outline-none focus:border-primary ${
+          value !== ANY ? 'border-primary' : 'border-border'
+        }`}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
 export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
   const [rows, setRows] = useState(leads)
   const [filter, setFilter] = useState<Filter>('open')
   const [q, setQ] = useState('')
+  const [source, setSource] = useState(ANY)
+  const [workType, setWorkType] = useState(ANY)
+  const [fit, setFit] = useState(ANY)
+  const [status, setStatus] = useState(ANY)
+  const [tag, setTag] = useState(ANY)
+  const [onlyHighlight, setOnlyHighlight] = useState(false)
+  const [sort, setSort] = useState<Sort>('best')
+
+  // Options come from the data, so a new source, work type or tag shows up without a code change.
+  const opts = useMemo(() => {
+    const uniq = (xs: string[]) => [...new Set(xs)].sort()
+    return {
+      source: uniq(rows.map((l) => l.source)),
+      workType: uniq(rows.map((l) => l.work_type)),
+      tag: uniq(rows.flatMap((l) => l.tags)),
+    }
+  }, [rows])
+
+  const tabRows = useMemo(
+    () =>
+      rows.filter((l) => {
+        if (filter === 'open') return !isClosed(l) && showsOnOpen(l)
+        if (filter === 'fulltime') return !isClosed(l) && isFullTime(l)
+        if (filter === 'closed') return isClosed(l)
+        return true
+      }),
+    [rows, filter],
+  )
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return rows
+    return tabRows
       .filter((l) => {
-        if (filter === 'open' && (isClosed(l) || !showsOnOpen(l))) return false
-        if (filter === 'fulltime' && (isClosed(l) || !isFullTime(l))) return false
-        if (filter === 'closed' && !isClosed(l)) return false
-        if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note} ${l.tags.join(' ')}`.toLowerCase().includes(needle)) return false
+        if (source && l.source !== source) return false
+        if (workType && l.work_type !== workType) return false
+        if (fit && l.fit !== fit) return false
+        if (status && l.status !== status) return false
+        if (tag && !l.tags.includes(tag)) return false
+        if (onlyHighlight && !l.highlight) return false
+        if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note} ${l.fit_why ?? ''} ${l.tags.join(' ')}`.toLowerCase().includes(needle))
+          return false
         return true
       })
-      .sort((a, b) => Number(b.highlight) - Number(a.highlight))
-  }, [rows, filter, q])
+      .sort((a, b) => {
+        const byDate = (a.posted ?? '').localeCompare(b.posted ?? '')
+        if (sort === 'newest') return -byDate
+        if (sort === 'oldest') return byDate
+        return Number(b.highlight) - Number(a.highlight) || FIT_RANK[a.fit] - FIT_RANK[b.fit] || -byDate
+      })
+  }, [tabRows, q, source, workType, fit, status, tag, onlyHighlight, sort])
+
+  const filtersOn = Boolean(q || source || workType || fit || status || tag || onlyHighlight || sort !== 'best')
+  function clearFilters() {
+    setQ('')
+    setSource(ANY)
+    setWorkType(ANY)
+    setFit(ANY)
+    setStatus(ANY)
+    setTag(ANY)
+    setOnlyHighlight(false)
+    setSort('best')
+  }
 
   const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
   const ftOpen = rows.filter((l) => isFullTime(l) && !isClosed(l))
@@ -183,15 +275,84 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
             {f.id === 'fulltime' && ftOpen.length > 0 && <span className="ml-1.5 tabular-nums opacity-70">{ftOpen.length}</span>}
           </button>
         ))}
-        <input
-          id="job-search"
-          type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search"
-          aria-label="Search leads"
-          className="ml-auto w-full rounded-lg border border-border bg-background/60 px-3 py-1.5 text-sm outline-none focus:border-primary sm:w-56"
+      </div>
+
+      <div className="glass-card mt-4 grid grid-cols-2 items-end gap-3 p-4 sm:grid-cols-4 lg:grid-cols-8">
+        <label htmlFor="job-search" className="col-span-2 flex flex-col gap-1 text-xs text-muted-foreground">
+          Search
+          <input
+            id="job-search"
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Company, skill, note…"
+            className="rounded-lg border border-border bg-background/60 px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary"
+          />
+        </label>
+        <FilterSelect
+          id="f-source"
+          label="Source"
+          value={source}
+          onChange={setSource}
+          options={[{ value: ANY, label: 'All' }, ...opts.source.map((s) => ({ value: s, label: SOURCE_LABEL[s] ?? s }))]}
         />
+        <FilterSelect
+          id="f-worktype"
+          label="Work type"
+          value={workType}
+          onChange={setWorkType}
+          options={[{ value: ANY, label: 'All' }, ...opts.workType.map((w) => ({ value: w, label: cap(w) }))]}
+        />
+        <FilterSelect
+          id="f-fit"
+          label="Fit"
+          value={fit}
+          onChange={setFit}
+          options={[{ value: ANY, label: 'All' }, ...(['strong', 'good', 'weak', 'skip'] as const).map((f) => ({ value: f, label: cap(f) }))]}
+        />
+        <FilterSelect
+          id="f-status"
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          options={[{ value: ANY, label: 'All' }, ...(Object.keys(STATUS_LABEL) as JobStatus[]).map((s) => ({ value: s, label: STATUS_LABEL[s] }))]}
+        />
+        <FilterSelect
+          id="f-tag"
+          label="Tag"
+          value={tag}
+          onChange={setTag}
+          options={[{ value: ANY, label: 'All' }, ...opts.tag.map((t) => ({ value: t, label: t }))]}
+        />
+        <FilterSelect
+          id="f-sort"
+          label="Sort"
+          value={sort === 'best' ? ANY : sort}
+          onChange={(v) => setSort((v || 'best') as Sort)}
+          options={(Object.keys(SORT_LABEL) as Sort[]).map((s) => ({ value: s === 'best' ? ANY : s, label: SORT_LABEL[s] }))}
+        />
+        <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 sm:col-span-4 lg:col-span-8">
+          <label htmlFor="f-highlight" className="flex items-center gap-2 text-sm">
+            <input
+              id="f-highlight"
+              type="checkbox"
+              checked={onlyHighlight}
+              onChange={(e) => setOnlyHighlight(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            Worth a look only
+          </label>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span aria-live="polite" className="tabular-nums">
+              Showing {shown.length} of {tabRows.length}
+            </span>
+            {filtersOn && (
+              <button type="button" onClick={clearFilters} className="underline underline-offset-4 hover:text-foreground">
+                Clear filters
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="glass-card mt-4 overflow-x-auto p-0">
