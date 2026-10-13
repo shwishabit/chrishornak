@@ -33,8 +33,9 @@ export default async function JobLeadsAdminPage() {
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Admin</p>
             <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Job leads</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Hiring posts Claude finds on Bluesky and Hacker News. Remote freelance, contract and part-time work up front; full-time
-              has its own tab. Set a status and keep notes; changes save on their own.
+              Hiring posts Claude finds on Bluesky and Hacker News, plus your Contra pitches. Remote freelance, contract and part-time
+              work up front; full-time has its own tab. Each lead gets a score out of 100: hover or tap it to see why. Set a status
+              and keep notes; changes save on their own.
             </p>
             <Link href="/audit/admin" className="mt-2 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
               ← Findability usage
@@ -57,7 +58,7 @@ export default async function JobLeadsAdminPage() {
           </div>
         ) : (
           <>
-            <AdminJobLeads leads={data.rows} />
+            <AdminJobLeads leads={data.rows} today={new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })} />
             {lastRuns.length > 0 && (
               <div className="mt-6 space-y-1 text-xs text-muted-foreground">
                 {lastRuns.map((r) => (

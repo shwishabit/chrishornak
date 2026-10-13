@@ -30,6 +30,9 @@ export interface JobLead {
   work_type: 'freelance' | 'contract' | 'part-time' | 'fractional' | 'full-time' | 'unknown'
   highlight: boolean
   tags: string[]
+  pay_hr: number | null
+  pay_basis: string | null
+  deal_usd: number | null
 }
 
 export interface JobLeadRun {

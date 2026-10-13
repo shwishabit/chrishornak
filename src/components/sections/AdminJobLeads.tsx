@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useRef, useState, useTransition } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from 'react'
 import type { JobLead, JobStatus } from '@/lib/admin-jobs'
+import { scoreLead, type JobScore } from '@/lib/job-score'
 import { setJobLeadNote, setJobLeadStatus } from '@/app/audit/admin/jobs/actions'
 
 const STATUS_LABEL: Record<JobStatus, string> = {
@@ -27,7 +28,86 @@ const KIND_LABEL: Record<JobLead['kind'], string> = {
   skipped: 'Skipped by Claude',
 }
 
-const SOURCE_LABEL: Record<string, string> = { bluesky: 'Bluesky', hackernews: 'Hacker News' }
+const SOURCE_LABEL: Record<string, string> = { bluesky: 'Bluesky', hackernews: 'Hacker News', contra: 'Contra', upwork: 'Upwork' }
+
+const BAND_CLASS: Record<JobScore['band'], string> = {
+  hot: 'border-success/50 bg-success/10 text-success',
+  good: 'border-primary/50 bg-primary/10 text-primary',
+  maybe: 'border-border text-foreground',
+  low: 'border-border text-muted-foreground',
+}
+const BAND_LABEL: Record<JobScore['band'], string> = { hot: 'Go for it', good: 'Worth it', maybe: 'Maybe', low: 'Low' }
+
+// The table scrolls sideways, which would clip an absolute popover, so the hover box is
+// fixed to the viewport and placed from the badge's position. Hover, focus or tap opens it.
+function ScoreBadge({ score }: { score: JobScore }) {
+  const id = useId()
+  const ref = useRef<HTMLButtonElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+
+  function show() {
+    const r = ref.current?.getBoundingClientRect()
+    if (!r) return
+    const width = 300
+    const below = r.bottom + 6
+    const top = below + 260 > window.innerHeight ? Math.max(8, r.top - 266) : below
+    setPos({ top, left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)) })
+  }
+  const hide = () => setPos(null)
+
+  useEffect(() => {
+    if (!pos) return
+    const close = () => setPos(null)
+    window.addEventListener('scroll', close, true)
+    return () => window.removeEventListener('scroll', close, true)
+  }, [pos])
+
+  return (
+    <>
+      <button
+        ref={ref}
+        type="button"
+        aria-describedby={id}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+        onClick={() => (pos ? hide() : show())}
+        className={`inline-flex min-w-13 flex-col items-center rounded-lg border px-2 py-1 ${BAND_CLASS[score.band]}`}
+      >
+        <span className="font-heading text-lg font-bold leading-none tabular-nums">{score.total}</span>
+        <span className="mt-0.5 whitespace-nowrap text-[10px] uppercase tracking-wide">{BAND_LABEL[score.band]}</span>
+      </button>
+      <div
+        id={id}
+        role="tooltip"
+        hidden={!pos}
+        style={pos ? { top: pos.top, left: pos.left } : undefined}
+        className="fixed z-50 w-75 rounded-xl border border-border bg-background p-3 text-xs shadow-lg"
+      >
+        <p className="mb-2 font-semibold text-foreground">
+          Score {score.total} of 100 · {BAND_LABEL[score.band]}
+        </p>
+        <ul className="space-y-1.5">
+          {score.parts.map((p) => (
+            <li key={p.label} className="flex items-start justify-between gap-3">
+              <span>
+                <span className="font-medium text-foreground">{p.label}</span>
+                <span className="block text-muted-foreground">{p.detail}</span>
+              </span>
+              <span className={`shrink-0 tabular-nums ${p.points < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                {p.max > 0 ? `${p.points}/${p.max}` : p.points}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 border-t border-border pt-2 text-muted-foreground">
+          75+ go for it · 55-74 worth it · 35-54 maybe · under 35 low
+        </p>
+      </div>
+    </>
+  )
+}
 
 function profileUrl(l: JobLead): string | null {
   if (!l.handle) return null
@@ -131,7 +211,7 @@ function StatusSelect({ lead, onSaved }: { lead: JobLead; onSaved: (s: JobStatus
 const FIT_RANK: Record<JobLead['fit'], number> = { strong: 0, good: 1, weak: 2, skip: 3 }
 
 type Sort = 'best' | 'newest' | 'oldest'
-const SORT_LABEL: Record<Sort, string> = { best: 'Best first', newest: 'Newest posted', oldest: 'Oldest posted' }
+const SORT_LABEL: Record<Sort, string> = { best: 'Highest score', newest: 'Newest posted', oldest: 'Oldest posted' }
 
 const ANY = ''
 
@@ -171,8 +251,12 @@ function FilterSelect({
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
+export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: string }) {
   const [rows, setRows] = useState(leads)
+  const scores = useMemo(
+    () => new Map<string, JobScore>(rows.map((l) => [l.id, scoreLead(l, today)] as const)),
+    [rows, today],
+  )
   const [filter, setFilter] = useState<Filter>('open')
   const [q, setQ] = useState('')
   const [source, setSource] = useState(ANY)
@@ -226,9 +310,9 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
         const byDate = (a.posted ?? '').localeCompare(b.posted ?? '')
         if (sort === 'newest') return -byDate
         if (sort === 'oldest') return byDate
-        return Number(b.highlight) - Number(a.highlight) || FIT_RANK[a.fit] - FIT_RANK[b.fit] || -byDate
+        return scores.get(b.id)!.total - scores.get(a.id)!.total || FIT_RANK[a.fit] - FIT_RANK[b.fit] || -byDate
       })
-  }, [tabRows, q, source, workType, fit, status, tag, onlyHighlight, sort])
+  },[tabRows, q, source, workType, fit, status, tag, onlyHighlight, sort, scores])
 
   const filtersOn = Boolean(q || source || workType || fit || status || tag || onlyHighlight || sort !== 'best')
   function clearFilters() {
@@ -361,9 +445,10 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
       </div>
 
       <div className="glass-card mt-4 overflow-x-auto p-0">
-        <table className="w-full min-w-[960px] text-left text-sm">
+        <table className="w-full min-w-260 text-left text-sm">
           <thead className="text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
+              <th className="px-4 py-3 font-medium">Score</th>
               <th className="px-4 py-3 font-medium">Posted</th>
               <th className="px-4 py-3 font-medium">Who</th>
               <th className="px-4 py-3 font-medium">The ask</th>
@@ -375,13 +460,16 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
           <tbody>
             {shown.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-muted-foreground">
+                <td colSpan={7} className="px-4 py-6 text-muted-foreground">
                   {rows.length === 0 ? 'No leads yet.' : 'No leads match this filter.'}
                 </td>
               </tr>
             )}
             {shown.map((l) => (
               <tr key={l.id} className={`border-t border-border align-top ${l.highlight ? 'bg-primary/5' : ''}`}>
+                <td className="px-4 py-3">
+                  <ScoreBadge score={scores.get(l.id)!} />
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">{l.posted ?? '—'}</td>
                 <td className="px-4 py-3">
                   {l.highlight && (
@@ -420,9 +508,11 @@ export function AdminJobLeads({ leads }: { leads: JobLead[] }) {
                 <td className="max-w-md px-4 py-3">
                   <p>{l.ask}</p>
                   <div className="mt-2 flex flex-wrap gap-3 text-xs">
-                    <a href={l.link} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">
-                      Open post
-                    </a>
+                    {l.link && (
+                      <a href={l.link} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">
+                        Open post
+                      </a>
+                    )}
                     {l.ext_link && (
                       <a href={l.ext_link} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">
                         Full listing
