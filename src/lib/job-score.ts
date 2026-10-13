@@ -77,6 +77,10 @@ function reachPart(l: JobLead): ScorePart {
   return { label: 'Reach', detail: 'Direct post, no contact yet', points: 7, max }
 }
 
+// "Worth a look" = a New lead at or above this score. Replaces the hand-set highlight flag
+// (Chris, 2026-10-13), so the badge can't drift from the score.
+export const WORTH_A_LOOK = 65
+
 const num = (v: unknown): number | null => (v === null || v === undefined || v === '' ? null : Number(v))
 
 export function scoreLead(l: JobLead, today: string): JobScore {

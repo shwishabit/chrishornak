@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from 'react'
 import type { JobLead, JobStatus } from '@/lib/admin-jobs'
-import { scoreLead, type JobScore } from '@/lib/job-score'
+import { scoreLead, WORTH_A_LOOK, type JobScore } from '@/lib/job-score'
 import { setJobLeadNote, setJobLeadStatus } from '@/app/audit/admin/jobs/actions'
 
 const STATUS_LABEL: Record<JobStatus, string> = {
@@ -257,6 +257,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
     () => new Map<string, JobScore>(rows.map((l) => [l.id, scoreLead(l, today)] as const)),
     [rows, today],
   )
+  const worth = (l: JobLead) => l.status === 'new' && l.kind !== 'skipped' && scores.get(l.id)!.total >= WORTH_A_LOOK
   const [filter, setFilter] = useState<Filter>('open')
   const [q, setQ] = useState('')
   const [source, setSource] = useState(ANY)
@@ -301,7 +302,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
         if (fit && l.fit !== fit) return false
         if (status && l.status !== status) return false
         if (tag && !l.tags.includes(tag)) return false
-        if (onlyHighlight && !l.highlight) return false
+        if (onlyHighlight && !worth(l)) return false
         if (needle && !`${l.who} ${l.handle ?? ''} ${l.ask} ${l.note} ${l.fit_why ?? ''} ${l.tags.join(' ')}`.toLowerCase().includes(needle))
           return false
         return true
@@ -328,8 +329,8 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
 
   const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
   const ftOpen = rows.filter((l) => isFullTime(l) && !isClosed(l))
-  const ftHighlighted = ftOpen.filter((l) => l.highlight).length
-  const mainHighlighted = rows.filter((l) => showsOnOpen(l) && !isClosed(l) && l.highlight).length
+  const ftHighlighted = ftOpen.filter(worth).length
+  const mainHighlighted = rows.filter((l) => showsOnOpen(l) && !isClosed(l) && worth(l)).length
 
   return (
     <>
@@ -466,13 +467,13 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
               </tr>
             )}
             {shown.map((l) => (
-              <tr key={l.id} className={`border-t border-border align-top ${l.highlight ? 'bg-primary/5' : ''}`}>
+              <tr key={l.id} className={`border-t border-border align-top ${worth(l) ? 'bg-primary/5' : ''}`}>
                 <td className="px-4 py-3">
                   <ScoreBadge score={scores.get(l.id)!} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">{l.posted ?? '—'}</td>
                 <td className="px-4 py-3">
-                  {l.highlight && (
+                  {worth(l) && (
                     <span className="mb-1 inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-background">
                       Worth a look
                     </span>
