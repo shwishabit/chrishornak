@@ -64,7 +64,11 @@ function shapePart(l: JobLead): ScorePart {
       ? { label: 'Work shape', detail: 'Full-time, pitch as fractional', points: 6, max }
       : { label: 'Work shape', detail: 'Full-time seat', points: 3, max }
   if (l.work_type === 'unknown') return { label: 'Work shape', detail: 'Not stated', points: 6, max }
-  return { label: 'Work shape', detail: `${l.work_type.charAt(0).toUpperCase()}${l.work_type.slice(1)}`, points: 10, max }
+  const detail =
+    l.work_type === 'freelance' || l.work_type === 'contract'
+      ? 'Freelance / contract'
+      : `${l.work_type.charAt(0).toUpperCase()}${l.work_type.slice(1)}`
+  return { label: 'Work shape', detail, points: 10, max }
 }
 
 function reachPart(l: JobLead): ScorePart {

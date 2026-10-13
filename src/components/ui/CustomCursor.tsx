@@ -19,6 +19,13 @@ export function CustomCursor() {
   const springX = useSpring(cursorX, { damping: 20, stiffness: 200 })
   const springY = useSpring(cursorY, { damping: 20, stiffness: 200 })
 
+  // The job-lead tracker is a work tool, so it keeps the browser's own cursor (Chris, 2026-10-13).
+  // The class on <html> covers the whole page, header and sign-in form included.
+  const native = !!pathname?.startsWith('/audit/admin/jobs')
+  useEffect(() => {
+    document.documentElement.classList.toggle('native-cursor', native)
+  }, [native])
+
   useEffect(() => {
     const hasPointer = window.matchMedia('(pointer: fine)').matches
     if (!hasPointer) return
@@ -69,6 +76,7 @@ export function CustomCursor() {
 
   if (!visible) return null
   if (pathname?.startsWith('/paige')) return null
+  if (native) return null
 
   // Mid-selection the native I-beam and the highlight are all you need.
   if (selecting) return null

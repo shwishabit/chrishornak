@@ -251,6 +251,12 @@ function FilterSelect({
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
+// Freelance and contract are the same kind of work to Chris, so they share one filter option
+// and one label (2026-10-13). The stored work_type is unchanged.
+const FREELANCE_CONTRACT = 'freelance-contract'
+const workGroup = (w: JobLead['work_type']) => (w === 'freelance' || w === 'contract' ? FREELANCE_CONTRACT : w)
+const workLabel = (g: string) => (g === FREELANCE_CONTRACT ? 'Freelance / contract' : cap(g))
+
 export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: string }) {
   const [rows, setRows] = useState(leads)
   const scores = useMemo(
@@ -273,7 +279,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
     const uniq = (xs: string[]) => [...new Set(xs)].sort()
     return {
       source: uniq(rows.map((l) => l.source)),
-      workType: uniq(rows.map((l) => l.work_type)),
+      workType: uniq(rows.map((l) => workGroup(l.work_type))),
       tag: uniq(rows.flatMap((l) => l.tags)),
     }
   }, [rows])
@@ -298,7 +304,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
     return tabRows
       .filter((l) => {
         if (source && l.source !== source) return false
-        if (workType && l.work_type !== workType) return false
+        if (workType && workGroup(l.work_type) !== workType) return false
         if (fit && l.fit !== fit) return false
         if (status && l.status !== status) return false
         if (tag && !l.tags.includes(tag)) return false
@@ -390,7 +396,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
           label="Work type"
           value={workType}
           onChange={setWorkType}
-          options={[{ value: ANY, label: 'All' }, ...opts.workType.map((w) => ({ value: w, label: cap(w) }))]}
+          options={[{ value: ANY, label: 'All' }, ...opts.workType.map((w) => ({ value: w, label: workLabel(w) }))]}
         />
         <FilterSelect
           id="f-fit"
@@ -494,7 +500,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
                     ))}
                   <p className="mt-1 text-xs text-muted-foreground">
                     {SOURCE_LABEL[l.source] ?? l.source} · {KIND_LABEL[l.kind]}
-                    {l.work_type !== 'unknown' && <> · {l.work_type}</>}
+                    {l.work_type !== 'unknown' && <> · {workLabel(workGroup(l.work_type)).toLowerCase()}</>}
                   </p>
                   {l.tags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">

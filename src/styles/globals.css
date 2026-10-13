@@ -210,6 +210,17 @@ html {
   summary * {
     cursor: none !important;
   }
+
+  /* Pages that opt out of the custom cursor (e.g. the job-lead tracker) get the
+     browser's own cursor back. The class beats the rules above on specificity. */
+  .native-cursor,
+  .native-cursor * {
+    cursor: auto !important;
+  }
+  .native-cursor :is(a, button, summary, label, select, [role="button"]),
+  .native-cursor :is(a, button, summary, label, [role="button"]) * {
+    cursor: pointer !important;
+  }
 }
 
 body {
