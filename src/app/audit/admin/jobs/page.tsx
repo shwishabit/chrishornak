@@ -33,7 +33,7 @@ export default async function JobLeadsAdminPage() {
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Admin</p>
             <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Job leads</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Hiring posts Claude finds on Bluesky and Hacker News, plus your Contra pitches. Remote freelance, contract and part-time
+              Hiring posts Claude finds on Bluesky, plus your Contra and Upwork pitches. Remote freelance, contract and part-time
               work up front; full-time has its own tab. Each lead gets a score out of 100: hover or tap it to see why. Set a status
               and keep notes; changes save on their own.
             </p>
