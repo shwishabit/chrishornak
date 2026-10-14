@@ -159,7 +159,7 @@ export const projects: Project[] = [
     role: 'Positioning · Brand · Build',
     outcome:
       'A consulting and investments firm that had no online presence at all. We built the whole thing from scratch, positioning, brand, and site, so a multi-industry practice finally had a home that matched its ambition.',
-    image: '/images/work/speranza.webp',
+    image: '/images/work/speranza-v2.webp',
   },
   {
     slug: 'custom-craft',
@@ -182,7 +182,7 @@ export const projects: Project[] = [
     role: 'Positioning · Brand · Build',
     outcome:
       'My agency, and the team behind a lot of the work on this page. Built on a simple bet: buyers start with questions, not ads, and the brands that answer them best become the ones people trust.',
-    image: '/images/work/swift-growth.webp',
+    image: '/images/work/swift-growth-v2.webp',
   },
   {
     slug: 'blog-hands',
