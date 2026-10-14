@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VidaRich Shopify rebuild: six answers on one page. Start Monday 19 October, live by Tuesday 1 December. Prepared by Chris Hornak for Townsquare Media.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:title" content="VidaRich Shopify Rebuild: Quote">
+    <meta property="og:description" content="A flat-fee rebuild on Shopify's Horizon theme, live by Tuesday 1 December, then a $100/month Site Care Plan.">
+    <title>VidaRich Shopify Quote</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #2dd4a8;
+            --teal-rgb: 45,212,168;
+            --deep: #0d6b53;
+            --dark: #0a0a0a;
+            --ink: #171717;
+            --ink-soft: #3a3f3e;
+            --muted: #6b7271;
+            --faint: #9aa4a2;
+            --line: #e3e6e6;
+            --light-bg: #f7f7f8;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; line-height: 1.45; color: var(--ink); margin: 0; background: #ececec; }
+        p, ul, ol, h1, h2 { margin: 0; }
+        .font-display, h1, h2 { font-family: 'Sora', sans-serif; }
+        @page { size: letter; margin: 0; }
+
+        /* ---------- control bar (screen only) ---------- */
+        .bar { width: calc(8.5in * 1.5); max-width: 100%; margin: 0 auto; padding: 24px 16px; }
+        .bar > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; padding: 18px 20px; border-radius: 16px; border: 1px solid #e5e5e5; }
+        .bar .lab { font-size: 12px; color: #a3a3a3; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+        .bar .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { font: 600 14px 'Inter', sans-serif; padding: 10px 18px; border-radius: 12px; border: 1px solid #d4d4d4; background: #fff; color: #404040; cursor: pointer; text-decoration: none; }
+        .btn:hover { border-color: #737373; color: var(--ink); }
+        .btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+        .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+        /* ---------- the letter page ---------- */
+        .wrap { display: flex; justify-content: center; padding-bottom: 50px; overflow-x: auto; }
+        .page { background: #fff; width: 8.5in; height: 11in; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+        .band { display: flex; align-items: center; justify-content: space-between; padding: 14px 0.6in; background: var(--dark); flex-shrink: 0; }
+        .band img { height: 22px; width: auto; }
+        .band .r { text-align: right; }
+        .band .eye { font: 700 8px 'Sora', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); }
+        .band .for { font-size: 8px; color: #a3a3a3; margin-top: 2px; letter-spacing: .02em; }
+
+        .hero { padding: 16px 0.6in 14px; flex-shrink: 0; }
+        h1 { font-weight: 800; font-size: 25px; line-height: 1.08; letter-spacing: -.03em; color: var(--ink); text-wrap: balance; }
+        h1 .u { background: linear-gradient(transparent 62%, rgba(var(--teal-rgb), .32) 62%); }
+        .plain { margin-top: 9px; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; }
+        .plain .k { font: 800 6.5px 'Sora', sans-serif; letter-spacing: .2em; text-transform: uppercase; color: var(--deep); white-space: nowrap; }
+        .plain p { font-size: 11px; color: var(--ink-soft); line-height: 1.5; }
+
+        /* ---------- six cards ---------- */
+        .grid6 { display: flex; gap: 10px; padding: 0 0.6in; flex: 1; align-items: stretch; }
+        .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+        .col > .card:last-child { flex: 1; }
+        .card { border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px 12px; display: flex; flex-direction: column; min-width: 0; }
+        .card.dark { background: var(--dark); border-color: var(--dark); color: #e9ecea; }
+        .ceye { font: 700 8px 'Sora', sans-serif; text-transform: uppercase; letter-spacing: .15em; color: var(--deep); display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+        .ceye .n { color: #fff; background: var(--teal); border-radius: 4px; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: 0; }
+        .card.dark .ceye { color: var(--teal); }
+        .card.dark .ceye .n { color: var(--dark); }
+        .small { font-size: 9px; color: var(--muted); line-height: 1.4; }
+        .card.dark .small { color: #9aa3a0; }
+
+        /* 1 · today */
+        .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+        .chip { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: #f2f3f3; color: var(--ink-soft); border: 1px solid #e6e8e8; }
+        .chip.bad { background: #fdf0ee; color: #9a3412; border-color: #f6d5cf; }
+        .quote { margin-top: 8px; font-size: 10px; color: var(--ink-soft); line-height: 1.45; }
+        .keep { margin-top: auto; padding-top: 8px; font-size: 10px; color: var(--ink-soft); line-height: 1.45; }
+        .keep b { color: var(--deep); }
+
+        .lede { font: 800 14px 'Sora', sans-serif; letter-spacing: -.01em; color: var(--ink); line-height: 1.2; }
+        .why { list-style: none; padding: 0; margin-top: 6px; display: grid; gap: 4px; }
+        .why li { position: relative; padding-left: 12px; font-size: 10.5px; line-height: 1.4; color: var(--ink-soft); }
+        .why li::before { content: ""; position: absolute; left: 0; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: #c2410c; }
+        .why li b { color: var(--ink); }
+        .score { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+        .score .big { font: 800 30px 'Sora', sans-serif; line-height: 1; color: #c2410c; font-variant-numeric: tabular-nums; }
+        .score .big small { font-size: 11px; color: var(--faint); font-weight: 700; }
+        .score .small b { color: var(--ink); }
+        .meter { position: relative; height: 6px; border-radius: 3px; background: #eef0f0; margin: 12px 0 7px; }
+        .meter .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #c2410c; }
+        .meter .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+        .meter .mark.tgt { background: var(--teal); transform: translateX(-2px); }
+        .meter .mark i { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 1px; font: 700 6.5px 'Sora', sans-serif; font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+        .meter .mark.tgt i { left: auto; right: 0; transform: none; color: var(--deep); }
+        .rep { font: 700 10.5px 'Inter', sans-serif; color: var(--ink); text-decoration: none; border-bottom: 1.5px solid var(--teal); }
+        .rep span { color: var(--deep); }
+        .rep-url { font-size: 8.5px; color: var(--faint); margin-left: 6px; }
+
+        /* 5 · before / after */
+        .ba { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+        .bah { font: 800 7px 'Sora', sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
+        .ba .inc li { font-size: 10px; }
+
+        /* 2 · concept wireframe */
+        .wf { border: 1px solid #dfe3e3; border-radius: 7px; overflow: hidden; background: #fff; }
+        .wf-top { display: flex; align-items: center; gap: 4px; padding: 4px 7px; background: #f4f5f5; border-bottom: 1px solid #e6e8e8; }
+        .wf-top i { width: 5px; height: 5px; border-radius: 50%; background: #cfd4d4; }
+        .wf-top span { margin-left: 6px; font-size: 7px; color: var(--faint); }
+        .wf-nav { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-bottom: 1px solid #eef0f0; }
+        .wf-nav .logo { font: 800 8px 'Sora', sans-serif; letter-spacing: .08em; color: var(--ink); }
+        .wf-nav .links { display: flex; gap: 7px; font-size: 6.5px; color: var(--muted); }
+        .wf-nav .links .ws { color: var(--deep); font-weight: 700; }
+        .wf-body { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 9px; padding: 8px; }
+        .wf-photo { display: block; width: 100%; height: auto; aspect-ratio: 335 / 470; object-fit: cover; border-radius: 5px; }
+        .wf-body { align-items: stretch; }
+        .wf-buy { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+        .wf-buy .wf-t { font-size: 10px; }
+        .wf-price { font: 800 10px 'Sora', sans-serif; color: var(--ink); margin-top: 3px; }
+        .wf-price span { font: 600 7px 'Inter', sans-serif; color: var(--muted); margin-left: 3px; }
+        .wf-meta { font-size: 7px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+        .wf-links { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; font-size: 6.5px; color: var(--muted); }
+        .wf-links span:first-child { text-decoration: underline; text-underline-offset: 2px; }
+        .wf-links b { color: var(--deep); }
+        .wf-t { font: 700 9px 'Sora', sans-serif; color: var(--ink); }
+        .wf-stars { font-size: 7px; color: var(--muted); margin-top: 2px; }
+        .wf-stars b { color: #e0a100; letter-spacing: 1px; }
+        .wf-opt { margin-top: 5px; display: grid; gap: 3px; }
+        .wf-opt div { display: flex; align-items: center; gap: 5px; font-size: 7.5px; color: var(--ink-soft); border: 1px solid #e3e6e6; border-radius: 4px; padding: 3px 5px; }
+        .wf-opt div.on { border-color: var(--teal); background: rgba(var(--teal-rgb), .08); color: var(--ink); font-weight: 600; }
+        .wf-opt i { width: 6px; height: 6px; border-radius: 50%; border: 1px solid #b9c0c0; flex-shrink: 0; }
+        .wf-opt .on i { border-color: var(--deep); background: var(--deep); box-shadow: inset 0 0 0 1px #fff; }
+        .wf-bund { display: flex; gap: 3px; margin-top: 4px; }
+        .wf-bund span { flex: 1; text-align: center; font-size: 7px; border: 1px solid #e3e6e6; border-radius: 4px; padding: 2px 0; color: var(--ink-soft); }
+        .wf-bund span.on { border-color: var(--ink); font-weight: 700; color: var(--ink); position: relative; }
+        .wf-bund span.tag { position: relative; }
+        .wf-bund span.tag em { background: #e6f7f1; color: var(--deep); }
+        .wf-bund span em { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 5.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; background: var(--teal); color: var(--dark); border-radius: 3px; padding: 1px 4px; line-height: 1.3; }
+        .wf-bund { margin-top: 8px; }
+        .wf-cta { margin-top: 5px; background: var(--ink); color: #fff; font-size: 7.5px; font-weight: 700; text-align: center; border-radius: 4px; padding: 4px 0; }
+        .wf-cap { margin-top: 7px; }
+
+        /* 3 · covers */
+        .inc { list-style: none; padding: 0; display: grid; gap: 4px; }
+        .inc li { display: grid; grid-template-columns: 12px 1fr; column-gap: 6px; font-size: 10.5px; line-height: 1.4; color: var(--ink-soft); }
+        .inc li::before { content: "\2713"; color: var(--teal); font-weight: 800; font-size: 11px; line-height: 1.35; }
+        .inc li b { color: var(--ink); }
+        .not { margin-top: auto; padding-top: 8px; }
+
+        /* 4 · cost */
+        .prow { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #262a29; }
+        .prow:first-of-type { padding-top: 0; }
+        .prow .pi { font: 700 11px 'Sora', sans-serif; color: #fff; }
+        .prow .pd { grid-column: 1; font-size: 9px; color: #9aa3a0; line-height: 1.4; margin-top: 2px; }
+        .prow .pv { grid-column: 2; grid-row: 1 / span 2; font: 800 17px 'Sora', sans-serif; color: #fff; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .prow .pv small { font-size: 9px; color: #9aa3a0; font-weight: 600; }
+        .prow .pv.client { font-size: 10px; font-weight: 700; color: #9aa3a0; }
+        .prow.total { border-bottom: 0; border-top: 2px solid #3a403e; margin-top: 2px; padding-top: 9px; }
+        .prow.total .pv { color: var(--teal); font-size: 15px; }
+        .terms { margin-top: auto; padding-top: 6px; }
+
+        /* 5 · when */
+        .tline { list-style: none; padding: 0; position: relative; display: grid; gap: 7px; }
+        .tline::before { content: ""; position: absolute; left: 4px; top: 6px; bottom: 6px; width: 1px; background: rgba(var(--teal-rgb), .55); }
+        .tline li { position: relative; display: grid; grid-template-columns: 62px 1fr; column-gap: 8px; padding-left: 16px; font-size: 10.5px; line-height: 1.4; color: var(--ink-soft); }
+        .tline li::before { content: ""; position: absolute; left: 0; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 2px solid var(--teal); }
+        .tline li.live::before { background: var(--teal); }
+        .tline .d { font: 800 10px 'Sora', sans-serif; color: var(--ink); }
+        .tline li.live .d { color: var(--deep); }
+        .early { margin-top: auto; padding-top: 8px; }
+
+        /* 6 · next */
+        .steps { list-style: none; padding: 0; counter-reset: s; display: grid; gap: 6px; }
+        .steps li { position: relative; padding-left: 18px; font-size: 10.5px; color: var(--ink-soft); line-height: 1.4; counter-increment: s; }
+        .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; color: var(--teal); font: 800 12px 'Sora', sans-serif; }
+        .steps li b { color: var(--ink); }
+        .reply { margin-top: auto; padding-top: 8px; }
+        .reply p { background: rgba(var(--teal-rgb), .1); border: 1px solid rgba(var(--teal-rgb), .45); border-radius: 6px; padding: 7px 9px; font: 700 10.5px 'Inter', sans-serif; color: var(--ink); }
+
+        /* ---------- foot ---------- */
+        .proof { margin: 10px 0.6in 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-shrink: 0; }
+        .proof p { font-size: 9.5px; color: var(--ink-soft); line-height: 1.4; }
+        .proof a { font-size: 9.5px; font-weight: 700; color: var(--ink); text-decoration: none; white-space: nowrap; }
+        .proof a span { color: var(--teal); }
+        .legal { margin: 5px 0.6in 0; font-size: 8px; color: var(--faint); flex-shrink: 0; }
+        .foot { margin-top: auto; padding: 9px 0.6in; display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); flex-shrink: 0; }
+        .foot p { font-size: 7px; color: var(--faint); letter-spacing: .03em; }
+
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--dark); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+
+        /* DESKTOP SCREEN */
+        @media screen and (min-width: 769px) {
+            .page { zoom: 1.5; -moz-transform: scale(1.5); -moz-transform-origin: top center; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 20px 60px rgba(0,0,0,.06); flex-shrink: 0; }
+            @supports (-moz-appearance:none) { .page { margin-bottom: 50% !important; } }
+        }
+
+        /* PRINT */
+        @media print {
+            body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .wrap { display: block; padding: 0; }
+            .page { zoom: 1 !important; box-shadow: none !important; width: 8.5in !important; height: 11in !important; page-break-inside: avoid; }
+        }
+
+        /* MOBILE SCREEN */
+        @media screen and (max-width: 768px) {
+            html, body { max-width: 100%; overflow-x: hidden; background: #fff; }
+            .bar { padding: 1rem; }
+            .bar > div { flex-direction: column; align-items: stretch; }
+            .bar .btn { flex: 1 1 45%; text-align: center; font-size: 13px; }
+            .wrap { padding: 0; }
+            .page { width: 100%; height: auto; overflow: visible; }
+            .band { padding: 14px 1.25rem; flex-wrap: wrap; gap: 10px; }
+            .band .eye { font-size: 10px; } .band .for { font-size: 11px; }
+            .hero { padding: 18px 1.25rem 16px; }
+            h1 { font-size: clamp(25px, 7.5vw, 32px); }
+            .plain { grid-template-columns: 1fr; row-gap: 4px; }
+            .plain .k { font-size: 9px; }
+            .plain p { font-size: 16px; }
+            .grid6 { flex-direction: column; gap: 12px; padding: 0 1.25rem; }
+            .col { gap: 12px; }
+            .wf-photo { max-width: 60%; margin: 0 auto; }
+            .wf-body { grid-template-columns: 1fr !important; }
+            .card { padding: 14px 15px 15px; }
+            .ceye { font-size: 10px; }
+            .chip { font-size: 13px; }
+            .quote, .keep, .inc li, .tline li, .steps li, .reply p { font-size: 15px; }
+            .tline li { grid-template-columns: 78px 1fr; }
+            .tline .d { font-size: 13px; }
+            .small, .prow .pd { font-size: 13px; }
+            .prow .pi { font-size: 15px; }
+            .prow .pv { font-size: 20px; }
+            .wf-nav .links { display: none; }
+            .proof { margin: 16px 1.25rem 0; flex-direction: column; align-items: flex-start; }
+            .proof p, .proof a { font-size: 14px; }
+            .legal { margin: 8px 1.25rem 0; font-size: 12px; }
+            .foot { padding: 14px 1.25rem; flex-direction: column; gap: 4px; margin-top: 16px; }
+            .foot p { font-size: 11px; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+    <nav aria-label="Document controls" class="bar no-print">
+        <div>
+            <span class="lab">Quote &middot; VidaRich Shopify rebuild</span>
+            <div class="btns">
+                <a class="btn" href="https://chrishornak.com/work" target="_blank" rel="noopener">See my work</a>
+                <button type="button" class="btn" id="shareBtn">Share</button>
+                <button type="button" class="btn primary" onclick="window.print()">Print / Save PDF</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="wrap">
+        <article class="page">
+
+            <header class="band">
+                <img src="/images/wordmark-dark.svg" alt="Chris Hornak" loading="eager" decoding="async">
+                <div class="r">
+                    <p class="eye">Quote &middot; Shopify rebuild</p>
+                    <p class="for">Prepared for Sherrie Tresch, Townsquare Media &middot; client VidaRich &middot; 14 Oct 2026</p>
+                </div>
+            </header>
+
+            <div class="hero">
+                <h1>A VidaRich store built to sell, <span class="u">live by Tuesday 1&nbsp;December</span>.</h1>
+                <div class="plain">
+                    <span class="k">In plain words</span>
+                    <p>For one flat $750, I rebuild his store on Shopify's free Horizon theme with subscriptions, bundles and a wholesale login. After launch, $100 a month keeps me on call. I can start Monday 19 October.</p>
+                </div>
+            </div>
+
+            <div class="grid6">
+                <div class="col">
+                <section class="card" aria-labelledby="c1">
+                    <h2 class="ceye" id="c1"><span class="n">1</span> Where the site stands today</h2>
+                    <p class="lede">Today, the site can't carry your ads.</p>
+                    <ul class="why">
+                        <li><b>No subscription.</b> Every sale is one-time. Nothing reorders on its own.</li>
+                        <li><b>No wholesale login</b> for the 38 stores that already sell VidaRich.</li>
+                        <li><b>Health claims</b> ad platforms reject, like <em>"slow the progression of dementia"</em>.</li>
+                    </ul>
+                    <div class="score">
+                        <p class="big">69<small>/100</small></p>
+                        <div>
+                            <div class="meter" role="img" aria-label="Findability score 69 out of 100. Average site 75. Target 100.">
+                                <span class="fill" style="width:69%"></span>
+                                <span class="mark" style="left:75%"><i>Avg 75</i></span>
+                                <span class="mark tgt" style="left:100%"><i>Target</i></span>
+                            </div>
+                            <p class="small"><b>My Findability Check, run today.</b> 31 of 48 checks pass. Weakest: structure, accessibility, AI.</p>
+                        </div>
+                    </div>
+                    <p class="quote"><b>Worth keeping:</b> his 50 product reviews and his Shop Pay checkout. Both carry over.</p>
+                    <p class="keep"><a class="rep" href="https://chrishornak.com/audit?url=https://vidarich.com" target="_blank" rel="noopener">See the full report <span>&rarr;</span></a> <span class="rep-url">chrishornak.com/audit?url=vidarich.com</span></p>
+                </section>
+
+                <section class="card" aria-labelledby="c2">
+                    <h2 class="ceye" id="c2"><span class="n">2</span> What the product page becomes</h2>
+                    <div class="wf" role="img" aria-label="Concept sketch of the new product page: product photo, 50 reviews, one-time or subscribe choice, 1, 2 or 4 jars, add to cart, and a wholesale login link in the menu">
+                        <div class="wf-top"><i></i><i></i><i></i><span>vidarich.com</span></div>
+                        <div class="wf-nav">
+                            <span class="logo">VIDARICH</span>
+                            <span class="links"><span>Shop</span><span>About</span><span>Ingredients</span><span>Find a store</span><span class="ws">Wholesale login</span></span>
+                        </div>
+                        <div class="wf-body">
+                            <img class="wf-photo" src="/docs/vidarich-shopify/product.jpg" alt="VidaRich Coffee Booster jar on coffee beans" width="335" height="470" loading="eager" decoding="async">
+                            <div class="wf-buy">
+                                <p class="wf-t">VidaRich Coffee Booster</p>
+                                <p class="wf-stars"><b>&#9733;&#9733;&#9733;&#9733;&#9733;</b> 50 reviews</p>
+                                <p class="wf-price">$108.00 <span>$54 a jar &middot; $1.80 a serving</span></p>
+                                <p class="wf-meta">30 servings a jar. Collagen peptides, cacao, lion's mane, cordyceps, MCT.</p>
+                                <div class="wf-opt">
+                                    <div><i></i>One-time purchase</div>
+                                    <div class="on"><i></i>Subscribe monthly</div>
+                                </div>
+                                <div class="wf-bund"><span>1 jar</span><span class="on">2 jars<em>Save 10%</em></span><span class="tag">4 jars<em>Save 17%</em></span></div>
+                                <div class="wf-cta">Add to cart</div>
+                                <p class="wf-links"><span>In 38 NJ stores</span><span>Store owner? <b>Log in</b></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small wf-cap">Concept, not final art. The look comes from his new branding, fit to his niche and made for the people who buy it.</p>
+                </section>
+
+                <section class="card" aria-labelledby="c5">
+                    <h2 class="ceye" id="c5"><span class="n">3</span> Bonus: before and after launch</h2>
+                    <div class="ba">
+                        <div>
+                            <p class="bah">Before</p>
+                            <ul class="inc">
+                                <li><span>Findability Check, <b>target 100</b></span></li>
+                                <li><span>Product data for Google</span></li>
+                                <li><span>Ad-to-checkout path tested</span></li>
+                                <li><span>Old links redirected</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="bah">After</p>
+                            <ul class="inc">
+                                <li><span>Sitemap in Search Console</span></li>
+                                <li><span>First week of orders watched</span></li>
+                                <li><span>Findability re-run monthly</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="small early">Not in the ask, still included: the path from first impression to sale works.</p>
+                </section>
+                </div>
+                <div class="col">
+                <section class="card dark" aria-labelledby="c4">
+                    <h2 class="ceye" id="c4"><span class="n">4</span> What it costs</h2>
+                    <div class="prow">
+                        <div class="pi">Build</div>
+                        <div class="pd">Flat fee, paid up front.</div>
+                        <div class="pv">$750</div>
+                    </div>
+                    <div class="prow">
+                        <div class="pi">Site Care Plan</div>
+                        <div class="pd">From launch. Up to 4 hours a month of updates and fixes.</div>
+                        <div class="pv">$100<small>/mo</small></div>
+                    </div>
+                    <div class="prow">
+                        <div class="pi">Shopify plan and apps</div>
+                        <div class="pd">Billed to him by Shopify. The setup above adds no paid apps.</div>
+                        <div class="pv client">Paid by client</div>
+                    </div>
+                    <div class="prow total">
+                        <div class="pi">From you</div>
+                        <div class="pd">One payment now, then monthly from launch.</div>
+                        <div class="pv">$750 + $100/mo</div>
+                    </div>
+                    <p class="small terms">You pay for my availability, so unused hours don't roll over. 3-month minimum, then 30 days notice. Bigger work gets a flat quote first.</p>
+                </section>
+
+                <section class="card" aria-labelledby="c3">
+                    <h2 class="ceye" id="c3"><span class="n">5</span> What the $750 covers</h2>
+                    <ul class="inc">
+                        <li><span><b>Horizon, customized</b> for fresh branding around his new logo.</span></li>
+                        <li><span><b>Home, About, Ingredients, Store Locator,</b> with no app fee.</span></li>
+                        <li><span><b>Up to 3 products,</b> with subscriptions and bundles.</span></li>
+                        <li><span><b>Wholesale login</b> with Shopify's built-in B2B.</span></li>
+                        <li><span><b>Copy improved and fixed</b> with the AIDA model: attention, interest, desire, action. No health claims.</span></li>
+                        <li><span><b>Tested</b> with test orders. 2 rounds of changes.</span></li>
+                    </ul>
+                    <p class="small not">Not in this fee: photography, products past 3, extra rounds, and the ad campaigns themselves.</p>
+                </section>
+
+                <section class="card" aria-labelledby="c6">
+                    <h2 class="ceye" id="c6"><span class="n">6</span> When, and what's next</h2>
+                    <ol class="tline">
+                        <li><span class="d">You say yes</span><span>By Wed 28 Oct. Agreement and $750 invoice the same day.</span></li>
+                        <li><span class="d">Mon 19 Oct</span><span>The earliest I can start: theme, pages, products.</span></li>
+                        <li><span class="d">Fri 6 Nov</span><span>Logo, colors, photos, product details, wholesale rules, store list and store access in.</span></li>
+                        <li><span class="d">November</span><span>A preview link to show the client. 2 rounds of changes.</span></li>
+                        <li class="live"><span class="d">Tue 1 Dec</span><span><b>Live</b> at the latest. Files early means launch early.</span></li>
+                    </ol>
+                    <p class="small early">If something lands late, I'll tell you that day.</p>
+                </section>
+                </div>
+            </div>
+
+            <div class="proof">
+                <p>I build in Shopify's theme code. gammalighttherapy.com is on my Site Care Plan today. I also built the Findability Check that scored his site: chrishornak.com/audit.</p>
+                <a href="https://chrishornak.com/work" target="_blank" rel="noopener">See my work <span>&rarr;</span></a>
+            </div>
+            <p class="legal">The client approves all final copy and is responsible for product claims.</p>
+
+            <footer class="foot">
+                <p>Chris Hornak &middot; chrishornak.com &middot; Work: chrishornak.com/work</p>
+                <p>Page 1 of 1 &middot; Valid until Wed 28 Oct &middot; Facts from vidarich.com, 14 Oct 2026</p>
+            </footer>
+        </article>
+    </main>
+
+    <div class="toast no-print" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('shareBtn');
+            var toast = document.getElementById('toast');
+            function show(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(function () { toast.classList.remove('show'); }, 1800);
+            }
+            btn.addEventListener('click', function () {
+                var url = location.href;
+                if (navigator.share) {
+                    navigator.share({ title: document.title, url: url }).catch(function () {});
+                } else if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(function () { show('Link copied'); }, function () { show(url); });
+                } else {
+                    show(url);
+                }
+            });
+        })();
+    </script>
+
+</body>
+</html>
