@@ -9,15 +9,12 @@ export function Hero() {
   return (
     <section className="relative flex min-h-[85vh] flex-col justify-center px-6 pt-28 md:min-h-screen md:pt-24 md:px-12 lg:px-24">
       <div className="relative mx-auto w-full max-w-5xl">
-        {/* Contract-work link for hirers who land here from a pitch (/hire, 2026-10-14) */}
+        {/* Status line for hirers who land here from a pitch. The "Hire me" button below is the link. */}
         {hireContent.available && (
-          <a
-            href="/hire"
-            className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary-line bg-primary-deep px-3.5 py-1.5 text-sm font-medium text-primary transition-colors duration-200 hover:border-primary"
-          >
+          <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary-line bg-primary-deep px-3.5 py-1.5 text-sm font-medium text-primary">
             <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
-            Available for contract work <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </a>
+            Available for contract work
+          </p>
         )}
 
         {/* H1 — asymmetric, left-aligned. Plain HTML for instant LCP. */}
@@ -62,7 +59,7 @@ export function Hero() {
         {/* CTA */}
         <div className="mt-10 flex flex-wrap items-center gap-5">
           <motion.a
-            href="/#connect"
+            href={heroContent.ctaLink}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/30"

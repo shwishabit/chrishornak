@@ -15,7 +15,6 @@ export const navLinks: NavLink[] = [
   { label: 'About', href: '/#about' },
   { label: 'Approach', href: '/#services' },
   { label: 'Work', href: '/work' },
-  { label: 'Hire me', href: '/hire' },
   { label: 'Blog', href: '/blog' },
   { label: 'Be The Signal', href: '/signal' },
 ]
@@ -59,8 +58,9 @@ export const heroContent = {
   headline: 'Your next customer is looking for you.',
   headlineAccent: 'Let\'s make sure you get found.',
   subheadline: 'I\'m Chris Hornak — marketing strategist for businesses that need to get found, stay found, and turn that visibility into results. I bring the strategy that makes everything else work.',
-  ctaText: 'Let\'s talk',
-  ctaLink: 'https://cal.com/chris-hornak/30min',
+  // Main CTA = Hire me, Findability secondary (Chris, 2026-10-14)
+  ctaText: 'Hire me',
+  ctaLink: '/hire',
 }
 
 /**

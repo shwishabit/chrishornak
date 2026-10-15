@@ -95,7 +95,7 @@ export function Navigation() {
         </a>
 
         {/* Desktop nav */}
-        {/* lg, not md: with "Hire me" added (2026-10-14) the links wrapped and pushed the logo out at 768 */}
+        {/* lg, not md: at 768 the links wrapped and pushed the logo out (2026-10-14) */}
         <div className="hidden items-center gap-5 whitespace-nowrap lg:flex xl:gap-8">
           {navLinks.map((link) => (
             <a
@@ -109,10 +109,10 @@ export function Navigation() {
           <ToolsMenu />
           <ThemeToggle />
           <a
-            href="/#connect"
+            href="/hire"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-glow"
           >
-            Connect <ArrowRight className="h-3.5 w-3.5" />
+            Hire me <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </div>
 
@@ -176,11 +176,11 @@ export function Navigation() {
               <ThemeSwitchRow />
             </div>
             <a
-              href="/#connect"
+              href="/hire"
               onClick={() => setMobileOpen(false)}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
             >
-              Connect <ArrowRight className="h-3.5 w-3.5" />
+              Hire me <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </motion.div>
         )}
