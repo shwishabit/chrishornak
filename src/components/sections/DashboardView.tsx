@@ -104,8 +104,8 @@ export async function DashboardView() {
   )
 
   return (
-    <main id="main-content" className={`nostromo ${plexMono.variable} ${plexCond.variable} relative min-h-screen px-4 py-8 md:px-8 md:py-10`}>
-      <div className="mx-auto grid max-w-330 gap-[18px] min-[1800px]:max-w-370">
+    <main id="main-content" className={`nostromo ${plexMono.variable} ${plexCond.variable} relative min-h-screen px-3 py-5 md:px-8 md:py-10`}>
+      <div className="mx-auto grid max-w-330 grid-cols-[minmax(0,1fr)] gap-[18px] min-[1800px]:max-w-370">
         <DashHeader brief={brief} refreshed={state?.updated.today} requested={state?.updated.refresh_request} />
 
         {!state && (
@@ -118,11 +118,12 @@ export async function DashboardView() {
           feedCount={open.length}
           salesCount={openIn('sales').length}
           feed={
+            // Phone order (Chris 2026-10-16, "not optimized for mobile"): Feed, To do today, Today, Pulse.
             // Keys on the four cards: this block is built on the server and handed to the
             // client-side tabs, where React needs them. Phone order: Today (with Wins), To-do, Feed, Pulse. Desktop: Feed left, the three cards right.
             // The last row is 1fr so the Feed's height never stretches the right-hand cards.
             <div className="mt-[18px] grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:gap-7 lg:grid-rows-[auto_auto_auto_1fr]">
-              <div key="today" className="lg:col-start-2 lg:row-start-1">
+              <div key="today" className="order-3 lg:order-none lg:col-start-2 lg:row-start-1">
                 <DashToday
                   events={state?.calendar?.events ?? []}
                   connected={!!state?.calendar?.calendars.length}
@@ -132,13 +133,13 @@ export async function DashboardView() {
                   wins={<DashWins initial={wins} days={winDays.map((d) => d.d)} />}
                 />
               </div>
-              <div key="todo" className="lg:col-start-2 lg:row-start-2">
+              <div key="todo" className="order-2 lg:order-none lg:col-start-2 lg:row-start-2">
                 <DashTodo initial={todos} dueNow={<DashDueNow rows={dueToday} />} dueTomorrow={<DashDueTomorrow rows={dueTomorrow} />} dueTomorrowCount={dueTomorrow.length} />
               </div>
-              <div key="feed" className="lg:col-start-1 lg:row-span-4 lg:row-start-1">
+              <div key="feed" className="order-1 lg:order-none lg:col-start-1 lg:row-span-4 lg:row-start-1">
                 <DashFeed items={feed} statuses={statuses} />
               </div>
-              <div key="pulse" className="lg:col-start-2 lg:row-start-3">
+              <div key="pulse" className="order-4 lg:order-none lg:col-start-2 lg:row-start-3">
                 <DashPulse overview={overview} bh={bh} health={state?.health ?? null} sgm={state?.sales?.sgm ?? null} salesDb={salesDb} />
               </div>
             </div>

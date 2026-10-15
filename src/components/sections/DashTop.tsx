@@ -93,7 +93,7 @@ export function DashToday({
   )
 
   return (
-    <section aria-labelledby="today-h" className="nx-box min-w-0 p-5 md:px-6 md:py-5.5">
+    <section aria-labelledby="today-h" className="nx-box min-w-0 p-4 md:px-6 md:py-5.5">
       {wins}
 
       <div className="mt-4.5 border-t border-border pt-4">

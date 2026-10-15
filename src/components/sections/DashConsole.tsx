@@ -347,8 +347,8 @@ export function DashConsole<T extends string>({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-x-2 px-2.5 sm:px-2.5">
-        <nav aria-label="Sections" role="tablist" id="dash-tabs" className="flex flex-wrap scroll-mt-6">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 px-1 md:px-2.5">
+        <nav aria-label="Sections" role="tablist" id="dash-tabs" className="flex max-w-full scroll-mt-6 overflow-x-auto [scrollbar-width:none] md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
           {tabs.map((t) => (
             <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} onClick={() => onTab(t.id)} className="nx-seg">
               {t.label}
@@ -357,7 +357,7 @@ export function DashConsole<T extends string>({
           ))}
         </nav>
         {feedTab && (
-          <div role="group" aria-label="View" className="flex flex-wrap border-l border-border pl-1.5">
+          <div role="group" aria-label="View" className="flex w-full overflow-x-auto border-t border-border [scrollbar-width:none] md:w-auto md:overflow-visible md:border-l md:border-t-0 md:pl-1.5 [&::-webkit-scrollbar]:hidden">
             {VIEWS.map((v) => (
               <button key={v.id} type="button" aria-pressed={f.view === v.id} onClick={() => f.setView(v.id)} className="nx-seg">
                 {v.label}

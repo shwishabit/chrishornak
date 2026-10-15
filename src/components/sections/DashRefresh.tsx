@@ -53,13 +53,13 @@ export function DashRefresh({ refreshed, requested }: { refreshed?: string; requ
           setFailed(true)
         }
       }}
-      title="Reads the page again now, and asks your PC for a fresh pull (your PC must be on)"
+      title="Reads the page again now, and asks your PC for a fresh pull (your PC must be on). Can take up to 5 minutes."
       className="nx-ghost"
     >
       <svg viewBox="0 0 16 16" className={`h-3 w-3 ${askedAt ? 'animate-spin motion-reduce:animate-none' : ''}`} fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
         <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3" />
       </svg>
-      {askedAt ? 'Asked your PC… (up to 5 min)' : failed ? 'Try again' : 'Refresh now'}
+      {askedAt ? 'Asked your PC…' : failed ? 'Try again' : 'Refresh now'}
     </button>
   )
 }

@@ -283,7 +283,7 @@ export function DashFeed({
   }, [jump])
 
   return (
-    <section aria-labelledby="feed-h" className="nx-box min-w-0 p-5 md:px-7 md:py-6.5">
+    <section aria-labelledby="feed-h" className="nx-box min-w-0 p-4 md:px-7 md:py-6.5">
       <div className="border-b border-border pb-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="feed-h" className="text-[22px] font-normal tracking-[0.02em]">Feed</h2>
@@ -583,7 +583,8 @@ function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct:
         )}
       </h4>
       {i.detail && <p className="mt-1 max-w-[78ch] text-[13px] text-muted-foreground">{i.detail}</p>}
-      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+      <div className="mt-2.5 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
+      <div className="flex flex-wrap items-center gap-2">
         <MinsPicker item={i} onMins={onMins} />
         {i.href && i.hrefLabel && (
           <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
@@ -596,12 +597,14 @@ function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct:
           </a>
         )}
         {i.say && <CopyButton text={i.say} />}
-        <span className="flex-1" />
+      </div>
+      {/* Phone: one full-width row of actions, Done twice as wide. Desktop: pushed to the right. */}
+      <div className="flex items-stretch gap-2 md:ml-auto [&>button]:flex-1 md:[&>button]:flex-none">
         <button
           type="button"
           onClick={() => onAct('done')}
           title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
-          className="nx-ghost !border-primary !text-[#a8f2c8]"
+          className="nx-ghost max-md:!flex-[2] !border-primary !text-[#a8f2c8]"
         >
           {i.doneLabel ?? 'Done'}
         </button>
@@ -614,6 +617,7 @@ function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct:
         <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="nx-ghost">
           Skip
         </button>
+      </div>
       </div>
       {noting && (
         <form
