@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import type { FeedStatus, FeedStatusRow, Level } from '@/lib/admin-dashboard'
 import { FEED_GROUPS, fmtMins, nyDate, nyTomorrow, type FeedGroup, type FeedItem } from '@/lib/dash-feed'
-import { setFeedItemMins, setFeedItemStatus } from '@/app/audit/admin/dashboard/actions'
+import { setFeedItemMins, setFeedItemStatus, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
 import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
 import { brandChip } from '@/lib/dash-format'
-import { emitFeedCounts, emitUnwin, emitWin } from '@/lib/dash-wins'
+import { emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
 
 /* The Feed (2026-10-15): one list in Chris's morning order — Email → Sales →
  * Jobs → Marketing → Client work → Other. Red items jump to the top of their
@@ -44,6 +44,39 @@ export function DashFeed({
   const [, startTransition] = useTransition()
   const [minsOver, setMinsOver] = useState<Record<string, number>>({})
   const [focus, setFocus] = useState(false)
+  const [showSpam, setShowSpam] = useState(false)
+  // Changes made in the To-do card to labeled to-dos (text, label, hidden).
+  const [todoOver, setTodoOver] = useState<Record<string, { title?: string; group?: FeedGroup; gone?: boolean }>>({})
+  // To-dos labeled after the page loaded: added to the Feed at once.
+  const [extraTodos, setExtraTodos] = useState<FeedItem[]>([])
+  useEffect(
+    () =>
+      onTodoChange(({ id, patch }) => {
+        if (!patch.label || !patch.text || patch.done === true || patch.archived === true || patch.deleted || items.some((i) => i.todo === id)) return
+        setExtraTodos((x) =>
+          x.some((i) => i.todo === id)
+            ? x
+            : [...x, { id: `todo:${id}`, todo: id, group: patch.label as FeedGroup, level: 'plain', title: patch.text!, brand: 'To-do', meta: 'your to-do', mins: 15, say: `help me do this to-do: ${patch.text}`, rank: 3 }],
+        )
+      }),
+    [items],
+  )
+  useEffect(
+    () =>
+      onTodoChange(({ id, patch }) =>
+        setTodoOver((o) => ({
+          ...o,
+          [id]: {
+            ...o[id],
+            ...(patch.text !== undefined && { title: patch.text }),
+            ...(patch.label !== undefined && (patch.label ? { group: patch.label as FeedGroup, gone: false } : { gone: true })),
+            ...((patch.done === true || patch.archived === true || patch.deleted || (patch.day !== undefined && patch.day > today)) && { gone: true }),
+            ...((patch.done === false || patch.archived === false || (patch.day !== undefined && patch.day <= today)) && { gone: false }),
+          },
+        })),
+      ),
+    [today],
+  )
   const [passed, setPassed] = useState<Set<string>>(new Set())
 
   const hidden = (id: string) => {
@@ -54,21 +87,23 @@ export function DashFeed({
 
   const open = useMemo(
     () =>
-      items
+      [...items, ...extraTodos]
         .map((i) => (minsOver[i.id] ? { ...i, mins: minsOver[i.id], minsSet: true } : i))
-        .filter((i) => !hidden(i.id))
+        .map((i) => (i.todo && todoOver[i.todo] ? { ...i, ...(todoOver[i.todo].title && { title: todoOver[i.todo].title! }), ...(todoOver[i.todo].group && { group: todoOver[i.todo].group! }) } : i))
+        .filter((i) => !hidden(i.id) && (showSpam || !i.spam) && !(i.todo && todoOver[i.todo]?.gone))
         .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || (a.level === 'red' ? 0 : 1) - (b.level === 'red' ? 0 : 1) || a.rank - b.rank || LVL[a.level] - LVL[b.level]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, rows, minsOver],
+    [items, extraTodos, rows, minsOver, showSpam, todoOver],
   )
-  const needs = open.reduce((t, i) => t + i.mins, 0)
+  const needs = open.filter((i) => !i.spam).reduce((t, i) => t + i.mins, 0)
+  const spamCount = items.filter((i) => i.spam && !hidden(i.id)).length
   // Tab badges + the top line update live as items are done (review 2026-10-15).
   useEffect(() => {
     emitFeedCounts({
-      open: open.length,
+      open: open.filter((i) => !i.spam).length,
       urgent: open.filter((i) => i.level === 'red').length,
       email: open.filter((i) => i.group === 'email').length,
-      sales: open.filter((i) => i.group === 'sales').length,
+      sales: open.filter((i) => i.group === 'sales' && !i.spam).length,
     })
   }, [open])
 
@@ -87,17 +122,43 @@ export function DashFeed({
   const snoozed = statusRows.filter((r) => r.status === 'snoozed' && (r.until ?? '') > today)
   const doneMins = doneToday.filter((r) => r.status === 'done').reduce((t, r) => t + r.mins, 0)
 
-  function act(item: Pick<FeedItem, 'id' | 'title' | 'group' | 'mins' | 'job'> & { brand?: string }, status: FeedStatus | null) {
+  function act(item: Pick<FeedItem, 'id' | 'title' | 'group' | 'mins' | 'job'> & { brand?: string }, status: FeedStatus | null, note = '') {
     const prev = rows.get(item.id)
     // Today's wins card: a Done is a win; undoing a Done takes it back.
-    if (status === 'done') emitWin({ id: item.id, title: item.title, mins: item.mins, brand: item.brand, at: new Date().toISOString() })
+    if (status === 'done') emitWin({ id: item.id, title: item.title, mins: item.mins, brand: item.brand, note: note || undefined, at: new Date().toISOString() })
     else if (prev?.status === 'done') emitUnwin(item.id)
     const next = new Map(rows)
     // Snooze hides at once: set tomorrow's date now instead of waiting for the server.
-    if (status) next.set(item.id, { id: item.id, status, until: status === 'snoozed' ? nyTomorrow(today) : null, title: item.title, grp: item.group, mins: item.mins, brand: item.brand, at: new Date().toISOString() })
+    if (status) next.set(item.id, { id: item.id, status, until: status === 'snoozed' ? nyTomorrow(today) : null, title: item.title, grp: item.group, mins: item.mins, brand: item.brand, note, at: new Date().toISOString() })
     else next.delete(item.id)
     setRows(next)
     setError('')
+
+    // A labeled to-do: the to-do itself is the record. Done ticks it, Skip archives it, Snooze moves it to tomorrow.
+    if (item.id.startsWith('todo:')) {
+      const todoId = item.id.slice(5)
+      const patch =
+        status === 'done' ? { done: true }
+        : status === 'skipped' ? { archived: true }
+        : status === 'snoozed' ? { day: nyTomorrow(today) }
+        : prev?.status === 'done' ? { done: false }
+        : prev?.status === 'skipped' ? { archived: false }
+        : { day: today }
+      emitTodoChange({ id: todoId, patch })
+      startTransition(async () => {
+        if (!(await updateTodoItem(todoId, patch).catch(() => false))) {
+          setRows((cur) => {
+            const back = new Map(cur)
+            if (prev) back.set(item.id, prev)
+            else back.delete(item.id)
+            return back
+          })
+          if (status === 'done') emitUnwin(item.id)
+          setError('That did not save. Try again in a moment.')
+        }
+      })
+      return
+    }
 
     // Job + question items keep the tracker in sync. Undo puts them back to the status they came from.
     const jobId = item.job?.id ?? (item.id.startsWith('job:') ? item.id.slice(4) : undefined)
@@ -115,6 +176,7 @@ export function DashFeed({
         group: item.group,
         mins: item.mins,
         brand: item.brand,
+        note,
         job: jobId && jobStatus ? { id: jobId, status: jobStatus } : undefined,
       }).catch(() => ({ ok: false, until: null }))
       if (!res.ok) {
@@ -246,6 +308,11 @@ export function DashFeed({
             ))}
             <span className="mx-1 hidden h-4 w-px bg-border sm:inline-block" aria-hidden="true" />
             <Pill on={quick} onClick={() => setQuick(!quick)}>Under 15 min</Pill>
+            {spamCount > 0 && (
+              <Pill on={showSpam} onClick={() => setShowSpam(!showSpam)}>
+                {showSpam ? 'Hide' : 'Show'} likely spam <span className="tabular-nums opacity-60">{spamCount}</span>
+              </Pill>
+            )}
             <label className="inline-flex items-center">
               <span className="sr-only">Brand</span>
               <select
@@ -276,7 +343,7 @@ export function DashFeed({
           item={queue[0]}
           left={queue.length}
           leftMins={queue.reduce((t, i) => t + i.mins, 0)}
-          onAct={(i, st) => act(i, st)}
+          onAct={(i, st, note) => act(i, st, note)}
           onNext={(i) => setPassed((p) => new Set(p).add(i.id))}
           onMins={(i, m) => setMins(i, m)}
           onClose={() => setFocus(false)}
@@ -303,7 +370,7 @@ export function DashFeed({
                 </div>
                 <ul>
                   {visible.map((i) => (
-                    <Row key={i.id} item={i} onAct={(s) => act(i, s)} onMins={(m) => setMins(i, m)} />
+                    <Row key={i.id} item={i} onAct={(s, note) => act(i, s, note)} onMins={(m) => setMins(i, m)} />
                   ))}
                 </ul>
                 {list.length > visible.length && (
@@ -326,7 +393,8 @@ export function DashFeed({
           {(view === 'done' ? doneToday : snoozed).map((r) => (
             <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border py-2.5 text-[13.5px] first:border-t-0">
               <span className="min-w-0 flex-1">
-                {r.title || r.id}{' '}
+                {r.title || r.id}
+                {r.note && <span className="block text-xs text-foreground/80">✎ {r.note}</span>}{' '}
                 <span className="text-xs text-muted-foreground">
                   · {FEED_GROUPS.find((g) => g.id === r.grp)?.label ?? r.grp}
                   {r.status === 'skipped' && ' · skipped'}
@@ -402,7 +470,7 @@ function Focus({
   item: FeedItem | undefined
   left: number
   leftMins: number
-  onAct: (i: FeedItem, s: FeedStatus) => void
+  onAct: (i: FeedItem, s: FeedStatus, note?: string) => void
   onNext: (i: FeedItem) => void
   onMins: (i: FeedItem, m: number) => void
   onClose: () => void
@@ -410,6 +478,7 @@ function Focus({
   const total = (i?.mins ?? 0) * 60
   const [secs, setSecs] = useState(total)
   const [running, setRunning] = useState(true)
+  const [note, setNote] = useState('')
   const rang = useRef(false)
 
   useEffect(() => setSecs(total), [total])
@@ -497,10 +566,21 @@ function Focus({
               {over && <p className="mt-2 text-xs text-warning">Over the estimate. Finish, snooze or move on.</p>}
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <label className="mt-5 block">
+              <span className="text-xs text-muted-foreground">Note when done (optional)</span>
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && onAct(i, 'done', note)}
+                maxLength={1000}
+                placeholder="e.g. Followed up by email, waiting on reply"
+                className="mt-1 w-full rounded-lg border border-border bg-well px-3 py-2 text-sm focus-visible:border-primary focus-visible:outline-none"
+              />
+            </label>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={() => onAct(i, 'done')}
+                onClick={() => onAct(i, 'done', note)}
                 autoFocus
                 className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
@@ -525,7 +605,9 @@ function Focus({
   )
 }
 
-function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus) => void; onMins: (m: number) => void }) {
+function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus, note?: string) => void; onMins: (m: number) => void }) {
+  const [noting, setNoting] = useState(false)
+  const [note, setNote] = useState('')
   return (
     <li className="grid grid-cols-[8px_minmax(0,1fr)] gap-x-3 border-t border-border py-3.5 first:border-t-0">
       <i className={`mt-1.75 h-2 w-2 rounded-full ${DOT[i.level]}`} aria-label={i.level === 'red' ? 'urgent' : undefined} />
@@ -533,6 +615,7 @@ function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus
         <p className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-muted-foreground">
           <span className={brandChip(i.brand)}>{i.brand}</span>
           {i.meta && <span className="truncate">{i.meta}</span>}
+          {i.spam && <span className="shrink-0 rounded bg-warning/15 px-1.5 py-px text-[10.5px] text-warning">likely spam: {i.spam}</span>}
         </p>
         <h4 className="mt-0.5 text-[14.5px] font-medium leading-snug wrap-anywhere">
           {i.href ? (
@@ -568,6 +651,15 @@ function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus
             >
               {i.doneLabel ?? 'Done'}
             </button>
+            <button
+              type="button"
+              onClick={() => setNoting(!noting)}
+              aria-expanded={noting}
+              title="Done, with a note"
+              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-well hover:text-foreground"
+            >
+              ✎<span className="sr-only">Done with a note</span>
+            </button>
             <button type="button" onClick={() => onAct('snoozed')} title="Hide until tomorrow" className="rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-well hover:text-foreground">
               Snooze
             </button>
@@ -576,6 +668,29 @@ function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus
             </button>
           </div>
         </div>
+        {noting && (
+          <form
+            className="mt-2 flex flex-wrap items-center gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              onAct('done', note)
+            }}
+          >
+            <input
+              autoFocus
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => e.key === 'Escape' && setNoting(false)}
+              maxLength={1000}
+              placeholder="What happened? e.g. Followed up by email"
+              aria-label="Note for this item"
+              className="min-w-0 flex-1 basis-56 rounded-lg border border-border bg-well px-3 py-1.5 text-sm focus-visible:border-primary focus-visible:outline-none"
+            />
+            <button type="submit" className="rounded-md border border-primary-line px-2.5 py-1.5 text-[11px] font-medium text-primary hover:bg-primary-deep">
+              Save &amp; {(i.doneLabel ?? 'Done').toLowerCase()}
+            </button>
+          </form>
+        )}
       </div>
     </li>
   )

@@ -7,7 +7,7 @@
  * Time estimates are the defaults agreed in drafts/dashboard-feed-plan.md.
  * ─────────────────────────────────────────────────────────────────────── */
 import 'server-only'
-import type { DashProject, DashState, LastEmail, Level, SalesDb, TodayItem } from './admin-dashboard'
+import type { DashProject, DashState, LastEmail, Level, SalesDb, Todo, TodayItem } from './admin-dashboard'
 import type { JobLead } from './admin-jobs'
 import { blueskyPosts } from './bluesky-posts'
 import { CONTRA_JOBS } from './dash-format'
@@ -37,7 +37,9 @@ function projectBrand(p: DashProject): string {
   return OWNED_BRAND[p.folder] ?? (/^swift/i.test(p.folder) ? 'Swift Growth' : brandOf(p.name + ' ' + p.folder))
 }
 const lastEmailLink = (e: LastEmail | null | undefined, now: number) =>
-  e ? { href: e.link, label: `Last email (${e.direction}, ${agoDays(daysSince(e.at, now))})` } : undefined
+  e
+    ? { href: e.link, label: e.direction === 'about them' ? `Related email (${agoDays(daysSince(e.at, now))})` : `Last email (${e.direction}, ${agoDays(daysSince(e.at, now))})` }
+    : undefined
 
 /** Short stable hash (djb2, base 36) for ids built from text. */
 export function hashId(s: string): string {
@@ -61,12 +63,14 @@ export function buildFeed({
   jobLeads,
   questionLeads,
   salesDb,
+  todos = [],
   now = Date.now(),
 }: {
   state: DashState | null
   jobLeads: JobLead[]
   questionLeads: JobLead[]
   salesDb: SalesDb | null
+  todos?: Todo[]
   now?: number
 }): FeedItem[] {
   const today = nyDate(new Date(now))
@@ -106,7 +110,8 @@ export function buildFeed({
         id: `form:${m.id ?? hashId(m.link + m.subject)}`,
         group: 'sales',
         // Amber, not red: contact forms catch a lot of vendor spam. Red stays for real breakage.
-        level: 'amber',
+        level: m.spam ? 'plain' : 'amber',
+        spam: m.spam ? m.spamWhy ?? 'looks like junk' : undefined,
         title: m.subject,
         detail: `Sent through the ${m.brand === 'Chris Hornak' || !m.brand ? 'chrishornak.com' : m.brand} ${m.form ?? 'form'}. Reply the same day if you can.`,
         brand: m.brand ?? 'Chris Hornak',
@@ -198,6 +203,9 @@ export function buildFeed({
       level: 'plain',
       title: `New Blog Hands sign-up: ${s.name || s.email}`,
       brand: 'Blog Hands',
+      href: `https://bloghands.com/admin/accounts/${s.id}`,
+      hrefLabel: 'Open in Blog Hands admin',
+      link2: lastEmailLink(sales?.last_by_email?.[s.email.toLowerCase()], now),
       detail: s.website ? `Website: ${s.website}` : undefined,
       meta: `Blog Hands · ${s.email} · ${agoDays(d)}`,
       mins: 5,
@@ -213,6 +221,7 @@ export function buildFeed({
       level: 'plain',
       title: `Free post claimed${c.domain ? ` for ${c.domain}` : ''}`,
       brand: 'Blog Hands',
+      link2: c.email ? lastEmailLink(sales?.last_by_email?.[c.email.toLowerCase()], now) : undefined,
       detail: c.topic ? `Topic: ${clip(c.topic, 140)}` : undefined,
       meta: `Blog Hands free post · ${c.email ?? 'no email'} · ${agoDays(d)}`,
       mins: 5,
@@ -249,6 +258,7 @@ export function buildFeed({
       detail: `Asked for the complete Buyer-Ready Check report for ${c.site}${c.score !== null ? `. Score ${c.score}${c.tier ? `, ${c.tier}` : ''}` : ''}.`,
       brand: 'Swift Growth',
       meta: `Buyer-Ready Check · ${c.email} · ${agoDays(d)}`,
+      link2: lastEmailLink(sales?.last_by_email?.[c.email.toLowerCase()], now),
       mins: 15,
       href: `mailto:${c.email}`,
       hrefLabel: 'Email them',
@@ -266,6 +276,7 @@ export function buildFeed({
       detail: 'Gave an email to see their Google Business Profile audit.',
       brand: 'Swift Growth',
       meta: `Local Audit tool · ${a.email} · ${agoDays(d)}`,
+      link2: lastEmailLink(sales?.last_by_email?.[a.email.toLowerCase()], now),
       mins: 10,
       href: `mailto:${a.email}`,
       hrefLabel: 'Email them',
@@ -415,6 +426,24 @@ export function buildFeed({
       say: p.say,
       // Client: longest wait first. Owned: after the brief's items, most recent first.
       rank: client ? -(p.days ?? 0) : 10 + (p.days ?? 0) / 1000,
+    })
+  }
+
+  // Labeled to-dos (Chris types them in the To-do card): due today or earlier, open.
+  for (const t of todos) {
+    if (!t.label || t.done_at || t.archived_at || t.day > today) continue
+    add({
+      id: `todo:${t.id}`,
+      todo: t.id,
+      group: t.label as FeedItem['group'],
+      level: t.day < today ? 'amber' : 'plain',
+      title: t.text,
+      detail: t.day < today ? `On your to-do list since ${t.day}.` : undefined,
+      brand: 'To-do',
+      meta: 'your to-do',
+      mins: 15,
+      say: `help me do this to-do: ${t.text}`,
+      rank: 3,
     })
   }
 

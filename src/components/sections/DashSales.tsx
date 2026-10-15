@@ -123,7 +123,9 @@ export function DashSales({
               <li key={m.id ?? m.link} className={li}>
                 <a href={m.link} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 hover:underline">
                   <span className={`mr-1.5 ${brandChip(m.brand ?? 'Chris Hornak')}`}>{m.brand ?? 'Chris Hornak'}</span>
-                  {m.subject} <span className="text-xs text-muted-foreground">· {m.form ?? 'form'} · {m.account} inbox</span>
+                  <span className={m.spam ? 'text-muted-foreground line-through decoration-muted-foreground/40' : ''}>{m.subject}</span>{' '}
+                  <span className="text-xs text-muted-foreground">· {m.form ?? 'form'} · {m.account} inbox</span>
+                  {m.spam && <span className="ml-1.5 rounded bg-warning/15 px-1.5 py-px text-[10.5px] text-warning">likely spam: {m.spamWhy}</span>}
                 </a>
                 <span className="text-xs tabular-nums text-muted-foreground">{ago(m.at)}</span>
               </li>

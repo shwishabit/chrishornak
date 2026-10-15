@@ -7,6 +7,7 @@ export interface Win {
   title: string
   mins: number
   brand?: string
+  note?: string
   at: string
 }
 
@@ -33,6 +34,24 @@ export function onWins(win: (w: Win) => void, unwin: (id: string) => void): () =
     window.removeEventListener(WIN, a)
     window.removeEventListener(UNWIN, b)
   }
+}
+
+/* To-do ↔ Feed sync (2026-10-15): a labeled to-do shows in both places. Whoever changes it
+ * announces the patch, and the other side applies it locally. */
+export interface TodoChange {
+  id: string
+  patch: { text?: string; day?: string; label?: string; done?: boolean; archived?: boolean; deleted?: boolean }
+}
+const TODO = 'dash:todo'
+
+export function emitTodoChange(c: TodoChange) {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent<TodoChange>(TODO, { detail: c }))
+}
+
+export function onTodoChange(fn: (c: TodoChange) => void): () => void {
+  const h = (e: Event) => fn((e as CustomEvent<TodoChange>).detail)
+  window.addEventListener(TODO, h)
+  return () => window.removeEventListener(TODO, h)
 }
 
 /* Live Feed counts (review 2026-10-15): the Feed announces its open counts whenever they

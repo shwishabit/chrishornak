@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import type { Todo, TodoPatch } from '@/lib/admin-dashboard'
 import { nyDate, nyTomorrow } from '@/lib/dash-feed'
 import { addTodoItem, deleteTodoItem, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
-import { TODO_WIN_MINS, emitUnwin, emitWin } from '@/lib/dash-wins'
+import { TODO_WIN_MINS, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
+import { FEED_GROUPS } from '@/lib/dash-feed'
 import { CopyButton } from './DashParts'
 
 /* Hand-typed to-do list (2026-10-15), right column beside the Feed. Items stay
@@ -25,6 +26,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
   const tomorrow = nyTomorrow(today)
   const [todos, setTodos] = useState(initial)
   const [text, setText] = useState('')
+  const [label, setLabel] = useState('')
   const [error, setError] = useState('')
   const [menu, setMenu] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
@@ -32,6 +34,30 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
   const [showArchived, setShowArchived] = useState(false)
   const [drag, setDrag] = useState<{ id: string; over: number } | null>(null)
   const [, startTransition] = useTransition()
+
+  // The Feed can act on a labeled to-do (Done / Skip / Snooze): mirror it here.
+  useEffect(
+    () =>
+      onTodoChange(({ id, patch }) =>
+        setTodos((cur) =>
+          patch.deleted
+            ? cur.filter((x) => x.id !== id)
+            : cur.map((x) =>
+                x.id !== id
+                  ? x
+                  : {
+                      ...x,
+                      ...(patch.text !== undefined && { text: patch.text }),
+                      ...(patch.day !== undefined && { day: patch.day }),
+                      ...(patch.label !== undefined && { label: patch.label }),
+                      ...(patch.done !== undefined && { done_at: patch.done ? (x.done_at ?? new Date().toISOString()) : null }),
+                      ...(patch.archived !== undefined && { archived_at: patch.archived ? (x.archived_at ?? new Date().toISOString()) : null }),
+                    },
+              ),
+        ),
+      ),
+    [],
+  )
 
   const live = todos.filter((t) => !t.archived_at)
   const now = live.filter((t) => t.day <= today).sort((a, b) => Number(!!a.done_at) - Number(!!b.done_at) || a.position - b.position)
@@ -51,6 +77,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
       text: t,
       day: today,
       position: Math.max(0, ...todos.map((x) => x.position)) + 1,
+      label,
       done_at: null,
       archived_at: null,
       created_at: new Date().toISOString(),
@@ -59,8 +86,11 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
     setText('')
     setError('')
     startTransition(async () => {
-      const row = await addTodoItem(t).catch(() => null)
-      if (row) setTodos((cur) => cur.map((x) => (x.id === temp.id ? row : x)))
+      const row = await addTodoItem(t, label).catch(() => null)
+      if (row) {
+        setTodos((cur) => cur.map((x) => (x.id === temp.id ? row : x)))
+        if (row.label) emitTodoChange({ id: row.id, patch: { label: row.label, text: row.text, day: row.day } })
+      }
       else {
         setTodos((cur) => cur.filter((x) => x.id !== temp.id))
         setText(t)
@@ -78,6 +108,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
       ...(p.text !== undefined && { text: p.text }),
       ...(p.day !== undefined && { day: p.day }),
       ...(p.position !== undefined && { position: p.position }),
+      ...(p.label !== undefined && { label: p.label }),
       ...(p.done !== undefined && {
         done_at: p.done ? (t.done_at ?? stamp) : null,
       }),
@@ -86,6 +117,8 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
       }),
     }
     setTodos((cur) => cur.map((x) => (x.id === t.id ? next : x)))
+    // A labeled to-do also lives in the Feed: tell it.
+    if (t.label || p.label !== undefined) emitTodoChange({ id: t.id, patch: { ...p, text: next.text, day: next.day, label: next.label } })
     // Today's wins card: ticking a to-do is a win; unticking takes it back.
     if (p.done === true && !t.done_at)
       emitWin({
@@ -119,6 +152,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
   function remove(t: Todo) {
     if (t.id.startsWith('temp-')) return
     setTodos((cur) => cur.filter((x) => x.id !== t.id))
+    if (t.label) emitTodoChange({ id: t.id, patch: { deleted: true } })
     if (t.done_at) emitUnwin(`todo:${t.id}`)
     setMenu(null)
     setError('')
@@ -202,6 +236,11 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
             <span
               className={`text-[13.5px] leading-snug wrap-anywhere ${t.done_at || where === 'archived' ? 'text-muted-foreground' : ''} ${t.done_at ? 'line-through' : ''}`}
             >
+              {t.label && (
+                <span className="mr-1.5 inline-block rounded border border-border px-1 py-px align-[1px] text-[10px] font-medium text-muted-foreground">
+                  {FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}
+                </span>
+              )}
               {t.text}
             </span>
           )}
@@ -262,6 +301,19 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
                 className="w-31 rounded border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
               />
             </label>
+            <label className="flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well">
+              Label (shows in Feed)
+              <select
+                value={t.label}
+                onChange={(e) => patch(t, { label: e.target.value })}
+                className="rounded border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
+              >
+                <option value="">None</option>
+                {FEED_GROUPS.map((g) => (
+                  <option key={g.id} value={g.id}>{g.label}</option>
+                ))}
+              </select>
+            </label>
             <MenuItem onClick={() => patch(t, { archived: true })}>Archive</MenuItem>
             <MenuItem danger onClick={() => remove(t)}>
               Delete
@@ -281,7 +333,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
         <span className="text-xs tabular-nums text-muted-foreground">{left} left</span>
       </div>
 
-      <form onSubmit={add} className="mt-3">
+      <form onSubmit={add} className="mt-3 flex gap-2">
         <label className="sr-only" htmlFor="todo-new">
           Add a to-do
         </label>
@@ -291,8 +343,21 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
           onChange={(e) => setText(e.target.value)}
           maxLength={300}
           placeholder="Add a to-do, press Enter"
-          className="w-full rounded-lg border border-border bg-well px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-border bg-well px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:outline-none"
         />
+        <label className="sr-only" htmlFor="todo-label">Label</label>
+        <select
+          id="todo-label"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          title="Label it to show it in the Feed too"
+          className="shrink-0 rounded-lg border border-border bg-well px-2 text-xs text-muted-foreground focus-visible:border-primary focus-visible:outline-none"
+        >
+          <option value="">No label</option>
+          {FEED_GROUPS.map((g) => (
+            <option key={g.id} value={g.id}>{g.label}</option>
+          ))}
+        </select>
       </form>
       <p aria-live="polite" className="mt-1 text-xs text-danger empty:hidden">
         {error}

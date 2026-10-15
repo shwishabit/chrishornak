@@ -32,6 +32,8 @@ create table if not exists dash_feed_status (
 );
 -- brand (added live as 0016c_dash_feed_status_brand): a win keeps its brand color after the item leaves the Feed.
 alter table dash_feed_status add column if not exists brand text not null default '' check (char_length(brand) <= 60);
+-- note (added live as 0016d_dash_feed_status_note): what Chris wrote when he marked it done.
+alter table dash_feed_status add column if not exists note text not null default '' check (char_length(note) <= 1000);
 
 alter table dash_feed_status enable row level security;
 -- No policies → unreadable/unwritable via the anon key directly. RPCs below only.
@@ -50,7 +52,7 @@ begin
 
   select coalesce(json_agg(json_build_object(
            'id', s.item_id, 'status', s.status, 'until', s.until,
-           'title', s.title, 'grp', s.grp, 'mins', s.mins, 'brand', s.brand, 'at', s.updated_at
+           'title', s.title, 'grp', s.grp, 'mins', s.mins, 'brand', s.brand, 'note', s.note, 'at', s.updated_at
          ) order by s.updated_at desc), '[]'::json)
     into result
   from dash_feed_status s
@@ -62,9 +64,10 @@ $$;
 
 -- p_status null = undo (the row is removed and the item is open again).
 drop function if exists dash_feed_status_set(text, text, text, date, text, text, int);
+drop function if exists dash_feed_status_set(text, text, text, date, text, text, int, text);
 create or replace function dash_feed_status_set(
   p_secret text, p_item_id text, p_status text, p_until date default null,
-  p_title text default '', p_grp text default '', p_mins int default 0, p_brand text default ''
+  p_title text default '', p_grp text default '', p_mins int default 0, p_brand text default '', p_note text default ''
 )
 returns boolean language plpgsql security definer set search_path = public as $$
 begin
@@ -77,12 +80,12 @@ begin
     return true;
   end if;
 
-  insert into dash_feed_status (item_id, status, until, title, grp, mins, brand, updated_at)
+  insert into dash_feed_status (item_id, status, until, title, grp, mins, brand, note, updated_at)
   values (p_item_id, p_status, p_until, left(coalesce(p_title, ''), 300), left(coalesce(p_grp, ''), 20),
-          least(greatest(coalesce(p_mins, 0), 0), 600), left(coalesce(p_brand, ''), 60), now())
+          least(greatest(coalesce(p_mins, 0), 0), 600), left(coalesce(p_brand, ''), 60), left(coalesce(p_note, ''), 1000), now())
   on conflict (item_id) do update
     set status = excluded.status, until = excluded.until, title = excluded.title,
-        grp = excluded.grp, mins = excluded.mins, brand = excluded.brand, updated_at = now();
+        grp = excluded.grp, mins = excluded.mins, brand = excluded.brand, note = excluded.note, updated_at = now();
 
   -- Keep the table small: rows older than 90 days no longer matter.
   delete from dash_feed_status where updated_at < now() - interval '90 days';
@@ -142,5 +145,5 @@ end;
 $$;
 
 grant execute on function dash_feed_status_admin(text)                                   to anon, authenticated;
-grant execute on function dash_feed_status_set(text, text, text, date, text, text, int, text) to anon, authenticated;
+grant execute on function dash_feed_status_set(text, text, text, date, text, text, int, text, text) to anon, authenticated;
 grant execute on function dash_sales_admin(text)                                         to anon, authenticated;

@@ -100,10 +100,13 @@ export interface MailMessage {
   /** Lead-form emails only: which brand's form, and which form. */
   brand?: string
   form?: string
+  /** Likely junk (PC-side check of subject + body); spamWhy = the matched reason. */
+  spam?: boolean
+  spamWhy?: string
 }
 
 /** Newest Gmail message to or from a contact (dash-sales.mjs). */
-export interface LastEmail { at: string; subject: string; direction: 'from them' | 'from you'; link: string }
+export interface LastEmail { at: string; subject: string; direction: 'from them' | 'from you' | 'about them'; link: string }
 
 export interface ScoutLead {
   id: string
@@ -139,6 +142,8 @@ export interface SalesState {
   scout: { ok: boolean; error: string | null; leads: ScoutLead[] }
   drafts: SpecDraft[]
   sgm?: SgmState
+  /** Last email with each Blog Hands sign-up / claim and SGM tool lead, by lowercase address. */
+  last_by_email?: Record<string, LastEmail>
 }
 
 export interface CalEvent {
@@ -150,7 +155,8 @@ export interface CalEvent {
   calendar: string
 }
 
-const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'calendar', 'sales'] as const
+// refresh_request: a pending "Refresh now" (migration 0019); only its time matters.
+const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'calendar', 'sales', 'refresh_request'] as const
 type Key = (typeof KEYS)[number]
 
 export interface DashState {
@@ -201,6 +207,8 @@ export interface FeedStatusRow {
   mins: number
   /** Brand at the time it was marked (0016c), so a win keeps its color after the item leaves the Feed. */
   brand?: string
+  /** What Chris wrote when he marked it done (0016d). */
+  note?: string
   at: string
 }
 
@@ -221,6 +229,7 @@ export async function setFeedStatus(row: {
   grp?: string
   mins?: number
   brand?: string
+  note?: string
 }): Promise<boolean> {
   const sb = getSupabase()
   const key = adminKey()
@@ -234,6 +243,7 @@ export async function setFeedStatus(row: {
     p_grp: row.grp ?? '',
     p_mins: row.mins ?? 0,
     p_brand: row.brand ?? '',
+    p_note: row.note ?? '',
   })
   return !error && data === true
 }
@@ -247,12 +257,14 @@ export interface Todo {
   day: string
   /** Chris's drag order, lower first. */
   position: number
+  /** A Feed group ('' = none). A labeled to-do also shows in the Feed under that group. */
+  label: string
   done_at: string | null
   archived_at: string | null
   created_at: string
 }
 
-export type TodoPatch = { text?: string; day?: string; position?: number; done?: boolean; archived?: boolean }
+export type TodoPatch = { text?: string; day?: string; position?: number; label?: string; done?: boolean; archived?: boolean }
 
 export async function getTodos(): Promise<Todo[]> {
   const sb = getSupabase()
@@ -263,11 +275,11 @@ export async function getTodos(): Promise<Todo[]> {
   return data as Todo[]
 }
 
-export async function addTodo(text: string): Promise<Todo | null> {
+export async function addTodo(text: string, label = ''): Promise<Todo | null> {
   const sb = getSupabase()
   const key = adminKey()
   if (!sb || !key) return null
-  const { data, error } = await sb.rpc('dash_todo_add', { p_secret: key, p_text: text })
+  const { data, error } = await sb.rpc('dash_todo_add', { p_secret: key, p_text: text, p_label: label })
   return error || !data ? null : (data as Todo)
 }
 
@@ -360,4 +372,13 @@ export async function getWinDays(): Promise<WinDay[]> {
   if (!sb || !key) return []
   const { data, error } = await sb.rpc('dash_win_days', { p_secret: key })
   return error || !Array.isArray(data) ? [] : (data as WinDay[])
+}
+
+/** "Refresh now": ask the PC job for a full refresh (it checks every 5 minutes). Returns the request time. */
+export async function requestRefresh(): Promise<string | null> {
+  const sb = getSupabase()
+  const key = adminKey()
+  if (!sb || !key) return null
+  const { data, error } = await sb.rpc('dash_refresh_request', { p_secret: key, p_take: false })
+  return error || !data ? null : String(data)
 }

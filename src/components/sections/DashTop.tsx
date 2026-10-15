@@ -3,6 +3,7 @@ import type { AdminOverview } from '@/lib/admin-audit'
 import { ago } from '@/lib/dash-format'
 import { TZ, WORK_END, WORK_START, fmtMins, type Workday } from '@/lib/dash-feed'
 import { OutLink } from './DashParts'
+import { DashRefresh } from './DashRefresh'
 
 /* Top of the dashboard + the right column beside the Feed (v5, 2026-10-15).
  * The stats bar is gone: inbox counts sit in the Today card, the growth numbers
@@ -250,7 +251,7 @@ export function DashPulse({ overview, bh, health, sgm, salesDb }: { overview: Ad
   )
 }
 
-export function DashHeader({ brief, refreshed }: { brief: React.ReactNode; refreshed?: string }) {
+export function DashHeader({ brief, refreshed, requested }: { brief: React.ReactNode; refreshed?: string; requested?: string }) {
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: TZ })
   const stale = !refreshed || Date.now() - Date.parse(refreshed) > 3 * 3600e3
   return (
@@ -264,6 +265,9 @@ export function DashHeader({ brief, refreshed }: { brief: React.ReactNode; refre
         <span className={`inline-flex items-center gap-1.5 text-xs ${stale ? 'text-warning' : 'text-muted-foreground'}`}>
           <i className={`h-1.5 w-1.5 rounded-full ${stale ? 'bg-warning' : 'bg-primary'}`} />
           Refreshed {ago(refreshed)} · every hour
+        </span>
+        <span className="ml-2 inline-block align-middle">
+          <DashRefresh refreshed={refreshed} requested={requested} />
         </span>
       </div>
     </header>

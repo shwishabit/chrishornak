@@ -1,7 +1,7 @@
 'use server'
 
 import { isAdmin } from '@/lib/admin-auth'
-import { addTodo, deleteTodo, setFeedMins, setFeedStatus, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
+import { addTodo, deleteTodo, requestRefresh, setFeedMins, setFeedStatus, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
 import { JOB_STATUSES, updateJobLead, type JobStatus } from '@/lib/admin-jobs'
 import { FEED_GROUPS, nyTomorrow } from '@/lib/dash-feed'
 
@@ -19,6 +19,7 @@ export async function setFeedItemStatus(input: {
   group: string
   mins: number
   brand?: string
+  note?: string
   job?: { id: string; status: string }
 }): Promise<{ ok: boolean; until?: string | null }> {
   if (!(await isAdmin())) return { ok: false }
@@ -39,6 +40,7 @@ export async function setFeedItemStatus(input: {
     grp: input.group,
     mins: Math.max(0, Math.min(600, Math.round(input.mins))),
     brand: (input.brand ?? '').slice(0, 60),
+    note: (input.note ?? '').trim().slice(0, 1000),
   })
   if (!ok) return { ok: false }
   if (input.job && !(await updateJobLead(input.job.id, { status: input.job.status as JobStatus }))) {
@@ -50,12 +52,14 @@ export async function setFeedItemStatus(input: {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/** To-do list: add one line. */
-export async function addTodoItem(text: string): Promise<Todo | null> {
+const TODO_LABELS = ['', 'email', 'sales', 'jobs', 'marketing', 'client', 'other']
+
+/** To-do list: add one line, optionally labeled with a Feed group. */
+export async function addTodoItem(text: string, label = ''): Promise<Todo | null> {
   if (!(await isAdmin())) return null
   const t = text.trim().slice(0, 300)
-  if (!t) return null
-  return addTodo(t)
+  if (!t || !TODO_LABELS.includes(label)) return null
+  return addTodo(t, label)
 }
 
 /** To-do list: edit text, move to another day, tick, archive (or undo any of them). */
@@ -72,6 +76,10 @@ export async function updateTodoItem(id: string, patch: TodoPatch): Promise<bool
     clean.day = patch.day
   }
   if (typeof patch.position === 'number' && Number.isFinite(patch.position)) clean.position = patch.position
+  if (patch.label !== undefined) {
+    if (!TODO_LABELS.includes(patch.label)) return false
+    clean.label = patch.label
+  }
   if (typeof patch.done === 'boolean') clean.done = patch.done
   if (typeof patch.archived === 'boolean') clean.archived = patch.archived
   if (!Object.keys(clean).length) return false
@@ -89,4 +97,10 @@ export async function setFeedItemMins(id: string, mins: number | null): Promise<
   if (!(await isAdmin()) || !id || id.length > 200) return false
   if (mins !== null && (!Number.isInteger(mins) || mins < 1 || mins > 600)) return false
   return setFeedMins(id, mins)
+}
+
+/** "Refresh now" button: leave a request for the PC job. */
+export async function requestDashRefresh(): Promise<string | null> {
+  if (!(await isAdmin())) return null
+  return requestRefresh()
 }

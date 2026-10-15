@@ -246,7 +246,7 @@ function Recap({ wins, mins, streak, onClose }: { wins: Win[]; mins: number; str
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/New_York' })
   const text = [
     `${date}: ${wins.length} wins, ${fmtMins(mins)} done${streak > 1 ? `, ${streak}-day streak` : ''}.`,
-    ...[...groups.entries()].flatMap(([b, ws]) => [``, `${b}:`, ...ws.map((w) => `- ${w.title}`)]),
+    ...[...groups.entries()].flatMap(([b, ws]) => [``, `${b}:`, ...ws.map((w) => `- ${w.title}${w.note ? ` (${w.note})` : ''}`)]),
   ].join('\n')
 
   return (
@@ -274,7 +274,10 @@ function Recap({ wins, mins, streak, onClose }: { wins: Win[]; mins: number; str
                 </p>
                 <ul className="mt-1.5 grid gap-1">
                   {ws.map((w) => (
-                    <li key={w.id} className="text-[13.5px]">· {w.title}</li>
+                    <li key={w.id} className="text-[13.5px]">
+                      · {w.title}
+                      {w.note && <span className="block pl-3 text-xs text-muted-foreground">✎ {w.note}</span>}
+                    </li>
                   ))}
                 </ul>
               </div>

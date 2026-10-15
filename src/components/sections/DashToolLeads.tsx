@@ -37,16 +37,17 @@ export function DashToolLeads({ mail, salesDb, sgm }: { mail: MailAccount[] | nu
   const [brand, setBrand] = useState('all')
   const [kind, setKind] = useState<'leads' | 'runs'>('leads')
   const [q, setQ] = useState('')
+  const [showSpam, setShowSpam] = useState(false)
 
   const leads: Lead[] = [
     ...(mail ?? []).flatMap((a) =>
-      (a.leads ?? []).map((m) => ({
+      (a.leads ?? []).filter((m) => showSpam || !m.spam).map((m) => ({
         key: `form:${m.id ?? m.link}`,
         brand: m.brand ?? 'Chris Hornak',
         source: m.form ?? 'website form',
         who: personFrom(m.subject, m.from),
         contact: null,
-        detail: m.subject,
+        detail: m.spam ? `Likely spam (${m.spamWhy}) · ${m.subject}` : m.subject,
         at: m.at,
         href: m.link,
         say: `draft a reply to the ${m.brand ?? 'Chris Hornak'} ${m.form ?? 'form'} message "${m.subject}"`,
@@ -157,6 +158,16 @@ export function DashToolLeads({ mail, salesDb, sgm }: { mail: MailAccount[] | nu
             </button>
           ))}
         </div>
+        {(mail ?? []).some((a) => a.leads?.some((m) => m.spam)) && (
+          <button
+            type="button"
+            aria-pressed={showSpam}
+            onClick={() => setShowSpam(!showSpam)}
+            className={`rounded-full border px-2.5 py-1 text-xs ${showSpam ? 'border-primary-line bg-primary-deep text-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}
+          >
+            {showSpam ? 'Hide' : 'Show'} likely spam ({(mail ?? []).reduce((t, a) => t + (a.leads?.filter((m) => m.spam).length ?? 0), 0)})
+          </button>
+        )}
         <input
           type="search"
           value={q}

@@ -26,6 +26,10 @@ export interface FeedItem {
   /** Small grey line: sender, company, source. */
   meta?: string
   mins: number
+  /** dash_todos id when this item is a labeled to-do (Done/Snooze/Skip then act on the to-do). */
+  todo?: string
+  /** Likely spam: the reason. Hidden from the Feed unless "Show spam" is on. */
+  spam?: string
   /** True when mins is Chris's own estimate, not the default. */
   minsSet?: boolean
   say?: string

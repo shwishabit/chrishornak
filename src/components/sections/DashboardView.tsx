@@ -40,7 +40,7 @@ export async function DashboardView() {
 
   // ── Feed ──
   // Chris's own time estimates (click "~15m" on an item) win over the defaults.
-  const feed = buildFeed({ state, jobLeads, questionLeads, salesDb, now }).map((i) => (minsOverride[i.id] ? { ...i, mins: minsOverride[i.id], minsSet: true } : i))
+  const feed = buildFeed({ state, jobLeads, questionLeads, salesDb, todos, now }).map((i) => (minsOverride[i.id] ? { ...i, mins: minsOverride[i.id], minsSet: true } : i))
   const hidden = new Set(statuses.filter((s) => s.status !== 'snoozed' || (s.until ?? '') > today).map((s) => s.id))
   const open = feed.filter((i) => !hidden.has(i.id))
   const openIn = (g: string) => open.filter((i) => i.group === g)
@@ -51,7 +51,7 @@ export async function DashboardView() {
   const wins: Win[] = [
     ...statuses
       .filter((s) => s.status === 'done' && nyDate(new Date(s.at)) === today)
-      .map((s) => ({ id: s.id, title: s.title, mins: s.mins, brand: s.brand || brandById.get(s.id), at: s.at })),
+      .map((s) => ({ id: s.id, title: s.title, mins: s.mins, brand: s.brand || brandById.get(s.id), note: s.note || undefined, at: s.at })),
     ...todos
       .filter((t) => t.done_at && nyDate(new Date(t.done_at)) === today)
       .map((t) => ({ id: `todo:${t.id}`, title: t.text, mins: TODO_WIN_MINS, at: t.done_at! })),
@@ -67,7 +67,7 @@ export async function DashboardView() {
   return (
     <main id="main-content" className="relative min-h-screen px-4 py-10 md:px-10 md:py-12">
       <div className="mx-auto grid max-w-310 gap-8 min-[1800px]:max-w-370">
-        <DashHeader brief={brief} refreshed={state?.updated.today} />
+        <DashHeader brief={brief} refreshed={state?.updated.today} requested={state?.updated.refresh_request} />
 
         {!state && (
           <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning">
