@@ -3,7 +3,10 @@ import { getJobLeads } from '@/lib/admin-jobs'
 import { getBlogHandsStats, getDashState, getFeedMins, getFeedStatus, getSalesDb, getTodos, getWinDays } from '@/lib/admin-dashboard'
 import { getAdminOverview, getDomainLog } from '@/lib/admin-audit'
 import { buildFeed } from '@/lib/dash-feed-build'
-import { WORK_END, nyDate, workday } from '@/lib/dash-feed'
+import { nyDate, nyTomorrow, workday } from '@/lib/dash-feed'
+import { plexCond, plexMono } from '@/lib/dash-fonts'
+import '@/styles/nostromo.css'
+import { DashDueNow, DashDueTomorrow, type DueRow } from './DashDue'
 import { DashboardTabs } from './DashboardTabs'
 import { DashHeader, DashPulse, DashToday } from './DashTop'
 import { DashFeed } from './DashFeed'
@@ -57,6 +60,42 @@ export async function DashboardView() {
       .map((t) => ({ id: `todo:${t.id}`, title: t.text, mins: TODO_WIN_MINS, at: t.done_at! })),
   ].sort((a, b) => a.at.localeCompare(b.at))
 
+  // ── Due today / tomorrow ──
+  // One "To do today" list: your to-dos are already in it, so only Scout steps and job follow-ups
+  // are added here. They also sit in the Feed: ticking one marks it Done there.
+  const tomorrow = nyTomorrow(today)
+  const openById = new Map(open.map((i) => [i.id, i]))
+  const dueToday: DueRow[] = []
+  const dueTomorrow: DueRow[] = []
+  for (const i of open) {
+    if (i.id.startsWith('scout:')) dueToday.push({ key: i.id, kind: 'scout', title: i.title, feedId: i.id })
+    else if (i.id.startsWith('followup:')) {
+      const jobId = i.id.split(':')[1]
+      dueToday.push({ key: i.id, kind: 'job', title: i.title, feedId: i.id, jobId, jobNote: rows.find((l) => l.id === jobId)?.note ?? '' })
+    }
+  }
+  for (const l of state?.sales?.scout.leads ?? []) {
+    if (l.due === tomorrow) dueTomorrow.push({ key: `scout-tomorrow:${l.id}`, kind: 'scout', title: l.next_step ? `${l.name}: ${l.next_step}` : l.name })
+  }
+  for (const l of jobLeads) {
+    if (l.status !== 'pitched' || !l.status_changed) continue
+    if (Math.floor((now - Date.parse(l.status_changed)) / 864e5) === 5 && !openById.has(`followup:${l.id}:${l.status_changed.slice(0, 10)}`)) {
+      dueTomorrow.push({ key: `job-tomorrow:${l.id}`, kind: 'job', title: `Follow up with ${l.who}` })
+    }
+  }
+
+  // Names for the console's People & companies suggestions.
+  const people = [
+    ...new Set(
+      [
+        ...(state?.sales?.scout.leads ?? []).map((l) => l.name),
+        ...(state?.sales?.drafts ?? []).map((d) => d.name),
+        ...jobLeads.map((l) => l.who),
+        ...(salesDb?.signups ?? []).map((x) => String((x as { name?: string; email?: string }).name ?? (x as { email?: string }).email ?? '')),
+      ].filter((n) => n && n.length < 80),
+    ),
+  ].slice(0, 120)
+
   const brief = (
     <DashBrief
       initial={{ open: open.length, urgent: open.filter((i) => i.level === 'red').length, email: openIn('email').length, sales: openIn('sales').length }}
@@ -65,12 +104,12 @@ export async function DashboardView() {
   )
 
   return (
-    <main id="main-content" className="relative min-h-screen px-4 py-10 md:px-10 md:py-12">
-      <div className="mx-auto grid max-w-310 gap-8 min-[1800px]:max-w-370">
+    <main id="main-content" className={`nostromo ${plexMono.variable} ${plexCond.variable} relative min-h-screen px-4 py-8 md:px-8 md:py-10`}>
+      <div className="mx-auto grid max-w-330 gap-[18px] min-[1800px]:max-w-370">
         <DashHeader brief={brief} refreshed={state?.updated.today} requested={state?.updated.refresh_request} />
 
         {!state && (
-          <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning">
+          <p className="border border-warning/50 px-4 py-3 text-sm text-warning">
             The hourly data is not reachable. If this is new, run migration 0015 in the Supabase SQL Editor.
           </p>
         )}
@@ -82,7 +121,7 @@ export async function DashboardView() {
             // Keys on the four cards: this block is built on the server and handed to the
             // client-side tabs, where React needs them. Phone order: Today (with Wins), To-do, Feed, Pulse. Desktop: Feed left, the three cards right.
             // The last row is 1fr so the Feed's height never stretches the right-hand cards.
-            <div className="mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:grid-rows-[auto_auto_auto_1fr]">
+            <div className="mt-[18px] grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:gap-7 lg:grid-rows-[auto_auto_auto_1fr]">
               <div key="today" className="lg:col-start-2 lg:row-start-1">
                 <DashToday
                   events={state?.calendar?.events ?? []}
@@ -94,15 +133,10 @@ export async function DashboardView() {
                 />
               </div>
               <div key="todo" className="lg:col-start-2 lg:row-start-2">
-                <DashTodo initial={todos} />
+                <DashTodo initial={todos} dueNow={<DashDueNow rows={dueToday} />} dueTomorrow={<DashDueTomorrow rows={dueTomorrow} />} dueTomorrowCount={dueTomorrow.length} />
               </div>
               <div key="feed" className="lg:col-start-1 lg:row-span-4 lg:row-start-1">
-                <DashFeed
-                  items={feed}
-                  statuses={statuses}
-                  freeMins={day.freeMins}
-                  dayOver={day.nowMin >= WORK_END}
-                />
+                <DashFeed items={feed} statuses={statuses} />
               </div>
               <div key="pulse" className="lg:col-start-2 lg:row-start-3">
                 <DashPulse overview={overview} bh={bh} health={state?.health ?? null} sgm={state?.sales?.sgm ?? null} salesDb={salesDb} />
@@ -127,10 +161,11 @@ export async function DashboardView() {
           jobLeads={jobLeads}
           questionLeads={questionLeads}
           today={today}
+          people={people}
         />
 
         <form action={logout} className="justify-self-end">
-          <button className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">Sign out</button>
+          <button className="nx-ghost">Sign out</button>
         </form>
       </div>
     </main>

@@ -22,7 +22,7 @@ export function Chip({ level = 'plain', children, title }: { level?: Level; chil
 }
 
 /** Copies the exact words to paste into Claude Code. */
-export function CopyButton({ text, label = 'Copy what to say' }: { text: string; label?: string }) {
+export function CopyButton({ text, label = 'Copy what to say', quiet = false }: { text: string; label?: string; quiet?: boolean }) {
   const [state, setState] = useState<'idle' | 'done' | 'failed'>('idle')
   return (
     <button
@@ -37,7 +37,7 @@ export function CopyButton({ text, label = 'Copy what to say' }: { text: string;
         }
         setTimeout(() => setState('idle'), 1800)
       }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+      className={`nx-ghost shrink-0 !text-[11px] ${quiet ? '!border-transparent' : ''}`}
     >
       {state === 'done' ? 'Copied' : state === 'failed' ? text : label}
     </button>

@@ -99,6 +99,15 @@ export async function setFeedItemMins(id: string, mins: number | null): Promise<
   return setFeedMins(id, mins)
 }
 
+/** A Due job follow-up was ticked: write the real date on the job lead's note, so the record shows it. */
+export async function markJobFollowedUp(id: string, note: string): Promise<boolean> {
+  if (!(await isAdmin()) || !id || id.length > 100) return false
+  const day = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+  const next = `${note.trim()}
+Followed up ${day}`.trim().slice(0, 2000)
+  return updateJobLead(id, { note: next })
+}
+
 /** "Refresh now" button: leave a request for the PC job. */
 export async function requestDashRefresh(): Promise<string | null> {
   if (!(await isAdmin())) return null

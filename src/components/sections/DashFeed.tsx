@@ -7,6 +7,7 @@ import { setFeedItemMins, setFeedItemStatus, updateTodoItem } from '@/app/audit/
 import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
 import { brandChip } from '@/lib/dash-format'
+import { feedDomId, useFilters } from '@/lib/dash-console'
 import { emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
 
 /* The Feed (2026-10-15): one list in Chris's morning order — Email → Sales →
@@ -14,37 +15,26 @@ import { emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodoChange } from
  * group. Done / Snooze to tomorrow / Skip write to dash_feed_status (and job
  * items to job_leads). Search + filters are local to the page. */
 
-const DOT: Record<Level, string> = { red: 'bg-danger', amber: 'bg-warning', plain: 'bg-muted-foreground/50', green: 'bg-primary' }
 const LVL: Record<Level, number> = { red: 0, amber: 1, green: 2, plain: 3 }
 const GROUP_ORDER = Object.fromEntries(FEED_GROUPS.map((g, i) => [g.id, i])) as Record<FeedGroup, number>
 const SHOW_PER_GROUP = 8
 
-type View = 'open' | 'done' | 'snoozed'
-
 export function DashFeed({
   items,
   statuses,
-  freeMins,
-  dayOver,
 }: {
   items: FeedItem[]
   statuses: FeedStatusRow[]
-  freeMins: number
-  dayOver: boolean
 }) {
   const today = nyDate()
   const [rows, setRows] = useState(() => new Map(statuses.map((s) => [s.id, s])))
-  const [q, setQ] = useState('')
-  const [group, setGroup] = useState<FeedGroup | 'all'>('all')
-  const [quick, setQuick] = useState(false)
-  const [brand, setBrand] = useState('all')
-  const [view, setView] = useState<View>('open')
+  // Search, filters and the view come from the console.
+  const { q, group, setGroup, quick, brand, showSpam, view, setView, setMeta, jump, focusReq, api } = useFilters()
   const [expanded, setExpanded] = useState<Set<FeedGroup>>(new Set())
   const [error, setError] = useState('')
   const [, startTransition] = useTransition()
   const [minsOver, setMinsOver] = useState<Record<string, number>>({})
   const [focus, setFocus] = useState(false)
-  const [showSpam, setShowSpam] = useState(false)
   // Changes made in the To-do card to labeled to-dos (text, label, hidden).
   const [todoOver, setTodoOver] = useState<Record<string, { title?: string; group?: FeedGroup; gone?: boolean }>>({})
   // To-dos labeled after the page loaded: added to the Feed at once.
@@ -95,7 +85,6 @@ export function DashFeed({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [items, extraTodos, rows, minsOver, showSpam, todoOver],
   )
-  const needs = open.filter((i) => !i.spam).reduce((t, i) => t + i.mins, 0)
   const spamCount = items.filter((i) => i.spam && !hidden(i.id)).length
   // Tab badges + the top line update live as items are done (review 2026-10-15).
   useEffect(() => {
@@ -219,120 +208,102 @@ export function DashFeed({
   // Focus mode works through what the filters show, in order; "Next" passes an item for this session.
   const queue = shown.filter((i) => !passed.has(i.id))
 
-  const filtersOn = group !== 'all' || quick || brand !== 'all' || needle !== ''
   // Brands with open items, most items first.
   const brands = Object.entries(open.reduce<Record<string, number>>((m, i) => ((m[i.brand] = (m[i.brand] ?? 0) + 1), m), {})).sort((a, b) => b[1] - a[1])
-  const over = needs - freeMins
+  // Display order, so "done 3" in the console means the 3rd item you can see.
+  const ordered = FEED_GROUPS.flatMap((g) => {
+    const list = shown.filter((i) => i.group === g.id)
+    return expanded.has(g.id) || needle !== '' ? list : list.slice(0, SHOW_PER_GROUP)
+  })
+  const numberOf = new Map(ordered.map((i, n) => [i.id, n + 1]))
+
+  // Tell the console what is in the Feed, for autocomplete and the view counts.
+  const brandsKey = brands.map(([b, n]) => `${b}:${n}`).join('|')
+  useEffect(() => {
+    setMeta({
+      items: open.filter((i) => !i.spam).map((i) => ({ id: i.id, title: i.title, brand: i.brand, group: i.group, mins: i.mins })),
+      groupCounts,
+      brands,
+      openCount: open.filter((i) => !i.spam).length,
+      doneCount: doneToday.length,
+      snoozedCount: snoozed.length,
+      spamCount,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, brandsKey, doneToday.length, snoozed.length, spamCount])
+
+  // Let the console and the Due list act on Feed items (same optimistic path as the buttons).
+  const latest = useRef({ open, ordered, act })
+  latest.current = { open, ordered, act }
+  useEffect(() => {
+    api.current = {
+      act: (id, status) => {
+        const it = latest.current.open.find((i) => i.id === id)
+        if (it) latest.current.act(it, status)
+      },
+      doneNth: (n) => {
+        const it = latest.current.ordered[n - 1]
+        if (!it) return false
+        latest.current.act(it, 'done')
+        return true
+      },
+    }
+    return () => {
+      api.current = null
+    }
+  }, [api])
+
+  // `focus <group>` in the console opens Focus mode.
+  useEffect(() => {
+    if (focusReq > 0) {
+      setPassed(new Set())
+      setFocus(true)
+    }
+  }, [focusReq])
+
+  // Picking an item in the console scrolls to it and flashes it.
+  useEffect(() => {
+    if (!jump) return
+    const it = latest.current.open.find((i) => i.id === jump.id)
+    if (!it) return
+    setView('open')
+    setExpanded((e) => new Set(e).add(it.group))
+    if (group !== 'all' && group !== it.group) setGroup('all')
+    const t = setTimeout(() => {
+      const el = document.getElementById(feedDomId(jump.id))
+      if (!el) return
+      el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' })
+      el.classList.remove('nx-flash')
+      void el.offsetWidth
+      el.classList.add('nx-flash')
+      setTimeout(() => el.classList.remove('nx-flash'), 1700)
+    }, 80)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jump])
 
   return (
-    <section aria-labelledby="feed-h" className="min-w-0 rounded-2xl border border-border bg-panel p-5 md:p-6">
-      {/* Time budget */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="feed-h" className="font-heading text-lg font-semibold">Feed</h2>
-        <span className="flex items-center gap-3">
-          <span className="hidden text-xs text-muted-foreground sm:inline">Email → Sales → Jobs → Marketing → Client → Other</span>
-          <button
-            type="button"
-            onClick={() => {
-              setPassed(new Set())
-              setFocus(true)
-            }}
-            disabled={shown.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-primary-line bg-primary-deep px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/15 disabled:opacity-40"
-          >
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-              <circle cx="8" cy="8" r="5.5" />
-              <circle cx="8" cy="8" r="2" fill="currentColor" />
-            </svg>
-            Focus
-          </button>
-        </span>
+    <section aria-labelledby="feed-h" className="nx-box min-w-0 p-5 md:px-7 md:py-6.5">
+      <div className="border-b border-border pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="feed-h" className="text-[22px] font-normal tracking-[0.02em]">Feed</h2>
+        <button
+          type="button"
+          onClick={() => {
+            setPassed(new Set())
+            setFocus(true)
+          }}
+          disabled={shown.length === 0}
+          className="nx-prim"
+        >
+          Focus
+        </button>
       </div>
-      <p className="mt-2 text-[15px]">
-        {dayOver ? (
-          <>The work day is over. </>
-        ) : (
-          <>
-            You have <b className="font-semibold tabular-nums">{fmtMins(freeMins)}</b> free today{' '}
-            <span className="text-muted-foreground">(10–6 minus meetings)</span>.{' '}
-          </>
-        )}
-        The feed needs <b className="font-semibold tabular-nums">{fmtMins(needs)}</b>.
-        {!dayOver && over > 0 && <span className="text-warning"> That is {fmtMins(over)} more than you have. Snooze or skip the rest.</span>}
-      </p>
       {doneToday.length > 0 && (
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-2 text-xs text-muted-foreground">
           Done today: <b className="font-medium text-foreground tabular-nums">{doneToday.filter((r) => r.status === 'done').length}</b> items · {fmtMins(doneMins)}
         </p>
       )}
-
-      {/* Search + filters */}
-      <div className="mt-4 grid gap-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="relative min-w-0 flex-1 basis-56">
-            <span className="sr-only">Search the feed</span>
-            <svg viewBox="0 0 16 16" className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-              <circle cx="7" cy="7" r="4.5" />
-              <path d="m10.5 10.5 3 3" />
-            </svg>
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search title, sender, company…"
-              className="w-full rounded-lg border border-border bg-well py-2 pl-8 pr-3 text-sm placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:outline-none"
-            />
-          </label>
-          <div role="group" aria-label="Show" className="inline-flex rounded-lg border border-border p-0.5 text-[13px]">
-            {([['open', 'Open', open.length], ['done', 'Done today', doneToday.length], ['snoozed', 'Snoozed', snoozed.length]] as const).map(([id, label, n]) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={view === id}
-                onClick={() => setView(id)}
-                className={`rounded-md px-2.5 py-1 transition-colors ${view === id ? 'bg-well text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                {label} <span className="tabular-nums text-muted-foreground/70">{n}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {view === 'open' && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Pill on={group === 'all'} onClick={() => setGroup('all')}>All <span className="tabular-nums opacity-60">{open.length}</span></Pill>
-            {FEED_GROUPS.map((g) => (
-              <Pill key={g.id} on={group === g.id} onClick={() => setGroup(group === g.id ? 'all' : g.id)} disabled={groupCounts[g.id] === 0 && group !== g.id}>
-                {g.label} <span className="tabular-nums opacity-60">{groupCounts[g.id]}</span>
-              </Pill>
-            ))}
-            <span className="mx-1 hidden h-4 w-px bg-border sm:inline-block" aria-hidden="true" />
-            <Pill on={quick} onClick={() => setQuick(!quick)}>Under 15 min</Pill>
-            {spamCount > 0 && (
-              <Pill on={showSpam} onClick={() => setShowSpam(!showSpam)}>
-                {showSpam ? 'Hide' : 'Show'} likely spam <span className="tabular-nums opacity-60">{spamCount}</span>
-              </Pill>
-            )}
-            <label className="inline-flex items-center">
-              <span className="sr-only">Brand</span>
-              <select
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                className={`rounded-full border bg-transparent px-2.5 py-1 text-xs focus-visible:border-primary focus-visible:outline-none ${brand === 'all' ? 'border-border text-muted-foreground' : 'border-primary-line text-primary'}`}
-              >
-                <option value="all">All brands</option>
-                {brands.map(([b, n]) => (
-                  <option key={b} value={b}>{b} ({n})</option>
-                ))}
-              </select>
-            </label>
-            {filtersOn && (
-              <button type="button" onClick={() => { setGroup('all'); setQuick(false); setBrand('all'); setQ('') }} className="ml-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">
-                Clear
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       <p aria-live="polite" className="text-xs text-danger empty:hidden">{error}</p>
@@ -361,20 +332,21 @@ export function DashFeed({
             const all = expanded.has(g.id) || needle !== ''
             const visible = all ? list : list.slice(0, SHOW_PER_GROUP)
             return (
-              <div key={g.id} className="mt-5 first:mt-3">
-                <div className="flex items-baseline justify-between gap-3 border-b border-border pb-1.5">
-                  <h3 className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                    {g.label} <span className="tabular-nums text-muted-foreground/60">{list.length}</span>
+              <div key={g.id} className="mt-7 first:mt-5">
+                <div className="-mx-3 flex items-center justify-between gap-3 border-y border-[#1f3a2b] bg-[#0c1511] px-3 py-2.5">
+                  <h3 className="text-[13px] font-medium uppercase tracking-[0.18em] text-[#a8f2c8]">
+                    {String(FEED_GROUPS.findIndex((x) => x.id === g.id) + 1).padStart(2, '0')} · {g.label}{' '}
+                    <span className="text-[#8d929a]">{list.length}</span>
                   </h3>
-                  <span className="text-xs tabular-nums text-muted-foreground">~{fmtMins(list.reduce((t, i) => t + i.mins, 0))}</span>
+                  <span className="text-xs tabular-nums text-[#8d929a]">~{fmtMins(list.reduce((t, i) => t + i.mins, 0))}</span>
                 </div>
                 <ul>
                   {visible.map((i) => (
-                    <Row key={i.id} item={i} onAct={(s, note) => act(i, s, note)} onMins={(m) => setMins(i, m)} />
+                    <Row key={i.id} item={i} n={numberOf.get(i.id)} onAct={(s, note) => act(i, s, note)} onMins={(m) => setMins(i, m)} />
                   ))}
                 </ul>
                 {list.length > visible.length && (
-                  <button type="button" onClick={() => setExpanded(new Set(expanded).add(g.id))} className="mt-1 text-[13px] text-muted-foreground hover:text-foreground">
+                  <button type="button" onClick={() => setExpanded(new Set(expanded).add(g.id))} className="nx-ghost mt-2">
                     Show {list.length - visible.length} more
                   </button>
                 )}
@@ -391,7 +363,7 @@ export function DashFeed({
             <li className="py-4 text-sm text-muted-foreground">{view === 'done' ? 'Nothing done yet today.' : 'Nothing is snoozed.'}</li>
           )}
           {(view === 'done' ? doneToday : snoozed).map((r) => (
-            <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border py-2.5 text-[13.5px] first:border-t-0">
+            <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#323840] py-3 text-[14px] first:border-t-0">
               <span className="min-w-0 flex-1">
                 {r.title || r.id}
                 {r.note && <span className="block text-xs text-foreground/80">✎ {r.note}</span>}{' '}
@@ -405,7 +377,7 @@ export function DashFeed({
               <button
                 type="button"
                 onClick={() => act({ id: r.id, title: r.title, group: r.grp as FeedGroup, mins: r.mins, job: items.find((i) => i.id === r.id)?.job }, null)}
-                className="rounded-md border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:border-primary hover:text-foreground"
+                className="nx-ghost"
               >
                 {r.status === 'snoozed' ? 'Bring back' : 'Undo'}
               </button>
@@ -414,22 +386,6 @@ export function DashFeed({
         </ul>
       )}
     </section>
-  )
-}
-
-function Pill({ on, onClick, disabled, children }: { on: boolean; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-40 ${
-        on ? 'border-primary-line bg-primary-deep text-primary' : 'border-border text-muted-foreground hover:text-foreground'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -445,9 +401,9 @@ function MinsPicker({ item: i, onMins, big = false }: { item: FeedItem; onMins: 
         value={i.mins}
         onChange={(e) => onMins(Number(e.target.value))}
         title={i.minsSet ? 'Your estimate. Pick another to change it.' : 'Default estimate. Pick your own.'}
-        className={`cursor-pointer appearance-none rounded-full tabular-nums transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary ${
-          big ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-[11px]'
-        } ${i.minsSet ? 'bg-primary-deep text-primary' : 'bg-muted text-muted-foreground'}`}
+        className={`min-h-11 cursor-pointer appearance-none bg-transparent tabular-nums tracking-[0.1em] transition-colors hover:text-foreground md:min-h-0 ${
+          big ? 'px-3 py-1 text-sm' : 'px-1 py-0.5 text-[11px] uppercase'
+        } ${i.minsSet ? 'text-primary' : 'text-[#a6aab2]'}`}
       >
         {choices.map((m) => (
           <option key={m} value={m}>~{fmtMins(m)}</option>
@@ -506,20 +462,20 @@ function Focus({
   const ss = String(Math.abs(secs) % 60).padStart(2, '0')
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-background/90 p-4 backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-modal="true" aria-labelledby="focus-h" className="w-full max-w-2xl rounded-2xl border border-border bg-panel p-6 shadow-2xl md:p-8">
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-background/90 p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div role="dialog" aria-modal="true" aria-labelledby="focus-h" className="nx-box w-full max-w-2xl p-6 shadow-2xl md:p-8">
         <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>
             Focus · <b className="font-semibold tabular-nums text-foreground">{left}</b> left · ~{fmtMins(leftMins)}
           </span>
-          <button type="button" onClick={onClose} className="rounded-md px-2 py-1 hover:bg-well hover:text-foreground">
+          <button type="button" onClick={onClose} className="nx-ghost">
             Exit <kbd className="ml-1 rounded border border-border px-1 text-[10px]">Esc</kbd>
           </button>
         </div>
 
         {!i ? (
           <div className="py-12 text-center">
-            <p className="font-heading text-2xl font-semibold">All clear.</p>
+            <p className="text-2xl font-normal">All clear.</p>
             <p className="mt-2 text-sm text-muted-foreground">Nothing left in this view. Nice work.</p>
           </div>
         ) : (
@@ -528,18 +484,18 @@ function Focus({
               <span className={brandChip(i.brand)}>{i.brand}</span>
               {i.meta && <span>{i.meta}</span>}
             </p>
-            <h2 id="focus-h" className="mt-2 font-heading text-2xl font-semibold leading-snug wrap-anywhere md:text-[28px]">
+            <h2 id="focus-h" className="mt-2 text-xl font-normal leading-snug tracking-[0.02em] text-[#ece9e2] wrap-anywhere md:text-[26px]">
               {i.title}
             </h2>
             {i.detail && <p className="mt-2 text-[15px] text-muted-foreground">{i.detail}</p>}
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {i.href && (
-                <a href={i.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs hover:border-primary">
+                <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
                   {i.hrefLabel ?? 'Open'} <span aria-hidden="true">↗</span>
                 </a>
               )}
               {i.link2 && (
-                <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-primary-line px-2.5 py-1.5 text-xs text-primary hover:bg-primary-deep">
+                <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="nx-ghost !text-primary">
                   {i.link2.label} <span aria-hidden="true">↗</span>
                 </a>
               )}
@@ -547,20 +503,20 @@ function Focus({
             </div>
 
             {/* Timer */}
-            <div className="mt-6 rounded-xl bg-well p-4">
+            <div className="mt-6 border border-border bg-well p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className={`font-heading text-4xl font-semibold tabular-nums ${over ? 'text-warning' : ''}`} aria-live="off">
+                <p className={`text-4xl font-light tabular-nums ${over ? 'text-warning' : 'nx-num'}`} aria-live="off">
                   {over ? '+' : ''}
                   {mm}:{ss}
                 </p>
                 <div className="flex items-center gap-2">
                   <MinsPicker item={i} onMins={(m) => onMins(i, m)} big />
-                  <button type="button" onClick={() => setRunning(!running)} className="rounded-md border border-border px-3 py-1.5 text-xs hover:border-primary">
+                  <button type="button" onClick={() => setRunning(!running)} className="nx-ghost">
                     {running ? 'Pause' : 'Start'}
                   </button>
                 </div>
               </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted-foreground/20" aria-hidden="true">
+              <div className="mt-3 h-1.5 overflow-hidden bg-muted-foreground/20" aria-hidden="true">
                 <span className={`block h-full transition-[width] duration-1000 ease-linear ${over ? 'bg-warning' : 'bg-primary'}`} style={{ width: `${total ? Math.min(100, ((total - secs) / total) * 100) : 0}%` }} />
               </div>
               {over && <p className="mt-2 text-xs text-warning">Over the estimate. Finish, snooze or move on.</p>}
@@ -574,7 +530,7 @@ function Focus({
                 onKeyDown={(e) => e.key === 'Enter' && onAct(i, 'done', note)}
                 maxLength={1000}
                 placeholder="e.g. Followed up by email, waiting on reply"
-                className="mt-1 w-full rounded-lg border border-border bg-well px-3 py-2 text-sm focus-visible:border-primary focus-visible:outline-none"
+                className="mt-1 min-h-11 w-full border border-border bg-well px-3 py-2 text-sm focus-visible:border-primary focus-visible:outline-none md:min-h-0"
               />
             </label>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -582,18 +538,18 @@ function Focus({
                 type="button"
                 onClick={() => onAct(i, 'done', note)}
                 autoFocus
-                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="nx-prim !px-6 !py-3 !text-sm"
               >
                 {i.doneLabel ?? 'Done'}
               </button>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => onAct(i, 'snoozed')} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-well hover:text-foreground">
+                <button type="button" onClick={() => onAct(i, 'snoozed')} className="nx-ghost !border-transparent">
                   Snooze
                 </button>
-                <button type="button" onClick={() => onAct(i, 'skipped')} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-well hover:text-foreground">
+                <button type="button" onClick={() => onAct(i, 'skipped')} className="nx-ghost !border-transparent">
                   Skip
                 </button>
-                <button type="button" onClick={() => onNext(i)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-well hover:text-foreground">
+                <button type="button" onClick={() => onNext(i)} className="nx-ghost !border-transparent">
                   Next →
                 </button>
               </div>
@@ -605,93 +561,83 @@ function Focus({
   )
 }
 
-function Row({ item: i, onAct, onMins }: { item: FeedItem; onAct: (s: FeedStatus, note?: string) => void; onMins: (m: number) => void }) {
+function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct: (s: FeedStatus, note?: string) => void; onMins: (m: number) => void }) {
   const [noting, setNoting] = useState(false)
   const [note, setNote] = useState('')
   return (
-    <li className="grid grid-cols-[8px_minmax(0,1fr)] gap-x-3 border-t border-border py-3.5 first:border-t-0">
-      <i className={`mt-1.75 h-2 w-2 rounded-full ${DOT[i.level]}`} aria-label={i.level === 'red' ? 'urgent' : undefined} />
-      <div className="min-w-0">
-        <p className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-muted-foreground">
-          <span className={brandChip(i.brand)}>{i.brand}</span>
-          {i.meta && <span className="truncate">{i.meta}</span>}
-          {i.spam && <span className="shrink-0 rounded bg-warning/15 px-1.5 py-px text-[10.5px] text-warning">likely spam: {i.spam}</span>}
-        </p>
-        <h4 className="mt-0.5 text-[14.5px] font-medium leading-snug wrap-anywhere">
-          {i.href ? (
-            <a href={i.href} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
-              {i.title}
-            </a>
-          ) : (
-            i.title
-          )}
-        </h4>
-        {i.detail && <p className="mt-0.5 max-w-[78ch] text-[13px] text-muted-foreground">{i.detail}</p>}
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <MinsPicker item={i} onMins={onMins} />
-            {i.href && i.hrefLabel && (
-              <a href={i.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:border-primary hover:text-foreground">
-                {i.hrefLabel} <span aria-hidden="true">↗</span>
-              </a>
-            )}
-            {i.link2 && (
-              <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-primary-line px-2 py-1 text-[11px] text-primary hover:bg-primary-deep">
-                {i.link2.label} <span aria-hidden="true">↗</span>
-              </a>
-            )}
-            {i.say && <CopyButton text={i.say} />}
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onAct('done')}
-              title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
-              className="rounded-md border border-primary-line px-2.5 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary-deep focus-visible:outline-2 focus-visible:outline-primary"
-            >
-              {i.doneLabel ?? 'Done'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setNoting(!noting)}
-              aria-expanded={noting}
-              title="Done, with a note"
-              className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-well hover:text-foreground"
-            >
-              ✎<span className="sr-only">Done with a note</span>
-            </button>
-            <button type="button" onClick={() => onAct('snoozed')} title="Hide until tomorrow" className="rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-well hover:text-foreground">
-              Snooze
-            </button>
-            <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-well hover:text-foreground">
-              Skip
-            </button>
-          </div>
-        </div>
-        {noting && (
-          <form
-            className="mt-2 flex flex-wrap items-center gap-2"
-            onSubmit={(e) => {
-              e.preventDefault()
-              onAct('done', note)
-            }}
-          >
-            <input
-              autoFocus
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onKeyDown={(e) => e.key === 'Escape' && setNoting(false)}
-              maxLength={1000}
-              placeholder="What happened? e.g. Followed up by email"
-              aria-label="Note for this item"
-              className="min-w-0 flex-1 basis-56 rounded-lg border border-border bg-well px-3 py-1.5 text-sm focus-visible:border-primary focus-visible:outline-none"
-            />
-            <button type="submit" className="rounded-md border border-primary-line px-2.5 py-1.5 text-[11px] font-medium text-primary hover:bg-primary-deep">
-              Save &amp; {(i.doneLabel ?? 'Done').toLowerCase()}
-            </button>
-          </form>
-        )}
+    <li id={feedDomId(i.id)} className="-mx-3 border-b border-[#323840] px-3 py-4 transition-colors hover:bg-[rgba(95,211,148,0.06)] hover:shadow-[inset_2px_0_0_#5fd394] focus-within:bg-[rgba(95,211,148,0.06)] focus-within:shadow-[inset_2px_0_0_#5fd394] motion-reduce:transition-none">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+        {n !== undefined && <span className="nx-lab tabular-nums" title={`"done ${n}" in the console marks this one done`} aria-hidden="true">{String(n).padStart(2, '0')}</span>}
+        <span className={brandChip(i.brand)}>{i.brand}</span>
+        {i.level === 'red' && <span className="text-[11px] uppercase tracking-[0.16em] text-danger">urgent</span>}
+        {i.meta && <span className="nx-cond min-w-0 truncate text-[13px] text-[#8d929a]">{i.meta}</span>}
+        {i.spam && <span className="shrink-0 border border-warning/50 px-1.5 py-px text-[11px] text-warning">likely spam: {i.spam}</span>}
       </div>
+      <h4 className="mt-2 text-base font-normal leading-[1.45] tracking-[0.02em] text-[#ece9e2] wrap-anywhere">
+        {i.href ? (
+          <a href={i.href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            {i.title}
+          </a>
+        ) : (
+          i.title
+        )}
+      </h4>
+      {i.detail && <p className="mt-1 max-w-[78ch] text-[13px] text-muted-foreground">{i.detail}</p>}
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+        <MinsPicker item={i} onMins={onMins} />
+        {i.href && i.hrefLabel && (
+          <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
+            {i.hrefLabel} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        {i.link2 && (
+          <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="nx-ghost !text-primary">
+            {i.link2.label} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        {i.say && <CopyButton text={i.say} />}
+        <span className="flex-1" />
+        <button
+          type="button"
+          onClick={() => onAct('done')}
+          title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
+          className="nx-ghost !border-primary !text-[#a8f2c8]"
+        >
+          {i.doneLabel ?? 'Done'}
+        </button>
+        <button type="button" onClick={() => setNoting(!noting)} aria-expanded={noting} title="Done, with a note" className="nx-ghost">
+          ✎<span className="sr-only">Done with a note</span>
+        </button>
+        <button type="button" onClick={() => onAct('snoozed')} title="Hide until tomorrow" className="nx-ghost">
+          Snooze
+        </button>
+        <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="nx-ghost">
+          Skip
+        </button>
+      </div>
+      {noting && (
+        <form
+          className="mt-2.5 flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            onAct('done', note)
+          }}
+        >
+          <input
+            autoFocus
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && setNoting(false)}
+            maxLength={1000}
+            placeholder="What happened? e.g. Followed up by email"
+            aria-label="Note for this item"
+            className="min-h-11 min-w-0 flex-1 basis-56 border border-border bg-well px-3 py-1.5 text-sm focus-visible:border-primary focus-visible:outline-none md:min-h-0"
+          />
+          <button type="submit" className="nx-ghost !border-primary !text-[#a8f2c8]">
+            Save &amp; {(i.doneLabel ?? 'Done').toLowerCase()}
+          </button>
+        </form>
+      )}
     </li>
   )
 }

@@ -2,57 +2,50 @@ import type { BlogHandsStats, CalEvent, Health, MailAccount, SalesDb, SgmState }
 import type { AdminOverview } from '@/lib/admin-audit'
 import { ago } from '@/lib/dash-format'
 import { TZ, WORK_END, WORK_START, fmtMins, type Workday } from '@/lib/dash-feed'
-import { OutLink } from './DashParts'
 import { DashRefresh } from './DashRefresh'
 
-/* Top of the dashboard + the right column beside the Feed (v5, 2026-10-15).
- * The stats bar is gone: inbox counts sit in the Today card, the growth numbers
- * sit in Pulse, and everything that is a task lives in the Feed. */
+/* Top of the dashboard + the right column beside the Feed (Nostromo B4, 2026-10-15).
+ * Header = one slim line (date, summary, sync + refresh); the console under it is the hero.
+ * Today card = Wins (one row), Schedule (meetings today), Due today / tomorrow, Inbox. */
 
 const nyDay = (iso: string) => (iso.length === 10 ? iso : new Date(iso).toLocaleDateString('en-CA', { timeZone: TZ }))
 const time = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
 const pct = (m: number) => ((Math.min(Math.max(m, WORK_START), WORK_END) - WORK_START) / (WORK_END - WORK_START)) * 100
-const Label = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{children}</p>
-)
+const clock = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
-/** 10 AM → 6 PM: time gone, meetings ahead, and a now marker. */
-function TimeLeft({ day }: { day: Workday }) {
+/** "Blog Hands" → BH, "Swift Growth Marketing" → SGM, one word → its first 3 letters. */
+const abbr = (label: string) => {
+  const w = label.split(/\s+/).filter(Boolean)
+  return (w.length > 1 ? w.map((x) => x[0]).join('') : label.slice(0, 3)).toUpperCase()
+}
+
+/** The day bar, drawn as a 1px line: time gone, meetings, and a now marker. No hour labels. */
+function ScheduleBar({ day }: { day: Workday }) {
   const over = day.nowMin >= WORK_END
   return (
-    <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-xs text-muted-foreground [&_b]:font-medium [&_b]:tabular-nums [&_b]:text-foreground">
-        <span>Work day</span>
-        {over ? (
-          <span>Done for today</span>
-        ) : (
-          <span>
-            <b>{fmtMins(day.leftMins)}</b> left · <b>{fmtMins(day.freeMins)}</b> free
-            {day.meetingMins > 0 && <> · {fmtMins(day.meetingMins)} in meetings</>}
-          </span>
-        )}
-      </div>
-      <div
-        className="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-well"
-        role="img"
-        aria-label={over ? 'The work day is over' : `${fmtMins(day.freeMins)} of free work time left today`}
-      >
-        <span className="absolute inset-y-0 left-0 bg-muted-foreground/25" style={{ width: `${pct(day.nowMin)}%` }} />
-        {day.blocks.map((b, i) => (
-          <span key={i} title={b.title} className="absolute inset-y-0 bg-warning/70" style={{ left: `${pct(b.start)}%`, width: `${Math.max(pct(b.end) - pct(b.start), 0.8)}%` }} />
-        ))}
-        {!over && day.nowMin > WORK_START && <span className="absolute inset-y-0 w-0.5 bg-primary" style={{ left: `${pct(day.nowMin)}%` }} />}
-      </div>
-      <div className="mt-1 flex justify-between text-[10px] tabular-nums text-muted-foreground/70">
-        <span>10 AM</span>
-        <span>2 PM</span>
-        <span>6 PM</span>
-      </div>
+    <div
+      className="relative my-3.5 h-3"
+      role="img"
+      aria-label={over ? 'The work day is over' : `${day.blocks.length} meeting${day.blocks.length === 1 ? '' : 's'} today, ${fmtMins(day.meetingMins)} in total`}
+    >
+      <span className="absolute inset-x-0 top-1/2 h-px bg-[#2e333b]" />
+      <span className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 bg-[#4a4f57]" style={{ width: `${pct(day.nowMin)}%` }} />
+      {day.blocks.map((b, i) => (
+        <span
+          key={i}
+          title={`${b.title} ${clock(b.start)}–${clock(b.end)}`}
+          className="absolute top-1/2 box-border h-[11px] -translate-y-1/2 border border-[#5fd394] bg-[#3f6b55]"
+          style={{ left: `${pct(b.start)}%`, width: `${Math.max(pct(b.end) - pct(b.start), 1.2)}%` }}
+        />
+      ))}
+      {!over && day.nowMin > WORK_START && (
+        <span className="absolute top-0 h-3 w-px bg-[#a8f2c8] shadow-[0_0_8px_#5fd394]" style={{ left: `${pct(day.nowMin)}%` }} />
+      )}
     </div>
   )
 }
 
-/** Today card: work-day bar, Now / Next, inbox counts, and the rest of the week folded away. */
+/** Today card: Wins, the schedule, what is due, and the inbox counts. */
 export function DashToday({
   events,
   connected,
@@ -61,8 +54,8 @@ export function DashToday({
   mailUpdated,
   wins,
 }: {
-  /** The Wins block (client), shown right under the heading. */
-  wins?: React.ReactNode
+  /** The Wins block (client): the "Today" heading, level + streak, ring, day squares. */
+  wins: React.ReactNode
   events: CalEvent[]
   connected: boolean
   day: Workday
@@ -79,91 +72,114 @@ export function DashToday({
   const later = upcoming.filter((e) => nyDay(e.start) > today)
   const days = new Map<string, CalEvent[]>()
   for (const e of later) days.set(nyDay(e.start), [...(days.get(nyDay(e.start)) ?? []), e])
+  const hasWeek = connected && later.length > 0
 
-  return (
-    <section aria-labelledby="today-h" className="min-w-0 rounded-2xl border border-border bg-panel p-5">
-      <h2 id="today-h" className="font-heading text-lg font-semibold">Today</h2>
-      {wins && <div className="mt-2">{wins}</div>}
-      <div className={wins ? 'mt-3 border-t border-border pt-3' : 'mt-3'}>
-        <TimeLeft day={day} />
-      </div>
-
-      <div className="mt-4 grid gap-1.5 text-[13.5px]">
-        {!connected ? (
-          <p className="text-muted-foreground">
-            Calendar not connected. Paste each calendar&apos;s secret iCal link after <code>ACCOUNT_N_ICS_URL=</code> in <code>dashboard.env</code>.
-          </p>
-        ) : (
-          <>
-            {live && (
-              <p>
-                <span className="mr-2 font-medium text-primary">Now</span>
-                {live.title} <span className="text-xs text-muted-foreground">· until {time(live.end ?? live.start)}</span>
-              </p>
-            )}
-            {next ? (
-              <p>
-                <span className="mr-2 text-muted-foreground">Next</span>
-                <span className="tabular-nums">{time(next.start)}</span> {next.title} <span className="text-xs text-muted-foreground">· {next.calendar}</span>
-              </p>
-            ) : (
-              !live && <p className="text-muted-foreground">No more meetings today.</p>
-            )}
-            {allDay.map((e, i) => (
-              <p key={i} className="text-xs text-muted-foreground">All day: {e.title}</p>
-            ))}
-          </>
-        )}
-      </div>
-
-      <div className="mt-4 border-t border-border pt-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <Label>Inbox</Label>
-          {mail && <span className="text-[11px] text-muted-foreground">updated {ago(mailUpdated)}</span>}
-        </div>
-        {!mail ? (
-          <p className="mt-1.5 text-[13px] text-muted-foreground">
-            Not connected. Add each Gmail app password to <code>dashboard.env</code> on your PC.
-          </p>
-        ) : (
-          <ul className="mt-1">
-            {mail.map((a) => (
-              <li key={a.email} className="flex items-center gap-3 py-1 text-[13.5px]">
-                <span className="min-w-0 flex-1 truncate">{a.label}</span>
-                {a.ok ? (
-                  <span className={`tabular-nums ${a.unread_primary ? 'font-medium' : 'text-muted-foreground'}`}>{a.unread_primary ?? 0} new</span>
-                ) : (
-                  <span className="text-xs text-danger">not connected</span>
-                )}
-                <OutLink href={a.inbox}>Open</OutLink>
+  const weekList = (
+    <div className="mt-2 grid max-h-72 gap-3 overflow-y-auto pb-1">
+      {[...days.entries()].sort(([x], [y]) => x.localeCompare(y)).map(([d, evs]) => (
+        <div key={d}>
+          <p className="nx-lab">{new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+          <ul className="mt-1 grid gap-1">
+            {evs.map((e, i) => (
+              <li key={i} className="flex gap-3 text-[13px]">
+                <span className="w-16 shrink-0 tabular-nums text-muted-foreground">{e.allDay ? 'All day' : time(e.start)}</span>
+                <span className="min-w-0">{e.title} <span className="text-xs text-muted-foreground">· {e.calendar}</span></span>
               </li>
             ))}
           </ul>
+        </div>
+      ))}
+    </div>
+  )
+
+  return (
+    <section aria-labelledby="today-h" className="nx-box min-w-0 p-5 md:px-6 md:py-5.5">
+      {wins}
+
+      <div className="mt-4.5 border-t border-border pt-4">
+        {hasWeek ? (
+          <details>
+            <summary className="nx-lab flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 md:min-h-0 [&::-webkit-details-marker]:hidden">
+              <span>Schedule · meetings today</span>
+              <span className="text-[#8d929a]">This week ▸ {later.length} more</span>
+            </summary>
+            {weekList}
+          </details>
+        ) : (
+          <p className="nx-lab">Schedule · meetings today</p>
         )}
+        <ScheduleBar day={day} />
+        <div className="grid gap-1 text-[14px]">
+          {!connected ? (
+            <p className="text-muted-foreground">
+              Calendar not connected. Paste each calendar&apos;s secret iCal link after <code>ACCOUNT_N_ICS_URL=</code> in <code>dashboard.env</code>.
+            </p>
+          ) : (
+            <>
+              {live && (
+                <p className="flex flex-wrap justify-between gap-x-3">
+                  <span>
+                    <span className="nx-lab !text-primary">Now</span>&nbsp; {live.title} <span className="text-xs text-muted-foreground">· until {time(live.end ?? live.start)}</span>
+                  </span>
+                  <span className="nx-lab !tracking-[0.1em]">{live.calendar}</span>
+                </p>
+              )}
+              {next ? (
+                <p className="flex flex-wrap justify-between gap-x-3">
+                  <span>
+                    <span className="nx-lab !text-[#a8f2c8]">Next</span>&nbsp; <span className="nx-num text-[15px]">{time(next.start)}</span> {next.title}
+                  </span>
+                  <span className="nx-lab !tracking-[0.1em]">{next.calendar}</span>
+                </p>
+              ) : (
+                !live && <p className="text-muted-foreground">No more meetings today.</p>
+              )}
+              {allDay.map((e, i) => (
+                <p key={i} className="text-xs text-muted-foreground">All day: {e.title}</p>
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
-      {connected && later.length > 0 && (
-        <details className="mt-3 border-t border-border pt-3">
-          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-            {later.length} more event{later.length === 1 ? '' : 's'} this week
-          </summary>
-          <div className="mt-2 grid max-h-72 gap-3 overflow-y-auto">
-            {[...days.entries()].sort(([x], [y]) => x.localeCompare(y)).map(([d, evs]) => (
-              <div key={d}>
-                <Label>{new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</Label>
-                <ul className="mt-1 grid gap-1">
-                  {evs.map((e, i) => (
-                    <li key={i} className="flex gap-3 text-[13px]">
-                      <span className="w-16 shrink-0 tabular-nums text-muted-foreground">{e.allDay ? 'All day' : time(e.start)}</span>
-                      <span className="min-w-0">{e.title} <span className="text-xs text-muted-foreground">· {e.calendar}</span></span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+      <div className="mt-4.5 flex flex-wrap items-center justify-between gap-x-4 border-t border-border pt-3.5">
+        <p className="nx-lab" title={mail ? `Updated ${ago(mailUpdated)}` : undefined}>Inbox</p>
+        {!mail ? (
+          <p className="text-[13px] text-muted-foreground">Not connected. Add each Gmail app password to <code>dashboard.env</code> on your PC.</p>
+        ) : (
+          <p className="flex flex-wrap items-center gap-x-1 text-[12px]">
+            {mail.map((a, i) => (
+              <span key={a.email} className="inline-flex items-center">
+                {i > 0 && <span className="px-1.5 text-[#8d929a]" aria-hidden="true">·</span>}
+                {a.ok ? (
+                  <a
+                    href={a.inbox}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`${a.label}: open inbox`}
+                    className={`nx-lab inline-flex min-h-11 items-center !tracking-[0.12em] md:min-h-0 ${a.unread_primary ? '!text-[#a8f2c8]' : '!text-[#d9d6cf]'} hover:underline`}
+                  >
+                    {abbr(a.label)} {a.unread_primary ?? 0}
+                  </a>
+                ) : (
+                  <span className="nx-lab !text-danger">{abbr(a.label)} not connected</span>
+                )}
+                {a.ok && (a.unread_other ?? 0) > 0 && (
+                  <a
+                    href={a.inbox.replace('#inbox', '#search/in%3Ainbox+is%3Aunread+category%3Aprimary')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`${a.unread_other} other unread in ${a.label}: bills, orders, promos and the like. Opens Gmail.`}
+                    className="nx-lab ml-2 inline-flex min-h-11 items-center !tracking-[0.08em] !text-[#8d929a] hover:!text-[#d9d6cf] hover:underline md:min-h-0"
+                  >
+                    +{a.unread_other} other ↗
+                  </a>
+                )}
+              </span>
             ))}
-          </div>
-        </details>
-      )}
+          </p>
+        )}
+      </div>
     </section>
   )
 }
@@ -226,23 +242,23 @@ export function DashPulse({ overview, bh, health, sgm, salesDb }: { overview: Ad
   ]
 
   return (
-    <section aria-labelledby="pulse-h" className="min-w-0 rounded-2xl border border-border bg-panel p-5">
-      <h2 id="pulse-h" className="font-heading text-lg font-semibold">Pulse</h2>
-      <ul className="mt-2">
+    <section aria-labelledby="pulse-h" className="nx-box min-w-0 p-5 md:px-6 md:py-5">
+      <h2 id="pulse-h" className="text-lg font-normal">Pulse</h2>
+      <ul className="mt-2.5">
         {rows.map((r) => (
           <li key={r.label} className="border-t border-border first:border-t-0">
             <a
               href={r.href}
               {...(r.ext && { target: '_blank', rel: 'noopener noreferrer' })}
-              className="group flex items-baseline gap-3 py-2.5 focus-visible:outline-2 focus-visible:outline-primary"
+              className="group flex min-h-11 flex-wrap items-baseline gap-x-3 gap-y-0.5 py-2.5 focus-visible:outline-2 focus-visible:outline-primary"
             >
-              <span className="w-24 shrink-0 text-[13px] text-muted-foreground">
-                {r.dot && <i className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${r.dot === 'red' ? 'bg-danger' : 'bg-primary'}`} />}
+              <span className="w-28 shrink-0 text-[13px] text-[#d9d6cf]">
+                {r.dot && <i className={`mr-1.5 inline-block h-1.5 w-1.5 align-middle ${r.dot === 'red' ? 'bg-danger' : 'bg-primary'}`} />}
                 {r.label}
               </span>
-              <span className="font-heading text-lg font-semibold tabular-nums">{r.value}</span>
-              <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{r.sub}</span>
-              <span className="text-muted-foreground/50 transition-colors group-hover:text-foreground" aria-hidden="true">{r.ext ? '↗' : '→'}</span>
+              <span className="nx-num text-[22px]">{r.value}</span>
+              <span className="min-w-0 flex-1 basis-40 truncate text-xs text-muted-foreground">{r.sub}</span>
+              <span className="text-muted-foreground transition-colors group-hover:text-foreground" aria-hidden="true">{r.ext ? '↗' : '→'}</span>
             </a>
           </li>
         ))}
@@ -252,23 +268,22 @@ export function DashPulse({ overview, bh, health, sgm, salesDb }: { overview: Ad
 }
 
 export function DashHeader({ brief, refreshed, requested }: { brief: React.ReactNode; refreshed?: string; requested?: string }) {
-  const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: TZ })
+  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: TZ })
+  const rest = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: TZ })
   const stale = !refreshed || Date.now() - Date.parse(refreshed) > 3 * 3600e3
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Dashboard</p>
-        <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight md:text-4xl">{date}</h1>
-        <p className="mt-2 max-w-[68ch] text-base text-muted-foreground md:text-[17px]">{brief}</p>
+    <header className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h1 className="m-0 text-[17px] font-normal tracking-[0.02em] text-[#d9d6cf]">
+          {weekday}, <span className="nx-num !font-normal">{rest}</span>
+        </h1>
+        <p className="m-0 text-[13px] leading-snug tracking-[0.02em] text-muted-foreground">{brief}</p>
       </div>
-      <div>
-        <span className={`inline-flex items-center gap-1.5 text-xs ${stale ? 'text-warning' : 'text-muted-foreground'}`}>
-          <i className={`h-1.5 w-1.5 rounded-full ${stale ? 'bg-warning' : 'bg-primary'}`} />
-          Refreshed {ago(refreshed)} · every hour
+      <div className="flex items-center gap-3.5">
+        <span className={`nx-lab ${stale ? '!text-warning' : ''}`} title="The hourly pull from your PC">
+          Sync <span className={stale ? '' : 'text-[#d9d6cf]'}>{ago(refreshed)}</span>
         </span>
-        <span className="ml-2 inline-block align-middle">
-          <DashRefresh refreshed={refreshed} requested={requested} />
-        </span>
+        <DashRefresh refreshed={refreshed} requested={requested} />
       </div>
     </header>
   )

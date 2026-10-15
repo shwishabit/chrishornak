@@ -1,0 +1,135 @@
+/* Nostromo, green (B4 · darker console, mono titles). Scoped to the dashboard wrapper `.nostromo`:
+ * it re-points the site's color + font tokens, so every tab picks the look up, and adds a few
+ * shared pieces (.nx-*). Ground #08090b, never true black. */
+.nostromo {
+  --nx-mono: var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nx-cond: var(--font-plex-cond), 'IBM Plex Sans Condensed', system-ui, sans-serif;
+  --font-sans: var(--nx-mono);
+  --font-heading: var(--nx-mono);
+
+  --color-background: #08090b;
+  --color-foreground: #d9d6cf;
+  --color-muted: #15171b;
+  --color-muted-foreground: #8d929a; /* 5.9:1 on #08090b */
+  --color-border: #2a2f36;
+  --color-ring: #2e333b;
+  --color-primary: #5fd394;
+  --color-primary-foreground: #08090b;
+  --color-panel: #08090b;
+  --color-well: #0d0f12;
+  --color-field: #0d0f12;
+  --color-field-edge: #5b616a;
+  --color-line-strong: #2e333b;
+  --color-body-soft: #c9c7c1;
+  --color-primary-deep: #0b1610;
+  --color-primary-line: #2b5d44;
+  --color-danger: #e8826b;
+  --color-warning: #e8a45f;
+  --color-success: #5fd394;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 0px;
+
+  background: #08090b;
+  color: #c9c7c1;
+  font-family: var(--nx-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  --nx-green: rgba(95, 211, 148, 0.7);
+}
+.nostromo ::selection { background: #1f3a2b; }
+.nostromo a { text-underline-offset: 4px; }
+
+/* Every box: solid 1px bright-green outline, same all the way round, same ground as the page. */
+.nostromo .nx-box,
+.nostromo [class*='rounded-2xl'][class*='bg-panel'] { border: 1px solid var(--nx-green); background: #08090b; border-radius: 0; }
+
+/* Console: a recessed well with a soft outer glow. */
+.nostromo .nx-well {
+  background: #050607;
+  border-color: var(--nx-green);
+  box-shadow: inset 0 2px 18px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(95, 211, 148, 0.06), 0 0 36px rgba(95, 211, 148, 0.12);
+}
+.nostromo .nx-scan { background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px); }
+
+.nostromo .nx-lab { font: 400 11px var(--nx-mono); letter-spacing: 0.2em; text-transform: uppercase; color: #8d929a; }
+.nostromo .nx-num { font-family: var(--nx-mono); font-weight: 300; color: #a8f2c8; text-shadow: 0 0 14px rgba(95, 211, 148, 0.38); font-variant-numeric: tabular-nums; }
+.nostromo .nx-cond { font-family: var(--nx-cond); }
+
+.nostromo .nx-ghost {
+  font: 400 12px var(--nx-mono); letter-spacing: 0.06em; color: #b9b7b1; background: transparent;
+  border: 1px solid #2a2e35; padding: 6px 12px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 6px;
+}
+.nostromo .nx-ghost:hover { border-color: #5fd394; color: #a8f2c8; }
+.nostromo .nx-ghost[disabled] { opacity: 0.45; cursor: default; }
+.nostromo .nx-prim {
+  font: 500 12px var(--nx-mono); letter-spacing: 0.08em; color: #08090b; background: #5fd394; border: 0;
+  padding: 7px 14px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 6px;
+}
+.nostromo .nx-prim:hover { background: #7fe2ac; }
+.nostromo .nx-prim[disabled] { opacity: 0.4; cursor: default; }
+@media (min-width: 768px) {
+  .nostromo .nx-ghost, .nostromo .nx-prim { min-height: 32px; }
+}
+.nostromo :focus-visible { outline: 2px solid #7fe2ac; outline-offset: 2px; }
+
+/* Block cursor. Off under reduced motion. */
+.nostromo .nx-caret { display: inline-block; flex: none; width: 11px; height: 21px; background: #7fe2ac; box-shadow: 0 0 10px rgba(95, 211, 148, 0.75); animation: nx-blink 1.06s steps(1) infinite; }
+@keyframes nx-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .nostromo .nx-caret { animation: none; }
+  .nostromo .nx-well { box-shadow: inset 0 2px 18px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(95, 211, 148, 0.06); }
+}
+
+/* Console section buttons */
+.nostromo .nx-seg {
+  font: 400 11px var(--nx-mono); letter-spacing: 0.16em; text-transform: uppercase; color: #8d929a; background: transparent;
+  border: 0; padding: 8px 12px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center;
+}
+.nostromo .nx-seg:hover { color: #d9d6cf; }
+.nostromo .nx-seg b { font-weight: 400; color: #d9d6cf; margin-left: 6px; }
+.nostromo .nx-seg[aria-selected='true'], .nostromo .nx-seg[aria-pressed='true'] { color: #a8f2c8; box-shadow: inset 0 -2px 0 #5fd394; }
+.nostromo .nx-seg[aria-selected='true'] b, .nostromo .nx-seg[aria-pressed='true'] b { color: #a8f2c8; }
+@media (min-width: 768px) { .nostromo .nx-seg { min-height: 40px; } }
+
+/* Filter tag inside the console line */
+.nostromo .nx-tok {
+  display: inline-flex; align-items: center; gap: 6px; font: 400 12px var(--nx-mono); letter-spacing: 0.04em; color: #a8f2c8;
+  background: rgba(95, 211, 148, 0.08); border: 1px solid rgba(95, 211, 148, 0.35); padding: 3px 8px; cursor: pointer; min-height: 32px;
+}
+.nostromo .nx-tok:hover { background: rgba(95, 211, 148, 0.16); }
+.nostromo .nx-tok span { color: #8d929a; }
+
+/* Autocomplete dropdown */
+.nostromo .nx-ac {
+  position: absolute; left: 0; right: 0; top: 100%; font: 400 14px var(--nx-mono); letter-spacing: 0.02em; background: #171a20;
+  border: 1px solid #2e333b; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(95, 211, 148, 0.12); z-index: 30; max-height: min(70vh, 520px); overflow-y: auto;
+}
+@media (min-width: 640px) { .nostromo .nx-ac { left: 58px; right: auto; width: min(640px, calc(100% - 70px)); } }
+.nostromo .nx-ach { font: 400 11px var(--nx-mono); letter-spacing: 0.22em; text-transform: uppercase; color: #8d929a; padding: 10px 14px 4px; }
+.nostromo .nx-aci { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 14px; min-height: 44px; cursor: pointer; color: #d9d6cf; }
+@media (min-width: 768px) { .nostromo .nx-aci { padding: 8px 14px; min-height: 0; } }
+.nostromo .nx-aci:hover { background: rgba(95, 211, 148, 0.07); }
+.nostromo .nx-aci[aria-selected='true'] { background: rgba(95, 211, 148, 0.12); box-shadow: inset 2px 0 0 #5fd394; }
+.nostromo .nx-aci .k { font: 400 11px var(--nx-mono); color: #8d929a; }
+.nostromo .nx-aci mark { background: transparent; color: #a8f2c8; text-shadow: 0 0 8px rgba(95, 211, 148, 0.45); }
+
+/* Feed item flash when picked from the console */
+.nostromo .nx-flash { animation: nx-flash 1.6s ease-out; }
+@keyframes nx-flash { 0% { background: rgba(95, 211, 148, 0.18); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .nostromo .nx-flash { animation: none; background: rgba(95, 211, 148, 0.1); } }
+
+/* Row system shared by Due and To-do: checkbox column, title, quiet right-aligned source. */
+.nostromo .nx-src { font: 400 11px var(--nx-mono); letter-spacing: 0.14em; text-transform: uppercase; text-align: right; color: #8d929a; }
+.nostromo .nx-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; }
+.nostromo input[type='checkbox'] { accent-color: #5fd394; width: 16px; height: 16px; margin: 3px 0 0; cursor: pointer; }
+
+/* Clicking in the console must be obvious: bright edge, stronger glow, solid cursor, brighter hint. */
+.nostromo .nx-well:focus-within { border-color: #7fe2ac; box-shadow: inset 0 2px 18px rgba(0, 0, 0, 0.9), 0 0 0 1px #7fe2ac, 0 0 44px rgba(95, 211, 148, 0.3); }
+.nostromo .nx-well:focus-within .nx-caret { background: #a8f2c8; box-shadow: 0 0 14px rgba(95, 211, 148, 0.95); animation: nx-blink 1.06s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .nostromo .nx-well:focus-within .nx-caret { animation: none; } }
+.nostromo .nx-well:focus-within .nx-hint { color: #b9b7b1; }
+.nostromo .nx-well:focus-visible, .nostromo .nx-well input:focus-visible { outline: none; }
+.nostromo .nx-well .nx-caret.nx-caret-still, .nostromo .nx-well:focus-within .nx-caret.nx-caret-still { animation: none; opacity: 1; }

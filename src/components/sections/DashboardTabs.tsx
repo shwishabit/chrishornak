@@ -11,6 +11,8 @@ import { AdminJobLeads } from './AdminJobLeads'
 import { AdminQuestions } from './AdminQuestions'
 import { DashClaude } from './DashClaude'
 import { DashHealth } from './DashHealth'
+import { DashConsole } from './DashConsole'
+import { FilterProvider } from '@/lib/dash-console'
 
 // Chris's order (2026-10-15): Feed first, Sales next (a lead is money), then Job hunt,
 // Projects, Questions, Tools & leads (was Findability), Site health, Claude (was Skills & agents).
@@ -20,11 +22,11 @@ const ALIAS: Record<string, Tab> = { findability: 'leads', toolbox: 'claude' }
 const TABS: { id: Tab; label: string }[] = [
   { id: 'feed', label: 'Feed' },
   { id: 'sales', label: 'Sales' },
-  { id: 'jobs', label: 'Job hunt' },
+  { id: 'jobs', label: 'Jobs' },
   { id: 'projects', label: 'Projects' },
   { id: 'questions', label: 'Questions' },
   { id: 'leads', label: 'Tools & leads' },
-  { id: 'health', label: 'Site health' },
+  { id: 'health', label: 'Health' },
   { id: 'claude', label: 'Claude' },
 ]
 
@@ -45,6 +47,7 @@ export function DashboardTabs({
   jobLeads,
   questionLeads,
   today,
+  people,
 }: {
   /** Feed + Calendar, rendered on the server. */
   feed: React.ReactNode
@@ -64,6 +67,8 @@ export function DashboardTabs({
   jobLeads: JobLead[]
   questionLeads: JobLead[]
   today: string
+  /** Names for the console's People & companies suggestions. */
+  people: string[]
 }) {
   const [tab, setTab] = useState<Tab>('feed')
   // Live badges: the Feed announces its open counts as items are done.
@@ -95,28 +100,18 @@ export function DashboardTabs({
   }
 
   return (
+    <FilterProvider>
     <section>
-      <div id="dash-tabs" role="tablist" className="flex scroll-mt-6 flex-wrap gap-1 border-b border-border">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => {
-              setTab(t.id)
-              // Clear an old #hash so the same Pulse link works again next time.
-              if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search)
-            }}
-            className={`-mb-px border-b-2 px-3.5 py-2.5 text-[13.5px] transition-colors ${
-              tab === t.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t.label}
-            {(counts[t.id] ?? 0) > 0 && <span className="ml-1.5 tabular-nums text-muted-foreground/60">{counts[t.id]}</span>}
-          </button>
-        ))}
-      </div>
+      <DashConsole
+        tabs={TABS.map((t) => ({ ...t, count: counts[t.id] }))}
+        tab={tab}
+        people={people}
+        onTab={(id) => {
+          setTab(id)
+          // Clear an old #hash so the same Pulse link works again next time.
+          if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search)
+        }}
+      />
 
       {/* The Feed stays mounted so its filters and Done marks survive a tab switch. */}
       <div hidden={tab !== 'feed'}>{feed}</div>
@@ -142,5 +137,6 @@ export function DashboardTabs({
       {tab === 'health' && <DashHealth health={health} updated={updated.health} />}
       {tab === 'claude' && <DashClaude catalog={catalog} updated={updated.catalog} />}
     </section>
+    </FilterProvider>
   )
 }

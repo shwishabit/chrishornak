@@ -83,7 +83,10 @@ export interface MailAccount {
   ok: boolean
   error?: string
   unread?: number
+  /** Unread Primary mail that looks like work (the PC filters bills, orders, receipts, promos out). */
   unread_primary?: number
+  /** Unread Primary mail left out as not work: shown as "+N other", read in Gmail. */
+  unread_other?: number
   inbox: string
   messages?: MailMessage[]
   /** chrishornak.com contact + hire form emails, last 14 days (read or unread). */

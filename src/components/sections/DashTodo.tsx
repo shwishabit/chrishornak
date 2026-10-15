@@ -21,7 +21,7 @@ const shortDay = (d: string) =>
     day: 'numeric',
   })
 
-export function DashTodo({ initial }: { initial: Todo[] }) {
+export function DashTodo({ initial, dueNow, dueTomorrow, dueTomorrowCount = 0 }: { initial: Todo[]; dueNow?: React.ReactNode; dueTomorrow?: React.ReactNode; dueTomorrowCount?: number }) {
   const today = nyDate()
   const tomorrow = nyTomorrow(today)
   const [todos, setTodos] = useState(initial)
@@ -62,7 +62,8 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
   const live = todos.filter((t) => !t.archived_at)
   const now = live.filter((t) => t.day <= today).sort((a, b) => Number(!!a.done_at) - Number(!!b.done_at) || a.position - b.position)
   const openNow = now.filter((t) => !t.done_at)
-  const later = live.filter((t) => t.day > today)
+  const tomorrowTodos = live.filter((t) => t.day === tomorrow)
+  const later = live.filter((t) => t.day > tomorrow)
   const archived = todos.filter((t) => t.archived_at).sort((a, b) => b.archived_at!.localeCompare(a.archived_at!))
   const done = now.filter((t) => t.done_at)
   const left = now.length - done.length
@@ -192,7 +193,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
           moveTo(item, d.over > from ? d.over - 1 : d.over)
         }}
         onDragEnd={() => setDrag(null)}
-        className={`group relative flex items-start gap-2 py-1.5 ${drag?.id === t.id ? 'opacity-40' : ''} ${
+        className={`group relative flex items-start gap-2 py-1.5 md:py-1 ${drag?.id === t.id ? 'opacity-40' : ''} ${
           drag && sortable && drag.over === idx
             ? 'shadow-[inset_0_2px_0_var(--color-primary)]'
             : drag && sortable && drag.over === idx + 1 && idx === openNow.length - 1
@@ -217,10 +218,10 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
             checked={!!t.done_at}
             onChange={() => patch(t, { done: !t.done_at })}
             aria-label={t.done_at ? `Mark "${t.text}" not done` : `Mark "${t.text}" done`}
-            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-(--color-primary)"
+            aria-describedby={undefined}
           />
         ) : (
-          <span className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="h-4 w-4 shrink-0" aria-hidden="true" />
         )}
         <div className="min-w-0 flex-1">
           {editing === t.id ? (
@@ -234,13 +235,8 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
             />
           ) : (
             <span
-              className={`text-[13.5px] leading-snug wrap-anywhere ${t.done_at || where === 'archived' ? 'text-muted-foreground' : ''} ${t.done_at ? 'line-through' : ''}`}
+              className={`text-[14px] leading-snug wrap-anywhere ${t.done_at || where === 'archived' ? 'text-muted-foreground' : ''} ${t.done_at ? 'line-through' : ''}`}
             >
-              {t.label && (
-                <span className="mr-1.5 inline-block rounded border border-border px-1 py-px align-[1px] text-[10px] font-medium text-muted-foreground">
-                  {FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}
-                </span>
-              )}
               {t.text}
             </span>
           )}
@@ -249,29 +245,32 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
             <span className="ml-1.5 whitespace-nowrap text-[11px] text-muted-foreground">{t.day === tomorrow ? 'tomorrow' : shortDay(t.day)}</span>
           )}
         </div>
+        {t.label && where !== 'archived' && (
+          <span className="nx-src shrink-0 pt-0.5">{FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}</span>
+        )}
         {where === 'archived' ? (
           <span className="flex shrink-0 gap-1">
             <button
               type="button"
               onClick={() => patch(t, { archived: false, done: false, day: today })}
-              className="rounded px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+              className="nx-ghost"
             >
               Restore
             </button>
-            <button type="button" onClick={() => remove(t)} className="rounded px-1.5 text-[11px] text-muted-foreground hover:text-danger">
+            <button type="button" onClick={() => remove(t)} className="nx-ghost">
               Delete
             </button>
           </span>
         ) : (
           <>
-            {!t.done_at && editing !== t.id && <CopyButton text={`help me do this to-do: ${t.text}`} label="Copy" />}
+            {!t.done_at && editing !== t.id && <CopyButton text={`help me do this to-do: ${t.text}`} label="Copy" quiet />}
             <button
               type="button"
               aria-label={`Options for "${t.text}"`}
               aria-haspopup="menu"
               aria-expanded={menu === t.id}
               onClick={() => setMenu(menu === t.id ? null : t.id)}
-              className={`shrink-0 rounded px-1.5 leading-none text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 ${menu === t.id ? 'bg-well opacity-100' : 'opacity-60 group-hover:opacity-100'}`}
+              className={`-mt-0.5 min-h-11 min-w-11 shrink-0 px-1.5 leading-none text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 md:min-w-0 ${menu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
             >
               ⋯
             </button>
@@ -291,22 +290,22 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
             {sortable && idx < openNow.length - 1 && <MenuItem onClick={() => moveTo(t, idx + 1)}>Move down</MenuItem>}
             {where === 'later' && <MenuItem onClick={() => patch(t, { day: today })}>Move to today</MenuItem>}
             {t.day !== tomorrow && <MenuItem onClick={() => patch(t, { day: tomorrow, done: false })}>Move to tomorrow</MenuItem>}
-            <label className="flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well">
+            <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
               Move to a day
               <input
                 type="date"
                 min={today}
                 defaultValue={t.day > today ? t.day : ''}
                 onChange={(e) => e.target.value && patch(t, { day: e.target.value, done: false })}
-                className="w-31 rounded border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
+                className="w-31 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
               />
             </label>
-            <label className="flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well">
+            <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
               Label (shows in Feed)
               <select
                 value={t.label}
                 onChange={(e) => patch(t, { label: e.target.value })}
-                className="rounded border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
+                className="border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
               >
                 <option value="">None</option>
                 {FEED_GROUPS.map((g) => (
@@ -325,12 +324,12 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
   }
 
   return (
-    <section aria-labelledby="todo-h" className="min-w-0 rounded-2xl border border-border bg-panel p-5">
+    <section aria-labelledby="todo-h" className="nx-box min-w-0 p-5 md:px-6 md:py-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="todo-h" className="font-heading text-lg font-semibold">
-          To-do
+        <h2 id="todo-h" className="text-lg font-normal">
+          To do today
         </h2>
-        <span className="text-xs tabular-nums text-muted-foreground">{left} left</span>
+        <span className="nx-lab">{left} left</span>
       </div>
 
       <form onSubmit={add} className="mt-3 flex gap-2">
@@ -343,7 +342,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
           onChange={(e) => setText(e.target.value)}
           maxLength={300}
           placeholder="Add a to-do, press Enter"
-          className="min-w-0 flex-1 rounded-lg border border-border bg-well px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:outline-none"
+          className="min-h-11 min-w-0 flex-1 border-0 border-b border-[#2e333b] bg-transparent px-0 py-1.5 text-sm text-[#d9d6cf] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none md:min-h-0"
         />
         <label className="sr-only" htmlFor="todo-label">Label</label>
         <select
@@ -351,7 +350,7 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           title="Label it to show it in the Feed too"
-          className="shrink-0 rounded-lg border border-border bg-well px-2 text-xs text-muted-foreground focus-visible:border-primary focus-visible:outline-none"
+          className="min-h-11 shrink-0 border border-border bg-well px-2 text-xs text-muted-foreground focus-visible:border-primary focus-visible:outline-none md:min-h-0"
         >
           <option value="">No label</option>
           {FEED_GROUPS.map((g) => (
@@ -362,6 +361,9 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
       <p aria-live="polite" className="mt-1 text-xs text-danger empty:hidden">
         {error}
       </p>
+
+      {/* Scout steps + job follow-ups that are due: same list, same rows. */}
+      {dueNow}
 
       {now.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">Nothing for today.</p>
@@ -381,8 +383,18 @@ export function DashTodo({ initial }: { initial: Todo[] }) {
         </ul>
       )}
 
+      {(tomorrowTodos.length > 0 || dueTomorrowCount > 0) && (
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="nx-lab">Tomorrow</p>
+          <ul className="mt-1">
+            {tomorrowTodos.map((t) => row(t, 'later'))}
+            {dueTomorrow}
+          </ul>
+        </div>
+      )}
+
       {(later.length > 0 || done.length > 0 || archived.length > 0) && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-2.5 text-xs text-muted-foreground">
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-2.5 text-xs text-muted-foreground [&_button]:min-h-11 md:[&_button]:min-h-0">
           {later.length > 0 && (
             <button type="button" aria-expanded={showLater} onClick={() => setShowLater(!showLater)} className="hover:text-foreground">
               Later <span className="tabular-nums">{later.length}</span> {showLater ? '▾' : '▸'}
@@ -419,7 +431,7 @@ function Menu({ onClose, children }: { onClose: () => void; children: React.Reac
     }
   }, [onClose])
   return (
-    <div ref={ref} role="menu" className="absolute right-0 top-full z-20 mt-1 grid w-64 gap-0.5 rounded-xl border border-border bg-panel p-1.5 shadow-lg">
+    <div ref={ref} role="menu" className="absolute right-0 top-full z-20 mt-1 grid w-64 gap-0.5 border border-[#2e333b] bg-[#171a20] p-1.5 shadow-lg">
       {children}
     </div>
   )
@@ -431,7 +443,7 @@ function MenuItem({ onClick, danger, children }: { onClick: () => void; danger?:
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`rounded-md px-2.5 py-1.5 text-left text-[13px] hover:bg-well ${danger ? 'text-danger' : 'text-foreground'}`}
+      className={`min-h-11 px-2.5 py-1.5 text-left text-[13px] hover:bg-well md:min-h-0 ${danger ? 'text-danger' : 'text-foreground'}`}
     >
       {children}
     </button>
@@ -452,7 +464,7 @@ function EditBox({ value, onSave, onCancel }: { value: string; onSave: (v: strin
         if (e.key === 'Enter') onSave(v)
         if (e.key === 'Escape') onCancel()
       }}
-      className="w-full rounded border border-primary bg-well px-1.5 py-0.5 text-[13.5px] focus-visible:outline-none"
+      className="w-full border border-primary bg-well px-1.5 py-0.5 text-[14px] focus-visible:outline-none"
     />
   )
 }
