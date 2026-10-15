@@ -42,6 +42,41 @@ export interface AuditLogPage {
   rows: AuditLogRow[]
 }
 
+export interface DomainLogRow extends AuditLogRow {
+  scan_count: number
+}
+
+export interface DomainLogPage {
+  total: number
+  rows: DomainLogRow[]
+}
+
+/** One row per domain (the latest scan), with how many times it's been scanned — migration 0016. */
+export async function getDomainLog(opts: {
+  limit?: number
+  offset?: number
+  minScore?: number
+  maxScore?: number
+} = {}): Promise<DomainLogPage> {
+  const sb = getSupabase()
+  const key = adminKey()
+  if (!sb || !key) return { total: 0, rows: [] }
+  const { data, error } = await sb.rpc('benchmark_admin_domains', {
+    p_secret: key,
+    p_limit: opts.limit ?? 50,
+    p_offset: opts.offset ?? 0,
+    p_min_score: opts.minScore ?? 0,
+    p_max_score: opts.maxScore ?? 100,
+  })
+  if (error || !data) return { total: 0, rows: [] }
+  return {
+    total: Number((data as { total?: number }).total ?? 0),
+    rows: Array.isArray((data as { rows?: DomainLogRow[] }).rows)
+      ? ((data as { rows: DomainLogRow[] }).rows)
+      : [],
+  }
+}
+
 export async function getAuditLog(opts: {
   limit?: number
   offset?: number

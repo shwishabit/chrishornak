@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { isAdmin } from '@/lib/admin-auth'
 import { getJobLeads } from '@/lib/admin-jobs'
 import { getDashProjects } from '@/lib/admin-dashboard'
+import { getAdminOverview, getDomainLog } from '@/lib/admin-audit'
 import { AdminLogin } from '@/components/sections/AdminLogin'
 import { DashboardTabs } from '@/components/sections/DashboardTabs'
 import { logout } from '../actions'
@@ -23,7 +23,12 @@ export default async function DashboardPage() {
     )
   }
 
-  const [leadData, projects] = await Promise.all([getJobLeads(), getDashProjects()])
+  const [leadData, projects, overview, domainLog] = await Promise.all([
+    getJobLeads(),
+    getDashProjects(),
+    getAdminOverview(),
+    getDomainLog({ limit: 500 }),
+  ])
   const rows = leadData?.rows ?? []
   const jobLeads = rows.filter((l) => l.lead_type !== 'question')
   const questionLeads = rows.filter((l) => l.lead_type === 'question')
@@ -39,9 +44,6 @@ export default async function DashboardPage() {
               What&apos;s going on across your projects, the work you&apos;re chasing, the questions you can answer, and what
               Claude Code can do for you. Type &quot;refresh my dashboard&quot; to pull in the latest.
             </p>
-            <Link href="/audit/admin" className="mt-2 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
-              ← Findability usage
-            </Link>
           </div>
           <form action={logout}>
             <button className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">Sign out</button>
@@ -49,6 +51,8 @@ export default async function DashboardPage() {
         </div>
 
         <DashboardTabs
+          overview={overview}
+          domains={domainLog.rows}
           projects={projects ?? []}
           jobLeads={jobLeads}
           questionLeads={questionLeads}

@@ -36,7 +36,7 @@ function CategoryStrip({ scores }: { scores: Record<string, number> }) {
   )
 }
 
-export function AdminAuditLog({ rows }: { rows: AuditLogRow[] }) {
+export function AdminAuditLog({ rows }: { rows: (AuditLogRow & { scan_count?: number })[] }) {
   const [sortKey, setSortKey] = useState<SortKey>('date')
   const [asc, setAsc] = useState(false)
 
@@ -110,6 +110,9 @@ export function AdminAuditLog({ rows }: { rows: AuditLogRow[] }) {
                     >
                       {r.domain}
                     </a>
+                    {r.scan_count && r.scan_count > 1 && (
+                      <span className="ml-1.5 text-xs text-muted-foreground">×{r.scan_count}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`font-heading font-bold ${scoreColor(r.overall_score).text}`}>

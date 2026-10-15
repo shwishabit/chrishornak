@@ -3,13 +3,16 @@
 import { useState } from 'react'
 import type { JobLead } from '@/lib/admin-jobs'
 import type { DashProject } from '@/lib/admin-dashboard'
+import type { AdminOverview, DomainLogRow } from '@/lib/admin-audit'
+import { AdminFindability } from './AdminFindability'
 import { AdminProjects } from './AdminProjects'
 import { AdminJobLeads } from './AdminJobLeads'
 import { AdminQuestions } from './AdminQuestions'
 import { AdminCatalog } from './AdminCatalog'
 
-type Tab = 'projects' | 'jobs' | 'questions' | 'catalog'
+type Tab = 'findability' | 'projects' | 'jobs' | 'questions' | 'catalog'
 const TABS: { id: Tab; label: string }[] = [
+  { id: 'findability', label: 'Findability' },
   { id: 'projects', label: 'Projects' },
   { id: 'jobs', label: 'Job hunt' },
   { id: 'questions', label: 'Questions to answer' },
@@ -17,19 +20,24 @@ const TABS: { id: Tab; label: string }[] = [
 ]
 
 export function DashboardTabs({
+  overview,
+  domains,
   projects,
   jobLeads,
   questionLeads,
   today,
 }: {
+  overview: AdminOverview | null
+  domains: DomainLogRow[]
   projects: DashProject[]
   jobLeads: JobLead[]
   questionLeads: JobLead[]
   today: string
 }) {
-  const [tab, setTab] = useState<Tab>('projects')
+  const [tab, setTab] = useState<Tab>('findability')
 
   const counts: Record<Tab, number> = {
+    findability: overview?.unique_domains ?? 0,
     projects: projects.length,
     jobs: jobLeads.length,
     questions: questionLeads.filter((l) => l.status === 'new').length,
@@ -55,6 +63,12 @@ export function DashboardTabs({
         ))}
       </div>
 
+      {tab === 'findability' &&
+        (overview === null ? (
+          <div className="glass-card mt-6 p-6 text-sm text-muted-foreground">Findability analytics not reachable.</div>
+        ) : (
+          <AdminFindability overview={overview} domains={domains} />
+        ))}
       {tab === 'projects' && <AdminProjects projects={projects} />}
       {tab === 'jobs' && <AdminJobLeads leads={jobLeads} today={today} />}
       {tab === 'questions' && <AdminQuestions leads={questionLeads} />}
