@@ -3,271 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SEO audit of duskroute.com after the Google deindex: what is blocking the site, the fix order, and what new content to build. Prepared by Chris Hornak.">
+    <meta name="description" content="One-page SEO audit of duskroute.com after the Google deindex: six findings and the fix for each.">
     <meta name="robots" content="noindex, nofollow">
     <title>Dusk Route SEO Audit</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --teal: #2dd4a8;
-            --teal-ink: #0d6b53;
-            --teal-wash: rgba(45,212,168,.09);
-            --teal-line: rgba(45,212,168,.4);
-            --dark: #0a0a0a;
-            --ink: #1d2624;
-            --muted: #5b6563;
-            --faint: #9aa4a2;
-            --rule: #e6e8ea;
-            --light-bg: #f7f7f8;
-            --crit: #c2412d;
-            --warn: #b7791f;
-        }
+        :root { --teal:#2dd4a8; --teal-ink:#0d6b53; --teal-wash:rgba(45,212,168,.09); --teal-line:rgba(45,212,168,.4); --dark:#0a0a0a; --ink:#1d2624; --muted:#5b6563; --faint:#9aa4a2; --rule:#e6e8ea; --light-bg:#f7f7f8; --crit:#c2412d; --warn:#b7791f; }
         * { box-sizing: border-box; }
-        html { -webkit-text-size-adjust: 100%; }
-        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--ink); background: #f1f2f3; font-size: 16px; }
-        .font-display, h1, h2, h3 { font-family: 'Sora', 'Inter', sans-serif; }
-        a { color: var(--teal-ink); }
-        code { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: .86em; background: var(--light-bg); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; }
+        body { margin: 0; background: #f1f2f3; font-family: 'Inter', system-ui, sans-serif; color: var(--ink); line-height: 1.45; }
+        .disp { font-family: 'Sora', 'Inter', sans-serif; }
+        code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; background: var(--light-bg); border: 1px solid var(--rule); border-radius: 3px; padding: 0 3px; }
+        @page { size: letter; margin: 0; }
 
-        .skip { position: absolute; left: -9999px; }
-        .skip:focus { left: 8px; top: 8px; background: #fff; padding: 8px 14px; border-radius: 6px; z-index: 10; }
+        .page { width: 8.5in; height: 11in; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+        .pad { padding-left: .62in; padding-right: .62in; }
 
-        .doc { max-width: 860px; margin: 32px auto 64px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 20px 60px rgba(0,0,0,.06); }
-        .band { background: var(--dark); display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 56px; flex-wrap: wrap; }
-        .band img { height: 26px; width: auto; display: block; }
-        .band .meta { text-align: right; }
-        .band .meta p { margin: 0; font-size: 11px; letter-spacing: .06em; color: #a3a3a3; }
-        .band .meta p:first-child { font-family: 'Sora', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .22em; color: var(--teal); margin-bottom: 2px; }
+        .band { background: var(--dark); display: flex; align-items: center; justify-content: space-between; padding-top: 13px; padding-bottom: 13px; }
+        .band img { height: 21px; width: auto; display: block; }
+        .band .r { text-align: right; }
+        .band .r p { margin: 0; font-size: 8px; letter-spacing: .05em; color: #a3a3a3; }
+        .band .r p:first-child { font-family: 'Sora', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .22em; color: var(--teal); margin-bottom: 2px; }
 
-        .wrap { padding: 0 56px; }
-        .hero { padding-top: 44px; padding-bottom: 8px; }
-        h1 { font-weight: 800; font-size: 40px; line-height: 1.08; letter-spacing: -.035em; color: #111; margin: 0; text-wrap: balance; max-width: 18ch; }
-        .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 62ch; }
+        h1 { margin: 0; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.06; letter-spacing: -.035em; color: #111; text-wrap: balance; }
+        .lede { margin: 9px 0 0; font-size: 12px; color: var(--muted); max-width: 88%; }
 
-        .facts { margin-top: 32px; background: var(--teal-wash); border: 1px solid var(--teal-line); border-radius: 6px; padding: 22px 26px; display: grid; grid-template-columns: repeat(4, 1fr); }
-        .facts > div { padding: 0 16px; border-left: 1px solid var(--teal-line); min-width: 0; }
+        .facts { margin-top: 16px; background: var(--teal-wash); border: 1px solid var(--teal-line); border-radius: 5px; padding: 13px 18px; display: grid; grid-template-columns: repeat(4, 1fr); }
+        .facts > div { padding: 0 11px; border-left: 1px solid var(--teal-line); }
         .facts > div:first-child { padding-left: 0; border-left: 0; }
-        .facts dt { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--teal-ink); margin-bottom: 6px; }
-        .facts dd { margin: 0; font-size: 14px; line-height: 1.35; }
-        .facts dd b { display: block; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; margin-bottom: 4px; color: #111; }
+        .facts dt { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 6.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--teal-ink); margin-bottom: 3px; }
+        .facts dd { margin: 0; font-size: 10px; line-height: 1.3; }
+        .facts dd b { display: block; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 16px; line-height: 1.1; color: #111; margin-bottom: 2px; }
 
-        section { padding-top: 40px; }
-        .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; border-top: 2px solid #111; padding-top: 10px; margin-bottom: 8px; }
-        .sec-head h2 { margin: 0; font-weight: 800; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: #111; }
-        .sec-head span { font-family: 'Sora', sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+        .head { display: flex; align-items: baseline; justify-content: space-between; border-top: 2px solid #111; padding-top: 7px; margin-top: 20px; }
+        .head h2 { margin: 0; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: #111; }
+        .head span { font-family: 'Sora', sans-serif; font-size: 6.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
 
-        .item { display: grid; grid-template-columns: 44px 1fr; column-gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
-        .item:last-child { border-bottom: 0; }
-        .item .n { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; color: #111; }
-        .item > div { min-width: 0; }
-        .item h3 { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.3; color: #111; text-wrap: balance; }
-        .item p { margin: 8px 0 0; color: #374140; }
-        .sev { display: inline-block; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; margin-bottom: 8px; }
-        .sev.crit { color: var(--crit); background: rgba(194,65,45,.08); }
-        .sev.minor { color: var(--warn); background: rgba(183,121,31,.1); }
-        .fix { margin-top: 12px !important; background: var(--teal-wash); border-left: 2px solid var(--teal); padding: 10px 14px; border-radius: 0 4px 4px 0; color: var(--ink) !important; }
-        .fix b { font-family: 'Sora', sans-serif; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--teal-ink); display: block; margin-bottom: 2px; }
+        .row { display: grid; grid-template-columns: 22px 1fr 1fr; column-gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+        .row:last-child { border-bottom: 0; }
+        .row .n { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 20px; line-height: 1; color: #111; }
+        .row h3 { margin: 0; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 12px; line-height: 1.25; color: #111; }
+        .row p { margin: 4px 0 0; font-size: 10px; color: #374140; }
+        .sev { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 6px; letter-spacing: .16em; text-transform: uppercase; padding: 1px 5px; border-radius: 2px; margin-right: 5px; vertical-align: 1px; }
+        .sev.c { color: var(--crit); background: rgba(194,65,45,.08); }
+        .sev.m { color: var(--warn); background: rgba(183,121,31,.1); }
+        .fix { background: var(--teal-wash); border-left: 2px solid var(--teal); padding: 5px 9px; border-radius: 0 3px 3px 0; }
+        .fix .lbl { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 6px; letter-spacing: .2em; text-transform: uppercase; color: var(--teal-ink); margin-bottom: 1px; }
+        .fix p { margin: 0; font-size: 10px; color: var(--ink); }
 
-        ol.steps { margin: 12px 0 0; padding: 0; list-style: none; counter-reset: s; }
-        ol.steps li { counter-increment: s; display: grid; grid-template-columns: 44px 1fr; column-gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
-        ol.steps li:last-child { border-bottom: 0; }
-        ol.steps li::before { content: counter(s); font-family: 'Sora', sans-serif; font-weight: 800; font-size: 20px; line-height: 1.3; color: #111; }
-
-        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 14px; }
-        .split > div { border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; min-width: 0; }
-        .split h3 { margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 7px; }
+        .split h3 { margin: 0 0 3px; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 6.5px; letter-spacing: .2em; text-transform: uppercase; }
         .split .no h3 { color: var(--crit); }
         .split .yes h3 { color: var(--teal-ink); }
-        .split ul { margin: 0; padding-left: 18px; }
-        .split li { margin: 6px 0; }
-        .note { margin-top: 14px; background: var(--light-bg); border: 1px solid var(--rule); border-radius: 5px; padding: 12px 16px; font-size: 15px; }
+        .split ul { margin: 0; padding-left: 14px; font-size: 10px; }
+        .split li { margin: 1.5px 0; }
 
-        .ideas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
-        .ideas .item { grid-template-columns: 1fr; }
+        .first { margin-top: 16px; background: var(--light-bg); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 14px; font-size: 10.5px; color: #111; }
 
-        .checks { display: grid; grid-template-columns: 18px 1fr; column-gap: 10px; row-gap: 6px; margin-top: 12px; }
-        .checks .ok { color: var(--teal); font-weight: 800; }
-        .checks p { margin: 0; }
+        .foot { margin-top: auto; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; padding-top: 8px; padding-bottom: 10px; font-size: 7px; color: var(--faint); letter-spacing: .03em; }
 
-        .cta { margin-top: 40px; background: var(--light-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-        .cta p { margin: 0; font-weight: 600; color: #111; max-width: 52ch; }
-        .cta a { display: inline-flex; align-items: center; gap: 8px; background: var(--dark); color: #fff; text-decoration: none; font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 5px; }
-        .cta a span { color: var(--teal); }
-        .cta a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-
-        .foot { margin-top: 40px; padding-top: 14px; padding-bottom: 20px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; font-size: 12px; color: var(--faint); }
-
-        @media (max-width: 768px) {
-            .doc { margin: 0; box-shadow: none; }
-            .band, .wrap { padding-left: 20px; padding-right: 20px; }
-            .band .meta { text-align: left; }
-            h1 { font-size: clamp(28px, 8vw, 36px); }
-            .lede { font-size: 17px; }
-            .facts { grid-template-columns: 1fr 1fr; gap: 18px 0; padding: 18px; }
+        @media screen and (min-width: 769px) { .wrap { display: flex; justify-content: center; padding: 30px 0 60px; } .page { box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 20px 60px rgba(0,0,0,.06); } }
+        @media screen and (min-width: 1240px) { .page { zoom: 1.4; } }
+        @media screen and (max-width: 768px) {
+            html, body { overflow-x: hidden; }
+            .page { width: 100%; height: auto; overflow: visible; }
+            .pad { padding-left: 20px; padding-right: 20px; }
+            .band { flex-wrap: wrap; gap: 8px; }
+            .band .r { text-align: left; }
+            .band .r p { font-size: 11px; }
+            h1 { font-size: clamp(26px, 8vw, 34px); }
+            .lede { font-size: 16px; max-width: none; }
+            .facts { grid-template-columns: 1fr 1fr; gap: 14px 0; padding: 14px; }
             .facts > div:nth-child(3) { padding-left: 0; border-left: 0; }
-            .split, .ideas { grid-template-columns: 1fr; }
-            .item, ol.steps li { grid-template-columns: 34px 1fr; column-gap: 12px; }
-            .item .n { font-size: 24px; }
+            .facts dt { font-size: 9px; }
+            .facts dd { font-size: 13px; }
+            .facts dd b { font-size: 19px; }
+            .head { flex-wrap: wrap; gap: 2px 10px; }
+            .head h2 { font-size: 11px; }
+            .head span { font-size: 9px; }
+            .row { grid-template-columns: 28px 1fr; row-gap: 8px; padding: 14px 0; }
+            .row .fix { grid-column: 2; }
+            .row .n { font-size: 22px; }
+            .row h3 { font-size: 16px; }
+            .row p, .fix p, .split ul { font-size: 15px; }
+            .sev, .fix .lbl, .split h3 { font-size: 9px; }
+            .split { grid-template-columns: 1fr; }
+            .first { font-size: 15px; }
+            .foot { flex-direction: column; gap: 4px; font-size: 11px; margin-top: 28px; }
+            code { overflow-wrap: anywhere; }
         }
-        @media print {
-            body { background: #fff; }
-            .doc { margin: 0; max-width: none; box-shadow: none; }
-            .cta a { border: 1px solid #111; }
-            .band, .facts, .fix, .sev { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .item, ol.steps li, .split > div { break-inside: avoid; }
-            .sec-head { break-after: avoid; }
-        }
+        @media print { body { background: #fff; } .page { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style>
 </head>
 <body>
-    <a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+<article class="page">
+    <header class="band pad">
+        <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak">
+        <div class="r">
+            <p>SEO audit &middot; deindex review</p>
+            <p>duskroute.com &middot; 15 Oct 2026</p>
+        </div>
+    </header>
 
-    <main id="main" class="doc">
-        <header class="band">
-            <img src="/docs/morning-water-sow/wordmark-reversed.svg" alt="Chris Hornak" loading="eager" decoding="async">
-            <div class="meta">
-                <p>SEO audit &middot; deindex review</p>
-                <p>duskroute.com &middot; 15 Oct 2026</p>
-            </div>
-        </header>
+    <div class="pad" style="padding-top:20px;">
+        <h1>Why Google dropped Dusk Route, and how to get it back.</h1>
+        <p class="lede">Duplicate data is part of it, but not the main cause. Three settings hide the site's best pages from Google. Fix those first.</p>
 
-        <div class="wrap hero">
-            <h1>Why Google dropped Dusk Route, and how to get it back.</h1>
-            <p class="lede">Duplicate data is part of the problem, but it is not the main cause. Three settings on the site hide its best pages from Google. Fix those first, then give Google pages that only Dusk Route could publish.</p>
+        <dl class="facts">
+            <div><dt>Venue pages</dt><dd><b>2,116</b>None in a sitemap. Both I checked are noindex</dd></div>
+            <div><dt>CSS and JS</dt><dd><b>Blocked</b>robots.txt stops Google rendering pages</dd></div>
+            <div><dt>Per suburb</dt><dd><b>4 pages</b>Suburb, happy hour, stats, prices</dd></div>
+            <div><dt>Thinnest page</dt><dd><b>~115 words</b>1 venue, 1 special, indexed</dd></div>
+        </dl>
 
-            <dl class="facts">
-                <div><dt>Venue pages</dt><dd><b>2,116</b>None in a sitemap. Both I checked are set to noindex</dd></div>
-                <div><dt>CSS and JS</dt><dd><b>Blocked</b>robots.txt stops Google from rendering the page</dd></div>
-                <div><dt>Per suburb</dt><dd><b>4 pages</b>Suburb, happy hour, stats and prices, mostly the same data</dd></div>
-                <div><dt>Thinnest page</dt><dd><b>~115 words</b>1 venue, 1 special, on an indexed stats page</dd></div>
-            </dl>
+        <div class="head"><h2>What I found</h2><span>Most serious first</span></div>
+
+        <div class="row">
+            <span class="n">1</span>
+            <div><h3><span class="sev c">Critical</span>Venue pages are set to noindex.</h3><p><code>websters-bar-newtown</code> and <code>lord-dudley-hotel</code> both carry <code>noindex, follow</code>. These are your most unique pages, so Google judges the site on templates.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>Remove the noindex from venue pages and add them to the sitemap.</p></div>
+        </div>
+        <div class="row">
+            <span class="n">2</span>
+            <div><h3><span class="sev c">Critical</span>robots.txt blocks the CSS and JavaScript.</h3><p><code>Disallow: /_next/static/chunks/</code> blocks the files every page needs to render.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>Delete that line. Check the screenshot in URL Inspection &gt; View tested page.</p></div>
+        </div>
+        <div class="row">
+            <span class="n">3</span>
+            <div><h3><span class="sev c">Critical</span>Each suburb has up to 4 pages of the same data.</h3><p>595 template pages: suburb, <code>/happyhour</code>, <code>/statistics</code>, <code>/drink-prices</code>. The 252 <code>/happyhour</code> pages sit in 2 sitemaps outside the index, blocked in robots.txt, yet live.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>301 <code>/happyhour</code> to the suburb page. Merge stats and prices into it, or noindex them under ~10 venues.</p></div>
+        </div>
+        <div class="row">
+            <span class="n">4</span>
+            <div><h3><span class="sev m">Minor</span>Every sitemap date is the same.</h3><p>Almost every URL shows <code>2026-10-07T02:46</code>, so Google ignores lastmod.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>Use the date the deals on each page changed.</p></div>
+        </div>
+        <div class="row">
+            <span class="n">5</span>
+            <div><h3><span class="sev m">Next</span>Very little content only Dusk Route has.</h3><p>Most pages are templates. You already have the data for pages no one else can publish.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>A monthly price report ("What a pint costs in Sydney"), human-written suburb intros, venue photos.</p></div>
+        </div>
+        <div class="row">
+            <span class="n">6</span>
+            <div><h3><span class="sev m">Next</span>Almost no real links, and a pile of spam ones.</h3><p>DR 1.6. Nearly all 286 linking sites are one <code>.shop</code> spam network. Google ignores most of these.</p></div>
+            <div class="fix"><p class="lbl">Fix</p><p>Pitch the price report to Time Out and Broadsheet. Offer venues a badge. Disavow only after a manual action.</p></div>
         </div>
 
-        <div class="wrap">
-            <section aria-labelledby="h-find">
-                <div class="sec-head"><h2 id="h-find">What I found</h2><span>Most serious first</span></div>
-
-                <div class="item">
-                    <span class="n">1</span>
-                    <div>
-                        <span class="sev crit">Critical</span>
-                        <h3>Venue pages are set to noindex.</h3>
-                        <p>I checked <code>/sydney/newtown/websters-bar-newtown</code> and <code>/sydney/woollahra/lord-dudley-hotel</code>. Both carry <code>&lt;meta name="robots" content="noindex, follow"&gt;</code>, and no venue page is in any sitemap. The homepage lists 2,116 venues. If the noindex is in the venue template, it covers all of them. These pages hold the address, the menu, the deal times and a last-updated date. Google is told to skip them, so it judges the whole site on the template pages.</p>
-                        <p class="fix"><b>Fix</b>Remove the noindex from venue pages and add them to the sitemap.</p>
-                    </div>
-                </div>
-
-                <div class="item">
-                    <span class="n">2</span>
-                    <div>
-                        <span class="sev crit">Critical</span>
-                        <h3>robots.txt blocks the CSS and JavaScript.</h3>
-                        <p>The line <code>Disallow: /_next/static/chunks/</code> blocks the files every Next.js page needs to render. Google sees an unstyled, half-built page.</p>
-                        <p class="fix"><b>Fix</b>Delete that line. Then open URL Inspection in Search Console, click View tested page, and check the screenshot.</p>
-                    </div>
-                </div>
-
-                <div class="item">
-                    <span class="n">3</span>
-                    <div>
-                        <span class="sev crit">Critical</span>
-                        <h3>Each suburb has up to 4 pages of the same data.</h3>
-                        <p>The submitted sitemap lists 358 URLs. 316 of them are suburb pages: 106 suburb pages, plus <code>/statistics</code> and <code>/drink-prices</code> for 105 of them. <code>/queenstown-lakes/arrowtown/statistics</code> has about 115 words, 1 venue and 1 special. <code>/sydney/newtown/drink-prices</code> has 162 words, and most of it is boilerplate.</p>
-                        <p>Two more sitemaps sit outside the sitemap index: <code>sitemap_suburbs_happyhour.xml</code> (245 URLs) and <code>sitemap_regions_happyhour.xml</code> (7 URLs). robots.txt blocks both files. Their <code>/happyhour</code> pages are live and indexable, and they repeat the suburb page. <code>/sydney/alexandria/happyhour</code> has the same meta description as <code>/sydney/alexandria</code>, and about half the same text.</p>
-                        <p>That makes 595 suburb and region pages built from the same data. Hundreds of near-identical pages with little text is the pattern Google's scaled-content filters look for.</p>
-                        <p class="fix"><b>Fix</b>301-redirect each <code>/happyhour</code> page to its suburb page, or set its canonical to the suburb page. Then delete the two orphan sitemaps. Merge statistics and drink prices into the suburb page as sections, or noindex them for suburbs with fewer than about 10 venues.</p>
-                    </div>
-                </div>
-
-                <div class="item">
-                    <span class="n">4</span>
-                    <div>
-                        <span class="sev minor">Minor</span>
-                        <h3>Every sitemap date is the same.</h3>
-                        <p>Almost every URL shows the same build time, <code>2026-10-07T02:46</code>. Google stops trusting lastmod when every page changes at once.</p>
-                        <p class="fix"><b>Fix</b>Set lastmod to the date the deals on that page changed.</p>
-                    </div>
-                </div>
-
-                <div class="item">
-                    <span class="n">5</span>
-                    <div>
-                        <span class="sev minor">Next</span>
-                        <h3>Very little content only Dusk Route has.</h3>
-                        <p>Most pages are templates built from the same data. Google needs pages it can't find anywhere else, and you already have the data for them.</p>
-                        <p class="fix"><b>Fix</b>Start a monthly price report, such as "What a pint costs in Sydney." Add a short intro for your top suburbs, written by a person. Ask venues that claim their page for a description and photos.</p>
-                    </div>
-                </div>
-
-                <div class="item">
-                    <span class="n">6</span>
-                    <div>
-                        <span class="sev minor">Next</span>
-                        <h3>Almost no real links, and a pile of spam ones.</h3>
-                        <p>Ahrefs shows Domain Rating 1.6 and 286 linking sites. Nearly all of them are one spam network of auto-generated <code>.shop</code> pages ("Buy aggressive crowd links from duskroute.com"). You almost certainly didn't buy them, and Google ignores most links like this. The bigger problem is having almost no real links.</p>
-                        <p class="fix"><b>Fix</b>Send the price report to Sydney food and drink sites such as Time Out and Broadsheet. Offer venues a "Find our specials on Dusk Route" badge for their own site. Skip paid link packages. Only disavow the spam links if Search Console shows a manual action for unnatural links.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section aria-labelledby="h-order">
-                <div class="sec-head"><h2 id="h-order">Fix order</h2><span>Do these in sequence</span></div>
-                <ol class="steps">
-                    <li><span>Open Search Console, then Security &amp; Manual Actions, then Manual actions. If a penalty shows, make the fixes below and send a reconsideration request. If none shows, the drop is algorithmic: there is no request to send, so make the fixes and wait for a recrawl.</span></li>
-                    <li><span>Remove the noindex from venue pages and add them to the sitemap.</span></li>
-                    <li><span>Delete the <code>/_next/static/chunks/</code> line from robots.txt.</span></li>
-                    <li><span>Redirect or canonicalize the <code>/happyhour</code> pages to their suburb pages. Merge or noindex the thin statistics and drink-prices pages.</span></li>
-                    <li><span>Set real lastmod dates.</span></li>
-                    <li><span>Request indexing for your 10 to 20 strongest venue and suburb pages.</span></li>
-                </ol>
-            </section>
-
-            <section aria-labelledby="h-noindex">
-                <div class="sec-head"><h2 id="h-noindex">What to noindex, and what to keep</h2><span>Show Google your best pages only</span></div>
-                <div class="split">
-                    <div class="no">
-                        <h3>Noindex</h3>
-                        <ul>
-                            <li><code>/happyhour</code> pages. A 301 or a canonical to the suburb page is better than noindex here.</li>
-                            <li><code>/statistics</code> and <code>/drink-prices</code> for suburbs under about 10 venues.</li>
-                            <li>Suburb pages with only 1 or 2 venues, until they fill up.</li>
-                            <li><code>/venue-search</code>. It is internal search results.</li>
-                            <li><code>/nearby</code>. It changes with the visitor's location.</li>
-                            <li><code>/map</code>, unless Search Console shows it gets search traffic.</li>
-                        </ul>
-                    </div>
-                    <div class="yes">
-                        <h3>Keep indexed</h3>
-                        <ul>
-                            <li>Venue pages, with the noindex removed.</li>
-                            <li>Suburbs with real depth. Newtown has 55 venues and 117 specials.</li>
-                            <li>Region pages such as <code>/sydney</code> and <code>/blue-mountains</code>.</li>
-                            <li>List pages such as <code>/sydney/cheapest-pints</code>. They match what people search for.</li>
-                            <li>About, contact, privacy and terms.</li>
-                        </ul>
-                    </div>
-                </div>
-                <p class="note"><strong>Do not also block a noindexed page in robots.txt.</strong> Google has to crawl the page to read the tag. Remove every noindexed URL from the sitemap too.</p>
-            </section>
-
-            <section aria-labelledby="h-ok">
-                <div class="sec-head"><h2 id="h-ok">What is already working</h2><span>Leave these alone</span></div>
-                <div class="checks">
-                    <span class="ok">&#10003;</span><p>Fake URLs return a real 404, not a blank page.</p>
-                    <span class="ok">&#10003;</span><p>www.duskroute.com 301-redirects to the bare domain.</p>
-                    <span class="ok">&#10003;</span><p>Canonical tags point to the page itself.</p>
-                    <span class="ok">&#10003;</span><p>Page titles are unique, and venue pages carry BarOrPub and Offer structured data.</p>
-                </div>
-                <p class="note" style="color:var(--muted);">Not checked: Search Console data (including any manual action), page speed, and a full crawl of every URL. I did not open <code>/mausoleum</code>, the region <code>/routes</code> pages or the day-filter links. If <code>/mausoleum</code> lists closed venues, noindex it.</p>
-            </section>
-
-            <footer class="foot">
-                <span>Chris Hornak &middot; chrishornak.com</span>
-                <span>From duskroute.com, its robots.txt, all 6 sitemaps and Ahrefs, read 15 Oct 2026</span>
-            </footer>
+        <div class="head"><h2>What to noindex, and what to keep</h2><span>Never block a noindexed page in robots.txt</span></div>
+        <div class="split">
+            <div class="no"><h3>Noindex</h3><ul>
+                <li>Stats and prices pages under ~10 venues</li>
+                <li>Suburbs with only 1 or 2 venues</li>
+                <li><code>/venue-search</code>, <code>/nearby</code>, and <code>/map</code> unless it gets traffic</li>
+            </ul></div>
+            <div class="yes"><h3>Keep indexed</h3><ul>
+                <li>Venue pages, suburbs with real depth, region pages</li>
+                <li>List pages such as <code>/sydney/cheapest-pints</code></li>
+                <li>About, contact, privacy and terms</li>
+            </ul></div>
         </div>
-    </main>
+
+        <p class="first"><strong>Start in Search Console &gt; Manual actions.</strong> A penalty there needs a reconsideration request after the fixes. No penalty means make the fixes, then request indexing for your 10 to 20 best pages.</p>
+    </div>
+
+    <footer class="foot pad">
+        <span>Chris Hornak &middot; chrishornak.com</span>
+        <span>From duskroute.com, robots.txt, all 6 sitemaps and Ahrefs, 15 Oct 2026</span>
+    </footer>
+</article>
+</div>
 </body>
 </html>
