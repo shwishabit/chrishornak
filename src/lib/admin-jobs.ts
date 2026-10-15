@@ -33,6 +33,7 @@ export interface JobLead {
   pay_hr: number | null
   pay_basis: string | null
   deal_usd: number | null
+  lead_type: 'job' | 'question'
 }
 
 export interface JobLeadRun {
