@@ -17,4 +17,12 @@ export const blueskyPosts: BlueskyPost[] = [
       },
     ],
   },
+  {
+    date: '2026-10-16',
+    parts: [
+      {
+        text: 'Your contact form might be the quietest problem on your website.\n\nIt looks fine. The button works. The message goes nowhere.\n\nNobody calls to say "I tried to reach you." They just call someone else.\n\nFix for today: send yourself a message through your own form. Did it land?',
+      },
+    ],
+  },
 ]
