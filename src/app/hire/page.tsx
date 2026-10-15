@@ -114,6 +114,18 @@ export default function HirePage() {
       <header className="relative px-6 pt-32 pb-16 md:px-12 md:pt-44 md:pb-24 lg:px-24">
         <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-16">
           <div className="min-w-0">
+            {/* Who they'd hire: face + name before the headline (Chris, 2026-10-14) */}
+            <div className="flex items-center gap-4">
+              <Image
+                src="/images/chris-hornak-headshot.jpg"
+                alt="Chris Hornak"
+                width={80}
+                height={80}
+                priority
+                className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-primary-line md:h-20 md:w-20"
+              />
+              <div className="grid justify-items-start gap-1.5">
+                <p className="font-heading text-lg leading-none font-bold">Chris Hornak</p>
             <p
               className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium ${
                 hireContent.available
@@ -127,6 +139,8 @@ export default function HirePage() {
               />
               {hireContent.available ? hireContent.availableText : hireContent.bookedText}
             </p>
+              </div>
+            </div>
             <h1 className="mt-6 max-w-[18ch] font-heading text-4xl leading-[1.08] font-bold tracking-tight text-balance md:text-6xl lg:text-[56px]">
               {hireContent.headline}{' '}
               <span className="text-primary">{hireContent.headlineAccent}</span>
