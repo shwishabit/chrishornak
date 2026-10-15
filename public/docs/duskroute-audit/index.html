@@ -138,9 +138,9 @@
             <p class="lede">Duplicate data is part of the problem, but it is not the main cause. Three settings on the site hide its best pages from Google. Fix those first, then give Google pages that only Dusk Route could publish.</p>
 
             <dl class="facts">
-                <div><dt>Venue pages</dt><dd><b>noindex</b>Your most unique pages tell Google to skip them</dd></div>
+                <div><dt>Venue pages</dt><dd><b>2,116</b>None in a sitemap. Both I checked are set to noindex</dd></div>
                 <div><dt>CSS and JS</dt><dd><b>Blocked</b>robots.txt stops Google from rendering the page</dd></div>
-                <div><dt>Sitemap</dt><dd><b>315 of 358</b>URLs are suburb template pages</dd></div>
+                <div><dt>Per suburb</dt><dd><b>4 pages</b>Suburb, happy hour, stats and prices, mostly the same data</dd></div>
                 <div><dt>Thinnest page</dt><dd><b>~115 words</b>1 venue, 1 special, on an indexed stats page</dd></div>
             </dl>
         </div>
@@ -154,7 +154,7 @@
                     <div>
                         <span class="sev crit">Critical</span>
                         <h3>Venue pages are set to noindex.</h3>
-                        <p>I checked <code>/sydney/newtown/websters-bar-newtown</code> and <code>/sydney/woollahra/lord-dudley-hotel</code>. Both carry <code>&lt;meta name="robots" content="noindex, follow"&gt;</code>, and no venue page is in the sitemap. These pages hold the address, the menu, the deal times and a last-updated date. Google is told to skip them, so it judges the whole site on the template pages.</p>
+                        <p>I checked <code>/sydney/newtown/websters-bar-newtown</code> and <code>/sydney/woollahra/lord-dudley-hotel</code>. Both carry <code>&lt;meta name="robots" content="noindex, follow"&gt;</code>, and no venue page is in any sitemap. The homepage lists 2,116 venues. If the noindex is in the venue template, it covers all of them. These pages hold the address, the menu, the deal times and a last-updated date. Google is told to skip them, so it judges the whole site on the template pages.</p>
                         <p class="fix"><b>Fix</b>Remove the noindex from venue pages and add them to the sitemap.</p>
                     </div>
                 </div>
@@ -173,9 +173,11 @@
                     <span class="n">3</span>
                     <div>
                         <span class="sev crit">Critical</span>
-                        <h3>Most of the sitemap is thin template pages.</h3>
-                        <p>The sitemap lists about 358 URLs. 315 of them are 105 suburbs with 3 pages each: the suburb page, <code>/statistics</code> and <code>/drink-prices</code>. <code>/queenstown-lakes/arrowtown/statistics</code> has about 115 words, 1 venue and 1 special. <code>/sydney/newtown/drink-prices</code> has 162 words, and most of it is boilerplate. Hundreds of near-identical pages with little text is the pattern Google's scaled-content filters look for.</p>
-                        <p class="fix"><b>Fix</b>Merge statistics and drink prices into the suburb page as sections, or noindex them for suburbs with fewer than about 10 venues.</p>
+                        <h3>Each suburb has up to 4 pages of the same data.</h3>
+                        <p>The submitted sitemap lists 358 URLs. 316 of them are suburb pages: 106 suburb pages, plus <code>/statistics</code> and <code>/drink-prices</code> for 105 of them. <code>/queenstown-lakes/arrowtown/statistics</code> has about 115 words, 1 venue and 1 special. <code>/sydney/newtown/drink-prices</code> has 162 words, and most of it is boilerplate.</p>
+                        <p>Two more sitemaps sit outside the sitemap index: <code>sitemap_suburbs_happyhour.xml</code> (245 URLs) and <code>sitemap_regions_happyhour.xml</code> (7 URLs). robots.txt blocks both files. Their <code>/happyhour</code> pages are live and indexable, and they repeat the suburb page. <code>/sydney/alexandria/happyhour</code> has the same meta description as <code>/sydney/alexandria</code>, and about half the same text.</p>
+                        <p>That makes 595 suburb and region pages built from the same data. Hundreds of near-identical pages with little text is the pattern Google's scaled-content filters look for.</p>
+                        <p class="fix"><b>Fix</b>301-redirect each <code>/happyhour</code> page to its suburb page, or set its canonical to the suburb page. Then delete the two orphan sitemaps. Merge statistics and drink prices into the suburb page as sections, or noindex them for suburbs with fewer than about 10 venues.</p>
                     </div>
                 </div>
 
@@ -196,7 +198,7 @@
                     <li><span>Open Search Console, then Security &amp; Manual Actions, then Manual actions. If a penalty shows, make the fixes below and send a reconsideration request. If none shows, the drop is algorithmic: there is no request to send, so make the fixes and wait for a recrawl.</span></li>
                     <li><span>Remove the noindex from venue pages and add them to the sitemap.</span></li>
                     <li><span>Delete the <code>/_next/static/chunks/</code> line from robots.txt.</span></li>
-                    <li><span>Merge or noindex the thin statistics and drink-prices pages.</span></li>
+                    <li><span>Redirect or canonicalize the <code>/happyhour</code> pages to their suburb pages. Merge or noindex the thin statistics and drink-prices pages.</span></li>
                     <li><span>Set real lastmod dates.</span></li>
                     <li><span>Request indexing for your 10 to 20 strongest venue and suburb pages.</span></li>
                 </ol>
@@ -208,6 +210,7 @@
                     <div class="no">
                         <h3>Noindex</h3>
                         <ul>
+                            <li><code>/happyhour</code> pages. A 301 or a canonical to the suburb page is better than noindex here.</li>
                             <li><code>/statistics</code> and <code>/drink-prices</code> for suburbs under about 10 venues.</li>
                             <li>Suburb pages with only 1 or 2 venues, until they fill up.</li>
                             <li><code>/venue-search</code>. It is internal search results.</li>
@@ -287,7 +290,7 @@
 
             <footer class="foot">
                 <span>Chris Hornak &middot; chrishornak.com</span>
-                <span>From duskroute.com, its robots.txt and sitemaps, read 15 Oct 2026</span>
+                <span>From duskroute.com, its robots.txt and all 6 sitemaps, read 15 Oct 2026</span>
             </footer>
         </div>
     </main>
