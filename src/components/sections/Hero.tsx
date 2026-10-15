@@ -2,13 +2,24 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
-import { heroContent } from '@/lib/data'
+import { heroContent, hireContent } from '@/lib/data'
 import { ease } from '@/lib/animations'
 
 export function Hero() {
   return (
     <section className="relative flex min-h-[85vh] flex-col justify-center px-6 pt-28 md:min-h-screen md:pt-24 md:px-12 lg:px-24">
       <div className="relative mx-auto w-full max-w-5xl">
+        {/* Contract-work link for hirers who land here from a pitch (/hire, 2026-10-14) */}
+        {hireContent.available && (
+          <a
+            href="/hire"
+            className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary-line bg-primary-deep px-3.5 py-1.5 text-sm font-medium text-primary transition-colors duration-200 hover:border-primary"
+          >
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+            Available for contract work <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </a>
+        )}
+
         {/* H1 — asymmetric, left-aligned. Plain HTML for instant LCP. */}
         <h1 className="max-w-3xl font-heading text-4xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl">
           {heroContent.headline}

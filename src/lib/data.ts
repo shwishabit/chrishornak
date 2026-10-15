@@ -15,6 +15,7 @@ export const navLinks: NavLink[] = [
   { label: 'About', href: '/#about' },
   { label: 'Approach', href: '/#services' },
   { label: 'Work', href: '/work' },
+  { label: 'Hire me', href: '/hire' },
   { label: 'Blog', href: '/blog' },
   { label: 'Be The Signal', href: '/signal' },
 ]
@@ -62,12 +63,48 @@ export const heroContent = {
   ctaLink: 'https://cal.com/chris-hornak/30min',
 }
 
+/**
+ * /hire: the page every contract / freelance pitch links to (Chris, 2026-10-14).
+ * Builds first, strategy behind it. No prices. `available` is the one switch:
+ * false swaps the "Taking new contract work" line for a booked-up line, the
+ * form stays open.
+ */
+export const hireContent = {
+  available: true,
+  availableText: 'Taking new contract work',
+  bookedText: 'Booked up right now. Ask about later dates.',
+  // Hirers' own asks (job-hunting/applications, Aug–Oct 2026): "designed and built", work on the
+  // site they already have, mobile-first, SEO, design plus copy together. Chris: design, write,
+  // build and find. Accent line in teal, like the homepage hero.
+  headline: 'I design, write and build your site.',
+  headlineAccent: 'Then I make sure people find it.',
+  subheadline:
+    'Freelance and contract websites, fully remote. A new site on my own system with Sanity as your editor, or fixes to the one you already have. Mobile-first, ready for search and AI, and I do the work myself.',
+  ctaText: 'Tell me about the role',
+  builds: [
+    { slug: 'custom-craft', caption: 'Custom Craft', detail: 'Home builder' },
+    { slug: 'tommie-whitener', caption: 'Tommie W. Whitener', detail: 'Author' },
+    { slug: 'pontiva', caption: 'Pontiva Advisory', detail: 'Energy advisory' },
+  ],
+} as const
+
+/** Choices on the /hire role form. The server action only accepts these. */
+export const ROLE_TIMELINES = ['As soon as possible', 'Within a month', 'In 1–3 months', 'Not sure yet'] as const
+export const ROLE_BUDGETS = [
+  'Under $1,000',
+  '$1,000–$3,000',
+  '$3,000–$10,000',
+  '$10,000+',
+  'Hourly',
+  'Not set yet',
+] as const
+
 export const aboutContent = {
   headline: 'Strategy first. Everything else follows.',
   body: [
     'You don\'t have a marketing problem. You have a strategy problem. Most businesses hire marketers to check boxes — run some ads, write some blogs, fix the SEO. And most of it doesn\'t work because nobody asked the hard question first: what\'s actually going to move this business forward?',
     'That\'s what I do. I\'ve built content companies, launched growth agencies, and helped businesses at every stage — from their first website to full-scale marketing operations. The principle is always the same: strategy before tactics.',
-    'For smaller projects, I work hands-on. For larger ones, I bring in the right people. Either way, you get someone who\'s thinking about your business — not just executing a checklist.',
+    'I do the work myself, hands-on, from the first call to the launch. You get someone who\'s thinking about your business — not just executing a checklist.',
   ],
 }
 
@@ -230,11 +267,11 @@ export const homeFaqs = [
   },
   {
     question: 'What does working together look like?',
-    answer: 'It starts with a conversation. I diagnose what\'s working and what isn\'t, build a strategy, then either execute hands-on or bring in the right team. I stay involved either way.',
+    answer: 'It starts with a conversation. I diagnose what\'s working and what isn\'t, build a strategy, then do the work hands-on. I stay involved until it\'s working.',
   },
   {
     question: 'Do you do the work yourself or outsource it?',
-    answer: 'Both. For smaller projects I work hands-on. For larger ones I bring in specialists through Blog Hands and Swift Growth Marketing — companies I built specifically for this. You always work with me directly on strategy.',
+    answer: 'I do it myself. The strategy, the build, the writing and the SEO are all hands-on, and you work with me directly from start to finish.',
   },
   {
     question: 'What if I just need a website?',

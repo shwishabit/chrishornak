@@ -95,7 +95,8 @@ export function Navigation() {
         </a>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-8 md:flex">
+        {/* lg, not md: with "Hire me" added (2026-10-14) the links wrapped and pushed the logo out at 768 */}
+        <div className="hidden items-center gap-5 whitespace-nowrap lg:flex xl:gap-8">
           {navLinks.map((link) => (
             <a
               key={link.label}
@@ -118,7 +119,7 @@ export function Navigation() {
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-11 w-11 items-center justify-center md:hidden"
+          className="flex h-11 w-11 items-center justify-center lg:hidden"
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"
@@ -137,7 +138,7 @@ export function Navigation() {
             transition={{ duration: 0.2 }}
             id="mobile-menu"
             role="menu"
-            className="glass fixed top-20 right-4 left-4 z-40 flex max-h-[calc(100dvh-6rem)] flex-col gap-4 overflow-y-auto p-6 md:hidden"
+            className="glass fixed top-20 right-4 left-4 z-40 flex max-h-[calc(100dvh-6rem)] flex-col gap-4 overflow-y-auto p-6 lg:hidden"
           >
             {navLinks.map((link) => (
               <a

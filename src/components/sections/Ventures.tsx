@@ -36,7 +36,7 @@ export function Ventures() {
           className="mt-14 max-w-2xl"
         >
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Every project starts with a conversation. Depending on what you need, I work hands-on or bring in the right team through{' '}
+            Every project starts with a conversation. Then I do the work myself, hands-on, the same way I built{' '}
             <a
               href="https://bloghands.com"
               target="_blank"
@@ -54,7 +54,7 @@ export function Ventures() {
             >
               Swift Growth Marketing
             </a>
-            . Either way, I stay involved.
+            . I stay involved until it&apos;s working.
           </p>
         </motion.div>
 

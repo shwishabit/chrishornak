@@ -11,7 +11,7 @@ const steps = [
   { num: '1', title: 'Conversation', detail: 'We talk about your business, your goals, and what\'s not working.' },
   { num: '2', title: 'Diagnosis', detail: 'I dig into the data, your market, and your competition.', link: { href: '/tools', label: 'Start it yourself: three free checks' } },
   { num: '3', title: 'Strategy', detail: 'A clear plan — what to do, why, and in what order.' },
-  { num: '4', title: 'Execution', detail: 'Hands-on or with a team. I stay involved until it\'s working.' },
+  { num: '4', title: 'Execution', detail: 'Hands-on, by me. I stay involved until it\'s working.' },
 ]
 
 const initialState: ContactFormState = { success: false, message: '' }
