@@ -100,7 +100,7 @@ export function AdminAuditLog({ rows }: { rows: (AuditLogRow & { scan_count?: nu
               const fails = r.issues.filter((i) => i.s === 'fail').length
               const warns = r.issues.filter((i) => i.s === 'warn').length
               return (
-                <tr key={r.id} className="border-b border-border/50 last:border-0 hover:bg-foreground/[0.02]">
+                <tr key={r.id ?? r.domain} className="border-b border-border/50 last:border-0 hover:bg-foreground/[0.02]">
                   <td className="px-4 py-3">
                     <a
                       href={`https://${r.domain}`}
