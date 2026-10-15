@@ -106,7 +106,7 @@ export function DashStats({
       id: 'f0',
       label: 'f0rmless',
       minor: true,
-      badge: f0 ? <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"><i className={`h-1.5 w-1.5 rounded-full ${f0Red ? 'bg-danger' : 'bg-primary'}`} />{f0Red ? `${f0Issues ?? ''} issues` : 'ok'}</span> : undefined,
+      badge: f0 ? <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] text-muted-foreground"><i className={`h-1.5 w-1.5 rounded-full ${f0Red ? 'bg-danger' : 'bg-primary'}`} />{f0Red ? `${f0Issues ?? ''} issues` : 'ok'}</span> : undefined,
       big: <>{vit(/entries=(\d+)/)}<small>matches</small></>,
       sub: <><b>{vit(/\blive=(\d+)/)}</b> live now</>,
     },

@@ -3,7 +3,7 @@ import { getJobLeads } from '@/lib/admin-jobs'
 import { getBlogHandsStats, getDashState, type TodayItem } from '@/lib/admin-dashboard'
 import { getAdminOverview, getDomainLog } from '@/lib/admin-audit'
 import { DashboardTabs } from './DashboardTabs'
-import { DashHeader, DashHelp, DashNextUp } from './DashTop'
+import { DashCalendar, DashHeader, DashHelp, DashNextUp } from './DashTop'
 import { DashStats } from './DashStats'
 import { logout } from '@/app/audit/admin/actions'
 
@@ -63,12 +63,7 @@ export async function DashboardView() {
   return (
     <main id="main-content" className="relative min-h-screen px-4 py-10 md:px-10 md:py-12">
       <div className="mx-auto grid max-w-310 gap-8 min-[1800px]:max-w-370">
-        <DashHeader
-          brief={brief}
-          refreshed={state?.updated.today}
-          events={state?.calendar?.events ?? []}
-          calendarConnected={!!state?.calendar?.calendars.length}
-        />
+        <DashHeader brief={brief} refreshed={state?.updated.today} />
 
         {!state && (
           <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning">
@@ -93,7 +88,10 @@ export async function DashboardView() {
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <DashNextUp items={items} />
-          <DashHelp questions={newQuestions} />
+          <div className="grid min-w-0 content-start gap-5">
+            <DashCalendar events={state?.calendar?.events ?? []} connected={!!state?.calendar?.calendars.length} />
+            <DashHelp questions={newQuestions} />
+          </div>
         </div>
 
         <DashboardTabs

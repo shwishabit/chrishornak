@@ -3,8 +3,8 @@ import type { CalEvent, TodayItem } from '@/lib/admin-dashboard'
 import { CONTRA_JOBS, ago } from '@/lib/dash-format'
 import { CopyButton, OutLink } from './DashParts'
 
-/* Top of the dashboard (v3, 2026-10-15): date + one-line brief + calendar,
- * then Next up beside People you can help. */
+/* Top of the dashboard (v3, 2026-10-15): date + one-line brief, then Next up
+ * beside a right column of Calendar over People you can help. */
 
 const TZ = 'America/New_York'
 const LEVEL_DOT: Record<TodayItem['level'], string> = { red: 'bg-danger', amber: 'bg-warning', plain: 'bg-muted-foreground', green: 'bg-primary' }
@@ -12,76 +12,67 @@ const LEVEL_DOT: Record<TodayItem['level'], string> = { red: 'bg-danger', amber:
 const nyDay = (iso: string) => (iso.length === 10 ? iso : new Date(iso).toLocaleDateString('en-CA', { timeZone: TZ }))
 const time = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: TZ })
 
-function CalendarLine({ events, connected }: { events: CalEvent[]; connected: boolean }) {
-  if (!connected) {
-    return (
-      <details className="text-right text-xs text-muted-foreground">
-        <summary className="cursor-pointer list-none">
-          Calendar not connected · <span className="text-primary">connect</span>
-        </summary>
-        <ol className="mt-2 list-decimal space-y-0.5 pl-5 text-left">
-          <li>Google Calendar → Settings → your calendar → <b className="text-foreground">Integrate calendar</b></li>
-          <li>Copy <b className="text-foreground">Secret address in iCal format</b></li>
-          <li>Paste it after <code>ACCOUNT_N_ICS_URL=</code> in <code>C:\Users\Blog Hands\.claude\dashboard.env</code></li>
-        </ol>
-      </details>
-    )
-  }
+/** Calendar card for the right column: today first, then the rest of the week. */
+export function DashCalendar({ events, connected }: { events: CalEvent[]; connected: boolean }) {
   const today = new Date().toLocaleDateString('en-CA', { timeZone: TZ })
   const now = Date.now()
-  const todays = events.filter((e) => nyDay(e.start) === today && (e.allDay || Date.parse(e.end ?? e.start) >= now))
-  const next = todays.find((e) => !e.allDay) ?? todays[0]
+  const upcoming = events.filter((e) => e.allDay || Date.parse(e.end ?? e.start) >= now)
   const days = new Map<string, CalEvent[]>()
-  for (const e of events) days.set(nyDay(e.start), [...(days.get(nyDay(e.start)) ?? []), e])
+  for (const e of upcoming) days.set(nyDay(e.start), [...(days.get(nyDay(e.start)) ?? []), e])
+  if (!days.has(today)) days.set(today, [])
+  const ordered = [...days.entries()].sort(([x], [y]) => x.localeCompare(y))
 
   return (
-    <details className="group text-right text-xs text-muted-foreground">
-      <summary className="cursor-pointer list-none">
-        {next ? (
-          <>
-            Next: <b className="font-medium text-foreground">{next.allDay ? 'All day' : time(next.start)}</b> {next.title}
-            {todays.length > 1 && ` · +${todays.length - 1} today`}
-          </>
-        ) : (
-          'Nothing else on the calendar today'
-        )}
-        <span className="ml-1 text-primary">· week</span>
-      </summary>
-      <div className="mt-3 grid max-h-96 gap-3 overflow-y-auto rounded-xl border border-border bg-panel p-4 text-left">
-        {[...days.entries()].map(([d, evs]) => (
-          <div key={d}>
-            <p className={`text-[11px] font-medium uppercase tracking-wide ${d === today ? 'text-primary' : 'text-muted-foreground'}`}>
-              {d === today ? 'Today' : new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </p>
-            <ul className="mt-1 grid gap-1">
-              {evs.map((e, i) => (
-                <li key={i} className="flex gap-3 text-sm text-foreground">
-                  <span className="w-16 shrink-0 tabular-nums text-muted-foreground">{e.allDay ? 'All day' : time(e.start)}</span>
-                  <span className="min-w-0">
-                    {e.title} <span className="text-xs text-muted-foreground">· {e.calendar}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        {events.length === 0 && <p className="text-sm">Nothing in the next 7 days.</p>}
+    <section aria-labelledby="cal-h" className="min-w-0 rounded-2xl border border-border bg-panel p-5 md:p-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="cal-h" className="font-heading text-lg font-semibold">Calendar</h2>
+        <span className="text-xs text-muted-foreground">next 7 days · both accounts</span>
       </div>
-    </details>
+      {!connected ? (
+        <div className="mt-3 text-sm text-muted-foreground">
+          <p>Not connected yet.</p>
+          <ol className="mt-2 list-decimal space-y-0.5 pl-5 text-xs">
+            <li>Google Calendar → Settings → your calendar → <b className="text-foreground">Integrate calendar</b></li>
+            <li>Copy <b className="text-foreground">Secret address in iCal format</b></li>
+            <li>Paste it after <code>ACCOUNT_N_ICS_URL=</code> in <code>C:\Users\Blog Hands\.claude\dashboard.env</code></li>
+          </ol>
+        </div>
+      ) : (
+        <div className="mt-3 grid max-h-80 gap-4 overflow-y-auto">
+          {ordered.map(([d, evs]) => (
+            <div key={d}>
+              <p className={`text-[11px] font-medium uppercase tracking-wide ${d === today ? 'text-primary' : 'text-muted-foreground'}`}>
+                {d === today ? 'Today' : new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </p>
+              {evs.length === 0 ? (
+                <p className="mt-1 text-sm text-muted-foreground">Nothing else today.</p>
+              ) : (
+                <ul className="mt-1.5 grid gap-1.5">
+                  {evs.map((e, i) => {
+                    const live = !e.allDay && Date.parse(e.start) <= now
+                    return (
+                      <li key={i} className="flex gap-3 text-sm">
+                        <span className={`w-16 shrink-0 tabular-nums ${live ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
+                          {e.allDay ? 'All day' : live ? 'Now' : time(e.start)}
+                        </span>
+                        <span className="min-w-0">
+                          {e.title} <span className="text-xs text-muted-foreground">· {e.calendar}</span>
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          ))}
+          <p className="text-[11px] text-muted-foreground/70">Shows events you made or said yes to. Unanswered invites stay hidden.</p>
+        </div>
+      )}
+    </section>
   )
 }
 
-export function DashHeader({
-  brief,
-  refreshed,
-  events,
-  calendarConnected,
-}: {
-  brief: React.ReactNode
-  refreshed?: string
-  events: CalEvent[]
-  calendarConnected: boolean
-}) {
+export function DashHeader({ brief, refreshed }: { brief: React.ReactNode; refreshed?: string }) {
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: TZ })
   const stale = !refreshed || Date.now() - Date.parse(refreshed) > 3 * 3600e3
   return (
@@ -91,12 +82,11 @@ export function DashHeader({
         <h1 className="mt-1 font-heading text-3xl font-semibold tracking-tight md:text-4xl">{date}</h1>
         <p className="mt-2 max-w-[68ch] text-base text-muted-foreground md:text-[17px]">{brief}</p>
       </div>
-      <div className="grid justify-items-end gap-1.5">
+      <div>
         <span className={`inline-flex items-center gap-1.5 text-xs ${stale ? 'text-warning' : 'text-muted-foreground'}`}>
           <i className={`h-1.5 w-1.5 rounded-full ${stale ? 'bg-warning' : 'bg-primary'}`} />
           Refreshed {ago(refreshed)} · every hour
         </span>
-        <CalendarLine events={events} connected={calendarConnected} />
       </div>
     </header>
   )
