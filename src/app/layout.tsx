@@ -144,6 +144,7 @@ export default function RootLayout({
               'https://www.youtube.com/@chrishornak',
               'https://twitter.com/chrishornak',
               'https://www.threads.net/@chornak',
+              'https://bsky.app/profile/chrishornak.bsky.social',
               'https://www.reddit.com/user/chris-hornak/',
             ],
             contactPoint: {
