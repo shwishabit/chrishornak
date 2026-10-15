@@ -12,7 +12,7 @@ export const blueskyPosts: BlueskyPost[] = [
     date: '2026-10-16',
     parts: [
       {
-        text: "Before you share your homepage, paste the link into a LinkedIn or Bluesky post. Don't hit Post yet.\n\nLook at the card that shows up. Is the image cut off? Does the title match the page?\n\nPeople see that card first. Check it before they do.\n\nFree check: chrishornak.com/og-image-checker",
+        text: 'When you share your website on Bluesky, LinkedIn, or even by text, a picture and title pop up.\n\nThat card is your first impression. Ever checked it?\n\nLots of sites show no picture at all. Others show a random one. Nobody tells you. They just scroll.\n\nCheck yours: chrishornak.com/og-image-checker',
         link: 'https://chrishornak.com/og-image-checker',
       },
     ],
