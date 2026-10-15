@@ -1,28 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { JobLead } from '@/lib/admin-jobs'
-import type { DashProject } from '@/lib/admin-dashboard'
+import type { Catalog, DashProject, Health, Scorecard } from '@/lib/admin-dashboard'
 import type { AdminOverview, DomainLogRow } from '@/lib/admin-audit'
 import { AdminFindability } from './AdminFindability'
 import { AdminProjects } from './AdminProjects'
 import { AdminJobLeads } from './AdminJobLeads'
 import { AdminQuestions } from './AdminQuestions'
 import { AdminCatalog } from './AdminCatalog'
+import { DashHealth } from './DashWeek'
 
-type Tab = 'findability' | 'projects' | 'jobs' | 'questions' | 'catalog'
+// Chris's order (2026-10-15): Projects, Job hunt, Questions, Findability, Site health, Skills & agents.
+type Tab = 'projects' | 'jobs' | 'questions' | 'findability' | 'health' | 'toolbox'
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'findability', label: 'Findability' },
   { id: 'projects', label: 'Projects' },
   { id: 'jobs', label: 'Job hunt' },
-  { id: 'questions', label: 'Questions to answer' },
-  { id: 'catalog', label: 'Skills & agents' },
+  { id: 'questions', label: 'Questions' },
+  { id: 'findability', label: 'Findability' },
+  { id: 'health', label: 'Site health' },
+  { id: 'toolbox', label: 'Skills & agents' },
 ]
 
 export function DashboardTabs({
   overview,
   domains,
   projects,
+  scorecard,
+  health,
+  catalog,
+  updated,
   jobLeads,
   questionLeads,
   today,
@@ -30,49 +37,60 @@ export function DashboardTabs({
   overview: AdminOverview | null
   domains: DomainLogRow[]
   projects: DashProject[]
+  scorecard: Scorecard | null
+  health: Health | null
+  catalog: Catalog | null
+  updated: Partial<Record<string, string>>
   jobLeads: JobLead[]
   questionLeads: JobLead[]
   today: string
 }) {
-  const [tab, setTab] = useState<Tab>('findability')
+  const [tab, setTab] = useState<Tab>('projects')
 
-  const counts: Record<Tab, number> = {
-    findability: overview?.unique_domains ?? 0,
-    projects: projects.length,
-    jobs: jobLeads.length,
+  // #jobs, #toolbox … deep-link straight to a tab.
+  useEffect(() => {
+    const h = window.location.hash.slice(1) as Tab
+    if (TABS.some((t) => t.id === h)) setTab(h)
+  }, [])
+
+  const counts: Partial<Record<Tab, number>> = {
+    projects: projects.filter((p) => p.lane === 'you').length,
+    jobs: jobLeads.filter((l) => l.status === 'new').length,
     questions: questionLeads.filter((l) => l.status === 'new').length,
-    catalog: 0,
+    findability: overview?.unique_domains ?? 0,
   }
 
   return (
-    <>
-      <div className="mt-8 flex flex-wrap gap-2">
+    <section>
+      <div role="tablist" className="flex flex-wrap gap-1 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
-            aria-pressed={tab === t.id}
+            role="tab"
+            aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
-              tab === t.id ? 'bg-primary text-background' : 'border border-border text-muted-foreground hover:text-foreground'
+            className={`-mb-px border-b-2 px-3.5 py-2.5 text-[13.5px] transition-colors ${
+              tab === t.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {t.label}
-            {counts[t.id] > 0 && <span className="ml-1.5 tabular-nums opacity-70">{counts[t.id]}</span>}
+            {(counts[t.id] ?? 0) > 0 && <span className="ml-1.5 tabular-nums text-muted-foreground/60">{counts[t.id]}</span>}
           </button>
         ))}
       </div>
 
+      {tab === 'projects' && <AdminProjects projects={projects} scorecard={scorecard} updated={updated.scorecard} />}
+      {tab === 'jobs' && <AdminJobLeads leads={jobLeads} today={today} />}
+      {tab === 'questions' && <AdminQuestions leads={questionLeads} />}
       {tab === 'findability' &&
         (overview === null ? (
-          <div className="glass-card mt-6 p-6 text-sm text-muted-foreground">Findability analytics not reachable.</div>
+          <div className="mt-6 rounded-2xl border border-border bg-panel p-6 text-sm text-muted-foreground">Findability analytics not reachable.</div>
         ) : (
           <AdminFindability overview={overview} domains={domains} />
         ))}
-      {tab === 'projects' && <AdminProjects projects={projects} />}
-      {tab === 'jobs' && <AdminJobLeads leads={jobLeads} today={today} />}
-      {tab === 'questions' && <AdminQuestions leads={questionLeads} />}
-      {tab === 'catalog' && <AdminCatalog />}
-    </>
+      {tab === 'health' && <DashHealth health={health} updated={updated.health} />}
+      {tab === 'toolbox' && <AdminCatalog catalog={catalog} updated={updated.catalog} />}
+    </section>
   )
 }

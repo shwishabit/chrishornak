@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { JobLead, JobStatus } from '@/lib/admin-jobs'
 import { setJobLeadNote, setJobLeadStatus } from '@/app/audit/admin/jobs/actions'
+import { CopyButton } from './DashParts'
 
 // Questions reuse the job_leads status column, relabeled for this context —
 // pitched/won don't apply here, so only the statuses that make sense show.
@@ -123,11 +124,15 @@ export function AdminQuestions({ leads }: { leads: JobLead[] }) {
                 </td>
                 <td className="max-w-md px-4 py-3">
                   <p>{l.ask}</p>
-                  {l.link && (
-                    <a href={l.link} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs text-primary underline underline-offset-4">
-                      Open post
-                    </a>
-                  )}
+                  {l.fit_why && <p className="mt-2 text-xs text-muted-foreground">{l.fit_why}</p>}
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    {l.link && (
+                      <a href={l.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline underline-offset-4">
+                        Open post
+                      </a>
+                    )}
+                    {l.link && <CopyButton text={`draft a value-only Bluesky reply to ${l.link}`} label="Copy: draft a reply" />}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <QuestionStatusSelect lead={l} onSaved={(s) => setRows((rs) => rs.map((r) => (r.id === l.id ? { ...r, status: s } : r)))} />

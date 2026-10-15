@@ -1,11 +1,7 @@
 import type { Metadata } from 'next'
 import { isAdmin } from '@/lib/admin-auth'
-import { getJobLeads } from '@/lib/admin-jobs'
-import { getDashProjects } from '@/lib/admin-dashboard'
-import { getAdminOverview, getDomainLog } from '@/lib/admin-audit'
 import { AdminLogin } from '@/components/sections/AdminLogin'
-import { DashboardTabs } from '@/components/sections/DashboardTabs'
-import { logout } from '../actions'
+import { DashboardView } from '@/components/sections/DashboardView'
 
 export const metadata: Metadata = {
   title: 'Admin — Dashboard',
@@ -22,43 +18,5 @@ export default async function DashboardPage() {
       </main>
     )
   }
-
-  const [leadData, projects, overview, domainLog] = await Promise.all([
-    getJobLeads(),
-    getDashProjects(),
-    getAdminOverview(),
-    getDomainLog({ limit: 500 }),
-  ])
-  const rows = leadData?.rows ?? []
-  const jobLeads = rows.filter((l) => l.lead_type !== 'question')
-  const questionLeads = rows.filter((l) => l.lead_type === 'question')
-
-  return (
-    <main id="main-content" className="relative min-h-screen px-6 py-16 md:px-12 lg:px-20">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-primary">Admin</p>
-            <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              What&apos;s going on across your projects, the work you&apos;re chasing, the questions you can answer, and what
-              Claude Code can do for you. Type &quot;refresh my dashboard&quot; to pull in the latest.
-            </p>
-          </div>
-          <form action={logout}>
-            <button className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">Sign out</button>
-          </form>
-        </div>
-
-        <DashboardTabs
-          overview={overview}
-          domains={domainLog.rows}
-          projects={projects ?? []}
-          jobLeads={jobLeads}
-          questionLeads={questionLeads}
-          today={new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })}
-        />
-      </div>
-    </main>
-  )
+  return <DashboardView />
 }
