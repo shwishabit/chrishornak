@@ -615,12 +615,12 @@ export function GoalPicker({ list, value, set, onPick }: { list: Goal[]; value: 
         value={value}
         onChange={(e) => onPick(e.target.value)}
         title={set ? 'Your pick. Choose another to change it.' : 'Picked from the brand. Choose your own.'}
-        className={`min-h-11 max-w-44 cursor-pointer appearance-none truncate bg-transparent px-1 py-0.5 text-[11px] uppercase tracking-[0.1em] transition-colors hover:text-foreground md:min-h-0 ${
-          value === 'upkeep' ? 'text-[#8d929a]' : set ? 'text-primary' : 'text-[#a6aab2]'
-        }`}
+        className={`min-h-11 max-w-52 cursor-pointer appearance-none truncate border bg-transparent px-1.5 py-px text-[11px] uppercase tracking-[0.1em] transition-colors hover:border-primary hover:text-[#a8f2c8] md:min-h-0 ${
+          value === 'upkeep' ? 'border-[#4a4f57] text-[#a6aab2]' : 'border-primary/60 text-[#a8f2c8]'
+        } ${set ? 'border-solid' : 'border-dashed'}`}
       >
         {list.map((g) => (
-          <option key={g.key} value={g.key}>◎ {g.name}</option>
+          <option key={g.key} value={g.key}>◎ {g.name} ▾</option>
         ))}
       </select>
     </label>
@@ -647,6 +647,8 @@ function Row({
       <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
         {n !== undefined && <span className="nx-lab tabular-nums" title={`"done ${n}" in the console marks this one done`} aria-hidden="true">{String(n).padStart(2, '0')}</span>}
         <span className={brandChip(i.brand)}>{i.brand}</span>
+        {/* Goal beside the brand, boxed like it (2026-10-16: grey text in the action row was missed). */}
+        {goal && <GoalPicker {...goal} />}
         {i.level === 'red' && <span className="text-[11px] uppercase tracking-[0.16em] text-danger">urgent</span>}
         {i.meta && <span className="nx-cond min-w-0 truncate text-[13px] text-[#8d929a]">{i.meta}</span>}
         {i.spam && <span className="shrink-0 border border-warning/50 px-1.5 py-px text-[11px] text-warning">likely spam: {i.spam}</span>}
@@ -664,7 +666,6 @@ function Row({
       <div className="mt-2.5 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
       <div className="flex flex-wrap items-center gap-2">
         <MinsPicker item={i} onMins={onMins} />
-        {goal && <GoalPicker {...goal} />}
         {i.href && i.hrefLabel && (
           <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
             {i.hrefLabel} <span aria-hidden="true">↗</span>
