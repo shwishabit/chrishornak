@@ -67,14 +67,15 @@ export function DashModal({
 
   const arrow = 'nx-ghost min-w-11 !px-2 disabled:opacity-30'
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-background/90 md:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    // flex + m-auto centres a short dialog, and a tall one starts at the top (grid centring would cut its top off).
+    <div className="fixed inset-0 z-50 flex overflow-y-auto bg-background/90 md:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={box}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className="nx-box flex w-full max-w-2xl flex-col p-5 shadow-2xl outline-none max-md:min-h-dvh max-md:border-0 md:p-8"
+        className="nx-box m-auto flex w-full max-w-2xl flex-col p-5 shadow-2xl outline-none max-md:min-h-dvh max-md:border-0 md:p-8"
       >
         <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <span className="min-w-0">{top}</span>

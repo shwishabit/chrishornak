@@ -327,9 +327,10 @@ export function DashFeed({
   latest.current = { open, ordered, act }
   useEffect(() => {
     api.current = {
-      act: (id, status) => {
+      act: (id, status, until) => {
         const it = latest.current.open.find((i) => i.id === id)
-        if (it) latest.current.act(it, status)
+        if (it) latest.current.act(it, status, '', until)
+        return !!it
       },
       doneNth: (n) => {
         const it = latest.current.ordered[n - 1]

@@ -18,6 +18,7 @@ import { DashTodo } from './DashTodo'
 import { DashWins } from './DashWins'
 import { TODO_WIN_MINS, type Win } from '@/lib/dash-wins'
 import { DashToolLeads } from './DashToolLeads'
+import { DashEmail } from './DashEmail'
 import { logout } from '@/app/audit/admin/actions'
 
 /** A chip-sized project name: drop "(folder)" and anything after a dash or colon. */
@@ -135,6 +136,14 @@ export async function DashboardView() {
     ),
   ].slice(0, 120)
 
+  // ── Email tab: list only; each message's text loads when opened (getMailText). ──
+  const mailbox = (state?.mailbox?.accounts ?? []).map((a) => ({ ...a, messages: a.messages.map(({ text, ...m }) => m) }))
+  const mailGone = (id: string) => {
+    const s = statuses.find((x) => x.id === `mail:${id}`)
+    return !!s && (s.status !== 'snoozed' || (s.until ?? '') > today)
+  }
+  const emailCount = mailbox.reduce((t, a) => t + a.messages.filter((m) => m.work && !mailGone(m.id)).length, 0)
+
   const brief = (
     <DashBrief
       initial={{ open: open.length, urgent: open.filter((i) => i.level === 'red').length, email: openIn('email').length, sales: openIn('sales').length }}
@@ -183,6 +192,8 @@ export async function DashboardView() {
               </div>
             </div>
           }
+          email={<DashEmail accounts={mailbox} statuses={statuses} today={today} updated={state?.updated.mailbox} />}
+          emailCount={emailCount}
           week={<DashWeek data={week} goals={goals} pending={state?.goals_edits ?? null} updated={state?.updated.goals} />}
           weekCount={week.byGoal.filter((g) => g.key !== 'upkeep' && g.wins === 0).length + week.decisions.length}
           sales={<DashSales sales={state?.sales ?? null} salesDb={salesDb} mail={mail} updated={state?.updated.sales} />}

@@ -1,7 +1,7 @@
 'use server'
 
 import { isAdmin } from '@/lib/admin-auth'
-import { addTodo, deleteTodo, requestRefresh, setFeedMins, setFeedStatus, setGoalsEdits, setItemGoal, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
+import { addTodo, deleteTodo, getDashState, requestRefresh, setFeedMins, setFeedStatus, setGoalsEdits, setItemGoal, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
 import { UPKEEP, type Goal } from '@/lib/dash-goals'
 import { JOB_STATUSES, updateJobLead, type JobStatus } from '@/lib/admin-jobs'
 import { FEED_GROUPS, nyDate, nyTomorrow } from '@/lib/dash-feed'
@@ -149,4 +149,16 @@ export async function saveGoalsAction(goals: Goal[]): Promise<string | null> {
 export async function requestDashRefresh(): Promise<string | null> {
   if (!(await isAdmin())) return null
   return requestRefresh()
+}
+
+/** Email tab: one message's text, read on demand so the page does not carry every body. */
+export async function getMailText(id: string): Promise<string | null> {
+  if (!(await isAdmin())) return null
+  if (!/^\d{1,30}$|^uid-\d{1,12}$/.test(id)) return null
+  const state = await getDashState()
+  for (const a of state?.mailbox?.accounts ?? []) {
+    const m = a.messages.find((x) => x.id === id)
+    if (m) return m.text ?? ''
+  }
+  return null
 }

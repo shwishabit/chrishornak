@@ -17,11 +17,13 @@ import { FilterProvider } from '@/lib/dash-console'
 // Chris's order (2026-10-15): Feed first, Sales next (a lead is money), then Job hunt,
 // Projects, Questions, Tools & leads (was Findability), Site health, Claude (was Skills & agents).
 // Week (2026-10-16): second, after the Feed: done by goal, stalled, blocked, decisions due.
-type Tab = 'feed' | 'week' | 'sales' | 'projects' | 'jobs' | 'questions' | 'leads' | 'health' | 'claude'
+type Tab = 'feed' | 'email' | 'week' | 'sales' | 'projects' | 'jobs' | 'questions' | 'leads' | 'health' | 'claude'
 // Old links keep working.
 const ALIAS: Record<string, Tab> = { findability: 'leads', toolbox: 'claude' }
 const TABS: { id: Tab; label: string }[] = [
   { id: 'feed', label: 'Feed' },
+  // Email (2026-10-16): unread mail from both inboxes, read here, reply in Gmail.
+  { id: 'email', label: 'Email' },
   { id: 'week', label: 'Week' },
   { id: 'sales', label: 'Sales' },
   { id: 'jobs', label: 'Jobs' },
@@ -34,6 +36,8 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function DashboardTabs({
   feed,
+  email,
+  emailCount,
   week,
   weekCount,
   sales,
@@ -55,6 +59,9 @@ export function DashboardTabs({
 }: {
   /** Feed + Calendar, rendered on the server. */
   feed: React.ReactNode
+  /** The Email tab, built on the server. */
+  email: React.ReactNode
+  emailCount: number
   /** The Week tab, rendered on the server. */
   week: React.ReactNode
   /** Stalled items + decisions due. */
@@ -100,6 +107,7 @@ export function DashboardTabs({
 
   const counts: Partial<Record<Tab, number>> = {
     feed: live.feed,
+    email: emailCount,
     week: weekCount,
     sales: live.sales,
     projects: projects.filter((p) => p.lane === 'you').length,
@@ -124,6 +132,8 @@ export function DashboardTabs({
 
       {/* The Feed stays mounted so its filters and Done marks survive a tab switch. */}
       <div hidden={tab !== 'feed'}>{feed}</div>
+      {/* Stays mounted too, so Done marks made here survive a tab switch. */}
+      <div hidden={tab !== 'email'}>{email}</div>
       {tab === 'week' && week}
       {tab === 'sales' && sales}
       {tab === 'projects' &&<AdminProjects projects={projects} scorecard={scorecard} updated={updated.scorecard} />}

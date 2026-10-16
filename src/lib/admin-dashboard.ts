@@ -96,6 +96,28 @@ export interface MailAccount {
   leads?: MailMessage[]
 }
 
+/** Email tab (2026-10-16): one unread Primary message. `text` is plain text, cut at 5,000 characters. */
+export interface MailboxMessage {
+  id: string
+  from: string
+  addr: string
+  subject: string
+  at: string
+  link: string
+  /** False = the PC sorted it out as not work (bill, order, promo…); `why` says which. */
+  work: boolean
+  why?: string
+  snippet: string
+  text?: string
+}
+export interface MailboxAccount {
+  email: string
+  label: string
+  ok: boolean
+  inbox: string
+  messages: MailboxMessage[]
+}
+
 /** id = Gmail message id (stable). Missing on blobs pushed before 2026-10-15. */
 export interface MailMessage {
   id?: string
@@ -172,7 +194,7 @@ export interface GoalsState {
 export interface GoalsEdits { at: string; goals: Goal[] }
 
 // refresh_request: a pending "Refresh now" (migration 0019); only its time matters.
-const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'calendar', 'sales', 'refresh_request', 'goals', 'goals_edits'] as const
+const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'mailbox', 'calendar', 'sales', 'refresh_request', 'goals', 'goals_edits'] as const
 type Key = (typeof KEYS)[number]
 
 export interface DashState {
@@ -182,6 +204,8 @@ export interface DashState {
   catalog: Catalog | null
   health: Health | null
   mail: { accounts: MailAccount[] } | null
+  /** Email tab: unread Primary mail with its text (dash-inbox.mjs, every 10 minutes). */
+  mailbox: { accounts: MailboxAccount[] } | null
   calendar: { calendars: { label: string; ok: boolean }[]; events: CalEvent[] } | null
   sales: SalesState | null
   goals: GoalsState | null
@@ -206,6 +230,7 @@ export async function getDashState(): Promise<DashState | null> {
     catalog: pick('catalog'),
     health: pick('health'),
     mail: pick('mail'),
+    mailbox: pick('mailbox'),
     calendar: pick('calendar'),
     sales: pick('sales'),
     goals: pick('goals'),
