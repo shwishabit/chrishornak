@@ -13,6 +13,9 @@
  *                  followed by 3+ images, or a logo strip/wall of 3+ images
  *   Case studies = a link to case studies / customer stories
  *   First screen = the headline + the text after it: who it's for, a reason to pick them
+ *   Shop         = a store's own ask: "Shop now", "Add to cart", a /shop or /collections link
+ *   Site type    = service (the default), ecommerce or saas, from 2+ signals in the code
+ *                  (Chris, 2026-10-16: an online store failed SGM's next step)
  * Homepage only: these all live in the nav, hero or footer. No server-only imports.
  * ─────────────────────────────────────────────────────────────────────── */
 
@@ -33,7 +36,15 @@ export interface B2bSignals {
   caseStudies: string | null
   /** The homepage's first screen: headline, subline, who it's for, why pick them. */
   firstScreen: FirstScreen
+  /** A store's own ask ("Shop now", "Add to cart"), or null. SGM counts it as the direct ask for an online store. */
+  shop: string | null
+  /** What kind of site this reads as; service unless 2+ store or software signals say otherwise. */
+  siteType: SiteType
+  /** Why, in plain words ("Built on Shopify", "Prices on the page"); empty for service. */
+  typeSignals: string[]
 }
+
+export type SiteType = 'service' | 'ecommerce' | 'saas'
 
 // "/membership-pricing" counts; "/maintenance-plans" and "/payment-plans" don't (fixture test, 2026-10-06).
 const PRICING_PATH_RE = /\/(?:(?:[\w-]*-)?(?:pricing|prices)|plans(?:-(?:and-)?pricing)?)(?:[\/.?#-]|$)/i
@@ -46,6 +57,13 @@ const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|tr
 // "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
 const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
 const CONTACT_WORDS_RE = /^(?:contact(?: us)?|get in touch|reach out)$/i
+// A store's ask. Words: "Shop now", "Shop all", "Shop the collection", "Add to cart", "Buy now", "Order online".
+const SHOP_WORDS_RE =
+  /^(?:shop|buy|order)(?: (?:now|all|online|here|today|the (?:collection|range|sale)|best ?sellers|new arrivals|sale|(?:all|our) [\w-]+))?$|\b(?:add to (?:cart|bag|basket)|buy (?:it )?now|shop now|order (?:now|online|today)|shop (?:all|online|the collection|best ?sellers|new arrivals|the sale))\b/i
+const SHOP_PATH_RE = /\/(?:shop|store|collections?|products?)(?:[\/.?#-]|$)/i
+const CART_PATH_RE = /\/(?:cart|checkout|basket|bag)(?:[\/.?#]|$)/i
+const LOGIN_WORDS_RE = /^(?:log ?in|sign ?in|login|member login|customer login)$/i
+const SIGNUP_WORDS_RE = /^(?:sign ?up(?: free| for free)?|create (?:an |your )?(?:free )?account|get started(?: free| for free)?|start (?:for )?free|try (?:it )?free|start (?:your |a )?free trial)$/i
 const MEETING_HOST_RE = /(?:^|\.)(?:calendly\.com|cal\.com|chilipiper\.com|savvycal\.com)$|^meetings\.hubspot\.com$/i
 
 const REVIEW_SITES: [RegExp, string][] = [
@@ -183,12 +201,39 @@ export function readFirstScreen(html: string): FirstScreen {
   }
 }
 
+/* ── Site type: rules on the homepage's code, never AI. Two signals or more decide it; with
+ * fewer it stays service (the check's B2B default). SGM lets the visitor change it. */
+function siteTypeOf(
+  html: string,
+  f: { cart: boolean; addToCart: boolean; login: boolean; signup: boolean; appLink: boolean; pricing: boolean },
+): { siteType: SiteType; typeSignals: string[] } {
+  const store: string[] = []
+  const soft: string[] = []
+  if (/"@type"\s*:\s*"(?:Product|ProductGroup|Offer|AggregateOffer)"/.test(html)) store.push('Product details in the code (schema.org Product)')
+  if (/cdn\.shopify\.com|Shopify\.theme|\.myshopify\.com/i.test(html)) store.push('Built on Shopify')
+  else if (/\bwoocommerce\b/i.test(html)) store.push('Built on WooCommerce')
+  else if (/cdn\d*\.bigcommerce\.com/i.test(html)) store.push('Built on BigCommerce')
+  if (f.cart) store.push('A cart or checkout link')
+  if (f.addToCart || /\badd[-_ ]to[-_ ](?:cart|bag|basket)\b|action\s*=\s*["'][^"']*\/cart\/add/i.test(html)) store.push('Add-to-cart buttons')
+  const text = extractText(html)
+  if ((text.match(/(?:[$£€]\s?\d{1,5}[.,]\d{2}|\d{1,5}[.,]\d{2}\s?(?:USD|EUR|GBP|€))(?!\d)/g) ?? []).length >= 3) store.push('Prices on the page')
+  if (/"@type"\s*:\s*"(?:SoftwareApplication|WebApplication|MobileApplication)"/.test(html)) soft.push('App details in the code (schema.org SoftwareApplication)')
+  if (f.login && f.signup) soft.push('Log in and sign-up links')
+  if (f.appLink) soft.push('Links to the app')
+  if (f.pricing && /\b(?:per (?:month|user|seat)|\/\s?(?:mo|month|user)\b|billed (?:monthly|annually|yearly))/i.test(text)) soft.push('Monthly plans')
+  if (store.length >= 2 && store.length >= soft.length) return { siteType: 'ecommerce', typeSignals: store }
+  if (soft.length >= 2) return { siteType: 'saas', typeSignals: soft }
+  return { siteType: 'service', typeSignals: [] }
+}
+
 export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const pageHost = pathAndHost(pageUrl, pageUrl)?.host ?? ''
   let pricing: string | null = null
   let demo: string | null = null
   let contact: string | null = null
   let caseStudies: string | null = null
+  let shop: string | null = null
+  const seen = { cart: false, addToCart: false, login: false, signup: false, appLink: false }
   const reviewSites = new Set<string>()
 
   for (const a of anchors(html)) {
@@ -208,6 +253,12 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
       if (text.length <= 60 && DEMO_WORDS_RE.test(text)) demo = text
       else if ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host)) demo = text || 'Demo link'
     }
+    if (!shop && text && text.length <= 40 && (SHOP_WORDS_RE.test(text) || (own && goesSomewhere && SHOP_PATH_RE.test(at.path)))) shop = text
+    if (own && CART_PATH_RE.test(at.path)) seen.cart = true
+    if (/^add to (?:cart|bag|basket)$/i.test(text)) seen.addToCart = true
+    if (LOGIN_WORDS_RE.test(text)) seen.login = true
+    if (SIGNUP_WORDS_RE.test(text) || (own && /\/(?:signup|sign-up|register)(?:[\/.?#]|$)/i.test(at.path))) seen.signup = true
+    if (at.host !== pageHost && /^(?:app|dashboard|portal|console)\./.test(at.host) && at.host.endsWith(`.${pageHost}`)) seen.appLink = true
   }
 
   // Review-site badges are often images only (G2's badges are served from g2.com / g2crowd.com).
@@ -217,5 +268,6 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     for (const [re, name] of REVIEW_SITES) if (re.test(at.host)) reviewSites.add(name)
   }
 
-  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html) }
+  const type = siteTypeOf(html, { ...seen, pricing: !!pricing })
+  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type }
 }
