@@ -4,7 +4,7 @@ import { isAdmin } from '@/lib/admin-auth'
 import { addTodo, deleteTodo, requestRefresh, setFeedMins, setFeedStatus, setGoalsEdits, setItemGoal, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
 import { UPKEEP, type Goal } from '@/lib/dash-goals'
 import { JOB_STATUSES, updateJobLead, type JobStatus } from '@/lib/admin-jobs'
-import { FEED_GROUPS, nyTomorrow } from '@/lib/dash-feed'
+import { FEED_GROUPS, nyDate, nyTomorrow } from '@/lib/dash-feed'
 
 const STATUSES: FeedStatus[] = ['done', 'snoozed', 'skipped']
 
@@ -22,6 +22,8 @@ export async function setFeedItemStatus(input: {
   brand?: string
   note?: string
   job?: { id: string; status: string }
+  /** Snooze to this day (YYYY-MM-DD, after today, within a year). Default: tomorrow. */
+  until?: string
 }): Promise<{ ok: boolean; until?: string | null }> {
   if (!(await isAdmin())) return { ok: false }
   if (!input.id || input.id.length > 200) return { ok: false }
@@ -32,7 +34,10 @@ export async function setFeedItemStatus(input: {
 
   // Feed status first, then the job tracker. If the tracker write fails, take the feed
   // status back out, so the two never disagree (review 2026-10-15).
-  const until = input.status === 'snoozed' ? nyTomorrow() : null
+  const today = nyDate()
+  const yearOut = nyDate(new Date(Date.now() + 366 * 864e5))
+  const picked = input.until && /^\d{4}-\d{2}-\d{2}$/.test(input.until) && input.until > today && input.until <= yearOut ? input.until : null
+  const until = input.status === 'snoozed' ? (picked ?? nyTomorrow()) : null
   const ok = await setFeedStatus({
     id: input.id,
     status: input.status,

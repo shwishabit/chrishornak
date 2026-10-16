@@ -56,6 +56,28 @@ export function onTodoChange(fn: (c: TodoChange) => void): () => void {
   return () => window.removeEventListener(TODO, h)
 }
 
+/* Today's open to-dos (2026-10-16): the To-do card announces them so Focus can walk them too.
+ * The last list is kept, so a listener that subscribes late still gets it at once. */
+export interface TodayTodo {
+  id: string
+  text: string
+  brand?: string
+}
+const TODAY = 'dash:todaytodos'
+let lastToday: TodayTodo[] = []
+
+export function emitTodayTodos(list: TodayTodo[]) {
+  lastToday = list
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent<TodayTodo[]>(TODAY, { detail: list }))
+}
+
+export function onTodayTodos(fn: (list: TodayTodo[]) => void): () => void {
+  const h = (e: Event) => fn((e as CustomEvent<TodayTodo[]>).detail)
+  window.addEventListener(TODAY, h)
+  fn(lastToday)
+  return () => window.removeEventListener(TODAY, h)
+}
+
 /* Live Feed counts (review 2026-10-15): the Feed announces its open counts whenever they
  * change, so the tab badges and the top line stay in step without a reload. */
 export interface FeedCounts {

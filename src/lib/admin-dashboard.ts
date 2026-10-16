@@ -41,6 +41,8 @@ export interface DashProject {
   /** Changes per day, last 14 days, oldest first. null = no git history. */
   activity?: number[] | null
   unplayed?: number
+  /** From the `## 🏁 Milestones` checklist in agent.md; null/absent = no checklist yet. */
+  milestones?: { done: number; total: number; next: string | null } | null
 }
 
 export interface Scorecard {

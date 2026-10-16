@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import type { Todo, TodoPatch } from '@/lib/admin-dashboard'
 import { nyDate, nyTomorrow } from '@/lib/dash-feed'
 import { addTodoItem, deleteTodoItem, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
 import { UPKEEP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
-import { TODO_WIN_MINS, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
+import { TODO_WIN_MINS, emitTodayTodos, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
 import { FEED_GROUPS } from '@/lib/dash-feed'
 import { brandChip } from '@/lib/dash-format'
+import { DashModal, DayPick, Menu, MenuItem, nextMonday, openCalendar } from './DashModal'
+import { CopyButton } from './DashParts'
 
 /** Sites a to-do can be for (migration 0021). */
 const SITES = ['Chris Hornak', 'Blog Hands', 'Swift Growth'] as const
@@ -69,7 +71,8 @@ export function DashTodo({
   const [text, setText] = useState('')
   const [site, setSite] = useState('')
   const [error, setError] = useState('')
-  const [menu, setMenu] = useState<string | null>(null)
+  // Details modal (2026-10-16): which to-do, which list it was opened from, and where it sat in it.
+  const [detail, setDetail] = useState<{ id: string; where: 'now' | 'later' | 'feed'; idx: number } | null>(null)
   // Move menu (replaces the Copy button, Chris 2026-10-16) and the "To Feed" panel that asks for what is missing.
   const [moveMenu, setMoveMenu] = useState<string | null>(null)
   const [feeding, setFeeding] = useState<{ id: string; brand: string; label: string } | null>(null)
@@ -119,6 +122,19 @@ export function DashTodo({
   const done = now.filter((t) => t.done_at)
   const left = now.length - done.length
   const fail = () => setError('That did not save. Try again in a moment.')
+
+  // Focus in the Feed walks today's open to-dos too: tell it which ones.
+  const todayKey = JSON.stringify(openNow.filter((t) => !t.id.startsWith('temp-')).map((t) => [t.id, t.text, t.brand ?? '']))
+  useEffect(() => {
+    emitTodayTodos((JSON.parse(todayKey) as [string, string, string][]).map(([id, text, brand]) => ({ id, text, brand })))
+  }, [todayKey])
+
+  const lists = { now, later: [...tomorrowTodos, ...later], feed: inFeed }
+  const dList = detail ? lists[detail.where] : []
+  const dFound = detail ? dList.findIndex((t) => t.id === detail.id) : -1
+  const dIdx = !detail || !dList.length ? -1 : dFound >= 0 ? dFound : Math.min(detail.idx, dList.length - 1)
+  const dTodo = dIdx >= 0 ? dList[dIdx] : undefined
+  const open = (t: Todo, where: 'now' | 'later' | 'feed') => setDetail({ id: t.id, where, idx: lists[where].indexOf(t) })
 
   function add(e: React.FormEvent) {
     e.preventDefault()
@@ -179,7 +195,6 @@ export function DashTodo({
         at: stamp,
       })
     if (p.done === false && t.done_at) emitUnwin(`todo:${t.id}`)
-    setMenu(null)
     setMoveMenu(null)
     setError('')
     startTransition(async () => {
@@ -206,7 +221,6 @@ export function DashTodo({
     setTodos((cur) => cur.filter((x) => x.id !== t.id))
     if (t.label) emitTodoChange({ id: t.id, patch: { deleted: true } })
     if (t.done_at) emitUnwin(`todo:${t.id}`)
-    setMenu(null)
     setError('')
     startTransition(async () => {
       if (!(await deleteTodoItem(t.id).catch(() => false))) {
@@ -215,6 +229,93 @@ export function DashTodo({
       }
     })
   }
+
+  /** "To the Feed" asks for the site + Feed group; both are needed. */
+  const feedPanel = (t: Todo) =>
+    feeding && (
+      <div className="grid gap-0.5">
+        <p className="nx-lab px-2.5 pt-1">Site</p>
+        <div className="flex flex-wrap gap-1 px-2 pb-1">
+          {SITES.map((s) => (
+            <button
+              key={s}
+              type="button"
+              aria-pressed={feeding.brand === s}
+              onClick={() => setFeeding({ ...feeding, brand: s })}
+              className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.brand === s ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        <p className="nx-lab px-2.5 pt-1">Feed group</p>
+        <div className="flex flex-wrap gap-1 px-2 pb-1">
+          {FEED_GROUPS.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              aria-pressed={feeding.label === g.id}
+              onClick={() => setFeeding({ ...feeding, label: g.id })}
+              className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.label === g.id ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          disabled={!feeding.brand || !feeding.label}
+          onClick={() => {
+            const f = feeding
+            setFeeding(null)
+            // The Feed shows to-dos due today or earlier, so a later one comes forward to today.
+            patch(t, { label: f.label, ...(f.brand !== (t.brand ?? '') && { brand: f.brand }), ...(t.day > today && { day: today }) })
+          }}
+          className="nx-prim m-1.5 disabled:opacity-40"
+        >
+          {!feeding.brand || !feeding.label ? `Pick ${!feeding.brand ? 'a site' : ''}${!feeding.brand && !feeding.label ? ' and ' : ''}${!feeding.label ? 'a group' : ''}` : 'Add to the Feed'}
+        </button>
+      </div>
+    )
+
+  /**
+   * Move choices, shared by the row's Move menu and the details modal (2026-10-16).
+   * Plain words, nothing greyed out: a choice that does not fit is left out.
+   */
+  const moveItems = (t: Todo, idx: number, sortable: boolean, close: () => void) => (
+    <>
+      {t.label ? (
+        <MenuItem onClick={() => patch(t, { label: '' })}>Back to the to-do list</MenuItem>
+      ) : (
+        <MenuItem
+          onClick={() => {
+            close()
+            setFeeding({ id: t.id, brand: t.brand ?? '', label: '' })
+          }}
+        >
+          To the Feed…
+        </MenuItem>
+      )}
+      {sortable && idx > 1 && <MenuItem onClick={() => moveTo(t, 0)}>To the top</MenuItem>}
+      {sortable && idx > 0 && <MenuItem onClick={() => moveTo(t, idx - 1)}>Up</MenuItem>}
+      {sortable && idx < openNow.length - 1 && <MenuItem onClick={() => moveTo(t, idx + 1)}>Down</MenuItem>}
+      {!t.label && t.day > today && <MenuItem onClick={() => patch(t, { day: today })}>To today</MenuItem>}
+      {!t.label && t.day !== tomorrow && <MenuItem onClick={() => patch(t, { day: tomorrow, done: false })}>To tomorrow</MenuItem>}
+      {!t.label && t.day !== nextMonday(today) && <MenuItem onClick={() => patch(t, { day: nextMonday(today), done: false })}>Next week (Mon)</MenuItem>}
+      {!t.label && <DayPick min={today} value={t.day > today ? t.day : undefined} onPick={(d) => patch(t, { day: d, done: false })} />}
+      {/* The calendar holds it; it comes back to the list that day. */}
+      {!t.label && (
+        <DayPick
+          label="To my calendar"
+          min={today}
+          onPick={(d) => {
+            openCalendar(t.text, d)
+            patch(t, { day: d, done: false })
+          }}
+        />
+      )}
+    </>
+  )
 
   const row = (t: Todo, where: 'now' | 'later' | 'archived' | 'feed') => {
     const idx = openNow.indexOf(t)
@@ -275,21 +376,18 @@ export function DashTodo({
           <span className="h-4 w-4 shrink-0" aria-hidden="true" />
         )}
         <div className="min-w-0 flex-1">
-          {editing === t.id ? (
-            <EditBox
-              value={t.text}
-              onSave={(v) => {
-                setEditing(null)
-                if (v.trim() && v.trim() !== t.text) patch(t, { text: v.trim() })
-              }}
-              onCancel={() => setEditing(null)}
-            />
+          {/* Tap the text for the details modal (2026-10-16); archived rows keep Restore / Delete inline. */}
+          {where === 'archived' ? (
+            <span className="text-[14px] leading-snug text-muted-foreground wrap-anywhere">{t.text}</span>
           ) : (
-            <span
-              className={`text-[14px] leading-snug wrap-anywhere ${t.done_at || where === 'archived' ? 'text-muted-foreground' : ''} ${t.done_at ? 'line-through' : ''}`}
+            <button
+              type="button"
+              onClick={() => open(t, where)}
+              aria-haspopup="dialog"
+              className={`text-left text-[14px] leading-snug wrap-anywhere hover:underline focus-visible:underline ${t.done_at ? 'text-muted-foreground line-through' : ''}`}
             >
               {t.text}
-            </span>
+            </button>
           )}
           {where === 'now' && t.day < today && !t.done_at && <span className="ml-1.5 whitespace-nowrap text-[11px] text-warning">from {shortDay(t.day)}</span>}
           {where === 'later' && (
@@ -305,7 +403,7 @@ export function DashTodo({
                 </span>
               )}
               {goals.length > 0 && goalOf(t) !== UPKEEP.key && (
-                <span className="text-[11px] uppercase tracking-widest text-primary" title="Goal (change it in the ⋯ menu)">
+                <span className="text-[11px] uppercase tracking-widest text-primary" title="Goal (tap the to-do to change it)">
                   ◎ {goals.find((g) => g.key === goalOf(t))?.name}
                 </span>
               )}
@@ -326,167 +424,28 @@ export function DashTodo({
             </button>
           </span>
         ) : (
-          <>
-            {!t.done_at && editing !== t.id && (
-              <button
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={moveMenu === t.id}
-                onClick={() => {
-                  setMenu(null)
-                  setFeeding(null)
-                  setMoveMenu(moveMenu === t.id ? null : t.id)
-                }}
-                className={`-mt-0.5 min-h-11 shrink-0 px-1.5 text-xs text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 ${moveMenu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
-              >
-                Move
-              </button>
-            )}
+          !t.done_at && (
             <button
               type="button"
-              aria-label={`Options for "${t.text}"`}
               aria-haspopup="menu"
-              aria-expanded={menu === t.id}
+              aria-expanded={moveMenu === t.id}
               onClick={() => {
-                setMoveMenu(null)
                 setFeeding(null)
-                setMenu(menu === t.id ? null : t.id)
+                setMoveMenu(moveMenu === t.id ? null : t.id)
               }}
-              className={`-mt-0.5 min-h-11 min-w-11 shrink-0 px-1.5 leading-none text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 md:min-w-0 ${menu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
+              className={`-mt-0.5 min-h-11 shrink-0 px-1.5 text-xs text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 ${moveMenu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
             >
-              ⋯
+              Move
             </button>
-          </>
+          )
         )}
         {moveMenu === t.id && (
           <Menu onClose={() => setMoveMenu(null)}>
-            {t.label ? (
-              <MenuItem onClick={() => patch(t, { label: '' })}>Back to the to-do list</MenuItem>
-            ) : (
-              <MenuItem
-                onClick={() => {
-                  setMoveMenu(null)
-                  setFeeding({ id: t.id, brand: t.brand ?? '', label: '' })
-                }}
-              >
-                To the Feed…
-              </MenuItem>
-            )}
-            {sortable && idx > 0 && <MenuItem onClick={() => moveTo(t, idx - 1)}>Up</MenuItem>}
-            {sortable && idx < openNow.length - 1 && <MenuItem onClick={() => moveTo(t, idx + 1)}>Down</MenuItem>}
-            {!t.label && t.day > today && <MenuItem onClick={() => patch(t, { day: today })}>To today</MenuItem>}
-            {!t.label && t.day !== tomorrow && <MenuItem onClick={() => patch(t, { day: tomorrow, done: false })}>To tomorrow</MenuItem>}
-            {!t.label && (
-              <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
-                To a day
-                <input
-                  type="date"
-                  min={today}
-                  defaultValue={t.day > today ? t.day : ''}
-                  onChange={(e) => e.target.value && patch(t, { day: e.target.value, done: false })}
-                  className="w-31 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
-                />
-              </label>
-            )}
+            {moveItems(t, idx, sortable, () => setMoveMenu(null))}
           </Menu>
         )}
-        {/* To the Feed: asks for whatever is missing (site + Feed group); both are needed. */}
-        {feeding?.id === t.id && (
-          <Menu onClose={() => setFeeding(null)}>
-            <p className="nx-lab px-2.5 pt-1">Site</p>
-            <div className="flex flex-wrap gap-1 px-2 pb-1">
-              {SITES.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={feeding.brand === s}
-                  onClick={() => setFeeding({ ...feeding, brand: s })}
-                  className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.brand === s ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-            <p className="nx-lab px-2.5 pt-1">Feed group</p>
-            <div className="flex flex-wrap gap-1 px-2 pb-1">
-              {FEED_GROUPS.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  aria-pressed={feeding.label === g.id}
-                  onClick={() => setFeeding({ ...feeding, label: g.id })}
-                  className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.label === g.id ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
-                >
-                  {g.label}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              disabled={!feeding.brand || !feeding.label}
-              onClick={() => {
-                const f = feeding
-                setFeeding(null)
-                // The Feed shows to-dos due today or earlier, so a later one comes forward to today.
-                patch(t, { label: f.label, ...(f.brand !== (t.brand ?? '') && { brand: f.brand }), ...(t.day > today && { day: today }) })
-              }}
-              className="nx-prim m-1.5 disabled:opacity-40"
-            >
-              {!feeding.brand || !feeding.label ? `Pick ${!feeding.brand ? 'a site' : ''}${!feeding.brand && !feeding.label ? ' and ' : ''}${!feeding.label ? 'a group' : ''}` : 'Add to the Feed'}
-            </button>
-          </Menu>
-        )}
-        {menu === t.id && (
-          <Menu onClose={() => setMenu(null)}>
-            <MenuItem
-              onClick={() => {
-                setMenu(null)
-                setEditing(t.id)
-              }}
-            >
-              Edit
-            </MenuItem>
-            <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
-              Site
-              <select
-                value={t.brand ?? ''}
-                onChange={(e) => patch(t, { brand: e.target.value })}
-                className="border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
-              >
-                <option value="">None</option>
-                {SITES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-            {goals.length > 0 && (
-              <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
-                Goal
-                <select
-                  value={goalOf(t)}
-                  onChange={(e) => pickGoal(t, e.target.value)}
-                  className="max-w-40 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
-                >
-                  {withUpkeep(goals).map((g) => (
-                    <option key={g.key} value={g.key}>{g.name}</option>
-                  ))}
-                </select>
-              </label>
-            )}
-            <MenuItem
-              onClick={() => {
-                setMenu(null)
-                navigator.clipboard?.writeText(`help me do this to-do: ${t.text}`).catch(() => {})
-              }}
-            >
-              Copy what to say
-            </MenuItem>
-            <MenuItem onClick={() => patch(t, { archived: true })}>Archive</MenuItem>
-            <MenuItem danger onClick={() => remove(t)}>
-              Delete
-            </MenuItem>
-          </Menu>
-        )}
+        {/* To the Feed: asks for whatever is missing (site + Feed group). From the modal it opens inside the modal. */}
+        {feeding?.id === t.id && !dTodo && <Menu onClose={() => setFeeding(null)}>{feedPanel(t)}</Menu>}
       </li>
     )
   }
@@ -588,39 +547,162 @@ export function DashTodo({
       {showFeed && inFeed.length > 0 && <ul className="mt-1">{inFeed.map((t) => row(t, 'feed'))}</ul>}
       {showLater && later.length > 0 && <ul className="mt-1">{later.map((t) => row(t, 'later'))}</ul>}
       {showArchived && archived.length > 0 && <ul className="mt-1">{archived.map((t) => row(t, 'archived'))}</ul>}
+
+      {/* Details modal: same shell as Focus, ← / → walk the list it was opened from. */}
+      {detail && dTodo && (
+        <DashModal
+          labelledBy="todo-detail-h"
+          top={
+            <>
+              {detail.where === 'now' ? 'To do today' : detail.where === 'later' ? 'Later' : 'In the Feed'} · <span className="tabular-nums">{dIdx + 1} of {dList.length}</span>
+            </>
+          }
+          onClose={() => {
+            setDetail(null)
+            setEditing(null)
+            setFeeding(null)
+          }}
+          onPrev={dIdx > 0 ? () => setDetail({ ...detail, id: dList[dIdx - 1].id, idx: dIdx - 1 }) : null}
+          onNext={dIdx < dList.length - 1 ? () => setDetail({ ...detail, id: dList[dIdx + 1].id, idx: dIdx + 1 }) : null}
+        >
+          <TodoDetails
+            key={dTodo.id}
+            t={dTodo}
+            today={today}
+            goals={goals}
+            goal={goalOf(dTodo)}
+            editing={editing === dTodo.id}
+            onEdit={(on) => setEditing(on ? dTodo.id : null)}
+            onPatch={(p) => patch(dTodo, p)}
+            onGoal={(g) => pickGoal(dTodo, g)}
+            onDelete={() => remove(dTodo)}
+            feedPanel={feeding?.id === dTodo.id ? feedPanel(dTodo) : null}
+            moves={moveItems(dTodo, openNow.indexOf(dTodo), detail.where === 'now' && openNow.includes(dTodo), () => {})}
+          />
+        </DashModal>
+      )}
     </section>
   )
 }
 
-function Menu({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const click = (e: MouseEvent) => !ref.current?.parentElement?.contains(e.target as Node) && onClose()
-    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    document.addEventListener('mousedown', click)
-    document.addEventListener('keydown', key)
-    return () => {
-      document.removeEventListener('mousedown', click)
-      document.removeEventListener('keydown', key)
-    }
-  }, [onClose])
+/** To-do details (inside DashModal): edit, site, goal, when, copy, archive, delete. */
+function TodoDetails({
+  t,
+  today,
+  goals,
+  goal,
+  editing,
+  onEdit,
+  onPatch,
+  onGoal,
+  onDelete,
+  feedPanel,
+  moves,
+}: {
+  t: Todo
+  today: string
+  goals: Goal[]
+  goal: string
+  editing: boolean
+  onEdit: (on: boolean) => void
+  onPatch: (p: TodoPatch) => void
+  onGoal: (g: string) => void
+  onDelete: () => void
+  feedPanel: React.ReactNode
+  moves: React.ReactNode
+}) {
+  // Delete asks once (product-ux: destructive actions confirm).
+  const [sure, setSure] = useState(false)
+  const field = 'flex min-h-11 items-center justify-between gap-3 text-[13px] md:min-h-9'
+  const select = 'w-44 border border-border bg-well px-2 py-1 text-xs text-foreground focus-visible:border-primary focus-visible:outline-none'
   return (
-    <div ref={ref} role="menu" className="absolute right-0 top-full z-20 mt-1 grid w-64 gap-0.5 border border-[#2e333b] bg-[#171a20] p-1.5 shadow-lg">
-      {children}
-    </div>
-  )
-}
+    <>
+      <p className="mt-6 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        {t.brand && <span className={brandChip(t.brand)}>{t.brand}</span>}
+        {t.label && <span className="border border-primary/60 px-1.5 py-px text-[11px] uppercase tracking-[0.14em] text-[#a8f2c8]">In Feed · {FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}</span>}
+        <span>{t.day < today ? `from ${shortDay(t.day)}` : t.day === today ? 'today' : shortDay(t.day)}</span>
+      </p>
+      {editing ? (
+        <div className="mt-2">
+          <EditBox
+            value={t.text}
+            onSave={(v) => {
+              onEdit(false)
+              if (v.trim() && v.trim() !== t.text) onPatch({ text: v.trim() })
+            }}
+            onCancel={() => onEdit(false)}
+          />
+          <h2 id="todo-detail-h" className="sr-only">{t.text}</h2>
+        </div>
+      ) : (
+        <h2 id="todo-detail-h" className={`mt-2 text-xl font-normal leading-snug tracking-[0.02em] text-[#ece9e2] wrap-anywhere md:text-[26px] ${t.done_at ? 'text-muted-foreground line-through' : ''}`}>
+          {t.text}
+        </h2>
+      )}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {!editing && (
+          <button type="button" onClick={() => onEdit(true)} className="nx-ghost">
+            Edit
+          </button>
+        )}
+        <CopyButton text={`help me do this to-do: ${t.text}`} />
+      </div>
 
-function MenuItem({ onClick, danger, children }: { onClick: () => void; danger?: boolean; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      className={`min-h-11 px-2.5 py-1.5 text-left text-[13px] hover:bg-well md:min-h-0 ${danger ? 'text-danger' : 'text-foreground'}`}
-    >
-      {children}
-    </button>
+      <div className="mt-6 grid gap-x-8 gap-y-1 md:grid-cols-2">
+        <div>
+          <p className="nx-lab">About</p>
+          <label className={field}>
+            Site
+            <select value={t.brand ?? ''} onChange={(e) => onPatch({ brand: e.target.value })} className={select}>
+              <option value="">None</option>
+              {SITES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          {goals.length > 0 && (
+            <label className={field}>
+              Goal
+              <select value={goal} onChange={(e) => onGoal(e.target.value)} className={select}>
+                {withUpkeep(goals).map((g) => (
+                  <option key={g.key} value={g.key}>{g.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+        <div>
+          <p className="nx-lab">Move</p>
+          {feedPanel ?? <div className="grid gap-0.5 [&_label]:px-0 [&>button]:px-0">{moves}</div>}
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <button type="button" onClick={() => onPatch({ done: !t.done_at })} className="nx-prim !px-6 !py-3 !text-sm">
+          {t.done_at ? 'Not done' : 'Done'}
+        </button>
+        <div className="flex flex-wrap items-center gap-1">
+          <button type="button" onClick={() => onPatch({ archived: true })} className="nx-ghost !border-transparent">
+            Archive
+          </button>
+          {sure ? (
+            <span role="group" aria-label="Delete this to-do?" className="flex items-center gap-1 text-xs text-danger">
+              Delete for good?
+              <button type="button" onClick={onDelete} autoFocus className="nx-ghost !border-danger !text-danger">
+                Delete
+              </button>
+              <button type="button" onClick={() => setSure(false)} className="nx-ghost !border-transparent">
+                Keep
+              </button>
+            </span>
+          ) : (
+            <button type="button" onClick={() => setSure(true)} className="nx-ghost !border-transparent text-danger">
+              Delete…
+            </button>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 

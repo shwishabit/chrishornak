@@ -9,7 +9,8 @@ import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
 import { brandChip } from '@/lib/dash-format'
 import { feedDomId, useFilters } from '@/lib/dash-console'
-import { emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
+import { TODO_WIN_MINS, emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodayTodos, onTodoChange, type TodayTodo } from '@/lib/dash-wins'
+import { DashModal, DayPick, Menu, MenuItem, nextMonday, openCalendar } from './DashModal'
 
 /* The Feed (2026-10-15): one list in Chris's morning order — Email → Sales →
  * Jobs → Marketing → Client work → Other. Red items jump to the top of their
@@ -78,6 +79,11 @@ export function DashFeed({
     [today],
   )
   const [passed, setPassed] = useState<Set<string>>(new Set())
+  // Today's open to-dos from the To-do card: Focus walks them first (Chris 2026-10-16).
+  const [todayTodos, setTodayTodos] = useState<TodayTodo[]>([])
+  useEffect(() => onTodayTodos(setTodayTodos), [])
+  // Details modal (2026-10-16): the item open now, plus where it sat, so Done / Snooze / Skip step on to the next one.
+  const [detail, setDetail] = useState<{ id: string; idx: number } | null>(null)
 
   const hidden = (id: string) => {
     const r = rows.get(id)
@@ -121,14 +127,16 @@ export function DashFeed({
   const snoozed = statusRows.filter((r) => r.status === 'snoozed' && (r.until ?? '') > today)
   const doneMins = doneToday.filter((r) => r.status === 'done').reduce((t, r) => t + r.mins, 0)
 
-  function act(item: Pick<FeedItem, 'id' | 'title' | 'group' | 'mins' | 'job'> & { brand?: string }, status: FeedStatus | null, note = '') {
+  /** `until`: snooze to that day instead of tomorrow (Move → To a day). */
+  function act(item: Pick<FeedItem, 'id' | 'title' | 'group' | 'mins' | 'job'> & { brand?: string }, status: FeedStatus | null, note = '', until?: string) {
     const prev = rows.get(item.id)
+    const back = status === 'snoozed' ? (until && until > today ? until : nyTomorrow(today)) : null
     // Today's wins card: a Done is a win; undoing a Done takes it back.
     if (status === 'done') emitWin({ id: item.id, title: item.title, mins: item.mins, brand: item.brand, note: note || undefined, at: new Date().toISOString() })
     else if (prev?.status === 'done') emitUnwin(item.id)
     const next = new Map(rows)
-    // Snooze hides at once: set tomorrow's date now instead of waiting for the server.
-    if (status) next.set(item.id, { id: item.id, status, until: status === 'snoozed' ? nyTomorrow(today) : null, title: item.title, grp: item.group, mins: item.mins, brand: item.brand, note, at: new Date().toISOString() })
+    // Snooze hides at once: set the date now instead of waiting for the server.
+    if (status) next.set(item.id, { id: item.id, status, until: back, title: item.title, grp: item.group, mins: item.mins, brand: item.brand, note, at: new Date().toISOString() })
     else next.delete(item.id)
     setRows(next)
     setError('')
@@ -139,7 +147,7 @@ export function DashFeed({
       const patch =
         status === 'done' ? { done: true }
         : status === 'skipped' ? { archived: true }
-        : status === 'snoozed' ? { day: nyTomorrow(today) }
+        : status === 'snoozed' ? { day: back! }
         : prev?.status === 'done' ? { done: false }
         : prev?.status === 'skipped' ? { archived: false }
         : { day: today }
@@ -177,6 +185,7 @@ export function DashFeed({
         brand: item.brand,
         note,
         job: jobId && jobStatus ? { id: jobId, status: jobStatus } : undefined,
+        ...(back && { until: back }),
       }).catch(() => ({ ok: false, until: null }))
       if (!res.ok) {
         setRows((cur) => {
@@ -275,8 +284,16 @@ export function DashFeed({
   }
   const urgent = open.filter((i) => i.level === 'red').length
 
-  // Focus mode works through what the filters show, in order; "Next" passes an item for this session.
-  const queue = shown.filter((i) => !passed.has(i.id))
+  // Today's to-dos as Focus items: they act through the same path as labeled to-dos (Done ticks, Snooze moves the day, Skip archives).
+  const todoItems: FeedItem[] = todayTodos
+    .map((t): FeedItem => {
+      const id = `todo:${t.id}`
+      return { id, todo: t.id, group: 'other', level: 'plain', title: t.text, brand: t.brand || 'To-do', meta: 'to-do for today', mins: minsOver[id] ?? TODO_WIN_MINS, minsSet: !!minsOver[id], say: `help me do this to-do: ${t.text}`, rank: 0 }
+    })
+    .filter((i) => !hidden(i.id) && (brand === 'all' || i.brand === brand) && (!quick || i.mins < 15) && (!needle || i.title.toLowerCase().includes(needle)))
+  // Focus mode works through today's to-dos, then what the filters show, in order; "Next" passes an item for this session.
+  // A group filter (`focus sales`) leaves the to-dos out.
+  const queue = [...(group === 'all' ? todoItems : []), ...shown].filter((i) => !passed.has(i.id))
 
   // Brands with open items, most items first.
   const brands = Object.entries(open.reduce<Record<string, number>>((m, i) => ((m[i.brand] = (m[i.brand] ?? 0) + 1), m), {})).sort((a, b) => b[1] - a[1])
@@ -286,6 +303,9 @@ export function DashFeed({
     return expanded.has(g.id) || needle !== '' ? list : list.slice(0, SHOW_PER_GROUP)
   })
   const numberOf = new Map(ordered.map((i, n) => [i.id, n + 1]))
+  // The open details item: by id, or (if it left the list some other way) whatever now sits in its place.
+  const detailIdx = !detail || !ordered.length ? -1 : ordered.findIndex((i) => i.id === detail.id) >= 0 ? ordered.findIndex((i) => i.id === detail.id) : Math.min(detail.idx, ordered.length - 1)
+  const detailItem = detailIdx >= 0 ? ordered[detailIdx] : undefined
 
   // Tell the console what is in the Feed, for autocomplete and the view counts.
   const brandsKey = brands.map(([b, n]) => `${b}:${n}`).join('|')
@@ -363,7 +383,8 @@ export function DashFeed({
             setPassed(new Set())
             setFocus(true)
           }}
-          disabled={shown.length === 0}
+          disabled={shown.length === 0 && todoItems.length === 0}
+          title={todoItems.length ? `Today’s ${todoItems.length} to-do${todoItems.length === 1 ? '' : 's'} first, then the Feed` : 'One item at a time'}
           className="nx-prim"
         >
           Focus
@@ -384,16 +405,56 @@ export function DashFeed({
       <p aria-live="polite" className="text-xs text-danger empty:hidden">{error}</p>
 
       {focus && (
-        <Focus
-          key={queue[0]?.id ?? 'empty'}
-          item={queue[0]}
-          left={queue.length}
-          leftMins={queue.reduce((t, i) => t + i.mins, 0)}
-          onAct={(i, st, note) => act(i, st, note)}
-          onNext={(i) => setPassed((p) => new Set(p).add(i.id))}
-          onMins={(i, m) => setMins(i, m)}
+        <DashModal
+          labelledBy="focus-h"
+          top={
+            <>
+              Focus · <b className="font-semibold tabular-nums text-foreground">{queue.length}</b> left · ~{fmtMins(queue.reduce((t, i) => t + i.mins, 0))}
+            </>
+          }
           onClose={() => setFocus(false)}
-        />
+        >
+          <Focus
+            key={queue[0]?.id ?? 'empty'}
+            item={queue[0]}
+            onAct={(i, st, note) => act(i, st, note)}
+            onNext={(i) => setPassed((p) => new Set(p).add(i.id))}
+            onMins={(i, m) => setMins(i, m)}
+          />
+        </DashModal>
+      )}
+
+      {detailItem && (
+        <DashModal
+          labelledBy="detail-h"
+          top={
+            <>
+              {FEED_GROUPS.find((g) => g.id === detailItem.group)?.label} · <span className="tabular-nums">{detailIdx + 1} of {ordered.length}</span>
+            </>
+          }
+          onClose={() => setDetail(null)}
+          onPrev={detailIdx > 0 ? () => setDetail({ id: ordered[detailIdx - 1].id, idx: detailIdx - 1 }) : null}
+          onNext={detailIdx < ordered.length - 1 ? () => setDetail({ id: ordered[detailIdx + 1].id, idx: detailIdx + 1 }) : null}
+        >
+          <Details
+            key={detailItem.id}
+            item={detailItem}
+            today={today}
+            goal={goals.length ? { list: goalList, value: goalFor(detailItem, goals, picks), set: !!picks[detailItem.id], onPick: (g) => setGoal(detailItem, g) } : undefined}
+            onMins={(m) => setMins(detailItem, m)}
+            // The item leaves the list, so the one after it slides into the same place.
+            onAct={(s, note, until) => {
+              act(detailItem, s, note, until)
+              if (ordered.length <= 1) setDetail(null)
+              else setDetail({ id: (ordered[detailIdx + 1] ?? ordered[detailIdx - 1]).id, idx: Math.min(detailIdx, ordered.length - 2) })
+            }}
+            onToTodo={() => {
+              toTodo(detailItem)
+              if (ordered.length <= 1) setDetail(null)
+              else setDetail({ id: (ordered[detailIdx + 1] ?? ordered[detailIdx - 1]).id, idx: Math.min(detailIdx, ordered.length - 2) })
+            }}
+          />
+        </DashModal>
       )}
 
       {/* Open list, by group */}
@@ -421,8 +482,9 @@ export function DashFeed({
                       key={i.id}
                       item={i}
                       n={numberOf.get(i.id)}
-                      onAct={(s, note) => act(i, s, note)}
-                      onMins={(m) => setMins(i, m)}
+                      today={today}
+                      onOpen={() => setDetail({ id: i.id, idx: (numberOf.get(i.id) ?? 1) - 1 })}
+                      onAct={(s, until) => act(i, s, '', until)}
                       onToTodo={() => toTodo(i)}
                       goal={goals.length ? { list: goalList, value: goalFor(i, goals, picks), set: !!picks[i.id], onPick: (g) => setGoal(i, g) } : undefined}
                     />
@@ -496,23 +558,17 @@ function MinsPicker({ item: i, onMins, big = false }: { item: FeedItem; onMins: 
   )
 }
 
-/** Focus mode: one item at a time, big, with a countdown from its estimate. Done moves to the next. */
+/** Focus mode (inside DashModal): one item at a time, big, with a countdown from its estimate. Done moves to the next. */
 function Focus({
   item: i,
-  left,
-  leftMins,
   onAct,
   onNext,
   onMins,
-  onClose,
 }: {
   item: FeedItem | undefined
-  left: number
-  leftMins: number
   onAct: (i: FeedItem, s: FeedStatus, note?: string) => void
   onNext: (i: FeedItem) => void
   onMins: (i: FeedItem, m: number) => void
-  onClose: () => void
 }) {
   const total = (i?.mins ?? 0) * 60
   const [secs, setSecs] = useState(total)
@@ -532,33 +588,16 @@ function Focus({
       chime([SCALE[4], SCALE[2]], 0.18)
     }
   }, [secs, i])
-  useEffect(() => {
-    const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', key)
-    return () => document.removeEventListener('keydown', key)
-  }, [onClose])
 
   const over = secs < 0
   const mm = Math.floor(Math.abs(secs) / 60)
   const ss = String(Math.abs(secs) % 60).padStart(2, '0')
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-background/90 p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-modal="true" aria-labelledby="focus-h" className="nx-box w-full max-w-2xl p-6 shadow-2xl md:p-8">
-        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>
-            Focus · <b className="font-semibold tabular-nums text-foreground">{left}</b> left · ~{fmtMins(leftMins)}
-          </span>
-          <button type="button" onClick={onClose} className="nx-ghost">
-            Exit <kbd className="ml-1 rounded border border-border px-1 text-[10px]">Esc</kbd>
-          </button>
-        </div>
-
+    <>
         {!i ? (
           <div className="py-12 text-center">
-            <p className="text-2xl font-normal">All clear.</p>
+            <p id="focus-h" className="text-2xl font-normal">All clear.</p>
             <p className="mt-2 text-sm text-muted-foreground">Nothing left in this view. Nice work.</p>
           </div>
         ) : (
@@ -639,8 +678,100 @@ function Focus({
             </div>
           </>
         )}
+    </>
+  )
+}
+
+/** Feed item details (inside DashModal): everything the row no longer shows. */
+function Details({
+  item: i,
+  today,
+  goal,
+  onMins,
+  onAct,
+  onToTodo,
+}: {
+  item: FeedItem
+  today: string
+  goal?: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }
+  onMins: (m: number) => void
+  onAct: (s: FeedStatus, note?: string, until?: string) => void
+  onToTodo: () => void
+}) {
+  const [note, setNote] = useState('')
+  return (
+    <>
+      <p className="mt-6 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <span className={brandChip(i.brand)}>{i.brand}</span>
+        {goal && <GoalPicker {...goal} />}
+        {i.level === 'red' && <span className="text-[11px] uppercase tracking-[0.16em] text-danger">urgent</span>}
+        {i.meta && <span className="nx-cond">{i.meta}</span>}
+        {i.spam && <span className="border border-warning/50 px-1.5 py-px text-[11px] text-warning">likely spam: {i.spam}</span>}
+      </p>
+      <h2 id="detail-h" className="mt-2 text-xl font-normal leading-snug tracking-[0.02em] text-[#ece9e2] wrap-anywhere md:text-[26px]">
+        {i.title}
+      </h2>
+      {i.detail && <p className="mt-2 text-[15px] text-muted-foreground">{i.detail}</p>}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {i.href && (
+          <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
+            {i.hrefLabel ?? 'Open'} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        {i.link2 && (
+          <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="nx-ghost !text-primary">
+            {i.link2.label} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        {i.say && <CopyButton text={i.say} />}
+        <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+          Time <MinsPicker item={i} onMins={onMins} big />
+        </span>
       </div>
-    </div>
+
+      <label className="mt-6 block">
+        <span className="text-xs text-muted-foreground">Note when done (optional)</span>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onAct('done', note)}
+          maxLength={1000}
+          placeholder="e.g. Followed up by email, waiting on reply"
+          className="mt-1 min-h-11 w-full border border-border bg-well px-3 py-2 text-sm focus-visible:border-primary focus-visible:outline-none md:min-h-0"
+        />
+      </label>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => onAct('done', note)}
+          title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
+          className="nx-prim !px-6 !py-3 !text-sm"
+        >
+          {i.doneLabel ?? 'Done'}
+        </button>
+        <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="nx-ghost !border-transparent">
+          Skip
+        </button>
+      </div>
+      {/* Move: the same choices as the row's Move menu, laid flat. */}
+      <div className="mt-4 border-t border-border pt-3">
+        <p className="nx-lab">Move</p>
+        <div className="mt-1 grid max-w-sm gap-0.5 [&_label]:px-0 [&>button]:px-0">
+          <MenuItem onClick={onToTodo}>{i.todo ? 'Back to the to-do list' : 'To my to-do list'}</MenuItem>
+          <MenuItem onClick={() => onAct('snoozed')}>To tomorrow</MenuItem>
+          <MenuItem onClick={() => onAct('snoozed', '', nextMonday(today))}>Next week (Mon)</MenuItem>
+          <DayPick min={nyTomorrow(today)} onPick={(d) => onAct('snoozed', '', d)} />
+          <DayPick
+            label="To my calendar"
+            min={nyTomorrow(today)}
+            onPick={(d) => {
+              openCalendar(i.title, d)
+              onAct('snoozed', '', d)
+            }}
+          />
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -665,26 +796,36 @@ export function GoalPicker({ list, value, set, onPick }: { list: Goal[]; value: 
   )
 }
 
+/**
+ * One Feed row (2026-10-16): chips, title, Done and Move. Everything else lives in the
+ * details modal: tap the row or the title to open it.
+ */
 function Row({
   item: i,
   n,
+  today,
+  onOpen,
   onAct,
-  onMins,
   goal,
   onToTodo,
 }: {
   item: FeedItem
   n?: number
-  onAct: (s: FeedStatus, note?: string) => void
-  onMins: (m: number) => void
+  today: string
+  onOpen: () => void
+  onAct: (s: FeedStatus, until?: string) => void
   goal?: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }
   /** Move it to today's to-do list. */
   onToTodo?: () => void
 }) {
-  const [noting, setNoting] = useState(false)
-  const [note, setNote] = useState('')
+  const [move, setMove] = useState(false)
   return (
-    <li id={feedDomId(i.id)} className="-mx-3 border-b border-[#323840] px-3 py-4 transition-colors hover:bg-[rgba(95,211,148,0.06)] hover:shadow-[inset_2px_0_0_#5fd394] focus-within:bg-[rgba(95,211,148,0.06)] focus-within:shadow-[inset_2px_0_0_#5fd394] motion-reduce:transition-none">
+    <li
+      id={feedDomId(i.id)}
+      // A tap anywhere that is not a control opens the details.
+      onClick={(e) => !(e.target as HTMLElement).closest('a, button, select, input, label, [role=menu]') && onOpen()}
+      className="-mx-3 cursor-pointer border-b border-[#323840] px-3 py-3.5 transition-colors hover:bg-[rgba(95,211,148,0.06)] hover:shadow-[inset_2px_0_0_#5fd394] focus-within:bg-[rgba(95,211,148,0.06)] focus-within:shadow-[inset_2px_0_0_#5fd394] motion-reduce:transition-none"
+    >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
         {n !== undefined && <span className="nx-lab tabular-nums" title={`"done ${n}" in the console marks this one done`} aria-hidden="true">{String(n).padStart(2, '0')}</span>}
         <span className={brandChip(i.brand)}>{i.brand}</span>
@@ -694,80 +835,74 @@ function Row({
         {i.meta && <span className="nx-cond min-w-0 truncate text-[13px] text-[#8d929a]">{i.meta}</span>}
         {i.spam && <span className="shrink-0 border border-warning/50 px-1.5 py-px text-[11px] text-warning">likely spam: {i.spam}</span>}
       </div>
-      <h4 className="mt-2 text-base font-normal leading-[1.45] tracking-[0.02em] text-[#ece9e2] wrap-anywhere">
-        {i.href ? (
-          <a href={i.href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+      <div className="mt-2 flex flex-col gap-2.5 md:flex-row md:items-start md:gap-4">
+        <h4 className="min-w-0 flex-1 text-base font-normal leading-[1.45] tracking-[0.02em] text-[#ece9e2] wrap-anywhere">
+          <button type="button" onClick={onOpen} aria-haspopup="dialog" className="text-left hover:underline focus-visible:underline">
             {i.title}
-          </a>
-        ) : (
-          i.title
-        )}
-      </h4>
-      {i.detail && <p className="mt-1 max-w-[78ch] text-[13px] text-muted-foreground">{i.detail}</p>}
-      <div className="mt-2.5 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-      <div className="flex flex-wrap items-center gap-2">
-        <MinsPicker item={i} onMins={onMins} />
-        {i.href && i.hrefLabel && (
-          <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
-            {i.hrefLabel} <span aria-hidden="true">↗</span>
-          </a>
-        )}
-        {i.link2 && (
-          <a href={i.link2.href} target="_blank" rel="noopener noreferrer" className="nx-ghost !text-primary">
-            {i.link2.label} <span aria-hidden="true">↗</span>
-          </a>
-        )}
-        {i.say && <CopyButton text={i.say} />}
-      </div>
-      {/* Phone: one full-width row of actions, Done twice as wide. Desktop: pushed to the right. */}
-      <div className="flex items-stretch gap-2 md:ml-auto [&>button]:flex-1 md:[&>button]:flex-none">
-        <button
-          type="button"
-          onClick={() => onAct('done')}
-          title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
-          className="nx-ghost max-md:!flex-[2] !border-primary !text-[#a8f2c8]"
-        >
-          {i.doneLabel ?? 'Done'}
-        </button>
-        <button type="button" onClick={() => setNoting(!noting)} aria-expanded={noting} title="Done, with a note" className="nx-ghost">
-          ✎<span className="sr-only">Done with a note</span>
-        </button>
-        <button type="button" onClick={() => onAct('snoozed')} title="Hide until tomorrow" className="nx-ghost">
-          Snooze
-        </button>
-        {onToTodo && (
-          <button type="button" onClick={onToTodo} title={i.todo ? 'Back to today’s to-do list' : 'Move it to today’s to-do list (it leaves the Feed)'} className="nx-ghost whitespace-nowrap">
-            To-do
           </button>
-        )}
-        <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="nx-ghost">
-          Skip
-        </button>
-      </div>
-      </div>
-      {noting && (
-        <form
-          className="mt-2.5 flex flex-wrap items-center gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            onAct('done', note)
-          }}
-        >
-          <input
-            autoFocus
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            onKeyDown={(e) => e.key === 'Escape' && setNoting(false)}
-            maxLength={1000}
-            placeholder="What happened? e.g. Followed up by email"
-            aria-label="Note for this item"
-            className="min-h-11 min-w-0 flex-1 basis-56 border border-border bg-well px-3 py-1.5 text-sm focus-visible:border-primary focus-visible:outline-none md:min-h-0"
-          />
-          <button type="submit" className="nx-ghost !border-primary !text-[#a8f2c8]">
-            Save &amp; {(i.doneLabel ?? 'Done').toLowerCase()}
+        </h4>
+        {/* Phone: one full-width row, Done twice as wide. Desktop: on the right of the title. */}
+        <div className="relative flex shrink-0 items-stretch gap-2 [&>button]:flex-1 md:[&>button]:flex-none">
+          <button
+            type="button"
+            onClick={() => onAct('done')}
+            title={i.job ? `Marks it ${i.job.done} in the tracker` : /^(mail|form):/.test(i.id) ? 'Done. Also marks it read in Gmail within the hour.' : 'Done'}
+            className="nx-ghost max-md:!flex-[2] !border-primary !text-[#a8f2c8]"
+          >
+            {i.doneLabel ?? 'Done'}
           </button>
-        </form>
-      )}
+          <button type="button" aria-haspopup="menu" aria-expanded={move} onClick={() => setMove(!move)} className="nx-ghost">
+            Move
+          </button>
+          {move && (
+            <Menu onClose={() => setMove(false)}>
+              {onToTodo && (
+                <MenuItem
+                  onClick={() => {
+                    setMove(false)
+                    onToTodo()
+                  }}
+                >
+                  {i.todo ? 'Back to the to-do list' : 'To my to-do list'}
+                </MenuItem>
+              )}
+              <MenuItem
+                onClick={() => {
+                  setMove(false)
+                  onAct('snoozed')
+                }}
+              >
+                To tomorrow
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setMove(false)
+                  onAct('snoozed', nextMonday(today))
+                }}
+              >
+                Next week (Mon)
+              </MenuItem>
+              <DayPick
+                min={nyTomorrow(today)}
+                onPick={(d) => {
+                  setMove(false)
+                  onAct('snoozed', d)
+                }}
+              />
+              {/* The calendar holds it; it comes back to the Feed that day. */}
+              <DayPick
+                label="To my calendar"
+                min={nyTomorrow(today)}
+                onPick={(d) => {
+                  setMove(false)
+                  openCalendar(i.title, d)
+                  onAct('snoozed', d)
+                }}
+              />
+            </Menu>
+          )}
+        </div>
+      </div>
     </li>
   )
 }

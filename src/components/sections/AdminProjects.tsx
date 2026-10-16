@@ -26,11 +26,36 @@ function when(p: DashProject) {
   return { text: p.days === 0 ? 'today' : `${p.days}d ago`, cls: p.days < 2 ? 'text-primary' : 'text-muted-foreground' }
 }
 
+/** Progress bar (2026-10-16): ticks in the project's `## 🏁 Milestones` checklist. Fills on its own as milestones are ticked. */
+function Progress({ m, className = '' }: { m: DashProject['milestones']; className?: string }) {
+  // No checklist: a faint note on a computer, nothing on a phone (no empty row per project).
+  if (!m) return <span className={`text-xs text-muted-foreground/50 max-md:hidden ${className}`} title="No milestones in agent.md yet">no milestones</span>
+  const pct = Math.round((m.done / m.total) * 100)
+  const all = m.done === m.total
+  return (
+    <span className={`flex items-center gap-2 ${className}`} title={m.next ? `Next milestone: ${m.next}` : 'All milestones done'}>
+      <span
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={m.total}
+        aria-valuenow={m.done}
+        aria-label={`${m.done} of ${m.total} milestones done`}
+        className="h-1.5 min-w-16 flex-1 overflow-hidden bg-muted-foreground/20"
+      >
+        <span className={`block h-full ${all ? 'bg-primary' : 'bg-primary/80'}`} style={{ width: `${pct}%` }} />
+      </span>
+      <span className={`shrink-0 text-xs tabular-nums ${all ? 'text-primary' : 'text-foreground'}`}>
+        {m.done}/{m.total}
+      </span>
+    </span>
+  )
+}
+
 function ProjectRow({ p }: { p: DashProject }) {
   const w = when(p)
   const short = p.name.replace(/\s+[—(].*$/, '')
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1.5 border-b border-border py-3 md:grid-cols-[minmax(170px,1.1fr)_150px_96px_minmax(0,2fr)_auto]">
+    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1.5 border-b border-border py-3 md:grid-cols-[minmax(170px,1.1fr)_140px_150px_96px_minmax(0,2fr)_auto]">
       <div className="flex min-w-0 items-center gap-2.5">
         <i className={`h-2 w-2 shrink-0 rounded-xs ${TAG_DOT[p.tag]}`} title={p.tag} />
         <b className="truncate font-semibold" title={p.name}>{short}</b>
@@ -43,7 +68,9 @@ function ProjectRow({ p }: { p: DashProject }) {
           </a>
         )}
       </div>
-      <Strip values={p.activity} className="col-span-2 row-start-2 md:col-span-1 md:row-start-auto" />
+      {/* Games track builds, not milestones. */}
+      {p.tag === 'Game' ? <span className="max-md:hidden" /> : <Progress m={p.milestones} className="col-span-2 row-start-2 md:col-span-1 md:row-start-auto" />}
+      <Strip values={p.activity} className="col-span-2 row-start-3 md:col-span-1 md:row-start-auto" />
       <span className={`hidden text-xs tabular-nums md:block ${w.cls}`}>{w.text}</span>
       <p
         className="col-span-2 line-clamp-2 text-[13px] text-muted-foreground md:col-span-1 md:line-clamp-1"
@@ -158,7 +185,14 @@ export function AdminProjects({ projects, scorecard, updated }: { projects: Dash
         {(Object.keys(TAG_DOT) as DashProject['tag'][]).map((t) => (
           <span key={t} className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-xs ${TAG_DOT[t]}`} />{t}</span>
         ))}
+        <span>Bar = milestones ticked</span>
         <span>Squares = changes per day, last 14 days</span>
+        {/* Active projects only: parked ones do not need a bar. */}
+        {projects.some((p) => p.tag !== 'Game' && p.lane !== 'parked' && !p.milestones) && (
+          <span>
+            {projects.filter((p) => p.tag !== 'Game' && p.lane !== 'parked' && !p.milestones).length} active without milestones. Say &quot;add milestones to &lt;project&gt;&quot;.
+          </span>
+        )}
       </div>
     </div>
   )
