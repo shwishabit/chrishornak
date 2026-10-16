@@ -12,7 +12,7 @@
  *   Client logos = a client-list heading ("Trusted by", "Our customers")
  *                  followed by 3+ images, or a logo strip/wall of 3+ images
  *   Case studies = a link to case studies / customer stories
- *   First screen = the headline + the text after it: who it's for, a reason to pick them
+ *   First screen = the headline, a short line above it and the text after it: who it's for, a reason to pick them
  *   Shop         = a store's own ask: "Shop now", "Add to cart", a /shop or /collections link
  *   Site type    = service (the default), ecommerce or saas, from 2+ signals in the code
  *                  (Chris, 2026-10-16: an online store failed SGM's next step)
@@ -53,6 +53,11 @@ const PRICING_WORDS_RE = /^(?:see |view |our |compare )?(?:pricing|prices|plans(
 const DEMO_WORDS_RE =
   /\b(?:(?:book|request|get|schedule|see|watch|take|try) (?:a |the |your )?(?:free |live |product |personali[sz]ed )?(?:demo|tour)|(?:start|begin|get|try) (?:your |a |my )?(?:free |\d+[- ]day )+(?:trial|plan)|free trial|try (?:it |us )?(?:for )?free|(?:talk|speak|chat) (?:to|with) (?:a |an |our |one of our )?(?:sales|team|experts?|specialists?|strategists?|consultants?|advisors?|advisers?)|contact sales|get a (?:quote|proposal)|book a (?:call|meeting|consultation|strategy call)|start a (?:project|conversation)|let(?:'|’)?s talk|schedule a (?:call|meeting|consultation)|request a (?:quote|proposal|consultation)|get a free (?:quote|audit|consultation|proposal|assessment)|get started|start here|start now)\b/i
 // "Start here" / "Get started" added 2026-10-07 (Chris, t1dtips.com's "Just Diagnosed? Start Here." is its next step).
+// A service or local business's ask (2026-10-16: SGM's own "Tell us about your project" scored as a plain contact
+// link while "Start a project" to the same page scored as a direct ask). Estimates, appointments, call-backs and
+// "Call now" (a tel: link with call words; a bare phone number stays a contact detail, not an ask).
+const SERVICE_ASK_RE =
+  /\b(?:tell us about your (?:project|business|needs|goals)|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:estimate|quote|consultation)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
 const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|trial|signup|sign-up|contact-sales|talk-to-sales)(?:[\/.?#-]|$)/i
 // "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
 const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
@@ -136,7 +141,7 @@ const AUDIENCE_NOUNS =
   'teams|companies|businesses|brands|firms|founders|owners|leaders|marketers|agencies|caregivers|moms|dads|start-?ups|practices|clinics|hospitals|schools|colleges|universities|non-?profits|charities|families|homeowners|home owners|parents|kids|children|seniors|patients|pets|contractors|retailers|manufacturers|distributors|restaurants|lawyers|attorneys|dentists|doctors|physicians|accountants|investors|developers|engineers|creators|professionals|organi[sz]ations|enterprises|smbs|cmos|ceos|executives|buyers|landlords|property managers|builders|shops|stores|hotels|venues|churches|governments|municipalities|communities|athletes|students|employers|employees|nurses|therapists|realtors|agents|brokers|insurers|banks|lenders|farms|wineries|breweries'
 const AUDIENCE_RE = new RegExp(
   // "to our clients" / "to our patients" talk about existing customers, not who it's for.
-  `\\b(?:for|to|serv(?:e|es|ing)|help(?:s|ing)?|work(?:s|ing)? with|partner(?:s|ing)? with) (?!(?:our|us)\\b)(?:(?:your |the )?[a-z0-9&-]+,? (?:and |& )?){0,3}(?:${AUDIENCE_NOUNS})\\b`,
+  `\\b(?:for|to|serv(?:e|es|ed|ing)|help(?:s|ed|ing)?|work(?:s|ing)? with|partner(?:s|ing)? with) (?!(?:our|us)\\b)(?:(?:your |the )?[a-z0-9&-]+,? (?:and |& )?){0,3}(?:${AUDIENCE_NOUNS})\\b`,
   'i',
 )
 // "B2B", "SaaS", "small business" name the audience on their own; so does "parent-to-parent help"
@@ -167,6 +172,25 @@ export interface FirstScreen {
 /** How much text after the headline counts as the first screen (the hero's subheading, lines and buttons). */
 const FIRST_SCREEN_CHARS = 600
 
+/** How far back from the h1 the hero's own start is looked for. */
+const ABOVE_WINDOW = 4_000
+/** A line above the headline longer than this is not an eyebrow (it is the nav or a banner). */
+const ABOVE_MAX_CHARS = 160
+
+/** The hero's short line above the headline ("Brand studio since 2007"): text from the hero's
+ *  start (the last <section>, <main> or </header> before the h1) to the h1. Empty when there is no
+ *  such start nearby or the text is too long to be an eyebrow (2026-10-16: SGM's own "since 2007"
+ *  sat above its h1 and was missed). */
+function textAboveHeadline(html: string, h1At: number): string {
+  const from = Math.max(0, h1At - ABOVE_WINDOW)
+  const before = html.slice(from, h1At)
+  let start = -1
+  for (const m of before.matchAll(/<section\b|<main\b|<\/header>/gi)) start = m.index!
+  if (start < 0) return ''
+  const text = extractText(before.slice(start)).replace(/\s+/g, ' ').trim()
+  return text.length <= ABOVE_MAX_CHARS ? text : ''
+}
+
 export function readFirstScreen(html: string): FirstScreen {
   const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)
   const headline = h1 ? words(h1[1]).slice(0, 200) || null : null
@@ -175,7 +199,8 @@ export function readFirstScreen(html: string): FirstScreen {
   const subline = near.match(/^(.{20,180}?[.!?])(?:\s|$)/)?.[1] ?? (near ? near.slice(0, 180).trim() || null : null)
   // No h1 at all: fall back to the page title, which is still what a buyer reads first in the tab and the search result.
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
-  const screen = h1 ? `${headline} ${near}` : `${title ? words(title) : ''} ${extractText(html).slice(0, FIRST_SCREEN_CHARS)}`
+  const above = h1 ? textAboveHeadline(html, h1.index!) : ''
+  const screen = h1 ? `${above} ${headline} ${near}` : `${title ? words(title) : ''} ${extractText(html).slice(0, FIRST_SCREEN_CHARS)}`
   const audience = screen.match(AUDIENCE_RE)?.[0] ?? screen.match(AUDIENCE_WORD_RE)?.[0] ?? null
   const reason = screen.match(REASON_RE)?.[0] ?? null
   // The rest of the page, for what the first screen is missing.
@@ -237,6 +262,11 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const reviewSites = new Set<string>()
 
   for (const a of anchors(html)) {
+    // "Call now" is a real next step for a service business; pathAndHost drops tel: links, so read them first.
+    if (!demo && /^\s*tel:/i.test(a.href)) {
+      const t = words(a.inner)
+      if (t.length <= 60 && SERVICE_ASK_RE.test(t)) demo = t
+    }
     const at = pathAndHost(a.href, pageUrl)
     if (!at) continue
     const text = words(a.inner)
@@ -250,7 +280,7 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     if (!caseStudies && own && goesSomewhere && (CASE_PATH_RE.test(at.path) || CASE_WORDS_RE.test(text))) caseStudies = at.url
     if (!contact && own && goesSomewhere && (CONTACT_PATH_RE.test(at.path) || CONTACT_WORDS_RE.test(text))) contact = at.url
     if (!demo) {
-      if (text.length <= 60 && DEMO_WORDS_RE.test(text)) demo = text
+      if (text.length <= 60 && (DEMO_WORDS_RE.test(text) || SERVICE_ASK_RE.test(text))) demo = text
       else if ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host)) demo = text || 'Demo link'
     }
     if (!shop && text && text.length <= 40 && (SHOP_WORDS_RE.test(text) || (own && goesSomewhere && SHOP_PATH_RE.test(at.path)))) shop = text
