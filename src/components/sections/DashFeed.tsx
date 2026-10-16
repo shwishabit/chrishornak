@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import type { FeedStatus, FeedStatusRow, Level } from '@/lib/admin-dashboard'
 import { FEED_GROUPS, fmtMins, nyDate, nyTomorrow, type FeedGroup, type FeedItem } from '@/lib/dash-feed'
-import { setFeedItemMins, setFeedItemStatus, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
+import { addTodoItem, setFeedItemMins, setFeedItemStatus, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
 import { URGENT_CAP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
 import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
@@ -45,7 +45,7 @@ export function DashFeed({
   const [minsOver, setMinsOver] = useState<Record<string, number>>({})
   const [focus, setFocus] = useState(false)
   // Changes made in the To-do card to labeled to-dos (text, label, hidden).
-  const [todoOver, setTodoOver] = useState<Record<string, { title?: string; group?: FeedGroup; gone?: boolean }>>({})
+  const [todoOver, setTodoOver] = useState<Record<string, { title?: string; group?: FeedGroup; brand?: string; gone?: boolean }>>({})
   // To-dos labeled after the page loaded: added to the Feed at once.
   const [extraTodos, setExtraTodos] = useState<FeedItem[]>([])
   useEffect(
@@ -55,7 +55,7 @@ export function DashFeed({
         setExtraTodos((x) =>
           x.some((i) => i.todo === id)
             ? x
-            : [...x, { id: `todo:${id}`, todo: id, group: patch.label as FeedGroup, level: 'plain', title: patch.text!, brand: 'To-do', meta: 'your to-do', mins: 15, say: `help me do this to-do: ${patch.text}`, rank: 3 }],
+            : [...x, { id: `todo:${id}`, todo: id, group: patch.label as FeedGroup, level: 'plain', title: patch.text!, brand: patch.brand || 'To-do', meta: 'your to-do', mins: 15, say: `help me do this to-do: ${patch.text}`, rank: 3 }],
         )
       }),
     [items],
@@ -68,6 +68,7 @@ export function DashFeed({
           [id]: {
             ...o[id],
             ...(patch.text !== undefined && { title: patch.text }),
+            ...(patch.brand !== undefined && { brand: patch.brand || 'To-do' }),
             ...(patch.label !== undefined && (patch.label ? { group: patch.label as FeedGroup, gone: false } : { gone: true })),
             ...((patch.done === true || patch.archived === true || patch.deleted || (patch.day !== undefined && patch.day > today)) && { gone: true }),
             ...((patch.done === false || patch.archived === false || (patch.day !== undefined && patch.day <= today)) && { gone: false }),
@@ -88,7 +89,7 @@ export function DashFeed({
     () =>
       [...items, ...extraTodos]
         .map((i) => (minsOver[i.id] ? { ...i, mins: minsOver[i.id], minsSet: true } : i))
-        .map((i) => (i.todo && todoOver[i.todo] ? { ...i, ...(todoOver[i.todo].title && { title: todoOver[i.todo].title! }), ...(todoOver[i.todo].group && { group: todoOver[i.todo].group! }) } : i))
+        .map((i) => (i.todo && todoOver[i.todo] ? { ...i, ...(todoOver[i.todo].title && { title: todoOver[i.todo].title! }), ...(todoOver[i.todo].group && { group: todoOver[i.todo].group! }), ...(todoOver[i.todo].brand && { brand: todoOver[i.todo].brand! }) } : i))
         .filter((i) => !hidden(i.id) && (showSpam || !i.spam) && !(i.todo && todoOver[i.todo]?.gone))
         .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || (a.level === 'red' ? 0 : 1) - (b.level === 'red' ? 0 : 1) || a.rank - b.rank || LVL[a.level] - LVL[b.level]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,6 +234,42 @@ export function DashFeed({
           return n
         })
         setError('That did not save. Try again in a moment.')
+      }
+    })
+  }
+  /**
+   * Feed → today's to-do list (Chris 2026-10-16). A to-do that was moved here goes back (no label).
+   * Any other item becomes a new to-do for today, keeping its title and site, and leaves the Feed
+   * (status skipped, note "Moved to the to-do list"; job items do not touch the job tracker).
+   */
+  function toTodo(item: FeedItem) {
+    setError('')
+    if (item.todo) {
+      const id = item.todo
+      emitTodoChange({ id, patch: { label: '', day: today, text: item.title } })
+      startTransition(async () => {
+        if (!(await updateTodoItem(id, { label: '', day: today }).catch(() => false))) {
+          emitTodoChange({ id, patch: { label: item.group, text: item.title } })
+          setError('That did not save. Try again in a moment.')
+        }
+      })
+      return
+    }
+    const site = ['Chris Hornak', 'Blog Hands', 'Swift Growth'].includes(item.brand) ? item.brand : ''
+    const prev = rows.get(item.id)
+    setRows((cur) => new Map(cur).set(item.id, { id: item.id, status: 'skipped', until: null, title: item.title, grp: item.group, mins: item.mins, brand: item.brand, note: 'Moved to the to-do list', at: new Date().toISOString() }))
+    startTransition(async () => {
+      const made = await addTodoItem(item.title.slice(0, 300), '', site).catch(() => null)
+      const hid = made && (await setFeedItemStatus({ id: item.id, status: 'skipped', title: item.title, group: item.group, mins: item.mins, brand: item.brand, note: 'Moved to the to-do list' }).catch(() => ({ ok: false }))).ok
+      if (made) emitTodoChange({ id: made.id, patch: {}, row: made })
+      if (!made || !hid) {
+        setRows((cur) => {
+          const back = new Map(cur)
+          if (prev) back.set(item.id, prev)
+          else back.delete(item.id)
+          return back
+        })
+        setError(made ? 'Added to the to-do list, but it is still in the Feed. Skip it here.' : 'That did not save. Try again in a moment.')
       }
     })
   }
@@ -386,6 +423,7 @@ export function DashFeed({
                       n={numberOf.get(i.id)}
                       onAct={(s, note) => act(i, s, note)}
                       onMins={(m) => setMins(i, m)}
+                      onToTodo={() => toTodo(i)}
                       goal={goals.length ? { list: goalList, value: goalFor(i, goals, picks), set: !!picks[i.id], onPick: (g) => setGoal(i, g) } : undefined}
                     />
                   ))}
@@ -633,12 +671,15 @@ function Row({
   onAct,
   onMins,
   goal,
+  onToTodo,
 }: {
   item: FeedItem
   n?: number
   onAct: (s: FeedStatus, note?: string) => void
   onMins: (m: number) => void
   goal?: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }
+  /** Move it to today's to-do list. */
+  onToTodo?: () => void
 }) {
   const [noting, setNoting] = useState(false)
   const [note, setNote] = useState('')
@@ -694,6 +735,11 @@ function Row({
         <button type="button" onClick={() => onAct('snoozed')} title="Hide until tomorrow" className="nx-ghost">
           Snooze
         </button>
+        {onToTodo && (
+          <button type="button" onClick={onToTodo} title={i.todo ? 'Back to today’s to-do list' : 'Move it to today’s to-do list (it leaves the Feed)'} className="nx-ghost whitespace-nowrap">
+            To-do
+          </button>
+        )}
         <button type="button" onClick={() => onAct('skipped')} title={i.job ? `Marks it ${i.job.skip} in the tracker` : 'Hide it for good'} className="nx-ghost">
           Skip
         </button>

@@ -101,7 +101,7 @@ export async function DashboardView() {
       .map((s) => ({ id: s.id, title: s.title, mins: s.mins, brand: s.brand || brandById.get(s.id), group: s.grp })),
     ...todos
       .filter((t) => t.done_at && nyDate(new Date(t.done_at)) >= weekStart)
-      .map((t) => ({ id: `todo:${t.id}`, title: t.text, mins: TODO_WIN_MINS, brand: 'To-do', group: t.label })),
+      .map((t) => ({ id: `todo:${t.id}`, title: t.text, mins: TODO_WIN_MINS, brand: t.brand || 'To-do', group: t.label })),
   ]
   const week: WeekData = {
     weekStart,

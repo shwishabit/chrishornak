@@ -54,13 +54,15 @@ export async function setFeedItemStatus(input: {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const TODO_LABELS = ['', 'email', 'sales', 'jobs', 'marketing', 'client', 'other']
+/** Sites a to-do can be for (migration 0021). */
+const TODO_BRANDS = ['', 'Chris Hornak', 'Blog Hands', 'Swift Growth']
 
 /** To-do list: add one line, optionally labeled with a Feed group. */
-export async function addTodoItem(text: string, label = ''): Promise<Todo | null> {
+export async function addTodoItem(text: string, label = '', brand = ''): Promise<Todo | null> {
   if (!(await isAdmin())) return null
   const t = text.trim().slice(0, 300)
-  if (!t || !TODO_LABELS.includes(label)) return null
-  return addTodo(t, label)
+  if (!t || !TODO_LABELS.includes(label) || !TODO_BRANDS.includes(brand)) return null
+  return addTodo(t, label, brand)
 }
 
 /** To-do list: edit text, move to another day, tick, archive (or undo any of them). */
@@ -80,6 +82,10 @@ export async function updateTodoItem(id: string, patch: TodoPatch): Promise<bool
   if (patch.label !== undefined) {
     if (!TODO_LABELS.includes(patch.label)) return false
     clean.label = patch.label
+  }
+  if (patch.brand !== undefined) {
+    if (!TODO_BRANDS.includes(patch.brand)) return false
+    clean.brand = patch.brand
   }
   if (typeof patch.done === 'boolean') clean.done = patch.done
   if (typeof patch.archived === 'boolean') clean.archived = patch.archived

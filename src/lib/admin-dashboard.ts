@@ -278,12 +278,14 @@ export interface Todo {
   position: number
   /** A Feed group ('' = none). A labeled to-do also shows in the Feed under that group. */
   label: string
+  /** Which site it is for (0021): '' | 'Chris Hornak' | 'Blog Hands' | 'Swift Growth'. */
+  brand?: string
   done_at: string | null
   archived_at: string | null
   created_at: string
 }
 
-export type TodoPatch = { text?: string; day?: string; position?: number; label?: string; done?: boolean; archived?: boolean }
+export type TodoPatch = { text?: string; day?: string; position?: number; label?: string; brand?: string; done?: boolean; archived?: boolean }
 
 export async function getTodos(): Promise<Todo[]> {
   const sb = getSupabase()
@@ -294,11 +296,11 @@ export async function getTodos(): Promise<Todo[]> {
   return data as Todo[]
 }
 
-export async function addTodo(text: string, label = ''): Promise<Todo | null> {
+export async function addTodo(text: string, label = '', brand = ''): Promise<Todo | null> {
   const sb = getSupabase()
   const key = adminKey()
   if (!sb || !key) return null
-  const { data, error } = await sb.rpc('dash_todo_add', { p_secret: key, p_text: text, p_label: label })
+  const { data, error } = await sb.rpc('dash_todo_add', { p_secret: key, p_text: text, p_label: label, p_brand: brand })
   return error || !data ? null : (data as Todo)
 }
 

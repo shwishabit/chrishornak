@@ -40,7 +40,9 @@ export function onWins(win: (w: Win) => void, unwin: (id: string) => void): () =
  * announces the patch, and the other side applies it locally. */
 export interface TodoChange {
   id: string
-  patch: { text?: string; day?: string; label?: string; done?: boolean; archived?: boolean; deleted?: boolean }
+  patch: { text?: string; day?: string; label?: string; brand?: string; done?: boolean; archived?: boolean; deleted?: boolean }
+  /** A to-do just made from a Feed item (2026-10-16): the To-do card adds it as is. */
+  row?: { id: string; text: string; day: string; position: number; label: string; brand?: string; done_at: string | null; archived_at: string | null; created_at: string }
 }
 const TODO = 'dash:todo'
 

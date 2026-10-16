@@ -7,7 +7,10 @@ import { addTodoItem, deleteTodoItem, setItemGoalAction, updateTodoItem } from '
 import { UPKEEP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
 import { TODO_WIN_MINS, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
 import { FEED_GROUPS } from '@/lib/dash-feed'
-import { CopyButton } from './DashParts'
+import { brandChip } from '@/lib/dash-format'
+
+/** Sites a to-do can be for (migration 0021). */
+const SITES = ['Chris Hornak', 'Blog Hands', 'Swift Growth'] as const
 
 /* Hand-typed to-do list (2026-10-15), right column beside the Feed. Items stay
  * until Chris acts on them. Drag the ⠿ handle to reorder (or Move up / down in the
@@ -41,11 +44,11 @@ export function DashTodo({
   const today = nyDate()
   // Goal per to-do: Chris's pick, else from the label (jobs → remote work …), else Upkeep.
   const [picks, setPicks] = useState(goalPicks)
-  const goalOf = (t: Todo) => goalFor({ id: `todo:${t.id}`, brand: 'To-do', group: t.label }, goals, picks)
+  const goalOf = (t: Todo) => goalFor({ id: `todo:${t.id}`, brand: t.brand || 'To-do', group: t.label }, goals, picks)
   function pickGoal(t: Todo, goal: string) {
     const id = `todo:${t.id}`
     const before = picks[id]
-    const auto = goalFor({ id, brand: 'To-do', group: t.label }, goals, {})
+    const auto = goalFor({ id, brand: t.brand || 'To-do', group: t.label }, goals, {})
     const set = (v: string | undefined) =>
       setPicks((p) => {
         const n = { ...p }
@@ -64,9 +67,13 @@ export function DashTodo({
   const tomorrow = nyTomorrow(today)
   const [todos, setTodos] = useState(initial)
   const [text, setText] = useState('')
-  const [label, setLabel] = useState('')
+  const [site, setSite] = useState('')
   const [error, setError] = useState('')
   const [menu, setMenu] = useState<string | null>(null)
+  // Move menu (replaces the Copy button, Chris 2026-10-16) and the "To Feed" panel that asks for what is missing.
+  const [moveMenu, setMoveMenu] = useState<string | null>(null)
+  const [feeding, setFeeding] = useState<{ id: string; brand: string; label: string } | null>(null)
+  const [showFeed, setShowFeed] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [showLater, setShowLater] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
@@ -76,9 +83,11 @@ export function DashTodo({
   // The Feed can act on a labeled to-do (Done / Skip / Snooze): mirror it here.
   useEffect(
     () =>
-      onTodoChange(({ id, patch }) =>
+      onTodoChange(({ id, patch, row: made }) =>
         setTodos((cur) =>
-          patch.deleted
+          made && !cur.some((x) => x.id === id)
+            ? [...cur, made]
+            : patch.deleted
             ? cur.filter((x) => x.id !== id)
             : cur.map((x) =>
                 x.id !== id
@@ -88,6 +97,7 @@ export function DashTodo({
                       ...(patch.text !== undefined && { text: patch.text }),
                       ...(patch.day !== undefined && { day: patch.day }),
                       ...(patch.label !== undefined && { label: patch.label }),
+                      ...(patch.brand !== undefined && { brand: patch.brand }),
                       ...(patch.done !== undefined && { done_at: patch.done ? (x.done_at ?? new Date().toISOString()) : null }),
                       ...(patch.archived !== undefined && { archived_at: patch.archived ? (x.archived_at ?? new Date().toISOString()) : null }),
                     },
@@ -97,7 +107,10 @@ export function DashTodo({
     [],
   )
 
-  const live = todos.filter((t) => !t.archived_at)
+  // The list is for today. A to-do moved to the Feed (it has a Feed group) lives in the Feed only;
+  // the card keeps one "N in the Feed" line to see them or send one back.
+  const inFeed = todos.filter((t) => !t.archived_at && t.label && !t.done_at)
+  const live = todos.filter((t) => !t.archived_at && !t.label)
   const now = live.filter((t) => t.day <= today).sort((a, b) => Number(!!a.done_at) - Number(!!b.done_at) || a.position - b.position)
   const openNow = now.filter((t) => !t.done_at)
   const tomorrowTodos = live.filter((t) => t.day === tomorrow)
@@ -116,7 +129,8 @@ export function DashTodo({
       text: t,
       day: today,
       position: Math.max(0, ...todos.map((x) => x.position)) + 1,
-      label,
+      label: '',
+      brand: site,
       done_at: null,
       archived_at: null,
       created_at: new Date().toISOString(),
@@ -125,11 +139,8 @@ export function DashTodo({
     setText('')
     setError('')
     startTransition(async () => {
-      const row = await addTodoItem(t, label).catch(() => null)
-      if (row) {
-        setTodos((cur) => cur.map((x) => (x.id === temp.id ? row : x)))
-        if (row.label) emitTodoChange({ id: row.id, patch: { label: row.label, text: row.text, day: row.day } })
-      }
+      const row = await addTodoItem(t, '', site).catch(() => null)
+      if (row) setTodos((cur) => cur.map((x) => (x.id === temp.id ? row : x)))
       else {
         setTodos((cur) => cur.filter((x) => x.id !== temp.id))
         setText(t)
@@ -148,6 +159,7 @@ export function DashTodo({
       ...(p.day !== undefined && { day: p.day }),
       ...(p.position !== undefined && { position: p.position }),
       ...(p.label !== undefined && { label: p.label }),
+      ...(p.brand !== undefined && { brand: p.brand }),
       ...(p.done !== undefined && {
         done_at: p.done ? (t.done_at ?? stamp) : null,
       }),
@@ -157,7 +169,7 @@ export function DashTodo({
     }
     setTodos((cur) => cur.map((x) => (x.id === t.id ? next : x)))
     // A labeled to-do also lives in the Feed: tell it.
-    if (t.label || p.label !== undefined) emitTodoChange({ id: t.id, patch: { ...p, text: next.text, day: next.day, label: next.label } })
+    if (t.label || p.label !== undefined) emitTodoChange({ id: t.id, patch: { ...p, text: next.text, day: next.day, label: next.label, brand: next.brand ?? '' } })
     // Today's wins card: ticking a to-do is a win; unticking takes it back.
     if (p.done === true && !t.done_at)
       emitWin({
@@ -168,6 +180,7 @@ export function DashTodo({
       })
     if (p.done === false && t.done_at) emitUnwin(`todo:${t.id}`)
     setMenu(null)
+    setMoveMenu(null)
     setError('')
     startTransition(async () => {
       if (!(await updateTodoItem(t.id, p).catch(() => false))) {
@@ -203,7 +216,7 @@ export function DashTodo({
     })
   }
 
-  const row = (t: Todo, where: 'now' | 'later' | 'archived') => {
+  const row = (t: Todo, where: 'now' | 'later' | 'archived' | 'feed') => {
     const idx = openNow.indexOf(t)
     const sortable = where === 'now' && idx >= 0
     return (
@@ -282,16 +295,23 @@ export function DashTodo({
           {where === 'later' && (
             <span className="ml-1.5 whitespace-nowrap text-[11px] text-muted-foreground">{t.day === tomorrow ? 'tomorrow' : shortDay(t.day)}</span>
           )}
-          {/* Under the text, so a long goal name never squeezes the to-do on a phone. */}
-          {goals.length > 0 && where !== 'archived' && goalOf(t) !== UPKEEP.key && (
-            <span className="block text-[11px] uppercase tracking-widest text-primary" title="Goal (change it in the ⋯ menu)">
-              ◎ {goals.find((g) => g.key === goalOf(t))?.name}
+          {/* Under the text, so labels never squeeze the to-do on a phone: site · in Feed · goal. */}
+          {where !== 'archived' && (t.brand || t.label || (goals.length > 0 && goalOf(t) !== UPKEEP.key)) && (
+            <span className="mt-1 flex flex-wrap items-center gap-1.5">
+              {t.brand && <span className={brandChip(t.brand)}>{t.brand}</span>}
+              {t.label && (
+                <span className="shrink-0 border border-primary/60 px-1.5 py-px text-[11px] uppercase tracking-[0.14em] text-[#a8f2c8]">
+                  In Feed · {FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}
+                </span>
+              )}
+              {goals.length > 0 && goalOf(t) !== UPKEEP.key && (
+                <span className="text-[11px] uppercase tracking-widest text-primary" title="Goal (change it in the ⋯ menu)">
+                  ◎ {goals.find((g) => g.key === goalOf(t))?.name}
+                </span>
+              )}
             </span>
           )}
         </div>
-        {t.label && where !== 'archived' && (
-          <span className="nx-src shrink-0 pt-0.5">{FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}</span>
-        )}
         {where === 'archived' ? (
           <span className="flex shrink-0 gap-1">
             <button
@@ -307,18 +327,114 @@ export function DashTodo({
           </span>
         ) : (
           <>
-            {!t.done_at && editing !== t.id && <CopyButton text={`help me do this to-do: ${t.text}`} label="Copy" quiet />}
+            {!t.done_at && editing !== t.id && (
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={moveMenu === t.id}
+                onClick={() => {
+                  setMenu(null)
+                  setFeeding(null)
+                  setMoveMenu(moveMenu === t.id ? null : t.id)
+                }}
+                className={`-mt-0.5 min-h-11 shrink-0 px-1.5 text-xs text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 ${moveMenu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
+              >
+                Move
+              </button>
+            )}
             <button
               type="button"
               aria-label={`Options for "${t.text}"`}
               aria-haspopup="menu"
               aria-expanded={menu === t.id}
-              onClick={() => setMenu(menu === t.id ? null : t.id)}
+              onClick={() => {
+                setMoveMenu(null)
+                setFeeding(null)
+                setMenu(menu === t.id ? null : t.id)
+              }}
               className={`-mt-0.5 min-h-11 min-w-11 shrink-0 px-1.5 leading-none text-muted-foreground transition-opacity hover:bg-well hover:text-foreground focus-visible:opacity-100 md:min-h-7 md:min-w-0 ${menu === t.id ? 'bg-well opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
             >
               ⋯
             </button>
           </>
+        )}
+        {moveMenu === t.id && (
+          <Menu onClose={() => setMoveMenu(null)}>
+            {t.label ? (
+              <MenuItem onClick={() => patch(t, { label: '' })}>Back to the to-do list</MenuItem>
+            ) : (
+              <MenuItem
+                onClick={() => {
+                  setMoveMenu(null)
+                  setFeeding({ id: t.id, brand: t.brand ?? '', label: '' })
+                }}
+              >
+                To the Feed…
+              </MenuItem>
+            )}
+            {sortable && idx > 0 && <MenuItem onClick={() => moveTo(t, idx - 1)}>Up</MenuItem>}
+            {sortable && idx < openNow.length - 1 && <MenuItem onClick={() => moveTo(t, idx + 1)}>Down</MenuItem>}
+            {!t.label && t.day > today && <MenuItem onClick={() => patch(t, { day: today })}>To today</MenuItem>}
+            {!t.label && t.day !== tomorrow && <MenuItem onClick={() => patch(t, { day: tomorrow, done: false })}>To tomorrow</MenuItem>}
+            {!t.label && (
+              <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
+                To a day
+                <input
+                  type="date"
+                  min={today}
+                  defaultValue={t.day > today ? t.day : ''}
+                  onChange={(e) => e.target.value && patch(t, { day: e.target.value, done: false })}
+                  className="w-31 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
+                />
+              </label>
+            )}
+          </Menu>
+        )}
+        {/* To the Feed: asks for whatever is missing (site + Feed group); both are needed. */}
+        {feeding?.id === t.id && (
+          <Menu onClose={() => setFeeding(null)}>
+            <p className="nx-lab px-2.5 pt-1">Site</p>
+            <div className="flex flex-wrap gap-1 px-2 pb-1">
+              {SITES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={feeding.brand === s}
+                  onClick={() => setFeeding({ ...feeding, brand: s })}
+                  className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.brand === s ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p className="nx-lab px-2.5 pt-1">Feed group</p>
+            <div className="flex flex-wrap gap-1 px-2 pb-1">
+              {FEED_GROUPS.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  aria-pressed={feeding.label === g.id}
+                  onClick={() => setFeeding({ ...feeding, label: g.id })}
+                  className={`min-h-11 border px-2 py-1 text-xs md:min-h-0 ${feeding.label === g.id ? 'border-primary text-foreground' : 'border-[#2e333b] text-muted-foreground hover:text-foreground'}`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              disabled={!feeding.brand || !feeding.label}
+              onClick={() => {
+                const f = feeding
+                setFeeding(null)
+                // The Feed shows to-dos due today or earlier, so a later one comes forward to today.
+                patch(t, { label: f.label, ...(f.brand !== (t.brand ?? '') && { brand: f.brand }), ...(t.day > today && { day: today }) })
+              }}
+              className="nx-prim m-1.5 disabled:opacity-40"
+            >
+              {!feeding.brand || !feeding.label ? `Pick ${!feeding.brand ? 'a site' : ''}${!feeding.brand && !feeding.label ? ' and ' : ''}${!feeding.label ? 'a group' : ''}` : 'Add to the Feed'}
+            </button>
+          </Menu>
         )}
         {menu === t.id && (
           <Menu onClose={() => setMenu(null)}>
@@ -330,30 +446,16 @@ export function DashTodo({
             >
               Edit
             </MenuItem>
-            {sortable && idx > 0 && <MenuItem onClick={() => moveTo(t, idx - 1)}>Move up</MenuItem>}
-            {sortable && idx < openNow.length - 1 && <MenuItem onClick={() => moveTo(t, idx + 1)}>Move down</MenuItem>}
-            {where === 'later' && <MenuItem onClick={() => patch(t, { day: today })}>Move to today</MenuItem>}
-            {t.day !== tomorrow && <MenuItem onClick={() => patch(t, { day: tomorrow, done: false })}>Move to tomorrow</MenuItem>}
             <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
-              Move to a day
-              <input
-                type="date"
-                min={today}
-                defaultValue={t.day > today ? t.day : ''}
-                onChange={(e) => e.target.value && patch(t, { day: e.target.value, done: false })}
-                className="w-31 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
-              />
-            </label>
-            <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
-              Label (shows in Feed)
+              Site
               <select
-                value={t.label}
-                onChange={(e) => patch(t, { label: e.target.value })}
+                value={t.brand ?? ''}
+                onChange={(e) => patch(t, { brand: e.target.value })}
                 className="border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
               >
                 <option value="">None</option>
-                {FEED_GROUPS.map((g) => (
-                  <option key={g.id} value={g.id}>{g.label}</option>
+                {SITES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </label>
@@ -371,6 +473,14 @@ export function DashTodo({
                 </select>
               </label>
             )}
+            <MenuItem
+              onClick={() => {
+                setMenu(null)
+                navigator.clipboard?.writeText(`help me do this to-do: ${t.text}`).catch(() => {})
+              }}
+            >
+              Copy what to say
+            </MenuItem>
             <MenuItem onClick={() => patch(t, { archived: true })}>Archive</MenuItem>
             <MenuItem danger onClick={() => remove(t)}>
               Delete
@@ -402,17 +512,17 @@ export function DashTodo({
           placeholder="Add a to-do, press Enter"
           className="min-h-11 min-w-0 flex-1 border-0 border-b border-[#2e333b] bg-transparent px-0 py-1.5 text-sm text-[#d9d6cf] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none md:min-h-0"
         />
-        <label className="sr-only" htmlFor="todo-label">Label</label>
+        <label className="sr-only" htmlFor="todo-site">Site</label>
         <select
-          id="todo-label"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          title="Label it to show it in the Feed too"
+          id="todo-site"
+          value={site}
+          onChange={(e) => setSite(e.target.value)}
+          title="Which site it is for"
           className="min-h-11 shrink-0 border border-border bg-well px-2 text-xs text-muted-foreground focus-visible:border-primary focus-visible:outline-none md:min-h-0"
         >
-          <option value="">No label</option>
-          {FEED_GROUPS.map((g) => (
-            <option key={g.id} value={g.id}>{g.label}</option>
+          <option value="">Site</option>
+          {SITES.map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </form>
@@ -451,8 +561,13 @@ export function DashTodo({
         </div>
       )}
 
-      {(later.length > 0 || done.length > 0 || archived.length > 0) && (
+      {(later.length > 0 || done.length > 0 || archived.length > 0 || inFeed.length > 0) && (
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-2.5 text-xs text-muted-foreground [&_button]:min-h-11 md:[&_button]:min-h-0">
+          {inFeed.length > 0 && (
+            <button type="button" aria-expanded={showFeed} onClick={() => setShowFeed(!showFeed)} className="hover:text-foreground" title="Moved to the Feed: done there, or sent back here">
+              In the Feed <span className="tabular-nums">{inFeed.length}</span> {showFeed ? '▾' : '▸'}
+            </button>
+          )}
           {later.length > 0 && (
             <button type="button" aria-expanded={showLater} onClick={() => setShowLater(!showLater)} className="hover:text-foreground">
               Later <span className="tabular-nums">{later.length}</span> {showLater ? '▾' : '▸'}
@@ -470,6 +585,7 @@ export function DashTodo({
           )}
         </div>
       )}
+      {showFeed && inFeed.length > 0 && <ul className="mt-1">{inFeed.map((t) => row(t, 'feed'))}</ul>}
       {showLater && later.length > 0 && <ul className="mt-1">{later.map((t) => row(t, 'later'))}</ul>}
       {showArchived && archived.length > 0 && <ul className="mt-1">{archived.map((t) => row(t, 'archived'))}</ul>}
     </section>

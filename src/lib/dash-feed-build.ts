@@ -439,7 +439,7 @@ export function buildFeed({
       level: t.day < today ? 'amber' : 'plain',
       title: t.text,
       detail: t.day < today ? `On your to-do list since ${t.day}.` : undefined,
-      brand: 'To-do',
+      brand: t.brand || 'To-do',
       meta: 'your to-do',
       mins: 15,
       say: `help me do this to-do: ${t.text}`,
