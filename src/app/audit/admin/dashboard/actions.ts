@@ -62,12 +62,23 @@ const TODO_LABELS = ['', 'email', 'sales', 'jobs', 'marketing', 'client', 'other
 /** Sites a to-do can be for (migration 0021). */
 const TODO_BRANDS = ['', 'Chris Hornak', 'Blog Hands', 'Swift Growth']
 
-/** To-do list: add one line, optionally labeled with a Feed group. */
-export async function addTodoItem(text: string, label = '', brand = ''): Promise<Todo | null> {
+/**
+ * To-do list: add one line, optionally labeled with a Feed group.
+ * `day` (a follow-up, 2026-10-16): a later day (YYYY-MM-DD, within a year); it waits under Tomorrow / Later until then.
+ */
+export async function addTodoItem(text: string, label = '', brand = '', day = ''): Promise<Todo | null> {
   if (!(await isAdmin())) return null
   const t = text.trim().slice(0, 300)
   if (!t || !TODO_LABELS.includes(label) || !TODO_BRANDS.includes(brand)) return null
-  return addTodo(t, label, brand)
+  const today = nyDate()
+  const yearOut = nyDate(new Date(Date.now() + 366 * 864e5))
+  if (day && !(/^\d{4}-\d{2}-\d{2}$/.test(day) && day > today && day <= yearOut)) return null
+  const row = await addTodo(t, label, brand)
+  if (!row || !day) return row
+  // The add RPC always makes it for today; move it. If that fails, take the row back out.
+  if (await updateTodo(row.id, { day })) return { ...row, day }
+  await deleteTodo(row.id)
+  return null
 }
 
 /** To-do list: edit text, move to another day, tick, archive (or undo any of them). */

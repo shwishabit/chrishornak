@@ -8,6 +8,7 @@ import { brandChip } from '@/lib/dash-format'
 import { useFilters } from '@/lib/dash-console'
 import { emitTodoChange, emitUnwin, emitWin, onWins } from '@/lib/dash-wins'
 import { CopyButton } from './DashParts'
+import { FollowUp } from './DashFollowUp'
 import { DashModal, DayPick, Menu, MenuItem, nextMonday, openCalendar } from './DashModal'
 
 /* Email tab (2026-10-16, Chris: "I don't have to go to Gmail unless I really need to").
@@ -245,6 +246,9 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
               Reply in Gmail <span aria-hidden="true">↗</span>
             </a>
             <CopyButton text={`draft a reply to the email from ${cur.from} about "${cur.subject.slice(0, 80)}" (${cur.label} inbox)`} />
+          </div>
+          <div className="mt-3">
+            <FollowUp key={cur.id} title={`${cur.from}: ${cur.subject}`} brand={cur.label} />
           </div>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
             <button type="button" onClick={() => step(() => act(cur, 'done'))} className="nx-prim !px-6 !py-3 !text-sm" title="Marks it read in Gmail within 10 minutes">

@@ -7,6 +7,7 @@ import { addTodoItem, setFeedItemMins, setFeedItemStatus, setItemGoalAction, upd
 import { URGENT_CAP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
 import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
+import { FollowUp } from './DashFollowUp'
 import { brandChip } from '@/lib/dash-format'
 import { feedDomId, useFilters } from '@/lib/dash-console'
 import { TODO_WIN_MINS, emitFeedCounts, emitTodoChange, emitUnwin, emitWin, onTodayTodos, onTodoChange, type TodayTodo } from '@/lib/dash-wins'
@@ -728,6 +729,9 @@ function Details({
         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
           Time <MinsPicker item={i} onMins={onMins} big />
         </span>
+      </div>
+      <div className="mt-3">
+        <FollowUp key={i.id} title={i.title.replace(/^Follow up: /, '')} brand={i.brand} />
       </div>
 
       <label className="mt-6 block">

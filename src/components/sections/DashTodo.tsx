@@ -10,6 +10,7 @@ import { FEED_GROUPS } from '@/lib/dash-feed'
 import { brandChip } from '@/lib/dash-format'
 import { DashModal, DayPick, Menu, MenuItem, nextMonday, openCalendar } from './DashModal'
 import { CopyButton } from './DashParts'
+import { FollowUp } from './DashFollowUp'
 
 /** Sites a to-do can be for (migration 0021). */
 const SITES = ['Chris Hornak', 'Blog Hands', 'Swift Growth'] as const
@@ -646,6 +647,9 @@ function TodoDetails({
           </button>
         )}
         <CopyButton text={`help me do this to-do: ${t.text}`} />
+      </div>
+      <div className="mt-3">
+        <FollowUp title={t.text.replace(/^Follow up: /, '')} brand={t.brand} />
       </div>
 
       <div className="mt-6 grid gap-x-8 gap-y-1 md:grid-cols-2">
