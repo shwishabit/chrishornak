@@ -21,7 +21,9 @@ export const withUpkeep = (goals: Goal[]) => [...goals.filter((g) => g.key !== U
 export function goalFor(item: { id: string; brand?: string; group?: string }, goals: Goal[], picks: Record<string, string>): string {
   const pick = picks[item.id]
   if (pick && (pick === UPKEEP.key || goals.some((g) => g.key === pick))) return pick
-  const b = (item.brand ?? '').toLowerCase()
+  // Email: the inbox's brand says whose inbox, not what the mail is for (a bill in the SGM inbox
+  // is not SGM sales), so mail only gets a goal from Chris's pick or a group rule.
+  const b = item.group === 'email' ? '' : (item.brand ?? '').toLowerCase()
   const byBrand = b && goals.find((g) => g.auto.brands.some((x) => x.toLowerCase() === b))
   if (byBrand) return byBrand.key
   const byGroup = item.group && goals.find((g) => g.auto.groups.includes(item.group!))

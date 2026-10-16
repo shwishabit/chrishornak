@@ -20,6 +20,10 @@ import { TODO_WIN_MINS, type Win } from '@/lib/dash-wins'
 import { DashToolLeads } from './DashToolLeads'
 import { logout } from '@/app/audit/admin/actions'
 
+/** A chip-sized project name: drop "(folder)" and anything after a dash or colon. */
+const shortName = (n: string) => clipName(n.replace(/\s*\([^)]*\)/g, '').split(/\s+[—–-]\s+|:\s/)[0])
+const clipName = (s: string) => (s.length > 32 ? s.slice(0, 31).trimEnd() + '…' : s)
+
 /* Layout (v5, 2026-10-15, Chris's call): date + brief · tabs, Feed first. The
  * Feed tab is the Feed beside a right column of Today (work-day bar, Now/Next,
  * inbox counts), a hand-typed To-do list and Pulse (growth numbers). The stats
@@ -105,20 +109,17 @@ export async function DashboardView() {
       const mine = doneWeek.filter((d) => goalFor(d, goals, goalPicks) === g.key)
       return { key: g.key, name: g.name, wins: mine.length, mins: mine.reduce((t, d) => t + d.mins, 0), titles: mine.slice(-4).map((d) => d.title) }
     }),
-    // Stalled: your own projects with no change for 7+ days, and to-dos open a week past their day.
-    stalled: [
+    // Stuck: your projects with no change for 7+ days, projects waiting on someone, and to-dos a
+    // week past their day. Names only on the chip ("Swoop (swift-ac-crm) — Agent Notes" → "Swoop").
+    stuck: [
       ...(state?.projects?.items ?? [])
-        .filter((p) => p.lane === 'you' && (p.days ?? 0) >= 7)
-        .map((p) => ({ title: p.next ? `${p.name}: ${p.next}` : p.name, days: p.days ?? 0, where: 'Project' })),
+        .filter((p) => (p.lane === 'you' && (p.days ?? 0) >= 7) || p.lane === 'waiting')
+        .map((p) => ({ name: shortName(p.name), days: p.days ?? 0, next: p.next, waiting: p.lane === 'waiting', game: p.tag === 'Game' })),
       ...todos
         .filter((t) => !t.done_at && !t.archived_at && t.day <= today)
-        .map((t) => ({ title: t.text, days: Math.floor((Date.parse(today) - Date.parse(t.day)) / 864e5), where: 'To-do' }))
+        .map((t) => ({ name: clipName(t.text), days: Math.floor((Date.parse(today) - Date.parse(t.day)) / 864e5), next: t.text, waiting: false, game: false }))
         .filter((t) => t.days >= 7),
-    ].sort((a, b) => b.days - a.days),
-    blocked: (state?.projects?.items ?? [])
-      .filter((p) => p.lane === 'waiting')
-      .map((p) => ({ title: p.name, days: p.days, next: p.next }))
-      .sort((a, b) => (b.days ?? 0) - (a.days ?? 0)),
+    ].sort((a, b) => Number(b.waiting) - Number(a.waiting) || b.days - a.days),
     decisions: (state?.goals?.decisions ?? []).filter((d) => d.review_on <= today),
   }
 
@@ -183,7 +184,7 @@ export async function DashboardView() {
             </div>
           }
           week={<DashWeek data={week} goals={goals} pending={state?.goals_edits ?? null} updated={state?.updated.goals} />}
-          weekCount={week.stalled.length + week.decisions.length}
+          weekCount={week.byGoal.filter((g) => g.key !== 'upkeep' && g.wins === 0).length + week.decisions.length}
           sales={<DashSales sales={state?.sales ?? null} salesDb={salesDb} mail={mail} updated={state?.updated.sales} />}
           leads={<DashToolLeads mail={mail} salesDb={salesDb} sgm={state?.sales?.sgm ?? null} />}
           leadsCount={
