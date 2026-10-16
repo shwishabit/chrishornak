@@ -22,8 +22,8 @@ export interface FeedMeta {
 
 /** What the Feed lets other parts of the page do to it. */
 export interface FeedApi {
-  /** True when the Feed has the item and acted on it. `until` = snooze to that day. */
-  act: (id: string, status: FeedStatus | null, until?: string) => boolean
+  /** True when the Feed has the item and acted on it. `until` = snooze to that day; `note` is saved with it. */
+  act: (id: string, status: FeedStatus | null, until?: string, note?: string) => boolean
   doneNth: (n: number) => boolean
 }
 

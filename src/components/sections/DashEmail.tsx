@@ -19,6 +19,9 @@ import { DashModal, DayPick, Menu, MenuItem, nextMonday, openCalendar } from './
 type Row = MailboxMessage & { label: string }
 const SITES = ['Chris Hornak', 'Blog Hands', 'Swift Growth']
 const MAIL_MINS = 2
+// Archive / Delete: the PC (dash-inbox.mjs) acts on a skipped row with exactly this note. Keep in step.
+const ARCHIVE_NOTE = 'Archived in Gmail'
+const TRASH_NOTE = 'Deleted in Gmail'
 
 function ago(iso: string) {
   const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000))
@@ -54,7 +57,8 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
   const [open, setOpen] = useState<{ id: string; idx: number } | null>(null)
   const [showOther, setShowOther] = useState(false)
   const [error, setError] = useState('')
-  const [last, setLast] = useState<{ row: Row; status: FeedStatus } | null>(null)
+  const [last, setLast] = useState<{ row: Row; status: FeedStatus; note?: string } | null>(null)
+  const [sure, setSure] = useState(false)
 
   // Done in the Feed hides it here too.
   useEffect(
@@ -94,19 +98,19 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
       .then((t) => setTexts((x) => ({ ...x, [cur.id]: t })))
   }, [cur, texts])
 
-  function act(m: Row, status: FeedStatus | null, until?: string) {
+  function act(m: Row, status: FeedStatus | null, until?: string, note?: string) {
     const id = `mail:${m.id}`
     const prev = id in local ? local[id] : (server.get(id)?.status ?? null)
     setError('')
     setLocal((l) => ({ ...l, [id]: status }))
-    if (status) setLast({ row: m, status })
+    if (status) setLast({ row: m, status, note })
     else setLast(null)
     // The Feed has its own copy of work mail: let it do the write (one win, one row).
-    if (api.current?.act(id, status, until)) return
+    if (api.current?.act(id, status, until, note)) return
     if (status === 'done') emitWin({ id, title: m.subject, mins: MAIL_MINS, brand: m.label, at: new Date().toISOString() })
     if (status === null && prev === 'done') emitUnwin(id)
     startTransition(async () => {
-      const res = await setFeedItemStatus({ id, status, title: m.subject.slice(0, 300), group: 'email', mins: MAIL_MINS, brand: m.label, ...(until && { until }) }).catch(() => ({ ok: false }))
+      const res = await setFeedItemStatus({ id, status, title: m.subject.slice(0, 300), group: 'email', mins: MAIL_MINS, brand: m.label, ...(until && { until }), ...(note && { note }) }).catch(() => ({ ok: false }))
       if (!res.ok) {
         setLocal((l) => {
           const n = { ...l }
@@ -132,6 +136,7 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
 
   /** After an action in the modal, the next message slides into the same place. */
   const step = (fn: () => void) => {
+    setSure(false)
     const at = idx
     fn()
     if (list.length <= 1) setOpen(null)
@@ -144,7 +149,7 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
       m={m}
       today={today}
       onOpen={() => setOpen({ id: m.id, idx: n })}
-      onAct={(s, until) => act(m, s, until)}
+      onAct={(s, until, note) => act(m, s, until, note)}
       onToTodo={() => toTodo(m)}
     />
   )
@@ -165,7 +170,7 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
           <span className="text-danger">{error}</span>
         ) : last ? (
           <span className="text-muted-foreground">
-            {last.status === 'done' ? 'Done' : last.status === 'snoozed' ? 'Moved' : 'Hidden'}: {last.row.subject.slice(0, 60)}{' '}
+            {last.status === 'done' ? 'Done' : last.status === 'snoozed' ? 'Moved' : last.note === ARCHIVE_NOTE ? 'Archives in Gmail within 10 minutes' : last.note === TRASH_NOTE ? 'Goes to Gmail Trash within 10 minutes' : 'Hidden'}: {last.row.subject.slice(0, 60)}{' '}
             <button type="button" onClick={() => act(last.row, null)} className="ml-1 text-primary hover:underline">
               Undo
             </button>
@@ -245,9 +250,29 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
             <button type="button" onClick={() => step(() => act(cur, 'done'))} className="nx-prim !px-6 !py-3 !text-sm" title="Marks it read in Gmail within 10 minutes">
               Done
             </button>
-            <button type="button" onClick={() => step(() => act(cur, 'skipped'))} className="nx-ghost !border-transparent" title="Hides it here; it stays unread in Gmail">
-              Skip
-            </button>
+            <div className="flex flex-wrap items-center gap-1">
+              <button type="button" onClick={() => step(() => act(cur, 'skipped', undefined, ARCHIVE_NOTE))} className="nx-ghost !border-transparent" title="Out of the inbox, kept in All Mail">
+                Archive
+              </button>
+              {sure ? (
+                <span role="group" aria-label="Delete this email?" className="flex items-center gap-1 text-xs text-danger">
+                  To Gmail Trash?
+                  <button type="button" autoFocus onClick={() => (setSure(false), step(() => act(cur, 'skipped', undefined, TRASH_NOTE)))} className="nx-ghost !border-danger !text-danger">
+                    Delete
+                  </button>
+                  <button type="button" onClick={() => setSure(false)} className="nx-ghost !border-transparent">
+                    Keep
+                  </button>
+                </span>
+              ) : (
+                <button type="button" onClick={() => setSure(true)} className="nx-ghost !border-transparent text-danger" title="Gmail keeps Trash for 30 days">
+                  Delete…
+                </button>
+              )}
+              <button type="button" onClick={() => step(() => act(cur, 'skipped'))} className="nx-ghost !border-transparent" title="Hides it here; it stays unread in Gmail">
+                Skip
+              </button>
+            </div>
           </div>
           <div className="mt-4 border-t border-border pt-3">
             <p className="nx-lab">Move</p>
@@ -275,8 +300,9 @@ export function DashEmail({ accounts, statuses, today, updated }: { accounts: Ma
 }
 
 /** One email: inbox chip, sender, subject, a line of the text, Done and Move. Tap to read it. */
-function EmailRow({ m, today, onOpen, onAct, onToTodo }: { m: Row; today: string; onOpen: () => void; onAct: (s: FeedStatus, until?: string) => void; onToTodo: () => void }) {
+function EmailRow({ m, today, onOpen, onAct, onToTodo }: { m: Row; today: string; onOpen: () => void; onAct: (s: FeedStatus, until?: string, note?: string) => void; onToTodo: () => void }) {
   const [move, setMove] = useState(false)
+  const [sure, setSure] = useState(false)
   return (
     <li
       onClick={(e) => !(e.target as HTMLElement).closest('a, button, select, input, label, [role=menu]') && onOpen()}
@@ -305,7 +331,11 @@ function EmailRow({ m, today, onOpen, onAct, onToTodo }: { m: Row; today: string
             Move
           </button>
           {move && (
-            <Menu onClose={() => setMove(false)}>
+            <Menu onClose={() => (setMove(false), setSure(false))}>
+              <MenuItem onClick={() => (setMove(false), onAct('skipped', undefined, ARCHIVE_NOTE))}>Archive</MenuItem>
+              <MenuItem danger onClick={() => (sure ? (setMove(false), setSure(false), onAct('skipped', undefined, TRASH_NOTE)) : setSure(true))}>
+                {sure ? 'Click again: to Gmail Trash' : 'Delete'}
+              </MenuItem>
               <MenuItem onClick={() => (setMove(false), onToTodo())}>To my to-do list</MenuItem>
               <MenuItem onClick={() => (setMove(false), onAct('snoozed'))}>To tomorrow</MenuItem>
               <MenuItem onClick={() => (setMove(false), onAct('snoozed', nextMonday(today)))}>Next week (Mon)</MenuItem>
