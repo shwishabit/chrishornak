@@ -1,6 +1,8 @@
 import 'server-only'
 import { getJobLeads } from '@/lib/admin-jobs'
-import { getBlogHandsStats, getDashState, getFeedMins, getFeedStatus, getSalesDb, getTodos, getWinDays } from '@/lib/admin-dashboard'
+import { getBlogHandsStats, getDashState, getFeedMins, getFeedStatus, getItemGoals, getSalesDb, getTodos, getWinDays } from '@/lib/admin-dashboard'
+import { goalFor, nyWeekStart, withUpkeep } from '@/lib/dash-goals'
+import { DashWeek, type WeekData } from './DashWeek'
 import { getAdminOverview, getDomainLog } from '@/lib/admin-audit'
 import { buildFeed } from '@/lib/dash-feed-build'
 import { nyDate, nyTomorrow, workday } from '@/lib/dash-feed'
@@ -23,7 +25,7 @@ import { logout } from '@/app/audit/admin/actions'
  * inbox counts), a hand-typed To-do list and Pulse (growth numbers). The stats
  * bar is gone: its task counts live in the Feed, its numbers in Pulse + tabs. */
 export async function DashboardView() {
-  const [leadData, state, overview, domainLog, bh, statuses, salesDb, todos, minsOverride, winDays] = await Promise.all([
+  const [leadData, state, overview, domainLog, bh, statuses, salesDb, todos, minsOverride, winDays, goalPicks] = await Promise.all([
     getJobLeads(),
     getDashState(),
     getAdminOverview(),
@@ -34,6 +36,7 @@ export async function DashboardView() {
     getTodos(),
     getFeedMins(),
     getWinDays(),
+    getItemGoals(),
   ])
   const now = Date.now()
   const today = nyDate(new Date(now))
@@ -82,6 +85,41 @@ export async function DashboardView() {
     if (Math.floor((now - Date.parse(l.status_changed)) / 864e5) === 5 && !openById.has(`followup:${l.id}:${l.status_changed.slice(0, 10)}`)) {
       dueTomorrow.push({ key: `job-tomorrow:${l.id}`, kind: 'job', title: `Follow up with ${l.who}` })
     }
+  }
+
+  // ── Week tab (Mon–Sun, New York) ──
+  // Goals: the PC's push from GOALS.md; dashboard edits still waiting show in the editor only.
+  const goals = state?.goals?.goals ?? []
+  const weekStart = nyWeekStart(today)
+  const doneWeek = [
+    ...statuses
+      .filter((s) => s.status === 'done' && nyDate(new Date(s.at)) >= weekStart)
+      .map((s) => ({ id: s.id, title: s.title, mins: s.mins, brand: s.brand || brandById.get(s.id), group: s.grp })),
+    ...todos
+      .filter((t) => t.done_at && nyDate(new Date(t.done_at)) >= weekStart)
+      .map((t) => ({ id: `todo:${t.id}`, title: t.text, mins: TODO_WIN_MINS, brand: 'To-do', group: t.label })),
+  ]
+  const week: WeekData = {
+    weekStart,
+    byGoal: withUpkeep(goals).map((g) => {
+      const mine = doneWeek.filter((d) => goalFor(d, goals, goalPicks) === g.key)
+      return { key: g.key, name: g.name, wins: mine.length, mins: mine.reduce((t, d) => t + d.mins, 0), titles: mine.slice(-4).map((d) => d.title) }
+    }),
+    // Stalled: your own projects with no change for 7+ days, and to-dos open a week past their day.
+    stalled: [
+      ...(state?.projects?.items ?? [])
+        .filter((p) => p.lane === 'you' && (p.days ?? 0) >= 7)
+        .map((p) => ({ title: p.next ? `${p.name}: ${p.next}` : p.name, days: p.days ?? 0, where: 'Project' })),
+      ...todos
+        .filter((t) => !t.done_at && !t.archived_at && t.day <= today)
+        .map((t) => ({ title: t.text, days: Math.floor((Date.parse(today) - Date.parse(t.day)) / 864e5), where: 'To-do' }))
+        .filter((t) => t.days >= 7),
+    ].sort((a, b) => b.days - a.days),
+    blocked: (state?.projects?.items ?? [])
+      .filter((p) => p.lane === 'waiting')
+      .map((p) => ({ title: p.name, days: p.days, next: p.next }))
+      .sort((a, b) => (b.days ?? 0) - (a.days ?? 0)),
+    decisions: (state?.goals?.decisions ?? []).filter((d) => d.review_on <= today),
   }
 
   // Names for the console's People & companies suggestions.
@@ -134,16 +172,18 @@ export async function DashboardView() {
                 />
               </div>
               <div key="todo" className="order-2 lg:order-none lg:col-start-2 lg:row-start-2">
-                <DashTodo initial={todos} dueNow={<DashDueNow rows={dueToday} />} dueTomorrow={<DashDueTomorrow rows={dueTomorrow} />} dueTomorrowCount={dueTomorrow.length} />
+                <DashTodo initial={todos} goals={goals} goalPicks={goalPicks} dueNow={<DashDueNow rows={dueToday} />} dueTomorrow={<DashDueTomorrow rows={dueTomorrow} />} dueTomorrowCount={dueTomorrow.length} />
               </div>
               <div key="feed" className="order-1 lg:order-none lg:col-start-1 lg:row-span-4 lg:row-start-1">
-                <DashFeed items={feed} statuses={statuses} />
+                <DashFeed items={feed} statuses={statuses} goals={goals} goalPicks={goalPicks} />
               </div>
               <div key="pulse" className="order-4 lg:order-none lg:col-start-2 lg:row-start-3">
                 <DashPulse overview={overview} bh={bh} health={state?.health ?? null} sgm={state?.sales?.sgm ?? null} salesDb={salesDb} />
               </div>
             </div>
           }
+          week={<DashWeek data={week} goals={goals} pending={state?.goals_edits ?? null} updated={state?.updated.goals} />}
+          weekCount={week.stalled.length + week.decisions.length}
           sales={<DashSales sales={state?.sales ?? null} salesDb={salesDb} mail={mail} updated={state?.updated.sales} />}
           leads={<DashToolLeads mail={mail} salesDb={salesDb} sgm={state?.sales?.sgm ?? null} />}
           leadsCount={

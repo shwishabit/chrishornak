@@ -1,7 +1,8 @@
 'use server'
 
 import { isAdmin } from '@/lib/admin-auth'
-import { addTodo, deleteTodo, requestRefresh, setFeedMins, setFeedStatus, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
+import { addTodo, deleteTodo, requestRefresh, setFeedMins, setFeedStatus, setGoalsEdits, setItemGoal, updateTodo, type FeedStatus, type Todo, type TodoPatch } from '@/lib/admin-dashboard'
+import { UPKEEP, type Goal } from '@/lib/dash-goals'
 import { JOB_STATUSES, updateJobLead, type JobStatus } from '@/lib/admin-jobs'
 import { FEED_GROUPS, nyTomorrow } from '@/lib/dash-feed'
 
@@ -106,6 +107,31 @@ export async function markJobFollowedUp(id: string, note: string): Promise<boole
   const next = `${note.trim()}
 Followed up ${day}`.trim().slice(0, 2000)
   return updateJobLead(id, { note: next })
+}
+
+const GOAL_KEY = /^[a-z0-9-]{1,40}$/
+
+/** Chris's goal pick for one Feed item or to-do; null = back to the automatic goal. */
+export async function setItemGoalAction(id: string, goal: string | null): Promise<boolean> {
+  if (!(await isAdmin()) || !id || id.length > 200) return false
+  if (goal !== null && !GOAL_KEY.test(goal)) return false
+  return setItemGoal(id, goal)
+}
+
+/** Goal edits from the Week tab. The PC writes them into GOALS.md within the hour (the file wins if it changed after). */
+export async function saveGoalsAction(goals: Goal[]): Promise<string | null> {
+  if (!(await isAdmin()) || !Array.isArray(goals) || goals.length > 8) return null
+  const clean: Goal[] = []
+  for (const g of goals) {
+    const name = String(g?.name ?? '').replace(/\s+/g, ' ').trim().slice(0, 80)
+    if (!name) continue
+    // A new goal gets a key from its name; an old one keeps its key so tags still point at it.
+    const key = g.key && GOAL_KEY.test(g.key) ? g.key : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
+    if (!key || key === UPKEEP.key || clean.some((c) => c.key === key)) return null
+    const list = (v: unknown) => (Array.isArray(v) ? v.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10) : [])
+    clean.push({ key, name, why: String(g.why ?? '').replace(/\s+/g, ' ').trim().slice(0, 200), auto: { brands: list(g.auto?.brands), groups: list(g.auto?.groups) } })
+  }
+  return setGoalsEdits(clean)
 }
 
 /** "Refresh now" button: leave a request for the PC job. */

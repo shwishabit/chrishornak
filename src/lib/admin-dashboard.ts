@@ -11,6 +11,7 @@
 import 'server-only'
 import { getSupabase } from './supabase'
 import { adminKey } from './admin-auth'
+import type { Goal } from './dash-goals'
 
 export type Level = 'red' | 'amber' | 'plain' | 'green'
 
@@ -158,8 +159,18 @@ export interface CalEvent {
   calendar: string
 }
 
+/** GOALS.md, pushed hourly (2026-10-16), plus decision files whose review date has come. */
+export interface GoalsState {
+  goals: Goal[]
+  file_at: string
+  decisions?: { file: string; title: string; review_on: string; quit_if: string }[]
+}
+
+/** Goal edits made on the dashboard, waiting for the PC to write them into GOALS.md. */
+export interface GoalsEdits { at: string; goals: Goal[] }
+
 // refresh_request: a pending "Refresh now" (migration 0019); only its time matters.
-const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'calendar', 'sales', 'refresh_request'] as const
+const KEYS = ['today', 'projects', 'scorecard', 'catalog', 'health', 'mail', 'calendar', 'sales', 'refresh_request', 'goals', 'goals_edits'] as const
 type Key = (typeof KEYS)[number]
 
 export interface DashState {
@@ -171,6 +182,8 @@ export interface DashState {
   mail: { accounts: MailAccount[] } | null
   calendar: { calendars: { label: string; ok: boolean }[]; events: CalEvent[] } | null
   sales: SalesState | null
+  goals: GoalsState | null
+  goals_edits: GoalsEdits | null
   updated: Partial<Record<Key, string>>
 }
 
@@ -193,6 +206,9 @@ export async function getDashState(): Promise<DashState | null> {
     mail: pick('mail'),
     calendar: pick('calendar'),
     sales: pick('sales'),
+    goals: pick('goals'),
+    // An empty blob = no edits waiting (the PC clears it after writing GOALS.md).
+    goals_edits: pick<GoalsEdits>('goals_edits')?.at ? pick('goals_edits') : null,
     updated,
   }
 }
@@ -375,6 +391,35 @@ export async function getWinDays(): Promise<WinDay[]> {
   if (!sb || !key) return []
   const { data, error } = await sb.rpc('dash_win_days', { p_secret: key })
   return error || !Array.isArray(data) ? [] : (data as WinDay[])
+}
+
+/* ── Goals (migration 0020 + dash_state 'goals_edits') ── */
+
+/** { item_id: goal key } — Chris's own picks. Missing = the automatic goal. */
+export async function getItemGoals(): Promise<Record<string, string>> {
+  const sb = getSupabase()
+  const key = adminKey()
+  if (!sb || !key) return {}
+  const { data, error } = await sb.rpc('dash_item_goals_admin', { p_secret: key })
+  return error || !data ? {} : (data as Record<string, string>)
+}
+
+export async function setItemGoal(id: string, goal: string | null): Promise<boolean> {
+  const sb = getSupabase()
+  const key = adminKey()
+  if (!sb || !key) return false
+  const { data, error } = await sb.rpc('dash_item_goal_set', { p_secret: key, p_item_id: id, p_goal: goal })
+  return !error && data === true
+}
+
+/** Leave goal edits for the PC; it writes them into GOALS.md unless the file changed after this. */
+export async function setGoalsEdits(goals: Goal[]): Promise<string | null> {
+  const sb = getSupabase()
+  const key = adminKey()
+  if (!sb || !key) return null
+  const at = new Date().toISOString()
+  const { error } = await sb.rpc('dash_state_set', { p_secret: key, p_key: 'goals_edits', p_data: { at, goals } })
+  return error ? null : at
 }
 
 /** "Refresh now": ask the PC job for a full refresh (it checks every 5 minutes). Returns the request time. */

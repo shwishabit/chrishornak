@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import type { FeedStatus, FeedStatusRow, Level } from '@/lib/admin-dashboard'
 import { FEED_GROUPS, fmtMins, nyDate, nyTomorrow, type FeedGroup, type FeedItem } from '@/lib/dash-feed'
-import { setFeedItemMins, setFeedItemStatus, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
+import { setFeedItemMins, setFeedItemStatus, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
+import { URGENT_CAP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
 import { SCALE, chime } from '@/lib/dash-sound'
 import { CopyButton } from './DashParts'
 import { brandChip } from '@/lib/dash-format'
@@ -22,12 +23,20 @@ const SHOW_PER_GROUP = 8
 export function DashFeed({
   items,
   statuses,
+  goals = [],
+  goalPicks = {},
 }: {
   items: FeedItem[]
   statuses: FeedStatusRow[]
+  /** From GOALS.md (dash_state 'goals'). Empty = no goal chips. */
+  goals?: Goal[]
+  /** Chris's own picks, item id → goal key (dash_item_goals). */
+  goalPicks?: Record<string, string>
 }) {
   const today = nyDate()
   const [rows, setRows] = useState(() => new Map(statuses.map((s) => [s.id, s])))
+  const [picks, setPicks] = useState(goalPicks)
+  const goalList = useMemo(() => withUpkeep(goals), [goals])
   // Search, filters and the view come from the console.
   const { q, group, setGroup, quick, brand, showSpam, view, setView, setMeta, jump, focusReq, api } = useFilters()
   const [expanded, setExpanded] = useState<Set<FeedGroup>>(new Set())
@@ -205,6 +214,30 @@ export function DashFeed({
     })
   }
 
+  /** Chris's goal pick for one item: shows at once, saves in the background. Picking the automatic goal clears the pick. */
+  function setGoal(item: FeedItem, goal: string) {
+    const before = picks[item.id]
+    const auto = goalFor(item, goals, {})
+    setPicks((p) => {
+      const n = { ...p }
+      if (goal === auto) delete n[item.id]
+      else n[item.id] = goal
+      return n
+    })
+    startTransition(async () => {
+      if (!(await setItemGoalAction(item.id, goal === auto ? null : goal).catch(() => false))) {
+        setPicks((p) => {
+          const n = { ...p }
+          if (before) n[item.id] = before
+          else delete n[item.id]
+          return n
+        })
+        setError('That did not save. Try again in a moment.')
+      }
+    })
+  }
+  const urgent = open.filter((i) => i.level === 'red').length
+
   // Focus mode works through what the filters show, in order; "Next" passes an item for this session.
   const queue = shown.filter((i) => !passed.has(i.id))
 
@@ -304,6 +337,11 @@ export function DashFeed({
           Done today: <b className="font-medium text-foreground tabular-nums">{doneToday.filter((r) => r.status === 'done').length}</b> items · {fmtMins(doneMins)}
         </p>
       )}
+      {urgent > URGENT_CAP && (
+        <p role="status" className="mt-3 border border-warning/50 px-3 py-2 text-[13px] text-warning">
+          {urgent} urgent items are open. Keep it to {URGENT_CAP}: snooze or skip the rest, or do one now.
+        </p>
+      )}
       </div>
 
       <p aria-live="polite" className="text-xs text-danger empty:hidden">{error}</p>
@@ -342,7 +380,14 @@ export function DashFeed({
                 </div>
                 <ul>
                   {visible.map((i) => (
-                    <Row key={i.id} item={i} n={numberOf.get(i.id)} onAct={(s, note) => act(i, s, note)} onMins={(m) => setMins(i, m)} />
+                    <Row
+                      key={i.id}
+                      item={i}
+                      n={numberOf.get(i.id)}
+                      onAct={(s, note) => act(i, s, note)}
+                      onMins={(m) => setMins(i, m)}
+                      goal={goals.length ? { list: goalList, value: goalFor(i, goals, picks), set: !!picks[i.id], onPick: (g) => setGoal(i, g) } : undefined}
+                    />
                   ))}
                 </ul>
                 {list.length > visible.length && (
@@ -561,7 +606,40 @@ function Focus({
   )
 }
 
-function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct: (s: FeedStatus, note?: string) => void; onMins: (m: number) => void }) {
+/** The goal chip that is also a picker, beside the time estimate. */
+export function GoalPicker({ list, value, set, onPick }: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }) {
+  return (
+    <label className="relative inline-flex">
+      <span className="sr-only">Goal</span>
+      <select
+        value={value}
+        onChange={(e) => onPick(e.target.value)}
+        title={set ? 'Your pick. Choose another to change it.' : 'Picked from the brand. Choose your own.'}
+        className={`min-h-11 max-w-44 cursor-pointer appearance-none truncate bg-transparent px-1 py-0.5 text-[11px] uppercase tracking-[0.1em] transition-colors hover:text-foreground md:min-h-0 ${
+          value === 'upkeep' ? 'text-[#8d929a]' : set ? 'text-primary' : 'text-[#a6aab2]'
+        }`}
+      >
+        {list.map((g) => (
+          <option key={g.key} value={g.key}>◎ {g.name}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function Row({
+  item: i,
+  n,
+  onAct,
+  onMins,
+  goal,
+}: {
+  item: FeedItem
+  n?: number
+  onAct: (s: FeedStatus, note?: string) => void
+  onMins: (m: number) => void
+  goal?: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }
+}) {
   const [noting, setNoting] = useState(false)
   const [note, setNote] = useState('')
   return (
@@ -586,6 +664,7 @@ function Row({ item: i, n, onAct, onMins }: { item: FeedItem; n?: number; onAct:
       <div className="mt-2.5 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
       <div className="flex flex-wrap items-center gap-2">
         <MinsPicker item={i} onMins={onMins} />
+        {goal && <GoalPicker {...goal} />}
         {i.href && i.hrefLabel && (
           <a href={i.href} target="_blank" rel="noopener noreferrer" className="nx-ghost">
             {i.hrefLabel} <span aria-hidden="true">↗</span>

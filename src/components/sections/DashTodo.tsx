@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import type { Todo, TodoPatch } from '@/lib/admin-dashboard'
 import { nyDate, nyTomorrow } from '@/lib/dash-feed'
-import { addTodoItem, deleteTodoItem, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
+import { addTodoItem, deleteTodoItem, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
+import { UPKEEP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
 import { TODO_WIN_MINS, emitTodoChange, emitUnwin, emitWin, onTodoChange } from '@/lib/dash-wins'
 import { FEED_GROUPS } from '@/lib/dash-feed'
 import { CopyButton } from './DashParts'
@@ -21,8 +22,45 @@ const shortDay = (d: string) =>
     day: 'numeric',
   })
 
-export function DashTodo({ initial, dueNow, dueTomorrow, dueTomorrowCount = 0 }: { initial: Todo[]; dueNow?: React.ReactNode; dueTomorrow?: React.ReactNode; dueTomorrowCount?: number }) {
+export function DashTodo({
+  initial,
+  dueNow,
+  dueTomorrow,
+  dueTomorrowCount = 0,
+  goals = [],
+  goalPicks = {},
+}: {
+  initial: Todo[]
+  dueNow?: React.ReactNode
+  dueTomorrow?: React.ReactNode
+  dueTomorrowCount?: number
+  /** From GOALS.md. Empty = no goal line in the menu. */
+  goals?: Goal[]
+  goalPicks?: Record<string, string>
+}) {
   const today = nyDate()
+  // Goal per to-do: Chris's pick, else from the label (jobs → remote work …), else Upkeep.
+  const [picks, setPicks] = useState(goalPicks)
+  const goalOf = (t: Todo) => goalFor({ id: `todo:${t.id}`, brand: 'To-do', group: t.label }, goals, picks)
+  function pickGoal(t: Todo, goal: string) {
+    const id = `todo:${t.id}`
+    const before = picks[id]
+    const auto = goalFor({ id, brand: 'To-do', group: t.label }, goals, {})
+    const set = (v: string | undefined) =>
+      setPicks((p) => {
+        const n = { ...p }
+        if (v) n[id] = v
+        else delete n[id]
+        return n
+      })
+    set(goal === auto ? undefined : goal)
+    startTransition(async () => {
+      if (!(await setItemGoalAction(id, goal === auto ? null : goal).catch(() => false))) {
+        set(before)
+        setError('That did not save. Try again in a moment.')
+      }
+    })
+  }
   const tomorrow = nyTomorrow(today)
   const [todos, setTodos] = useState(initial)
   const [text, setText] = useState('')
@@ -244,6 +282,12 @@ export function DashTodo({ initial, dueNow, dueTomorrow, dueTomorrowCount = 0 }:
           {where === 'later' && (
             <span className="ml-1.5 whitespace-nowrap text-[11px] text-muted-foreground">{t.day === tomorrow ? 'tomorrow' : shortDay(t.day)}</span>
           )}
+          {/* Under the text, so a long goal name never squeezes the to-do on a phone. */}
+          {goals.length > 0 && where !== 'archived' && goalOf(t) !== UPKEEP.key && (
+            <span className="block text-[11px] uppercase tracking-widest text-primary" title="Goal (change it in the ⋯ menu)">
+              ◎ {goals.find((g) => g.key === goalOf(t))?.name}
+            </span>
+          )}
         </div>
         {t.label && where !== 'archived' && (
           <span className="nx-src shrink-0 pt-0.5">{FEED_GROUPS.find((g) => g.id === t.label)?.label ?? t.label}</span>
@@ -313,6 +357,20 @@ export function DashTodo({ initial, dueNow, dueTomorrow, dueTomorrowCount = 0 }:
                 ))}
               </select>
             </label>
+            {goals.length > 0 && (
+              <label className="flex min-h-11 items-center justify-between gap-2 whitespace-nowrap px-2.5 py-1.5 text-[13px] text-foreground hover:bg-well md:min-h-0">
+                Goal
+                <select
+                  value={goalOf(t)}
+                  onChange={(e) => pickGoal(t, e.target.value)}
+                  className="max-w-40 border border-border bg-transparent px-1 py-0.5 text-xs text-muted-foreground"
+                >
+                  {withUpkeep(goals).map((g) => (
+                    <option key={g.key} value={g.key}>{g.name}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <MenuItem onClick={() => patch(t, { archived: true })}>Archive</MenuItem>
             <MenuItem danger onClick={() => remove(t)}>
               Delete

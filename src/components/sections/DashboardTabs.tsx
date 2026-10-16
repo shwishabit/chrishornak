@@ -16,11 +16,13 @@ import { FilterProvider } from '@/lib/dash-console'
 
 // Chris's order (2026-10-15): Feed first, Sales next (a lead is money), then Job hunt,
 // Projects, Questions, Tools & leads (was Findability), Site health, Claude (was Skills & agents).
-type Tab = 'feed' | 'sales' | 'projects' | 'jobs' | 'questions' | 'leads' | 'health' | 'claude'
+// Week (2026-10-16): second, after the Feed: done by goal, stalled, blocked, decisions due.
+type Tab = 'feed' | 'week' | 'sales' | 'projects' | 'jobs' | 'questions' | 'leads' | 'health' | 'claude'
 // Old links keep working.
 const ALIAS: Record<string, Tab> = { findability: 'leads', toolbox: 'claude' }
 const TABS: { id: Tab; label: string }[] = [
   { id: 'feed', label: 'Feed' },
+  { id: 'week', label: 'Week' },
   { id: 'sales', label: 'Sales' },
   { id: 'jobs', label: 'Jobs' },
   { id: 'projects', label: 'Projects' },
@@ -32,6 +34,8 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function DashboardTabs({
   feed,
+  week,
+  weekCount,
   sales,
   leads,
   leadsCount,
@@ -51,6 +55,10 @@ export function DashboardTabs({
 }: {
   /** Feed + Calendar, rendered on the server. */
   feed: React.ReactNode
+  /** The Week tab, rendered on the server. */
+  week: React.ReactNode
+  /** Stalled items + decisions due. */
+  weekCount: number
   sales: React.ReactNode
   /** Merged tool + form leads across the three brands. */
   leads: React.ReactNode
@@ -92,6 +100,7 @@ export function DashboardTabs({
 
   const counts: Partial<Record<Tab, number>> = {
     feed: live.feed,
+    week: weekCount,
     sales: live.sales,
     projects: projects.filter((p) => p.lane === 'you').length,
     jobs: jobLeads.filter((l) => l.status === 'new').length,
@@ -115,6 +124,7 @@ export function DashboardTabs({
 
       {/* The Feed stays mounted so its filters and Done marks survive a tab switch. */}
       <div hidden={tab !== 'feed'}>{feed}</div>
+      {tab === 'week' && week}
       {tab === 'sales' && sales}
       {tab === 'projects' &&<AdminProjects projects={projects} scorecard={scorecard} updated={updated.scorecard} />}
       {tab === 'jobs' && <AdminJobLeads leads={jobLeads} today={today} />}
