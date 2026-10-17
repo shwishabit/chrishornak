@@ -18,6 +18,10 @@ export const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
 // The second-round reads are shorter, so a check stays inside maxDuration.
 const REVIEWS_PAGE_TIMEOUT = 5_000
 const SHORT_LINK_TIMEOUT = 3_000
+/** Redirects followed per Google short link (share.google needs 2), each with SHORT_LINK_TIMEOUT. */
+const SHORT_LINK_HOPS = 3
+/** Hops are followed only while they stay on Google (the redirect read has no SSRF check of its own). */
+const GOOGLE_HOP_HOST_RE = /^(?:www\.)?(?:google\.[a-z.]+|share\.google|goo\.gl|maps\.app\.goo\.gl|g\.co)$/i
 // The sitemap's follow-up reads run one after another, so each gets less time.
 const SITEMAP_TIMEOUT = 3_000
 // No new read starts after this long (homepage ~8 s + 13 s + one last 3 s read < 25 s maxDuration).
@@ -65,9 +69,26 @@ export async function readReputation(rr: ReviewRead, reader: Reader = liveReader
     return res && res.status >= 200 && res.status < 300 ? readReviewsPage(res.body, res.finalUrl) : null
   }
   // Where a Google short link goes, as a review site (a business listing), or null (an address, or no answer).
+  // Up to SHORT_LINK_HOPS redirects, and only while they stay on Google: Google's own Share button
+  // makes share.google links that take two (share.google → google.com/share.google → /search?kgmid=…),
+  // so one hop never reached the listing (SGM's own link, 2026-10-16).
   const follow = async (url: string) => {
-    const to = await reader.redirect(url)
-    return to ? reviewSiteOf(to) : null
+    let at = url
+    for (let hop = 0; hop < SHORT_LINK_HOPS; hop++) {
+      const to = await reader.redirect(at)
+      if (!to) return null
+      let next: URL
+      try {
+        next = new URL(to, at)
+      } catch {
+        return null
+      }
+      const site = reviewSiteOf(next.toString())
+      if (site) return site
+      if (!GOOGLE_HOP_HOST_RE.test(next.hostname)) return null
+      at = next.toString()
+    }
+    return null
   }
   // Always followed (at most 2): a site that links Yelp directly can still link Google by a short
   // link only (audit 2026-10-05: it was scored 1 review site instead of 2).
