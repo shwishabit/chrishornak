@@ -52,7 +52,7 @@ const JOBS = [
   {
     pillar: 'Be understood',
     title: 'Design and build your site',
-    body: 'A new site on my own system with Sanity as your editor, or design and fixes on the one you have: Shopify, WordPress, Webflow or Squarespace. Mobile-first, with one clear next step on every page.',
+    body: 'A new site on my own system with Sanity as your editor, or design and fixes on the one you have: Shopify, WordPress, Webflow or Squarespace. I’m a Shopify Partner and a Squarespace Circle partner. Mobile-first, with one clear next step on every page.',
     link: { href: '/work', label: 'See the builds' },
   },
   {
@@ -90,7 +90,7 @@ const FAQS = [
   },
   {
     question: 'Can you work on the site we already have?',
-    answer: 'Yes. I design and fix sites on Shopify, WordPress, Webflow and Squarespace. If a new build makes more sense, I’ll tell you why.',
+    answer: 'Yes. I design and fix sites on Shopify, WordPress, Webflow and Squarespace, and I’m in both the Shopify Partner Program and Squarespace Circle, Squarespace’s partner program. If a new build makes more sense, I’ll tell you why.',
   },
   {
     question: 'What does a new build run on?',
