@@ -307,12 +307,20 @@ export interface Todo {
   label: string
   /** Which site it is for (0021): '' | 'Chris Hornak' | 'Blog Hands' | 'Swift Growth'. */
   brand?: string
+  /** Checklist under the to-do (0022). Empty = none. */
+  steps?: TodoStep[]
   done_at: string | null
   archived_at: string | null
   created_at: string
 }
 
-export type TodoPatch = { text?: string; day?: string; position?: number; label?: string; brand?: string; done?: boolean; archived?: boolean }
+export interface TodoStep {
+  text: string
+  href?: string
+  done: boolean
+}
+
+export type TodoPatch = { text?: string; day?: string; position?: number; label?: string; brand?: string; steps?: TodoStep[]; done?: boolean; archived?: boolean }
 
 export async function getTodos(): Promise<Todo[]> {
   const sb = getSupabase()

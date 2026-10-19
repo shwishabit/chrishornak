@@ -1,6 +1,6 @@
 /* Dashboard Feed — shared types + time helpers (2026-10-15). Plain module: used by
  * the server builder (dash-feed-build.ts), the client Feed and the Calendar card. */
-import type { CalEvent, Level } from './admin-dashboard'
+import type { CalEvent, Level, TodoStep } from './admin-dashboard'
 
 export type FeedGroup = 'email' | 'sales' | 'jobs' | 'marketing' | 'client' | 'other'
 
@@ -28,6 +28,8 @@ export interface FeedItem {
   mins: number
   /** dash_todos id when this item is a labeled to-do (Done/Snooze/Skip then act on the to-do). */
   todo?: string
+  /** The to-do's checklist (0022): ticked in the row's details, saved on the to-do. */
+  steps?: TodoStep[]
   /** Likely spam: the reason. Hidden from the Feed unless "Show spam" is on. */
   spam?: string
   /** True when mins is Chris's own estimate, not the default. */

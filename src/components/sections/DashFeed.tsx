@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import type { FeedStatus, FeedStatusRow, Level } from '@/lib/admin-dashboard'
+import type { FeedStatus, FeedStatusRow, Level, TodoStep } from '@/lib/admin-dashboard'
 import { FEED_GROUPS, fmtMins, nyDate, nyTomorrow, type FeedGroup, type FeedItem } from '@/lib/dash-feed'
 import { addTodoItem, setFeedItemMins, setFeedItemStatus, setItemGoalAction, updateTodoItem } from '@/app/audit/admin/dashboard/actions'
 import { URGENT_CAP, goalFor, withUpkeep, type Goal } from '@/lib/dash-goals'
@@ -79,6 +79,8 @@ export function DashFeed({
       ),
     [today],
   )
+  // Ticked steps on a to-do (0022), shown at once while the save runs.
+  const [stepsOver, setStepsOver] = useState<Record<string, TodoStep[]>>({})
   const [passed, setPassed] = useState<Set<string>>(new Set())
   // Today's open to-dos from the To-do card: Focus walks them first (Chris 2026-10-16).
   const [todayTodos, setTodayTodos] = useState<TodayTodo[]>([])
@@ -97,10 +99,11 @@ export function DashFeed({
       [...items, ...extraTodos]
         .map((i) => (minsOver[i.id] ? { ...i, mins: minsOver[i.id], minsSet: true } : i))
         .map((i) => (i.todo && todoOver[i.todo] ? { ...i, ...(todoOver[i.todo].title && { title: todoOver[i.todo].title! }), ...(todoOver[i.todo].group && { group: todoOver[i.todo].group! }), ...(todoOver[i.todo].brand && { brand: todoOver[i.todo].brand! }) } : i))
+        .map((i) => (i.todo && stepsOver[i.todo] ? { ...i, steps: stepsOver[i.todo] } : i))
         .filter((i) => !hidden(i.id) && (showSpam || !i.spam) && !(i.todo && todoOver[i.todo]?.gone))
         .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || (a.level === 'red' ? 0 : 1) - (b.level === 'red' ? 0 : 1) || a.rank - b.rank || LVL[a.level] - LVL[b.level]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, extraTodos, rows, minsOver, showSpam, todoOver],
+    [items, extraTodos, rows, minsOver, showSpam, todoOver, stepsOver],
   )
   const spamCount = items.filter((i) => i.spam && !hidden(i.id)).length
   // Tab badges + the top line update live as items are done (review 2026-10-15).
@@ -220,6 +223,21 @@ export function DashFeed({
           else delete n[item.id]
           return n
         })
+        setError('That did not save. Try again in a moment.')
+      }
+    })
+  }
+
+  /** Tick or untick a to-do's step: shows at once, saves the whole list on the to-do. */
+  function setSteps(item: FeedItem, steps: TodoStep[]) {
+    const id = item.todo
+    if (!id) return
+    const before = item.steps
+    setStepsOver((s) => ({ ...s, [id]: steps }))
+    setError('')
+    startTransition(async () => {
+      if (!(await updateTodoItem(id, { steps }).catch(() => false))) {
+        setStepsOver((s) => ({ ...s, [id]: before ?? [] }))
         setError('That did not save. Try again in a moment.')
       }
     })
@@ -422,6 +440,7 @@ export function DashFeed({
             onAct={(i, st, note) => act(i, st, note)}
             onNext={(i) => setPassed((p) => new Set(p).add(i.id))}
             onMins={(i, m) => setMins(i, m)}
+            onSteps={(i, s) => setSteps(i, s)}
           />
         </DashModal>
       )}
@@ -444,6 +463,7 @@ export function DashFeed({
             today={today}
             goal={goals.length ? { list: goalList, value: goalFor(detailItem, goals, picks), set: !!picks[detailItem.id], onPick: (g) => setGoal(detailItem, g) } : undefined}
             onMins={(m) => setMins(detailItem, m)}
+            onSteps={(s) => setSteps(detailItem, s)}
             // The item leaves the list, so the one after it slides into the same place.
             onAct={(s, note, until) => {
               act(detailItem, s, note, until)
@@ -538,6 +558,72 @@ export function DashFeed({
 
 const MIN_CHOICES = [2, 5, 10, 15, 20, 30, 45, 60, 90, 120]
 
+/** "3 of 12 done" under a to-do that has steps. */
+function stepCount(steps: TodoStep[]) {
+  return `${steps.filter((s) => s.done).length} of ${steps.length} done`
+}
+
+/** A to-do's checklist (0022): tick, add or remove steps; the to-do itself stays open until Done. */
+function Steps({ steps, onChange }: { steps: TodoStep[]; onChange: (s: TodoStep[]) => void }) {
+  const left = steps.filter((s) => !s.done).length
+  const [draft, setDraft] = useState('')
+  const addStep = () => {
+    const text = draft.trim().slice(0, 300)
+    if (!text || steps.length >= 50) return
+    onChange([...steps, { text, done: false }])
+    setDraft('')
+  }
+  return (
+    <div className="mt-4 border border-border bg-well px-3 py-2">
+      <p className="nx-lab tabular-nums">{steps.length ? `Steps · ${stepCount(steps)}` : 'Steps'}</p>
+      <ul className="mt-1">
+        {steps.map((s, n) => (
+          <li key={n} className="flex items-start gap-3 border-t border-[#323840] py-2 first:border-t-0">
+            <label className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-start gap-3 md:min-h-0">
+              <input
+                type="checkbox"
+                checked={s.done}
+                onChange={() => onChange(steps.map((x, k) => (k === n ? { ...x, done: !x.done } : x)))}
+                className="mt-1 size-4 shrink-0 accent-primary"
+              />
+              <span className={`min-w-0 text-[14px] leading-snug wrap-anywhere ${s.done ? 'text-muted-foreground line-through' : 'text-[#ece9e2]'}`}>{s.text}</span>
+            </label>
+            {s.href && (
+              <a href={s.href} target="_blank" rel="noopener noreferrer" className="nx-ghost shrink-0 !py-0.5 !text-xs">
+                Open <span aria-hidden="true">↗</span>
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => onChange(steps.filter((_, k) => k !== n))}
+              aria-label={`Remove step: ${s.text}`}
+              title="Remove this step"
+              className="nx-ghost shrink-0 !border-transparent !px-2 !py-0.5 !text-xs"
+            >
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+      {steps.length > 0 && left === 0 && <p className="mt-1 text-xs text-primary">Every step is done. Press Done to close the task.</p>}
+      <div className="mt-2 flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addStep()}
+          maxLength={300}
+          placeholder="Add a step"
+          aria-label="Add a step"
+          className="min-h-11 min-w-0 flex-1 border border-border bg-transparent px-3 py-1.5 text-sm focus-visible:border-primary focus-visible:outline-none md:min-h-0"
+        />
+        <button type="button" onClick={addStep} disabled={!draft.trim()} className="nx-ghost shrink-0">
+          Add
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** "~15m" that is also a picker: choose your own estimate for this item. */
 function MinsPicker({ item: i, onMins, big = false }: { item: FeedItem; onMins: (m: number) => void; big?: boolean }) {
   const choices = MIN_CHOICES.includes(i.mins) ? MIN_CHOICES : [...MIN_CHOICES, i.mins].sort((a, b) => a - b)
@@ -566,11 +652,13 @@ function Focus({
   onAct,
   onNext,
   onMins,
+  onSteps,
 }: {
   item: FeedItem | undefined
   onAct: (i: FeedItem, s: FeedStatus, note?: string) => void
   onNext: (i: FeedItem) => void
   onMins: (i: FeedItem, m: number) => void
+  onSteps: (i: FeedItem, s: TodoStep[]) => void
 }) {
   const total = (i?.mins ?? 0) * 60
   const [secs, setSecs] = useState(total)
@@ -625,6 +713,7 @@ function Focus({
               )}
               {i.say && <CopyButton text={i.say} />}
             </div>
+            {i.steps?.length ? <Steps steps={i.steps} onChange={(s) => onSteps(i, s)} /> : null}
 
             {/* Timer */}
             <div className="mt-6 border border-border bg-well p-4">
@@ -690,6 +779,7 @@ function Details({
   today,
   goal,
   onMins,
+  onSteps,
   onAct,
   onToTodo,
 }: {
@@ -697,6 +787,7 @@ function Details({
   today: string
   goal?: { list: Goal[]; value: string; set: boolean; onPick: (g: string) => void }
   onMins: (m: number) => void
+  onSteps: (s: TodoStep[]) => void
   onAct: (s: FeedStatus, note?: string, until?: string) => void
   onToTodo: () => void
 }) {
@@ -730,6 +821,8 @@ function Details({
           Time <MinsPicker item={i} onMins={onMins} big />
         </span>
       </div>
+      {/* Any to-do can take steps; other Feed items cannot (nothing to save them on). */}
+      {i.todo ? <Steps steps={i.steps ?? []} onChange={onSteps} /> : null}
       <div className="mt-3">
         <FollowUp key={i.id} title={i.title.replace(/^Follow up: /, '')} brand={i.brand} />
       </div>
@@ -845,6 +938,7 @@ function Row({
           <button type="button" onClick={onOpen} aria-haspopup="dialog" className="text-left hover:underline focus-visible:underline">
             {i.title}
           </button>
+          {i.steps?.length ? <span className="mt-0.5 block text-[13px] tabular-nums text-[#8d929a]">☐ {stepCount(i.steps)} · open to tick</span> : null}
         </h4>
         {/* Phone: one full-width row, Done twice as wide. Desktop: on the right of the title. */}
         <div className="relative flex shrink-0 items-stretch gap-2 [&>button]:flex-1 md:[&>button]:flex-none">

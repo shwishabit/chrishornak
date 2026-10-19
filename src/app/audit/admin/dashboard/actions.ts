@@ -103,6 +103,16 @@ export async function updateTodoItem(id: string, patch: TodoPatch): Promise<bool
     if (!TODO_BRANDS.includes(patch.brand)) return false
     clean.brand = patch.brand
   }
+  if (patch.steps !== undefined) {
+    if (!Array.isArray(patch.steps) || patch.steps.length > 50) return false
+    const steps = patch.steps.map((s) => ({
+      text: String(s?.text ?? '').trim().slice(0, 300),
+      ...(typeof s?.href === 'string' && /^https:\/\//.test(s.href) && { href: s.href.slice(0, 500) }),
+      done: s?.done === true,
+    }))
+    if (steps.some((s) => !s.text)) return false
+    clean.steps = steps
+  }
   if (typeof patch.done === 'boolean') clean.done = patch.done
   if (typeof patch.archived === 'boolean') clean.archived = patch.archived
   if (!Object.keys(clean).length) return false

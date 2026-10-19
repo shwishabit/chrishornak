@@ -441,7 +441,8 @@ export function buildFeed({
       detail: t.day < today ? `On your to-do list since ${t.day}.` : undefined,
       brand: t.brand || 'To-do',
       meta: 'your to-do',
-      mins: 15,
+      ...(t.steps?.length && { steps: t.steps }),
+      mins: t.steps?.length ? Math.max(15, t.steps.filter((s) => !s.done).length * 5) : 15,
       say: `help me do this to-do: ${t.text}`,
       rank: 3,
     })
