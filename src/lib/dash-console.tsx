@@ -25,6 +25,8 @@ export interface FeedApi {
   /** True when the Feed has the item and acted on it. `until` = snooze to that day; `note` is saved with it. */
   act: (id: string, status: FeedStatus | null, until?: string, note?: string) => boolean
   doneNth: (n: number) => boolean
+  /** Open the item's details modal. False when the Feed does not have it. */
+  open: (id: string) => boolean
 }
 
 interface Ctx {

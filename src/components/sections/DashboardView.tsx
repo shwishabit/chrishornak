@@ -76,7 +76,8 @@ export async function DashboardView() {
   const dueToday: DueRow[] = []
   const dueTomorrow: DueRow[] = []
   for (const i of open) {
-    if (i.id.startsWith('scout:') || i.id.startsWith('scout-batch:')) dueToday.push({ key: i.id, kind: 'scout', title: i.title, feedId: i.id })
+    // A grouped Scout batch (scout-batch:) lives in the Feed only (Chris 2026-10-20).
+    if (i.id.startsWith('scout:')) dueToday.push({ key: i.id, kind: 'scout', title: i.title, feedId: i.id })
     else if (i.id.startsWith('followup:')) {
       const jobId = i.id.split(':')[1]
       dueToday.push({ key: i.id, kind: 'job', title: i.title, feedId: i.id, jobId, jobNote: rows.find((l) => l.id === jobId)?.note ?? '' })

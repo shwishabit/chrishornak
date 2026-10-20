@@ -82,11 +82,18 @@ export function DashDueNow({ rows }: { rows: DueRow[] }) {
           {open.map((r) => (
             <li key={r.key} className="flex items-start gap-2 py-1.5 md:py-1">
               <span className="w-[9px] shrink-0" aria-hidden="true" />
-              <label className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-start gap-2 md:min-h-0">
-                <input type="checkbox" checked={false} onChange={() => tick(r)} aria-label={`Mark "${r.title}" done`} />
-                <span className="min-w-0 flex-1 text-[14px] leading-snug wrap-anywhere">{r.title}</span>
+              {/* Only the checkbox marks it done; the text opens its details (2026-10-20). */}
+              <div className="flex min-h-11 min-w-0 flex-1 items-start gap-2 md:min-h-0">
+                <input type="checkbox" checked={false} onChange={() => tick(r)} aria-label={`Mark "${r.title}" done`} className="cursor-pointer" />
+                <button
+                  type="button"
+                  onClick={() => (r.feedId && f.api.current?.open(r.feedId)) || setError('Open it from the Feed.')}
+                  className="min-w-0 flex-1 cursor-pointer text-left text-[14px] leading-snug wrap-anywhere hover:underline"
+                >
+                  {r.title}
+                </button>
                 <span className="nx-src shrink-0 pt-0.5" style={srcStyle(r.kind)}>{SRC[r.kind]}</span>
-              </label>
+              </div>
             </li>
           ))}
         </ul>

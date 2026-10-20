@@ -343,8 +343,8 @@ export function DashFeed({
   }, [open, brandsKey, doneToday.length, snoozed.length, spamCount])
 
   // Let the console and the Due list act on Feed items (same optimistic path as the buttons).
-  const latest = useRef({ open, ordered, act })
-  latest.current = { open, ordered, act }
+  const latest = useRef({ open, ordered, act, group })
+  latest.current = { open, ordered, act, group }
   useEffect(() => {
     api.current = {
       act: (id, status, until, note) => {
@@ -356,6 +356,16 @@ export function DashFeed({
         const it = latest.current.ordered[n - 1]
         if (!it) return false
         latest.current.act(it, 'done')
+        return true
+      },
+      // Tapping a Due row's text opens its details here (2026-10-20: a tap must never mark it done).
+      open: (id) => {
+        const it = latest.current.open.find((i) => i.id === id)
+        if (!it) return false
+        setView('open')
+        setExpanded((e) => new Set(e).add(it.group))
+        if (latest.current.group !== 'all' && latest.current.group !== it.group) setGroup('all')
+        setDetail({ id, idx: 0 })
         return true
       },
     }
