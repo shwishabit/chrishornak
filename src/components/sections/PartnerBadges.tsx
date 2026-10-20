@@ -1,7 +1,7 @@
 import Image from 'next/image'
 
-/* Quiet partner row inside the website card (homepage Services + /hire "What I take on").
- * Monochrome, small: proof beside the work, not a headline. Shopify is text until the
+/* Quiet partner row in the footer, under the bio (Chris, 2026-10-19: the hero was too loud).
+ * Monochrome, small. Shopify is text until the
  * official badge from the Partner Dashboard is in hand (Shopify's rules: no altered or recreated badge). */
 export function PartnerBadges({ className = '' }: { className?: string }) {
   return (

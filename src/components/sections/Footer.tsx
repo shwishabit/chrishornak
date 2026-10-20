@@ -1,6 +1,7 @@
 import { Linkedin, Youtube, Twitter, AtSign, MessageCircle, Newspaper, BookOpen, PenLine, Mic, Wrench } from 'lucide-react'
 import { siteConfig, toolLinks } from '@/lib/data'
 import { Logo } from '@/components/ui/Logo'
+import { PartnerBadges } from '@/components/sections/PartnerBadges'
 
 // Lucide has no Bluesky mark, so this is the butterfly (Simple Icons path).
 function Bluesky({ className }: { className?: string }) {
@@ -43,6 +44,7 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               Marketing strategist for business owners who are done guessing and ready to grow.
             </p>
+            <PartnerBadges className="mt-6" />
           </div>
 
           {/* Free tools (this site) */}

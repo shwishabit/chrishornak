@@ -5,7 +5,6 @@ import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { HireForm } from '@/components/sections/HireForm'
-import { PartnerBadges } from '@/components/sections/PartnerBadges'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { hireContent, projects, siteConfig, testimonials, toolLinks } from '@/lib/data'
 
@@ -53,9 +52,8 @@ const JOBS = [
   {
     pillar: 'Be understood',
     title: 'Design and build your site',
-    body: 'A new site on my own system with Sanity as your editor, or design and fixes on the one you have: Shopify, WordPress, Webflow or Squarespace. Mobile-first, with one clear next step on every page.',
+    body: 'A new site on my own system with Sanity as your editor, or design and fixes on the one you have: Shopify, WordPress, Webflow or Squarespace. I’m a Shopify Partner and a Squarespace Circle partner. Mobile-first, with one clear next step on every page.',
     link: { href: '/work', label: 'See the builds' },
-    partners: true,
   },
   {
     pillar: 'Get found',
@@ -227,7 +225,6 @@ export default function HirePage() {
                 <span className="font-code text-xs tracking-[.1em] text-primary uppercase">{j.pillar}</span>
                 <h3 className="font-heading text-xl leading-tight font-bold text-balance">{j.title}</h3>
                 <p className="text-[15px] leading-relaxed text-body-soft">{j.body}</p>
-                {'partners' in j && <PartnerBadges className="my-1" />}
                 <a href={j.link.href} className="mt-1 text-sm font-semibold text-primary underline-offset-[3px] hover:underline">
                   {j.link.label} <span aria-hidden="true">→</span>
                 </a>
