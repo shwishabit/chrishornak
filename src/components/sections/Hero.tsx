@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { heroContent, hireContent } from '@/lib/data'
 import { ease } from '@/lib/animations'
+import { PartnerBadges } from '@/components/sections/PartnerBadges'
 
 export function Hero() {
   return (
@@ -73,6 +74,8 @@ export function Hero() {
             Check your findability <ArrowRight className="h-4 w-4" />
           </a>
         </div>
+
+        <PartnerBadges className="mt-10" />
       </div>
     </section>
   )

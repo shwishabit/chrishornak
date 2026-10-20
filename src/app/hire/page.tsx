@@ -5,6 +5,7 @@ import { Navigation } from '@/components/sections/Navigation'
 import { Footer } from '@/components/sections/Footer'
 import { BackgroundMesh } from '@/components/sections/BackgroundMesh'
 import { HireForm } from '@/components/sections/HireForm'
+import { PartnerBadges } from '@/components/sections/PartnerBadges'
 import { JsonLd } from '@/components/ui/JsonLd'
 import { hireContent, projects, siteConfig, testimonials, toolLinks } from '@/lib/data'
 
@@ -162,6 +163,7 @@ export default function HirePage() {
                 See the work <span aria-hidden="true">→</span>
               </a>
             </div>
+            <PartnerBadges className="mt-10" />
           </div>
 
           {/* Three builds, fanned. Decorative glow behind. */}
