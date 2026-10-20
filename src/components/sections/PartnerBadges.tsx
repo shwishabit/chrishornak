@@ -1,25 +1,24 @@
 import Image from 'next/image'
 
-/* Partner trust row under the hero buttons (homepage + /hire). White cards so the black
- * badges stay clear in dark mode. Shopify is text until the official badge from the
- * Partner Dashboard is in hand (Shopify's rules: the badge can't be altered or recreated). */
+/* Quiet partner row inside the website card (homepage Services + /hire "What I take on").
+ * Monochrome, small: proof beside the work, not a headline. Shopify is text until the
+ * official badge from the Partner Dashboard is in hand (Shopify's rules: no altered or recreated badge). */
 export function PartnerBadges({ className = '' }: { className?: string }) {
   return (
-    <ul className={`m-0 flex list-none flex-wrap items-stretch gap-3 p-0 ${className}`} aria-label="Partner programs">
-      <li className="flex items-center rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
+    <ul className={`m-0 flex list-none flex-wrap items-center gap-x-5 gap-y-3 p-0 opacity-75 ${className}`} aria-label="Partner programs">
+      <li>
         <Image
           src="/images/partners/squarespace-circle-gold-partner.png"
           alt="Squarespace Circle Gold Partner"
           width={1200}
           height={493}
-          className="h-14 w-auto md:h-16"
+          className="h-9 w-auto invert light:invert-0"
         />
       </li>
-      <li className="flex items-center rounded-xl bg-white px-5 py-3 shadow-sm ring-1 ring-black/5">
-        <p className="m-0 font-heading leading-tight text-neutral-900">
-          <span className="block text-2xl font-bold md:text-3xl">Shopify</span>
-          <span className="block text-sm font-medium tracking-wide text-neutral-600 uppercase md:text-base">Partner</span>
-        </p>
+      <li className="h-7 w-px bg-border" aria-hidden="true" />
+      <li className="font-heading leading-none text-foreground">
+        <span className="block text-base font-bold">Shopify</span>
+        <span className="mt-1 block text-[10px] font-semibold tracking-[.14em] uppercase">Partner</span>
       </li>
     </ul>
   )

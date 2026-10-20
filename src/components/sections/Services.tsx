@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Search, PenLine, Globe, Telescope, ArrowDown } from 'lucide-react'
 import { fadeUp, stagger, ease } from '@/lib/animations'
+import { PartnerBadges } from '@/components/sections/PartnerBadges'
 
 const approaches = [
   {
@@ -19,6 +20,7 @@ const approaches = [
     lead: 'Your digital presence becomes a growth engine.',
     body: 'Whether it\'s a new build or a full rethink, every site I deliver ships with a clear, trackable call to action — because being found doesn\'t matter if nobody takes the next step. I\'ve built that standard for brands like Giant Eagle and Hertz, and for hundreds of growing businesses.',
     icon: Globe,
+    partners: true,
   },
   {
     lead: 'And we plan for what\'s next — including what most agencies haven\'t caught up to.',
@@ -83,6 +85,7 @@ export function Services() {
                     <div>
                       <p className="font-heading text-sm md:text-base font-bold leading-snug">{item.lead}</p>
                       <p className="mt-2 text-xs md:text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                      {'partners' in item && <PartnerBadges className="mt-4" />}
                     </div>
                   </div>
                 </motion.div>
