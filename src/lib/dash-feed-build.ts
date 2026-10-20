@@ -130,7 +130,37 @@ export function buildFeed({
     add({ id: `scout-error:${today}`, group: 'sales', level: 'amber', title: 'Scout leads could not be read', detail: sales.scout.error ?? 'The PC job could not reach Scout.', brand: 'Swift Growth', meta: 'Scout CRM', mins: 5, say: 'check why dash-sales.mjs cannot read Scout', rank: 9 })
   }
   const stale: string[] = []
+  // 3+ leads due with the same next step (a batch like "Run Local Audit") = ONE item with a step per
+  // lead, not a row each (2026-10-20, Chris: "within the same grouped task").
+  type ScoutLead = NonNullable<typeof sales>['scout']['leads'][number]
+  const batches = new Map<string, ScoutLead[]>()
   for (const l of sales?.scout.leads ?? []) {
+    if (!l.due || !l.next_step || l.due > today || daysSince(l.due + 'T12:00:00Z', Date.parse(today + 'T12:00:00Z'))! > 30) continue
+    batches.set(l.next_step, [...(batches.get(l.next_step) ?? []), l])
+  }
+  for (const [step, leads] of batches) {
+    if (leads.length < 3) continue
+    const oldest = leads.map((l) => l.due!).sort()[0]
+    const overdue = Math.floor((Date.parse(today + 'T12:00:00Z') - Date.parse(oldest + 'T12:00:00Z')) / DAY)
+    add({
+      id: `scout-batch:${hashId(step)}:${oldest}`,
+      group: 'sales',
+      level: overdue >= 7 ? 'red' : 'amber',
+      title: `${clip(step.split(/\s+[—(]|\s+-\s+/)[0], 60)}: ${leads.length} Scout leads`,
+      detail: `${step}. ${overdue === 0 ? 'Due today.' : `Due ${overdue} day${overdue === 1 ? '' : 's'} ago.`} Each lead drops off once its next step changes in Scout.`,
+      brand: 'Swift Growth',
+      meta: `Scout · ${leads.length} leads, same next step`,
+      steps: leads.map((l) => ({ text: l.name, href: l.link, done: false })),
+      mins: Math.min(90, leads.length * 5),
+      href: 'https://swoop.swiftgrowth.marketing/admin/sales',
+      hrefLabel: 'Open Scout',
+      say: `help me work through the ${leads.length} Scout leads whose next step is "${clip(step, 80)}"`,
+      rank: 10,
+    })
+  }
+  const batched = new Set([...batches.values()].filter((b) => b.length >= 3).flat().map((l) => l.id))
+  for (const l of sales?.scout.leads ?? []) {
+    if (batched.has(l.id)) continue
     const touched = daysSince(l.last_touch, now)
     const overdue = l.due ? Math.floor((Date.parse(today + 'T12:00:00Z') - Date.parse(l.due + 'T12:00:00Z')) / DAY) : null
     const late = l.stage === 'in_conversation' || l.stage === 'proposal'

@@ -99,7 +99,7 @@ export function DashFeed({
       [...items, ...extraTodos]
         .map((i) => (minsOver[i.id] ? { ...i, mins: minsOver[i.id], minsSet: true } : i))
         .map((i) => (i.todo && todoOver[i.todo] ? { ...i, ...(todoOver[i.todo].title && { title: todoOver[i.todo].title! }), ...(todoOver[i.todo].group && { group: todoOver[i.todo].group! }), ...(todoOver[i.todo].brand && { brand: todoOver[i.todo].brand! }) } : i))
-        .map((i) => (i.todo && stepsOver[i.todo] ? { ...i, steps: stepsOver[i.todo] } : i))
+        .map((i) => (stepsOver[i.todo ?? i.id] ? { ...i, steps: stepsOver[i.todo ?? i.id] } : i))
         .filter((i) => !hidden(i.id) && (showSpam || !i.spam) && !(i.todo && todoOver[i.todo]?.gone))
         .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || (a.level === 'red' ? 0 : 1) - (b.level === 'red' ? 0 : 1) || a.rank - b.rank || LVL[a.level] - LVL[b.level]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -231,7 +231,8 @@ export function DashFeed({
   /** Tick or untick a to-do's step: shows at once, saves the whole list on the to-do. */
   function setSteps(item: FeedItem, steps: TodoStep[]) {
     const id = item.todo
-    if (!id) return
+    // A grouped Scout item (no to-do behind it): ticks are for this visit only; Scout is the record.
+    if (!id) return setStepsOver((s) => ({ ...s, [item.id]: steps }))
     const before = item.steps
     setStepsOver((s) => ({ ...s, [id]: steps }))
     setError('')
