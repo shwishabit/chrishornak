@@ -57,7 +57,7 @@ const DEMO_WORDS_RE =
 // link while "Start a project" to the same page scored as a direct ask). Estimates, appointments, call-backs and
 // "Call now" (a tel: link with call words; a bare phone number stays a contact detail, not an ask).
 const SERVICE_ASK_RE =
-  /\b(?:tell us about your (?:project|business|needs|goals)|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:estimate|quote|consultation)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
+  /\b(?:tell us about your (?:project|business|needs|goals)|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:[a-z-]+ )?(?:estimate|quote|consultation|review|audit|assessment|evaluation|analysis)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
 const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|trial|signup|sign-up|contact-sales|talk-to-sales)(?:[\/.?#-]|$)/i
 // "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
 const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
@@ -235,10 +235,21 @@ function siteTypeOf(
   const store: string[] = []
   const soft: string[] = []
   if (/"@type"\s*:\s*"(?:Product|ProductGroup|Offer|AggregateOffer)"/.test(html)) store.push('Product details in the code (schema.org Product)')
+  // Named platforms, as a bonus label when we recognize one — never the only way in.
+  // There will always be another cart system we haven't named (Squarespace Commerce,
+  // Wix, Big Cartel, Faire, Gumroad, Square, Ecwid, a custom build...), so the signals
+  // below this read what the PAGE DOES (a cart control, a product grid, prices),
+  // not which platform built it (Chris, 2026-10-16: platform-only detection is too narrow).
   if (/cdn\.shopify\.com|Shopify\.theme|\.myshopify\.com/i.test(html)) store.push('Built on Shopify')
   else if (/\bwoocommerce\b/i.test(html)) store.push('Built on WooCommerce')
   else if (/cdn\d*\.bigcommerce\.com/i.test(html)) store.push('Built on BigCommerce')
+  else if (/etsystatic\.com|Etsy\.Context|\bEtsyApp\b/i.test(html)) store.push('Built on Etsy')
   if (f.cart) store.push('A cart or checkout link')
+  // A cart/checkout/bag CONTROL by its class, id or data-attribute — platform-agnostic,
+  // so a JS-triggered cart (href="#", no real /cart URL — e.g. Etsy's "cart-trigger") still
+  // counts. Scoped to attribute values, not free text, to skip "cartoon"-style false hits.
+  const hasCartControl = /\b(?:class|id|data-module|data-action|data-testid|aria-label)\s*=\s*["'][^"']*\b(?:cart|checkout|mini-cart|shopping-bag|basket)\b[^"']*["']/i.test(html)
+  if (hasCartControl) store.push('A cart or checkout control')
   if (f.addToCart || /\badd[-_ ]to[-_ ](?:cart|bag|basket)\b|action\s*=\s*["'][^"']*\/cart\/add/i.test(html)) store.push('Add-to-cart buttons')
   const text = extractText(html)
   if ((text.match(/(?:[$£€]\s?\d{1,5}[.,]\d{2}|\d{1,5}[.,]\d{2}\s?(?:USD|EUR|GBP|€))(?!\d)/g) ?? []).length >= 3) store.push('Prices on the page')
@@ -249,6 +260,38 @@ function siteTypeOf(
   if (store.length >= 2 && store.length >= soft.length) return { siteType: 'ecommerce', typeSignals: store }
   if (soft.length >= 2) return { siteType: 'saas', typeSignals: soft }
   return { siteType: 'service', typeSignals: [] }
+}
+
+/** How far before a form its heading ("Get your free quote") is looked for. */
+const FORM_LEAD_IN = 1_500
+const FORM_ASK_MAX_CHARS = 120
+
+/** A lead form's ask words (from the lines just above it, or inside it), or null.
+ *  A lead form asks for more than an email: a phone, a message or a name. Search, log-in and
+ *  email-only newsletter forms don't count. */
+function readLeadFormAsk(html: string): string | null {
+  for (const m of html.matchAll(/<form\b([^>]*)>([\s\S]*?)<\/form>/gi)) {
+    const [, attrs, inner] = m
+    if (/\brole\s*=\s*["']?search|\btype\s*=\s*["']?(?:search|password)\b/i.test(attrs + inner)) continue
+    const lead =
+      /<textarea\b|\btype\s*=\s*["']?tel\b/i.test(inner) ||
+      /<(?:input|select)\b[^>]*\b(?:name|id|placeholder|autocomplete)\s*=\s*["'][^"']*\b(?:phone|tel|message|company|first[-_ ]?name|last[-_ ]?name|full[-_ ]?name|your[-_ ]?name|name)\b/i.test(inner)
+    if (!lead) continue
+    const before = [...html.slice(Math.max(0, m.index! - FORM_LEAD_IN), m.index!).matchAll(/>([^<]+)</g)]
+      .map((t) => words(t[1]))
+      .filter(Boolean)
+      .slice(-3)
+      .reverse()
+    const within = [
+      ...[...inner.matchAll(/>([^<]+)</g)].map((t) => words(t[1])),
+      ...[...inner.matchAll(/<(?:input|button)\b[^>]*\bvalue\s*=\s*["']([^"']+)["']/gi)].map((t) => words(t[1])),
+    ]
+    const ask = [...before, ...within].find(
+      (t) => t && t.length <= FORM_ASK_MAX_CHARS && (DEMO_WORDS_RE.test(t) || SERVICE_ASK_RE.test(t)),
+    )
+    if (ask) return ask
+  }
+  return null
 }
 
 export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
@@ -297,6 +340,10 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     if (!at) continue
     for (const [re, name] of REVIEW_SITES) if (re.test(at.host)) reviewSites.add(name)
   }
+
+  // A lead form is a next step too (2026-10-19: sbmarketinginc.com's "Contact us today for a free marketing
+  // review!" sat above its form, not in a link). Only a form with ask words counts.
+  if (!demo) demo = readLeadFormAsk(html)
 
   const type = siteTypeOf(html, { ...seen, pricing: !!pricing })
   return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type }
