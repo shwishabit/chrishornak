@@ -275,7 +275,7 @@ export const homeFaqs = [
   },
   {
     question: 'What if I just need a website?',
-    answer: 'I can do that. But I\'ll also ask why — because a website without strategy behind it is just a brochure. Even a simple build benefits from thinking through who you\'re trying to reach and what you want them to do.',
+    answer: 'I can do that. But I\'ll also ask why — because a website without strategy behind it is just a brochure. Even a simple build benefits from thinking through who you\'re trying to reach and what you want them to do. I\'m a Shopify Partner and a Squarespace Circle partner, so I can build or fix a site on either.',
   },
   {
     question: 'How do I know if I need a strategist or just a doer?',
