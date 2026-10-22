@@ -792,6 +792,20 @@
   .rvx .rt-ph:hover img { transform: scale(1.03); }
 }
 
+
+/* Phone fixes: buttons that sat in narrow boxes */
+@media (max-width: 640px) {
+  .rvx .cmp-f { grid-template-columns: minmax(0, 1fr); }
+  .rvx .cmp-f > span:not(.vida) { display: none; }
+  .rvx .cmp-f > span.vida { border-radius: 0; }
+  .rvx .cmp-f .vs-btn { width: 100%; }
+}
+@media (max-width: 900px) {
+  .rvx .x-tiles .t:first-child, .rvx .x-tiles .t.brand { grid-column: span 2; }
+  .rvx .x-tiles .t.brand { min-height: 0; gap: 18px; }
+  .rvx .x-tiles .t.brand .btn { align-self: flex-start; }
+}
+
 /* ── Themes ───────────────────────────────────────────────────────────── */
 
 .rvx.t-green {
