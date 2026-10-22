@@ -41,6 +41,33 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
     setReady(true)
   }, [tabs])
 
+  // Phones and tablets: the tab bar slides away while you scroll down and comes
+  // back when you scroll up. It toggles a class, so scrolling never re-renders.
+  const barRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)')
+    let lastY = window.scrollY
+    let frame = 0
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        const bar = barRef.current
+        const y = window.scrollY
+        if (!bar) return
+        if (!mq.matches || y < 160) bar.classList.remove('is-hidden')
+        else if (y > lastY + 6) bar.classList.add('is-hidden')
+        else if (y < lastY - 6) bar.classList.remove('is-hidden')
+        lastY = y
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [])
+
   const go = useCallback((t: string) => {
     setTab(t)
     window.history.replaceState(null, '', `#${t}`)
@@ -148,7 +175,7 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
         <p className="rv-intro">{content.intro}</p>
       </header>
 
-      <nav className="rv-tabbar" aria-label="Options">
+      <nav ref={barRef} className="rv-tabbar" aria-label="Options">
         <div className="rv-tabbar-in">
           {content.options.map((o) => (
             <button key={o.key} type="button" className="rv-tab" aria-current={option?.key === o.key ? 'page' : undefined} onClick={() => go(`${o.key}-${o.pages[0].key}`)}>
@@ -365,6 +392,20 @@ function OptionView({
 
   const currentSection = page.sections.find((s) => s.key === current) ?? page.sections[0]
 
+  // Phones: the note bar can fold down to one thin line. The choice is remembered.
+  const [dockOpen, setDockOpen] = useState(true)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('rv-dock') === 'min') setDockOpen(false)
+    } catch {}
+  }, [])
+  const setDock = (open: boolean) => {
+    setDockOpen(open)
+    try {
+      localStorage.setItem('rv-dock', open ? 'open' : 'min')
+    } catch {}
+  }
+
   return (
     <div className="rv-option">
       <div className="rv-opt-head">
@@ -447,8 +488,22 @@ function OptionView({
       </div>
 
       {!notesHidden && (
-        <div className="rv-dock" role="region" aria-label="Note on the section on screen">
-          <Panel k={currentSection.key} title={`${currentSection.key} · ${currentSection.label}`} comments={comments} save={saveState[currentSection.key]} locked={locked} update={update} compact />
+        <div className={`rv-dock ${dockOpen ? '' : 'is-min'}`} role="region" aria-label="Note on the section on screen">
+          {dockOpen ? (
+            <>
+              <button type="button" className="rv-dock-toggle" aria-expanded="true" onClick={() => setDock(false)}>
+                Hide ▾
+              </button>
+              <Panel k={currentSection.key} title={`${currentSection.key} · ${currentSection.label}`} comments={comments} save={saveState[currentSection.key]} locked={locked} update={update} compact />
+            </>
+          ) : (
+            <button type="button" className="rv-dock-bar" aria-expanded="false" onClick={() => setDock(true)}>
+              <span className="rv-dock-bar-t">
+                <b>{currentSection.key}</b> · {currentSection.label}
+              </span>
+              <span className="rv-dock-bar-s">{dockSummary(comments[currentSection.key])} ▴</span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -675,6 +730,13 @@ function DesignNotes({ optionKey, notes }: { optionKey: string; notes: ReviewNot
       </div>
     </details>
   )
+}
+
+// What the folded note bar says about the section on screen.
+function dockSummary(c: { reaction: Reaction; note: string } | undefined) {
+  const r = c?.reaction === 'like' ? 'Like' : c?.reaction === 'dislike' ? 'Don’t like' : c?.reaction === 'change' ? 'Change it' : ''
+  const n = c?.note.trim() ? 'note saved' : ''
+  return [r, n].filter(Boolean).join(' · ') || 'Add a note'
 }
 
 function SaveNote({ state }: { state: SaveState | undefined }) {
