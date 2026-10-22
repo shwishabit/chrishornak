@@ -100,6 +100,25 @@ export function buildFeed({
         rank: -Date.parse(m.at), // newest first
       })
     }
+    // Drafts waiting in Gmail (2026-10-22, Chris: drafts lived only in chat). Already written, so
+    // they sort above new mail; the item drops off once the draft is sent or deleted.
+    for (const m of a.drafts ?? []) {
+      const d = daysSince(m.at, now)
+      add({
+        id: `draft:${m.id}`,
+        group: 'email',
+        level: d !== null && d >= 1 ? 'amber' : 'plain',
+        title: `Send: ${m.subject}`,
+        detail: 'Written and waiting in Gmail Drafts. Read it, then press Send.',
+        brand: a.label,
+        meta: `to ${m.to} · drafted ${agoDays(d)}`,
+        mins: 2,
+        href: m.link,
+        hrefLabel: 'Open draft in Gmail',
+        say: `change the Gmail draft to ${clip(m.to, 60)} about "${clip(m.subject, 80)}" (${a.label} inbox)`,
+        rank: -1e15 - Date.parse(m.at),
+      })
+    }
   }
 
   // ── 2. Sales: a lead reply is money. ──

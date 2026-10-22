@@ -94,6 +94,17 @@ export interface MailAccount {
   messages?: MailMessage[]
   /** chrishornak.com contact + hire form emails, last 14 days (read or unread). */
   leads?: MailMessage[]
+  /** Gmail drafts waiting to be sent, last 14 days (dash-inbox.mjs; Claude saves them with gmail-draft.mjs). */
+  drafts?: MailDraft[]
+}
+
+export interface MailDraft {
+  id: string
+  to: string
+  subject: string
+  at: string
+  /** Opens the draft in Gmail's compose window. */
+  link: string
 }
 
 /** Email tab (2026-10-16): one unread Primary message. `text` is plain text, cut at 5,000 characters. */
