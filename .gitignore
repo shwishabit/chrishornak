@@ -49,3 +49,4 @@ scripts/test-output-*/
 
 # Authority Check fixture pages (other people's HTML; labels.json + RUBRIC.md stay tracked)
 scripts/ac-fixtures/pages/
+.review-data/

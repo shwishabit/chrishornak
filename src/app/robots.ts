@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { siteConfig } from '@/lib/data'
 
-const disallowedPaths = ['/api/', '/docs/', '/dev/', '/paige', '/learn/vibe-coding', '/audit/admin']
+const disallowedPaths = ['/api/', '/docs/', '/dev/', '/paige', '/learn/vibe-coding', '/audit/admin', '/review/']
 
 // Bots/crawlers that should be explicitly blocked from the unlisted areas
 // (some AI scrapers ignore the default '*' rule unless named directly).

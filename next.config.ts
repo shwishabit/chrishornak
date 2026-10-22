@@ -100,6 +100,11 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Client review links (/review/<token>): never indexed or cached by crawlers.
+      {
+        source: '/review/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
+      },
       {
         source: '/((?!docs/|dev/).*)',
         headers: [

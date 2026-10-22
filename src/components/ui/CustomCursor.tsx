@@ -21,8 +21,9 @@ export function CustomCursor() {
 
   // The job-lead tracker and the whole admin area (dashboard included) are work tools, so they keep the
   // browser's own cursor (Chris, 2026-10-13 for jobs; 2026-10-16 for the dashboard: no green circle).
+  // Client review pages (/review/<token>) too: the client clicks buttons and types notes (2026-10-21).
   // The class on <html> covers the whole page, header and sign-in form included.
-  const native = !!pathname?.startsWith('/audit/admin')
+  const native = !!pathname?.startsWith('/audit/admin') || !!pathname?.startsWith('/review/')
   useEffect(() => {
     document.documentElement.classList.toggle('native-cursor', native)
   }, [native])
