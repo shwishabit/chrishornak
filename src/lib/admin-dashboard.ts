@@ -174,6 +174,14 @@ export interface SgmState {
   checks?: { id: string; created_at: string; site: string; name: string; email: string; company: string | null; score: number | null; tier: string | null; status: string }[]
   audits?: { id: string; created_at: string; email: string; business_name: string }[]
   scans?: { created_at: string; business_name: string; overall: number | null; letter: string | null }[]
+  /** Free-tool steps, 30 days (SGM tool_events, 2026-10-23). Full view: swiftgrowth.marketing/admin/stats. */
+  tools?: {
+    ok: boolean
+    error: string | null
+    events: number
+    funnels: { tool: string; steps: Record<'opened' | 'started' | 'result' | 'form_opened' | 'lead_sent', number> }[]
+    recent: { tool: string; at: string; site: string | null; score: number | null; furthest: string; email: string | null }[]
+  }
 }
 
 /** Pushed hourly by .agent/scripts/dash-sales.mjs (Scout lives in another Supabase project). */

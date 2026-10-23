@@ -203,6 +203,78 @@ export function DashToolLeads({ mail, salesDb, sgm }: { mail: MailAccount[] | nu
       <p className="mt-3 text-[11px] text-muted-foreground/80">
         chrishornak.com tools collect no email, so their low scores show under &quot;Low scores, no contact&quot;. Swift Growth&apos;s contact, AEO, Persona and Accessibility forms only email you, so they show here from the inbox. On the new site that needs the Brevo key copied into Vercel at launch.
       </p>
+      {sgm?.tools && <SgmTools tools={sgm.tools} />}
     </section>
+  )
+}
+
+/* SGM free tools (2026-10-23): how far people got in each tool, 30 days, pushed hourly by
+ * dash-sales.mjs from tool_events. The full page (every visit, what they typed) is on the site. */
+const TOOL_NAMES: Record<string, string> = {
+  'site-audit': 'Site Audit',
+  'aeo-grader': 'AEO Grader',
+  accessibility: 'Accessibility',
+  'local-audit': 'Local Audit',
+  persona: 'Persona',
+  'brand-guideline': 'Brand Guideline',
+  'roi-calculator': 'ROI Calculator',
+}
+const STEP_NAMES: Record<string, string> = { opened: 'opened', started: 'started', result: 'got a result', form_opened: 'opened the form', lead_sent: 'sent the form' }
+
+function SgmTools({ tools }: { tools: NonNullable<SgmState['tools']> }) {
+  const rows = tools.funnels.slice().sort((a, b) => b.steps.started - a.steps.started)
+  return (
+    <div className="mt-6 border-t border-border pt-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="font-heading text-base font-semibold">Swift Growth free tools</h3>
+        <a href="https://swiftgrowth.marketing/admin/stats" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+          Full stats on the site →
+        </a>
+      </div>
+      {!tools.ok ? (
+        <p className="mt-2 text-sm text-muted-foreground">{tools.error}</p>
+      ) : rows.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No tool use in the last 30 days yet.</p>
+      ) : (
+        <>
+          <table className="mt-3 w-full text-left text-[13px]">
+            <caption className="sr-only">People per step, last 30 days</caption>
+            <thead className="text-xs text-muted-foreground">
+              <tr>
+                <th scope="col" className="py-1.5 font-medium">Tool · 30 days</th>
+                <th scope="col" className="py-1.5 text-right font-medium">Started</th>
+                <th scope="col" className="py-1.5 text-right font-medium">Result</th>
+                <th scope="col" className="py-1.5 text-right font-medium">Sent form</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((f) => (
+                <tr key={f.tool} className="border-t border-border">
+                  <th scope="row" className="py-1.5 font-medium">{TOOL_NAMES[f.tool] ?? f.tool}</th>
+                  <td className="py-1.5 text-right tabular-nums">{f.steps.started}</td>
+                  <td className="py-1.5 text-right tabular-nums">{f.steps.result}</td>
+                  <td className="py-1.5 text-right tabular-nums">{f.steps.lead_sent}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {tools.recent.length > 0 && (
+            <ul className="mt-4">
+              {tools.recent.map((v, i) => (
+                <li key={`${v.at}:${i}`} className="flex flex-wrap items-baseline gap-x-2 border-t border-border py-2 text-[13px] first:border-t-0">
+                  <span className="font-medium wrap-anywhere">{v.site ?? '—'}</span>
+                  <span className="text-muted-foreground">
+                    · {TOOL_NAMES[v.tool] ?? v.tool}
+                    {v.score != null && ` ${v.score}`} · {STEP_NAMES[v.furthest] ?? v.furthest}
+                    {v.email && ` · ${v.email}`}
+                  </span>
+                  <span className="ml-auto text-xs tabular-nums text-muted-foreground">{ago(v.at)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
   )
 }
