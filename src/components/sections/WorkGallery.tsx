@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, ArrowRight } from 'lucide-react'
 import { projects, workContent } from '@/lib/data'
 import { ease } from '@/lib/animations'
@@ -30,8 +30,12 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 }
 
 function ProjectRow({ project, index }: { project: Project; index: number }) {
-  const isInternal = project.url.startsWith('/')
+  // Files (a video, a PDF) open in a new tab like an outside site; internal pages stay in this tab.
+  const isFile = /\.(mp4|pdf)$/.test(project.url)
+  const isInternal = project.url.startsWith('/') && !isFile
   const flipped = index % 2 === 1
+  const reduceMotion = useReducedMotion()
+  const showVideo = Boolean(project.video) && !reduceMotion
 
   return (
     <motion.article
@@ -56,17 +60,31 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
             <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
             <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
             <span className="ml-3 truncate font-mono text-xs text-muted-foreground">
-              {displayUrl(project.url)}
+              {project.frameLabel ?? displayUrl(project.url)}
             </span>
           </div>
           <div className="relative aspect-[1440/900] overflow-hidden">
-            <Image
-              src={project.image}
-              alt={`${project.name} — ${project.category}, built by Chris Hornak`}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-            />
+            {showVideo ? (
+              <video
+                src={project.video}
+                poster={project.image}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label={`${project.name} — ${project.category}, by Chris Hornak`}
+                className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              />
+            ) : (
+              <Image
+                src={project.image}
+                alt={`${project.name} — ${project.category}, built by Chris Hornak`}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              />
+            )}
           </div>
         </div>
       </a>
@@ -89,7 +107,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
           rel={isInternal ? undefined : 'noopener noreferrer'}
           className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary"
         >
-          {isInternal ? 'Try it' : 'Visit site'}
+          {project.cta ?? (isInternal ? 'Try it' : 'Visit site')}
           {isInternal ? (
             <ArrowRight className="h-4 w-4" />
           ) : (
@@ -103,12 +121,18 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
 
 export function WorkGallery() {
   const clientProjects = projects.filter((p) => p.kind === 'client')
+  const creativeProjects = projects.filter((p) => p.kind === 'creative')
   const ownedProjects = projects.filter((p) => p.kind === 'owned')
 
   return (
     <div className="relative mx-auto max-w-5xl space-y-20 px-6 pb-28 md:space-y-28 md:px-12 lg:px-24">
       <GroupLabel>{workContent.clientLabel}</GroupLabel>
       {clientProjects.map((project, i) => (
+        <ProjectRow key={project.slug} project={project} index={i} />
+      ))}
+
+      <GroupLabel>{workContent.creativeLabel}</GroupLabel>
+      {creativeProjects.map((project, i) => (
         <ProjectRow key={project.slug} project={project} index={i} />
       ))}
 

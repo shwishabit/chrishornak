@@ -149,6 +149,7 @@ export const workContent = {
   intro:
     'I don\'t just advise on this stuff. I build it. Brands and sites for the businesses I work with, plus companies and products of my own. Here\'s a few, with the thinking behind each one.',
   clientLabel: 'For the businesses I work with',
+  creativeLabel: 'Concepts, motion and social',
   ownedLabel: 'And a few of my own',
 }
 
@@ -208,6 +209,48 @@ export const projects: Project[] = [
     outcome:
       'A custom builder in the Ohio Valley whose best sales tool was the work itself. The site leads with finished spaces, kitchens and baths front and center, so the craft does the selling before a word does.',
     image: '/images/work/custom-craft.webp',
+  },
+  // ── Concepts, motion and social ──
+  {
+    slug: 'landforce',
+    name: 'Landforce',
+    kind: 'creative',
+    url: '/media/work/landforce-scroll.mp4',
+    category: 'Nonprofit · Website redesign concept',
+    role: 'Strategy · UX · Design · Build',
+    outcome:
+      'A Pittsburgh nonprofit that pays people to train on real work: caring for the city\'s land and milling its fallen trees into lumber. I directed a full redesign concept that gives four visitors their own path from the first screen: join the crew, hire a crew, buy wood or support the mission. Behind it sit a lumber catalog with holds and a staff app for yard stock.',
+    image: '/images/work/landforce.webp',
+    video: '/media/work/landforce-preview.mp4',
+    frameLabel: 'Landforce · redesign concept',
+    cta: 'Watch the walkthrough',
+  },
+  {
+    slug: 'site-audit-explainer',
+    name: 'Swift Site Audit explainer',
+    kind: 'creative',
+    url: 'https://www.youtube.com/watch?v=LNBpq1pU8Kw',
+    category: 'Motion · Explainer video',
+    role: 'Script · Design · Motion',
+    outcome:
+      'A site audit is a hard thing to explain in a feed. This 100-second video walks through a buyer\'s visit in five steps, from the first search to the decision, then shows an example score and fix plan. Every frame is drawn in code, so a script change is an edit, not a reshoot.',
+    image: '/images/work/site-audit-explainer.webp',
+    video: '/media/work/site-audit-preview.mp4',
+    frameLabel: 'youtube.com · 1:40',
+    cta: 'Watch on YouTube',
+  },
+  {
+    slug: 'social-creative',
+    name: 'Social creative',
+    kind: 'creative',
+    url: '/media/work/juicery-case-study.pdf',
+    category: 'Paid + organic social · Clients',
+    role: 'Concept · Design · Copy · Reporting',
+    outcome:
+      'Facebook and Instagram ads for a local juice bar: one offer across the whole product line, with a new product shot in each ad. 153 leads at $9.80 each, in a quarter when net sales rose 92%. Plus monthly posts for Speranza Consulting, 12 to 15 a month, written, designed and scheduled.',
+    image: '/images/work/social-creative.webp',
+    frameLabel: 'Juicery case study · PDF',
+    cta: 'Read the case study',
   },
   // ── Built & owned (closes the page) ──
   {
