@@ -156,6 +156,19 @@ export const workContent = {
 export const projects: Project[] = [
   // ── Client work (leads the page) ──
   {
+    slug: 'strelis',
+    name: 'Strelis',
+    kind: 'client',
+    url: 'https://swiftgrowth.marketing/work/healthcare-education',
+    category: 'Healthcare education · Client',
+    role: 'Platform · Build · Search',
+    outcome:
+      'A therapy education company that works with 50+ universities, on a platform that took 2–3 months to launch each partner site. We rebuilt it as one WordPress multisite. A partner site now launches in about 3 days, and the move kept all of its search authority.',
+    image: '/images/work/strelis-v2.webp',
+    frameLabel: 'Strelis · WordPress multisite',
+    cta: 'Read the case study',
+  },
+  {
     slug: 'pontiva',
     name: 'Pontiva Advisory',
     kind: 'client',
@@ -176,6 +189,18 @@ export const projects: Project[] = [
     outcome:
       'A Pittsburgh expungement attorney whose old site buried 30 years of work. We rebuilt it around one promise, your record can be cleared, with the city\'s own bridges carrying the weight. A clear path from a worried search to a free evaluation.',
     image: '/images/work/pa-pardon.webp',
+  },
+  {
+    slug: 'skillstx',
+    name: 'SkillsTX',
+    kind: 'client',
+    url: 'https://swiftgrowth.marketing/work/talent-platform',
+    category: 'Talent platform · Client',
+    role: 'Strategy · Messaging · Email automation',
+    outcome:
+      'A talent platform heading into North America. We built the system behind the launch: content marketing, a landing page, a free SFIA cheat sheet and a five-email nurture series, all connected to their CRM and ending in a booked call.',
+    image: '/images/work/skillstx.webp',
+    cta: 'Read the case study',
   },
   {
     slug: 'tommie-whitener',
