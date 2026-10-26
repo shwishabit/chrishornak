@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import type { JobLead, JobStatus } from '@/lib/admin-jobs'
 import { setJobLeadNote, setJobLeadStatus } from '@/app/audit/admin/jobs/actions'
 import { CopyButton } from './DashParts'
+import { useSort } from '@/hooks/useSort'
+import { SortTh } from '@/components/ui/SortTh'
 
 // Questions reuse the job_leads status column, relabeled for this context —
 // pitched/won don't apply here, so only the statuses that make sense show.
@@ -74,6 +76,13 @@ export function AdminQuestions({ leads }: { leads: JobLead[] }) {
   const [onlyNew, setOnlyNew] = useState(true)
 
   const shown = useMemo(() => (onlyNew ? rows.filter((l) => l.status === 'new') : rows), [rows, onlyNew])
+  const { sorted, sort } = useSort(shown, {
+    posted: { get: (l) => l.posted, first: 'desc' },
+    who: { get: (l) => l.who },
+    ask: { get: (l) => l.ask },
+    status: { get: (l) => Q_STATUSES.indexOf(l.status) },
+    note: { get: (l) => l.note.trim() },
+  })
 
   return (
     <>
@@ -91,11 +100,11 @@ export function AdminQuestions({ leads }: { leads: JobLead[] }) {
         <table className="w-full min-w-200 text-left text-sm">
           <thead className="text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 font-medium">Posted</th>
-              <th className="px-4 py-3 font-medium">Who</th>
-              <th className="px-4 py-3 font-medium">The question</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Notes</th>
+              <SortTh label="Posted" k="posted" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Who" k="who" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="The question" k="ask" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Status" k="status" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Notes" k="note" sort={sort} className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
@@ -106,7 +115,7 @@ export function AdminQuestions({ leads }: { leads: JobLead[] }) {
                 </td>
               </tr>
             )}
-            {shown.map((l) => (
+            {sorted.map((l) => (
               <tr key={l.id} className="border-t border-border align-top">
                 <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">{l.posted ?? '—'}</td>
                 <td className="px-4 py-3">

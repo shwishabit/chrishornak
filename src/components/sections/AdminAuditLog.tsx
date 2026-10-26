@@ -1,11 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useSort } from '@/hooks/useSort'
+import { SortTh } from '@/components/ui/SortTh'
 import { scoreColor } from '@/lib/audit-scoring'
 import { CATEGORY_ORDER } from '@/lib/benchmark-config'
 import type { AuditLogRow } from '@/lib/admin-audit'
-
-type SortKey = 'date' | 'score' | 'domain'
 
 function fmtDate(iso: string): string {
   const d = new Date(iso)
@@ -16,6 +15,9 @@ function fmtDate(iso: string): string {
     minute: '2-digit',
   })
 }
+
+const issueCount = (r: AuditLogRow, s: 'fail' | 'warn') => r.issues.filter((i) => i.s === s).length
+const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
 
 /** Seven tinted cells, one per category, colored by that category's score. */
 function CategoryStrip({ scores }: { scores: Record<string, number> }) {
@@ -37,30 +39,18 @@ function CategoryStrip({ scores }: { scores: Record<string, number> }) {
 }
 
 export function AdminAuditLog({ rows }: { rows: (AuditLogRow & { scan_count?: number })[] }) {
-  const [sortKey, setSortKey] = useState<SortKey>('date')
-  const [asc, setAsc] = useState(false)
-
-  const sorted = useMemo(() => {
-    const copy = [...rows]
-    copy.sort((a, b) => {
-      let cmp = 0
-      if (sortKey === 'date') cmp = a.created_at.localeCompare(b.created_at)
-      else if (sortKey === 'score') cmp = a.overall_score - b.overall_score
-      else cmp = a.domain.localeCompare(b.domain)
-      return asc ? cmp : -cmp
-    })
-    return copy
-  }, [rows, sortKey, asc])
-
-  function toggle(key: SortKey) {
-    if (key === sortKey) setAsc((v) => !v)
-    else {
-      setSortKey(key)
-      setAsc(key === 'domain') // domains read nicer A→Z; scores/dates high→recent first
-    }
-  }
-
-  const arrow = (key: SortKey) => (sortKey === key ? (asc ? ' ↑' : ' ↓') : '')
+  // Domains read nicer A→Z; scores and dates high/recent first. Categories = the average, weakest first.
+  const { sorted, sort } = useSort(
+    rows,
+    {
+      domain: { get: (r) => r.domain },
+      score: { get: (r) => r.overall_score, first: 'desc' },
+      categories: { get: (r) => avg(Object.values(r.category_scores)), first: 'asc' },
+      issues: { get: (r) => issueCount(r, 'fail') * 1000 + issueCount(r, 'warn'), first: 'desc' },
+      date: { get: (r) => r.created_at, first: 'desc' },
+    },
+    { key: 'date', dir: 'desc' },
+  )
 
   if (rows.length === 0) {
     return (
@@ -76,29 +66,17 @@ export function AdminAuditLog({ rows }: { rows: (AuditLogRow & { scan_count?: nu
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="px-4 py-3 font-medium">
-                <button onClick={() => toggle('domain')} className="hover:text-foreground">
-                  Domain{arrow('domain')}
-                </button>
-              </th>
-              <th className="px-4 py-3 font-medium">
-                <button onClick={() => toggle('score')} className="hover:text-foreground">
-                  Score{arrow('score')}
-                </button>
-              </th>
-              <th className="px-4 py-3 font-medium">Categories</th>
-              <th className="px-4 py-3 font-medium">Issues</th>
-              <th className="px-4 py-3 font-medium">
-                <button onClick={() => toggle('date')} className="hover:text-foreground">
-                  When{arrow('date')}
-                </button>
-              </th>
+              <SortTh label="Domain" k="domain" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Score" k="score" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Categories" k="categories" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Issues" k="issues" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="When" k="date" sort={sort} className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
             {sorted.map((r) => {
-              const fails = r.issues.filter((i) => i.s === 'fail').length
-              const warns = r.issues.filter((i) => i.s === 'warn').length
+              const fails = issueCount(r, 'fail')
+              const warns = issueCount(r, 'warn')
               return (
                 <tr key={r.id ?? r.domain} className="border-b border-border/50 last:border-0 hover:bg-foreground/[0.02]">
                   <td className="px-4 py-3">

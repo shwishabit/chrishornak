@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { isAdmin } from '@/lib/admin-auth'
 import { getAuthorityChecksAdmin } from '@/lib/admin-authority'
 import { AdminLogin } from '@/components/sections/AdminLogin'
+import { AdminAuthorityChecks } from '@/components/sections/AdminAuthorityChecks'
 import { logout } from '../actions'
 
 export const metadata: Metadata = {
@@ -14,8 +15,6 @@ export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 50
 
-const LINKS_LABEL = { ok: '', busy: 'Authority busy', unavailable: 'Authority unavailable' } as const
-
 function Tile({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="glass-card p-4">
@@ -23,20 +22,6 @@ function Tile({ label, value }: { label: string; value: string | number }) {
       <p className="mt-1 font-heading text-2xl font-bold">{value}</p>
     </div>
   )
-}
-
-function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'America/New_York',
-  })
-}
-
-function n(v: number | null | undefined, missing = '–'): string {
-  return v === null || v === undefined ? missing : String(v)
 }
 
 export default async function AuthorityAdminPage({
@@ -97,57 +82,7 @@ export default async function AuthorityAdminPage({
               <Tile label="Authority busy / off" value={data.links_busy} />
             </div>
 
-            <div className="glass-card mt-6 overflow-x-auto p-0">
-              <table className="w-full text-left text-sm">
-                <thead className="text-xs uppercase tracking-wide text-muted-foreground">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 font-medium">When (ET)</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Sites (you first)</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Authority /100</th>
-                    <th scope="col" className="px-4 py-3 font-medium">Checks /11</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.rows.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-6 text-muted-foreground">
-                        No checks yet.
-                      </td>
-                    </tr>
-                  )}
-                  {data.rows.map((r) => (
-                    <tr key={r.id} className="border-t border-border align-top">
-                      <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{fmtDate(r.created_at)}</td>
-                      <td className="px-4 py-3">
-                        <span className="text-foreground">{r.domain}</span>
-                        {r.rival_domains.map((d) => (
-                          <span key={d} className="block text-muted-foreground">
-                            vs {d}
-                          </span>
-                        ))}
-                        {r.status === 'error' && <span className="block text-warning">Page error</span>}
-                        {r.links_status !== 'ok' && <span className="block text-warning">{LINKS_LABEL[r.links_status]}</span>}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums">
-                        {r.links.map((v, i) => (
-                          <span key={i} className="block">
-                            {n(v, 'no data')}
-                            {typeof r.linking_sites?.[i] === 'number' && (
-                              <span className="text-muted-foreground"> · {r.linking_sites[i]} sites</span>
-                            )}
-                          </span>
-                        ))}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums">
-                        {r.proof.map((v, i) => (
-                          <span key={i} className="block">{n(v, 'not read')}</span>
-                        ))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AdminAuthorityChecks rows={data.rows} />
 
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">

@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState, useTransition } from 'reac
 import type { JobLead, JobStatus } from '@/lib/admin-jobs'
 import { scoreLead, WORTH_A_LOOK, type JobScore } from '@/lib/job-score'
 import { setJobLeadNote, setJobLeadStatus } from '@/app/audit/admin/jobs/actions'
+import { useSort } from '@/hooks/useSort'
+import { SortTh } from '@/components/ui/SortTh'
 
 const STATUS_LABEL: Record<JobStatus, string> = {
   new: 'New',
@@ -209,9 +211,7 @@ function StatusSelect({ lead, onSaved }: { lead: JobLead; onSaved: (s: JobStatus
 }
 
 const FIT_RANK: Record<JobLead['fit'], number> = { strong: 0, good: 1, weak: 2, skip: 3 }
-
-type Sort = 'best' | 'newest' | 'oldest'
-const SORT_LABEL: Record<Sort, string> = { best: 'Highest score', newest: 'Newest posted', oldest: 'Oldest posted' }
+const STATUS_RANK = Object.fromEntries((Object.keys(STATUS_LABEL) as JobStatus[]).map((s, i) => [s, i])) as Record<JobStatus, number>
 
 const ANY = ''
 
@@ -272,7 +272,6 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
   const [status, setStatus] = useState(ANY)
   const [tag, setTag] = useState(ANY)
   const [onlyHighlight, setOnlyHighlight] = useState(false)
-  const [sort, setSort] = useState<Sort>('best')
 
   // Options come from the data, so a new source, work type or tag shows up without a code change.
   const opts = useMemo(() => {
@@ -313,15 +312,27 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
           return false
         return true
       })
-      .sort((a, b) => {
-        const byDate = (a.posted ?? '').localeCompare(b.posted ?? '')
-        if (sort === 'newest') return -byDate
-        if (sort === 'oldest') return byDate
-        return scores.get(b.id)!.total - scores.get(a.id)!.total || FIT_RANK[a.fit] - FIT_RANK[b.fit] || -byDate
-      })
-  },[tabRows, q, source, workType, fit, status, tag, onlyHighlight, sort, scores])
+      .sort(
+        (a, b) =>
+          scores.get(b.id)!.total - scores.get(a.id)!.total ||
+          FIT_RANK[a.fit] - FIT_RANK[b.fit] ||
+          -(a.posted ?? '').localeCompare(b.posted ?? ''),
+      )
+  }, [tabRows, q, source, workType, fit, status, tag, onlyHighlight, scores])
 
-  const filtersOn = Boolean(q || source || workType || fit || status || tag || onlyHighlight || sort !== 'best')
+  // Column headers sort the table (2026-10-26). With no column picked it stays highest score
+  // first, and a column sort keeps that order for ties.
+  const { sorted, sort } = useSort(shown, {
+    score: { get: (l) => scores.get(l.id)!.total, first: 'desc' },
+    posted: { get: (l) => l.posted, first: 'desc' },
+    who: { get: (l) => l.who },
+    ask: { get: (l) => l.ask },
+    fit: { get: (l) => FIT_RANK[l.fit] },
+    status: { get: (l) => STATUS_RANK[l.status] },
+    note: { get: (l) => l.note.trim() },
+  })
+
+  const filtersOn = Boolean(q || source || workType || fit || status || tag || onlyHighlight || sort.key)
   function clearFilters() {
     setQ('')
     setSource(ANY)
@@ -330,7 +341,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
     setStatus(ANY)
     setTag(ANY)
     setOnlyHighlight(false)
-    setSort('best')
+    sort.reset()
   }
 
   const count = (s: JobStatus) => rows.filter((l) => l.status === s && l.kind !== 'skipped' && !isFullTime(l)).length
@@ -372,7 +383,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
         ))}
       </div>
 
-      <div className="glass-card mt-4 grid grid-cols-2 items-end gap-3 p-4 sm:grid-cols-4 lg:grid-cols-8">
+      <div className="glass-card mt-4 grid grid-cols-2 items-end gap-3 p-4 sm:grid-cols-4 lg:grid-cols-7">
         <label htmlFor="job-search" className="col-span-2 flex flex-col gap-1 text-xs text-muted-foreground">
           Search
           <input
@@ -419,14 +430,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
           onChange={setTag}
           options={[{ value: ANY, label: 'All' }, ...opts.tag.map((t) => ({ value: t, label: t }))]}
         />
-        <FilterSelect
-          id="f-sort"
-          label="Sort"
-          value={sort === 'best' ? ANY : sort}
-          onChange={(v) => setSort((v || 'best') as Sort)}
-          options={(Object.keys(SORT_LABEL) as Sort[]).map((s) => ({ value: s === 'best' ? ANY : s, label: SORT_LABEL[s] }))}
-        />
-        <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 sm:col-span-4 lg:col-span-8">
+        <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 sm:col-span-4 lg:col-span-7">
           <label htmlFor="f-highlight" className="flex items-center gap-2 text-sm">
             <input
               id="f-highlight"
@@ -455,13 +459,13 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
         <table className="w-full min-w-260 text-left text-sm">
           <thead className="text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 font-medium">Score</th>
-              <th className="px-4 py-3 font-medium">Posted</th>
-              <th className="px-4 py-3 font-medium">Who</th>
-              <th className="px-4 py-3 font-medium">The ask</th>
-              <th className="px-4 py-3 font-medium">Fit</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Notes</th>
+              <SortTh label="Score" k="score" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Posted" k="posted" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Who" k="who" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="The ask" k="ask" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Fit" k="fit" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Status" k="status" sort={sort} className="px-4 py-3 font-medium" />
+              <SortTh label="Notes" k="note" sort={sort} className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
@@ -472,7 +476,7 @@ export function AdminJobLeads({ leads, today }: { leads: JobLead[]; today: strin
                 </td>
               </tr>
             )}
-            {shown.map((l) => (
+            {sorted.map((l) => (
               <tr key={l.id} className={`border-t border-border align-top ${worth(l) ? 'bg-primary/5' : ''}`}>
                 <td className="px-4 py-3">
                   <ScoreBadge score={scores.get(l.id)!} />

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import type { MailAccount, SalesDb, SgmState } from '@/lib/admin-dashboard'
 import { ago, brandChip } from '@/lib/dash-format'
 import { CopyButton } from './DashParts'
+import { useSort } from '@/hooks/useSort'
+import { SortTh } from '@/components/ui/SortTh'
 
 /* Tools & leads (2026-10-15): every lead the three brands' free tools and forms
  * caught, in one list, each labeled with its brand. "Leads" left contact details;
@@ -222,7 +224,16 @@ const TOOL_NAMES: Record<string, string> = {
 const STEP_NAMES: Record<string, string> = { opened: 'opened', started: 'started', result: 'got a result', form_opened: 'opened the form', lead_sent: 'sent the form' }
 
 function SgmTools({ tools }: { tools: NonNullable<SgmState['tools']> }) {
-  const rows = tools.funnels.slice().sort((a, b) => b.steps.started - a.steps.started)
+  const { sorted: rows, sort } = useSort(
+    tools.funnels,
+    {
+      tool: { get: (f) => TOOL_NAMES[f.tool] ?? f.tool },
+      started: { get: (f) => f.steps.started, first: 'desc' },
+      result: { get: (f) => f.steps.result, first: 'desc' },
+      sent: { get: (f) => f.steps.lead_sent, first: 'desc' },
+    },
+    { key: 'started', dir: 'desc' },
+  )
   return (
     <div className="mt-6 border-t border-border pt-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -241,10 +252,10 @@ function SgmTools({ tools }: { tools: NonNullable<SgmState['tools']> }) {
             <caption className="sr-only">People per step, last 30 days</caption>
             <thead className="text-xs text-muted-foreground">
               <tr>
-                <th scope="col" className="py-1.5 font-medium">Tool · 30 days</th>
-                <th scope="col" className="py-1.5 text-right font-medium">Started</th>
-                <th scope="col" className="py-1.5 text-right font-medium">Result</th>
-                <th scope="col" className="py-1.5 text-right font-medium">Sent form</th>
+                <SortTh label="Tool · 30 days" k="tool" sort={sort} className="py-1.5 font-medium" />
+                <SortTh label="Started" k="started" sort={sort} className="py-1.5 text-right font-medium" />
+                <SortTh label="Result" k="result" sort={sort} className="py-1.5 text-right font-medium" />
+                <SortTh label="Sent form" k="sent" sort={sort} className="py-1.5 text-right font-medium" />
               </tr>
             </thead>
             <tbody>
