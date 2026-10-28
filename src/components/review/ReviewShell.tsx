@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { allSections, type ReviewContent, type ReviewNotes, type ReviewOption, type ReviewPage } from '@/content/reviews/types'
 import type { ReviewState, Reaction } from '@/lib/review-store'
-
-type Comments = ReviewState['comments']
-type SaveState = 'idle' | 'saving' | 'saved' | 'error'
-type Update = (key: string, patch: Partial<{ reaction: Reaction; note: string }>) => void
+import { useReviewSave, type Comments, type SaveState, type Update } from './useReviewSave'
 
 const REACTIONS: { value: Exclude<Reaction, ''>; label: string }[] = [
   { value: 'like', label: 'Like' },
@@ -15,22 +12,14 @@ const REACTIONS: { value: Exclude<Reaction, ''>; label: string }[] = [
 ]
 const REACTION_LABEL: Record<Reaction, string> = { '': '', like: 'Like', dislike: "Don't like", change: 'Change it' }
 
-const SAVE_DELAY = 700
 const FINISH = 'finish'
 
 export function ReviewShell({ token, content, initial }: { token: string; content: ReviewContent; initial: ReviewState }) {
-  const [comments, setComments] = useState<Comments>(initial.comments)
-  const [status, setStatus] = useState(initial.status)
-  const [saveState, setSaveState] = useState<Record<string, SaveState>>({})
+  const { comments, locked, saveState, update, finalize: save, sending, sendError } = useReviewSave(token, initial)
   const [tab, setTab] = useState<string>(`${content.options[0].key}-${content.options[0].pages[0].key}`)
   const [notesHidden, setNotesHidden] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [sendError, setSendError] = useState('')
   const [ready, setReady] = useState(false)
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
-  const pending = useRef<Record<string, { reaction: Reaction; note: string }>>({})
-  const locked = status !== 'open'
   // Every page in order (A-home, A-order, B-home…), then Finish. Next/Previous walk this list.
   const tabs = useMemo(() => [...content.options.flatMap((o) => o.pages.map((p) => `${o.key}-${p.key}`)), FINISH], [content.options])
 
@@ -74,71 +63,8 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
     window.scrollTo({ top: 0 })
   }, [])
 
-  const flush = useCallback(
-    async (key: string) => {
-      const body = pending.current[key]
-      if (!body) return
-      delete pending.current[key]
-      setSaveState((s) => ({ ...s, [key]: 'saving' }))
-      try {
-        const res = await fetch(`/api/review/${token}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ section: key, ...body }),
-        })
-        if (res.status === 409) setStatus('final')
-        setSaveState((s) => ({ ...s, [key]: res.ok ? 'saved' : 'error' }))
-      } catch {
-        setSaveState((s) => ({ ...s, [key]: 'error' }))
-      }
-    },
-    [token],
-  )
-
-  const update: Update = useCallback(
-    (key, patch) => {
-      if (locked) return
-      setComments((prev) => {
-        const cur = prev[key] ?? { reaction: '' as Reaction, note: '', updated_at: '' }
-        const next = { ...cur, ...patch }
-        pending.current[key] = { reaction: next.reaction, note: next.note }
-        return { ...prev, [key]: next }
-      })
-      clearTimeout(timers.current[key])
-      timers.current[key] = setTimeout(() => flush(key), patch.reaction !== undefined ? 0 : SAVE_DELAY)
-    },
-    [flush, locked],
-  )
-
-  const flushAll = useCallback(async () => {
-    Object.values(timers.current).forEach(clearTimeout)
-    await Promise.all(Object.keys(pending.current).map((k) => flush(k)))
-  }, [flush])
-
-  useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === 'hidden') void flushAll()
-    }
-    document.addEventListener('visibilitychange', onHide)
-    return () => document.removeEventListener('visibilitychange', onHide)
-  }, [flushAll])
-
   const finalize = async () => {
-    setSending(true)
-    setSendError('')
-    await flushAll()
-    try {
-      const res = await fetch(`/api/review/${token}/finalize`, { method: 'POST' })
-      if (res.ok || res.status === 409) {
-        setStatus('final')
-        setConfirming(false)
-      } else {
-        setSendError('Something went wrong. Please try again in a minute.')
-      }
-    } catch {
-      setSendError('Could not reach the server. Check your connection and try again.')
-    }
-    setSending(false)
+    if (await save()) setConfirming(false)
   }
 
   const total = content.options.reduce((n, o) => n + allSections(o).length + 1, 0) + 1

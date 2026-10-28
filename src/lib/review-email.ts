@@ -32,6 +32,18 @@ function rows(content: ReviewContent, state: ReviewState): { group: string; item
       ...o.pages.flatMap((p) => p.sections.map((s) => pick(s.key, `${s.key} · ${p.label} · ${s.label}`))),
     ],
   }))
+  const f = content.followup
+  if (f) {
+    const confirm: Record<Reaction, string> = { '': '', like: "That's right", change: 'Not quite', dislike: 'Not quite' }
+    groups.push({
+      group: 'What we took from your notes',
+      items: f.takeaways.map((t) => {
+        const c = state.comments[t.key]
+        return { key: t.key, label: `${t.key} · ${t.title}`, reaction: c ? confirm[c.reaction] : '', note: c?.note ?? '' }
+      }),
+    })
+    for (const g of f.groups) groups.push({ group: g.title, items: g.questions.map((q) => pick(q.key, `${q.key} · ${q.q}`)) })
+  }
   groups.push({ group: 'General comments', items: [pick('general', 'General')] })
   return groups
 }
@@ -39,7 +51,7 @@ function rows(content: ReviewContent, state: ReviewState): { group: string; item
 export function buildReviewEmail(content: ReviewContent, state: ReviewState, link: string) {
   const g = rows(content, state)
   const answered = g.flatMap((x) => x.items).filter((r) => r.reaction || r.note.trim()).length
-  const subject = `${content.client} finished the review: ${content.title}`
+  const subject = content.followup ? `${content.client} sent answers: ${content.title}` : `${content.client} finished the review: ${content.title}`
 
   const text = [
     `${content.client} pressed Finalize on "${content.title}".`,

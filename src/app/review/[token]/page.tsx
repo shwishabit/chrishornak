@@ -4,6 +4,7 @@ import { Source_Serif_4, Figtree, Fraunces, Geist } from 'next/font/google'
 import { getReview } from '@/lib/review-store'
 import { REVIEW_CONTENT } from '@/content/reviews'
 import { ReviewShell } from '@/components/review/ReviewShell'
+import { FollowupShell } from '@/components/review/FollowupShell'
 import '@/styles/review.css'
 
 const serif = Source_Serif_4({ subsets: ['latin'], weight: ['400', '500'], style: ['normal', 'italic'], variable: '--f-serif', display: 'swap' })
@@ -27,7 +28,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ token: 
 
   return (
     <div className={`${serif.variable} ${figtree.variable} ${fraunces.variable} ${geist.variable}`}>
-      <ReviewShell token={token} content={content} initial={review} />
+      {content.followup ? (
+        <FollowupShell token={token} content={{ ...content, followup: content.followup }} initial={review} />
+      ) : (
+        <ReviewShell token={token} content={content} initial={review} />
+      )}
     </div>
   )
 }

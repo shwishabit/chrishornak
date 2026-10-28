@@ -44,6 +44,34 @@ export interface ReviewOption {
   pages: ReviewPage[]
 }
 
+/** One thing we took from the client's notes. The client marks it right (reaction "like")
+ * or not quite (reaction "change") and can add a note. */
+export interface ReviewTakeaway {
+  key: string
+  title: string
+  /** What we heard, in the client's terms. */
+  heard: string
+  /** What we will build because of it. */
+  plan: string
+}
+
+/** One open question. The answer is the note; `choices` are one-tap answers that fill it. */
+export interface ReviewQuestion {
+  key: string
+  q: string
+  /** Why we ask, one line. */
+  why?: string
+  choices?: string[]
+}
+
+/** A follow-up page after a design review: takeaways to confirm, the client's own
+ * questions answered, then our questions. Uses no options. */
+export interface ReviewFollowup {
+  takeaways: ReviewTakeaway[]
+  answers?: { q: string; a: string }[]
+  groups: { title: string; intro?: string; questions: ReviewQuestion[] }[]
+}
+
 export interface ReviewContent {
   slug: string
   title: string
@@ -52,7 +80,9 @@ export interface ReviewContent {
   intro: string
   /** Public folder for this review's images, with a trailing slash. */
   assets: string
+  /** Design options. Empty for a follow-up page. */
   options: ReviewOption[]
+  followup?: ReviewFollowup
   /** Small print under the options (photo credits, draft notes). */
   fineprint: string
 }
@@ -61,7 +91,11 @@ export function allSections(o: ReviewOption): ReviewSection[] {
   return o.pages.flatMap((p) => p.sections)
 }
 
-/** Every key the client may comment on: each section, each option overall, and "general". */
+export function followupKeys(f: ReviewFollowup | undefined): string[] {
+  return f ? [...f.takeaways.map((t) => t.key), ...f.groups.flatMap((g) => g.questions.map((q) => q.key))] : []
+}
+
+/** Every key the client may comment on: each section, each option overall, each follow-up item, and "general". */
 export function commentKeys(content: ReviewContent): string[] {
-  return [...content.options.flatMap((o) => [`${o.key}0`, ...allSections(o).map((s) => s.key)]), 'general']
+  return [...content.options.flatMap((o) => [`${o.key}0`, ...allSections(o).map((s) => s.key)]), ...followupKeys(content.followup), 'general']
 }
