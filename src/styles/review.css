@@ -885,6 +885,132 @@
 }
 .rvx.t-stone .muted { color: #5A544B; }
 
+.rv-sec-html { display: contents; }
+.rvx .vr-count { display: inline-block; min-width: 6.4ch; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Round 2 mouse-over effects. Mouse devices only, and off for anyone who asks for less motion. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .rvx.t-r2 .vr-logo, .rvx.t-r2 .x-card .badge, .rvx.t-r2 .vr-mix-ph .ic, .rvx.t-r2 .vr-dose, .rvx.t-r2 .vr-badge,
+  .rvx.t-r2 .mug, .rvx.t-r2 .mug .ph img, .rvx.t-r2 .mug li, .rvx.t-r2 .x-stores .tile img, .rvx.t-r2 .x-stores .pill,
+  .rvx.t-r2 .x-stores .list-b span, .rvx.t-r2 .pack, .rvx.t-r2 .buy-opt, .rvx.t-r2 .car-slide img, .rvx.t-r2 .vr-banner { transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease; }
+  .rvx.t-r2 .vr-hero > img { transition: transform 1.4s cubic-bezier(0.2, 0.6, 0.2, 1); }
+  .rvx.t-r2 .vr-hero:hover > img { transform: scale(1.025); }
+  .rvx.t-r2 .vr-hero:hover .vr-banner { transform: translateX(-6px); }
+  .rvx.t-r2 .x-nav .vr-logo:hover { transform: scale(1.05) rotate(-1deg); }
+  .rvx.t-r2 .x-card:hover .badge { transform: scale(1.12); }
+  .rvx.t-r2 .x-card:hover .vr-mix-ph { background: var(--x-tint); }
+  .rvx.t-r2 .x-card:hover .vr-mix-ph .ic { transform: translateY(-5px) scale(1.08) rotate(-5deg); }
+  .rvx.t-r2 .vr-dose:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12); }
+  .rvx.t-r2 .mug:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16); }
+  .rvx.t-r2 .mug:hover .ph img { transform: scale(1.05); }
+  .rvx.t-r2 .mug li:hover { transform: translateX(4px); }
+  .rvx.t-r2 .x-stores .tile:hover img { transform: scale(1.05); }
+  .rvx.t-r2 .x-stores .tile:hover .pill { transform: translateY(-4px); }
+  .rvx.t-r2 .x-stores .list-b span:hover { transform: translateX(4px); }
+  .rvx.t-r2 .x-stores .tile img { transform-origin: center 30%; }
+  .rvx.t-r2 .pack:hover, .rvx.t-r2 .buy-opt:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1); }
+  .rvx.t-r2 .car-slide:hover img { transform: scale(1.03); }
+  .rvx.t-r2 .vr-badge:hover { transform: scale(1.14) rotate(-4deg); }
+}
+
+/* VidaRich round 2: Option A with Rich's notes. Used with .t-green, and .t-brown on top for the jar colors. */
+.rvx.t-r2 {
+  --x-foot-ink: #D1AF75;
+  --x-scrim: linear-gradient(90deg, rgba(20, 38, 30, 0.88) 0%, rgba(20, 38, 30, 0.68) 34%, rgba(20, 38, 30, 0) 60%);
+}
+.rvx.t-brown {
+  --x-scrim: linear-gradient(90deg, rgba(58, 38, 15, 0.9) 0%, rgba(58, 38, 15, 0.7) 34%, rgba(58, 38, 15, 0) 60%);
+  --x-ink: #503617; --x-muted: #6B5A45; --x-line: #EEE6DA; --x-line-strong: #DCCDB6; --x-tint: #F8F3EA;
+  --x-dark: #503617; --x-on-dark: #FBF4E6; --x-brand: #503617; --x-on-brand: #FBF4E6;
+  --x-btn-bg: #503617; --x-btn-ink: #FBF4E6; --x-card-ink: #503617; --x-card-muted: #6B5A45;
+  --x-table-border: 1px solid #EEE6DA; --x-pill-ink: #503617; --x-foot-bg: #503617;
+  --x-vs-bg: #503617; --x-vs-ink: #FBF4E6; --x-vs-check-ink: #503617; --x-vs-btn-ink: #503617;
+  --x-cta-bg: #503617; --x-cta-ink: #FBF4E6; --x-cta-btn-ink: #503617;
+  --x-buy-ink: #503617; --x-buy-muted: #6B5A45; --x-buy-line: #DCCDB6; --x-buy-on: #F8F3EA; --x-buy-border: 1px solid #EEE6DA; --x-facts-line: #EEE6DA;
+}
+.rvx.t-brown .x-value .v-tag { color: #503617; }
+.rvx .vr-logo { display: block; height: 56px; width: auto; }
+.rvx .vr-logo-foot { height: clamp(96px, 13vw, 150px); margin-inline: auto; }
+.rvx .vr-hero > img { object-position: 50% 72%; }
+.rvx .vr-hero .copy { max-width: 56%; align-items: flex-start; }
+.rvx .vr-hero .copy .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.rvx .vr-banner { position: absolute; right: 0; top: clamp(20px, 3.4vw, 44px); margin: 0; padding: 12px clamp(20px, 3vw, 36px) 12px 28px; border-radius: 999px 0 0 999px; background: var(--x-accent); color: #201E1B; font-size: clamp(18px, 2vw, 24px); font-weight: 800; }
+.rvx .vr-badges { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.rvx .vr-badge { display: block; aspect-ratio: 1; background: currentColor; -webkit-mask: var(--b) center / contain no-repeat; mask: var(--b) center / contain no-repeat; }
+.rvx .x-buy .only-one { display: none; }
+.rvx .x-buy:has(.buy-opt:last-child input:checked) .only-one { display: inline; }
+.rvx .x-buy:has(.buy-opt:last-child input:checked) small.only-one { display: block; }
+.rvx .x-buy:has(.buy-opt:last-child input:checked) .only-sub { display: none; }
+.rvx .x-buy .buy-opt:has(input:checked) { border: 2px solid var(--x-buy-ink); background: var(--x-buy-on); }
+.rvx .x-buy .buy-opt:has(input:not(:checked)) { border: 1.5px solid var(--x-buy-line); background: transparent; }
+.rvx .x-buy small.save { align-self: flex-start; }
+.vr-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.vr-reveal.is-in { opacity: 1; transform: none; }
+.rvx .vr-collagen { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: center; }
+.rvx .vr-dose { display: flex; flex-direction: column; gap: 6px; width: clamp(180px, 22vw, 240px); padding: 26px 24px; border-radius: 22px; background: var(--x-tint); }
+.rvx .vr-dose b { font-size: clamp(56px, 7vw, 84px); line-height: 1; }
+.rvx .vr-dose span { font-size: 16px; font-weight: 600; }
+.rvx .vr-collagen-copy { display: flex; flex-direction: column; gap: 14px; }
+/* Five equal tiles. They stay one size at every width; a short last row centers. */
+.rvx .x-cards.vr-five { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; container-type: inline-size; }
+.rvx .vr-five .x-card { flex: 0 0 calc((100% - 56px) / 5); min-width: 0; }
+.rvx .vr-five .x-card .ph { aspect-ratio: 1 / 1; }
+.rvx .vr-five .x-card .body { padding: 14px 14px 18px; flex: 1; }
+.rvx .vr-five .x-card .name { font-size: 18px; gap: 7px; }
+.rvx .vr-five .x-card .why { font-size: 14px; }
+@container (max-width: 1040px) {
+  .rvx .vr-five .x-card { flex-basis: calc((100% - 28px) / 3); }
+  .rvx .vr-five .x-card .name { font-size: 20px; }
+  .rvx .vr-five .x-card .why { min-height: 6em; }
+}
+@container (max-width: 620px) {
+  .rvx .vr-five .x-card { flex-basis: calc((100% - 14px) / 2); }
+}
+@container (max-width: 380px) {
+  .rvx .vr-five .x-card { flex-basis: 100%; }
+  .rvx .vr-five .x-card .ph { aspect-ratio: 4 / 3; }
+  .rvx .vr-five .x-card .why { min-height: 0; }
+}
+.rvx .vr-mix-ph { display: flex; align-items: center; justify-content: center; background: #fff; }
+.rvx .vr-mix-ph .ic { width: 42%; height: auto; color: var(--x-dark); }
+.rvx .vr-mix .name { font-size: 21px; }
+.rvx .vr-mixline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rvx .vr-mugs { margin-top: 0; }
+.rvx.t-r2 .mug { border: 1px solid var(--x-line-strong); border-radius: 22px; }
+.rvx.t-r2 .mug.vida { border-color: var(--x-dark); box-shadow: none; }
+.rvx.t-r2 .mug .ph { border: 0; }
+.rvx.t-r2 .mug li { border-top-color: var(--x-line); }
+.rvx.t-r2 .mug.vida li { border-top-color: rgba(255, 255, 255, 0.2); }
+.rvx.t-r2 .mug.vida li i { background: var(--x-accent); color: #201E1B; }
+.rvx.t-r2 .mug.vida li b { color: inherit; }
+.rvx.t-r2 .mug-vs { color: var(--x-on-dark); transform: none; font-weight: 400; }
+.rvx .x-value .v.vr-shop b { font-size: clamp(26px, 2.5vw, 36px); text-decoration: none; white-space: nowrap; }
+.rvx.t-r2 .x-foot { border-top: 1px solid rgba(255, 255, 255, 0.16); }
+.rvx .x-foot .fine a { color: inherit; }
+a.tile { display: block; }
+@media (max-width: 1000px) {
+  .rvx .vr-mixline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .rvx .vr-collagen { grid-template-columns: minmax(0, 1fr); }
+  .rvx .vr-hero { flex-direction: column; align-items: stretch; min-height: 0; }
+  .rvx .vr-hero > img { position: static; height: auto; aspect-ratio: 16 / 10; object-position: 62% 70%; }
+  .rvx .vr-hero .scrim { display: none; }
+  .rvx .vr-banner { position: static; border-radius: 0; padding: 11px 16px; text-align: center; }
+  .rvx .vr-hero .copy { max-width: none; padding-block: 28px 34px; }
+  .rvx .vr-dose { width: 100%; }
+  .rvx .vr-mixline { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .rvx .x-cards.vr-mix { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .rvx .vr-mix .ph { aspect-ratio: 16 / 10; }
+  .rvx .vr-mix-ph .ic { width: 34%; }
+  .rvx .vr-mix .body { padding: 12px 14px 16px; }
+  .rvx .vr-mix .name { font-size: 18px; }
+  .rvx .vr-mix .why { font-size: 14px; }
+  .rvx .vr-badges { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* ── Follow-up page (FollowupShell): one column of takeaways and questions ── */
 .rq-main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
 .rq-group { display: flex; flex-direction: column; gap: 14px; }

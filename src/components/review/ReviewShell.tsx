@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { allSections, type ReviewContent, type ReviewNotes, type ReviewOption, type ReviewPage } from '@/content/reviews/types'
 import type { ReviewState, Reaction } from '@/lib/review-store'
 import { useReviewSave, type Comments, type SaveState, type Update } from './useReviewSave'
@@ -13,6 +13,12 @@ const REACTIONS: { value: Exclude<Reaction, ''>; label: string }[] = [
 const REACTION_LABEL: Record<Reaction, string> = { '': '', like: 'Like', dislike: "Don't like", change: 'Change it' }
 
 const FINISH = 'finish'
+
+// The mockup HTML. Memoized so a shell re-render never rewrites it: a rewrite would
+// reset radio buttons, carousel scroll and any class added after mount.
+const SectionHtml = memo(function SectionHtml({ html }: { html: string }) {
+  return <div className="rv-sec-html" dangerouslySetInnerHTML={{ __html: html }} />
+})
 
 export function ReviewShell({ token, content, initial }: { token: string; content: ReviewContent; initial: ReviewState }) {
   const { comments, locked, saveState, update, finalize: save, sending, sendError } = useReviewSave(token, initial)
@@ -316,6 +322,73 @@ function OptionView({
     return () => el.removeEventListener('click', onClick)
   }, [])
 
+  // Round 2 only, on touch screens: parts fade up as they scroll into view. Phones have no
+  // hover, so this is the movement Rich asked for (Q13). Nothing starts hidden unless this
+  // code runs, so a failure leaves the page fully visible.
+  useEffect(() => {
+    const el = pageRef.current
+    if (!el || !option.theme.includes('t-r2')) return
+    if (!window.matchMedia('(hover: none)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const items = [...el.querySelectorAll<HTMLElement>('.x-head, .x-card, .mug, .x-value .v, .x-quotes .q, .x-stores > *, .vr-collagen > *, .facts-list li')].filter(
+      (n) => n.getBoundingClientRect().top > window.innerHeight,
+    )
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue
+          e.target.classList.add('is-in')
+          io.unobserve(e.target)
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    )
+    items.forEach((n) => {
+      n.classList.add('vr-reveal')
+      io.observe(n)
+    })
+    return () => {
+      io.disconnect()
+      items.forEach((n) => n.classList.remove('vr-reveal', 'is-in'))
+    }
+  }, [option.theme, page.key])
+
+  // Round 2: the servings number counts up once when it comes into view. The real number is
+  // in the HTML, so a page without this code, or with reduced motion, still shows it.
+  useEffect(() => {
+    const el = pageRef.current
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const frames: number[] = []
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue
+          io.unobserve(e.target)
+          const node = e.target as HTMLElement
+          const from = Number(node.dataset.from)
+          const to = Number(node.dataset.to)
+          const start = performance.now()
+          const step = (now: number) => {
+            const t = Math.min(1, (now - start) / 1600)
+            const eased = 1 - (1 - t) ** 3
+            node.textContent = Math.round(from + (to - from) * eased).toLocaleString('en-US')
+            if (t < 1) frames.push(requestAnimationFrame(step))
+          }
+          frames.push(requestAnimationFrame(step))
+        }
+      },
+      { threshold: 0.6 },
+    )
+    const counts = el.querySelectorAll<HTMLElement>('.vr-count')
+    counts.forEach((n) => io.observe(n))
+    return () => {
+      io.disconnect()
+      frames.forEach(cancelAnimationFrame)
+      counts.forEach((n) => {
+        n.textContent = Number(n.dataset.to).toLocaleString('en-US')
+      })
+    }
+  }, [option.theme, page.key])
+
   const currentSection = page.sections.find((s) => s.key === current) ?? page.sections[0]
 
   // Phones: the note bar can fold down to one thin line. The choice is remembered.
@@ -367,8 +440,9 @@ function OptionView({
                   secRefs.current[s.key] = el
                 }}
                 className={`rv-sec ${focusKey === s.key ? 'is-focus' : ''}`}
-                dangerouslySetInnerHTML={{ __html: s.html }}
-              />
+              >
+                <SectionHtml html={s.html} />
+              </div>
             ))}
           </div>
         </div>

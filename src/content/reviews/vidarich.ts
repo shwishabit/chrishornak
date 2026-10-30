@@ -8,9 +8,9 @@
  * sends people to a local store. */
 import type { ReviewContent } from './types'
 
-const A = '/review/vidarich/'
+export const A = '/review/vidarich/'
 
-const FDA =
+export const FDA =
   '†These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease.'
 const LATTE_NOTE = '*Average 10–12 oz café latte: $4.29, Fresh Cup survey of 125 U.S. coffee shops (2023).'
 
@@ -23,7 +23,7 @@ const ICONS: Record<string, string> = {
   beet: '<path d="M12 21c-4 0-6.5-3-6.5-6.5S8 8 12 8s6.5 3 6.5 6.5S16 21 12 21z"/><path d="M12 8V3M12 8L8.5 4M12 8l3.5-4"/>',
   drop: '<path d="M12 3c3.5 4.5 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 2.5-6.5 6-11z"/>',
   cup: '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c-.8 1 .8 2 0 3M12 3c-.8 1 .8 2 0 3"/>',
-  scoop: '<path d="M3 12a6.5 4.5 0 0 0 13 0z"/><path d="M16 12l5-5"/>',
+  scoop: '<path d="M3 10.5h11V13a5.5 5.5 0 0 1-11 0z"/><path d="M4.6 10.5c.7-3 7.1-3 7.8 0"/><rect x="14" y="10.9" width="7.5" height="2.4" rx="1.2"/>',
   spoon: '<path d="M5 20l8-8"/><ellipse cx="16" cy="8" rx="3" ry="4.6" transform="rotate(45 16 8)"/>',
   shield: '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
   star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/>',
@@ -31,12 +31,12 @@ const ICONS: Record<string, string> = {
   repeat: '<path d="M4 11a8 8 0 0 1 14-4.6L20 8"/><path d="M20 3v5h-5"/><path d="M20 13a8 8 0 0 1-14 4.6L4 16"/><path d="M4 21v-5h5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
 }
-const ic = (name: string, cls = '') =>
+export const ic = (name: string, cls = '') =>
   `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`
 
 // A big faint outline icon behind a section.
-const decoIcon = (name: string, cls: string) => ic(name, `deco ${cls}`)
-const rings = (cls: string) =>
+export const decoIcon = (name: string, cls: string) => ic(name, `deco ${cls}`)
+export const rings = (cls: string) =>
   `<svg class="deco rings ${cls}" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1">${[24, 44, 64, 84, 99].map((r) => `<circle cx="100" cy="100" r="${r}"/>`).join('')}</svg>`
 const waves = (cls: string) =>
   `<svg class="deco waves ${cls}" viewBox="0 0 600 70" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">${[15, 35, 55].map((y) => `<path d="M0 ${y} Q75 ${y - 12} 150 ${y} T300 ${y} T450 ${y} T600 ${y}"/>`).join('')}</svg>`
@@ -74,13 +74,13 @@ const PACKS = [
 ]
 
 // Real 5-star review lines (Judge.me, read 2026-10-21). Taste and routine only.
-const REV = {
+export const REV = {
   donna: { q: 'Tastes great love it and my husband loves it', by: 'Donna W.' },
   daniel: { q: 'Everything in your morning coffee to start the day off right.', by: 'Daniel A.' },
   jeffrey: { q: "great product. I can't have my coffee any other way now.", by: 'Jeffrey N.' },
   gme: { q: 'I met the owner of this company recently at the Greens market in Shrewsbury… I did buy one container and remain very happy.', by: 'gme' },
 }
-const STARS = '<span class="stars" aria-label="5 out of 5 stars">★★★★★</span>'
+export const STARS = '<span class="stars" aria-label="5 out of 5 stars">★★★★★</span>'
 
 /* ── shared pieces ────────────────────────────────────────────────────── */
 
@@ -221,7 +221,7 @@ const valueLedger = `
 
 /* ── testimonials ─────────────────────────────────────────────────────── */
 
-const reviewCards = (withPhoto: boolean) => `
+export const reviewCards = (withPhoto: boolean) => `
 <div class="x-quotes">
   <figure class="q">${STARS}<blockquote class="display">"${REV.donna.q}"</blockquote><figcaption>${REV.donna.by}, verified buyer</figcaption></figure>
   <figure class="q">${STARS}<blockquote class="display">"${REV.daniel.q}"</blockquote><figcaption>${REV.daniel.by}, verified buyer</figcaption></figure>
@@ -283,7 +283,7 @@ const PRODUCT_PHOTOS: { img: string; alt: string; pos?: string }[] = [
   { img: 'booth.jpg', alt: 'A VidaRich tasting table', pos: 'pos-top' },
   { img: 'shelf.jpg', alt: 'VidaRich on a store shelf' },
 ]
-const carousel = `
+export const carousel = `
 <div class="x-carousel">
   <div class="car-wrap">
     <div class="car-track" tabindex="0" role="region" aria-label="Product photos. Scroll sideways for more.">${PRODUCT_PHOTOS.map((p) => `<figure class="car-slide"><img src="${A}${p.img}" alt="${p.alt}"${p.pos ? ` class="${p.pos}"` : ''}></figure>`).join('')}</div>
@@ -329,7 +329,7 @@ const AMINO: [string, string][] = [
   ['Phenylalanine', '89.5'], ['Proline', '640'], ['Serine', '153.5'], ['Threonine', '84'], ['Tyrosine', '23.5'], ['Valine', '104'],
 ]
 
-const factsPanel = `
+export const factsPanel = `
 <div class="x-sfp" role="table" aria-label="Supplement Facts">
   <div class="sfp-title">Supplement Facts</div>
   <div class="sfp-serv">Serving size: Approx. 1 Scoop (11.5 g)<br>Servings Per Container: 30</div>
