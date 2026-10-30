@@ -17,6 +17,8 @@ import { blueskyPosts } from '@/lib/bluesky-posts'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// Video days wait for Bluesky to process the clip (up to 40 s, see bluesky.ts).
+export const maxDuration = 60
 
 const MIN_DAYS_AHEAD = 3
 
@@ -98,8 +100,18 @@ export async function GET(req: Request) {
     if (await alreadyPosted(handle, post.parts[0].text)) {
       return NextResponse.json({ ok: true, date, skipped: 'already on the feed' })
     }
-    const refs = await publishPost(post, { identifier: handle, password }, url.origin)
-    return NextResponse.json({ ok: true, date, posted: refs.map((r) => r.uri) })
+    const warnings: string[] = []
+    const refs = await publishPost(post, { identifier: handle, password }, url.origin, warnings)
+    if (warnings.length) {
+      await emailChris(`Bluesky post went out without its video (${date})`, [
+        `The ${date} post is live, but as text only.`,
+        '',
+        ...warnings,
+        '',
+        'To add the video, post it by hand as a reply, or delete the post and post it again with the video.',
+      ])
+    }
+    return NextResponse.json({ ok: true, date, posted: refs.map((r) => r.uri), warnings })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     if (!dry) await emailFailure(date, message)
