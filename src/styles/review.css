@@ -944,8 +944,18 @@
 .rvx .x-buy .buy-opt:has(input:checked) { border: 2px solid var(--x-buy-ink); background: var(--x-buy-on); }
 .rvx .x-buy .buy-opt:has(input:not(:checked)) { border: 1.5px solid var(--x-buy-line); background: transparent; }
 .rvx .x-buy small.save { align-self: flex-start; }
-.vr-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; }
-.vr-reveal.is-in { opacity: 1; transform: none; }
+/* Phone motion. The doubled class beats the mouse-device transitions on tablets that report both. */
+.rvx.t-r2 .vr-reveal.vr-reveal { opacity: 0; transform: translateY(44px) scale(0.96); transition: opacity 0.7s ease var(--vr-d, 0ms), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--vr-d, 0ms); }
+.rvx.t-r2 .vr-reveal.vr-reveal.is-in { opacity: 1; transform: none; }
+.rvx.t-r2 .vr-reveal img { transform: scale(1.16); transition: transform 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) var(--vr-d, 0ms); }
+.rvx.t-r2 .vr-reveal.is-in img { transform: none; }
+.rvx.t-r2 .vr-badge.vr-reveal { transform: scale(0.5) rotate(-14deg); }
+.rvx.t-r2 .vr-kb > img { transform: scale(1.14); }
+.rvx.t-r2 .vr-kb.is-in > img { transform: none; transition: transform 3.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@media (hover: none), (pointer: coarse) {
+  .rvx.t-r2 .btn, .rvx.t-r2 .x-card, .rvx.t-r2 .pack, .rvx.t-r2 .buy-opt, .rvx.t-r2 .mug { transition: transform 0.15s ease; }
+  .rvx.t-r2 .btn:active, .rvx.t-r2 .x-card:active, .rvx.t-r2 .pack:active, .rvx.t-r2 .buy-opt:active, .rvx.t-r2 .mug:active { transform: scale(0.97); }
+}
 .rvx .vr-collagen { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: center; }
 .rvx .vr-dose { display: flex; flex-direction: column; gap: 6px; width: clamp(180px, 22vw, 240px); padding: 26px 24px; border-radius: 22px; background: var(--x-tint); }
 .rvx .vr-dose b { font-size: clamp(56px, 7vw, 84px); line-height: 1; }
@@ -1003,8 +1013,9 @@ a.tile { display: block; }
 }
 @media (max-width: 520px) {
   .rvx .x-cards.vr-mix { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .rvx .vr-mix .ph { aspect-ratio: 16 / 10; }
-  .rvx .vr-mix-ph .ic { width: 34%; }
+  .rvx .vr-mix .ph { aspect-ratio: 1 / 1; padding-top: 34px; }
+  .rvx .vr-mix-ph .ic { width: 46%; }
+  .rvx .vr-mix .badge { left: 10px; top: 10px; font-size: 12px; padding: 3px 10px; }
   .rvx .vr-mix .body { padding: 12px 14px 16px; }
   .rvx .vr-mix .name { font-size: 18px; }
   .rvx .vr-mix .why { font-size: 14px; }

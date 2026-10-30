@@ -322,16 +322,20 @@ function OptionView({
     return () => el.removeEventListener('click', onClick)
   }, [])
 
-  // Round 2 only, on touch screens: parts fade up as they scroll into view. Phones have no
-  // hover, so this is the movement Rich asked for (Q13). Nothing starts hidden unless this
-  // code runs, so a failure leaves the page fully visible.
+  // Round 2 only, on phones and tablets: parts rise and fade in as they scroll into view, photos
+  // settle from a slight zoom, and rows arrive one after another. Phones have no hover, so this
+  // is the movement Rich asked for (Q13). Nothing starts hidden unless this code runs, so a
+  // failure leaves the page fully visible.
   useEffect(() => {
     const el = pageRef.current
     if (!el || !option.theme.includes('t-r2')) return
-    if (!window.matchMedia('(hover: none)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const items = [...el.querySelectorAll<HTMLElement>('.x-head, .x-card, .mug, .x-value .v, .x-quotes .q, .x-stores > *, .vr-collagen > *, .facts-list li')].filter(
-      (n) => n.getBoundingClientRect().top > window.innerHeight,
-    )
+    if (!window.matchMedia('(hover: none), (pointer: coarse), (max-width: 1100px)').matches) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const items = [
+      ...el.querySelectorAll<HTMLElement>(
+        'h2.display, .lead, .x-trust > div, .vr-dose, .x-card, .mug, .x-value .v, .x-quotes .q, .x-stores > *, .x-pull, .x-ctarow, .x-ctaband-btns, .facts-list li, .vr-badge, .x-mixline li, .faq-list details, .x-sfp, .vr-logo-foot',
+      ),
+    ].filter((n) => n.getBoundingClientRect().top > window.innerHeight * 0.92)
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -340,15 +344,26 @@ function OptionView({
           io.unobserve(e.target)
         }
       },
-      { rootMargin: '0px 0px -8% 0px' },
+      { rootMargin: '0px 0px -10% 0px' },
     )
     items.forEach((n) => {
+      const order = n.parentElement ? [...n.parentElement.children].indexOf(n) : 0
+      n.style.setProperty('--vr-d', `${(order % 5) * 90}ms`)
       n.classList.add('vr-reveal')
       io.observe(n)
     })
+    const hero = el.querySelector<HTMLElement>('.vr-hero')
+    if (hero) {
+      hero.classList.add('vr-kb')
+      io.observe(hero)
+    }
     return () => {
       io.disconnect()
-      items.forEach((n) => n.classList.remove('vr-reveal', 'is-in'))
+      hero?.classList.remove('vr-kb', 'is-in')
+      items.forEach((n) => {
+        n.classList.remove('vr-reveal', 'is-in')
+        n.style.removeProperty('--vr-d')
+      })
     }
   }, [option.theme, page.key])
 
