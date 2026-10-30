@@ -74,13 +74,10 @@ const FAQ: [string, string][] = [
 // Sharper copies of Rich's product photos (Real-ESRGAN). Nothing in the photos was added or removed.
 const hd = (html: string) => html.replace(/(jar-mug|jar-hand|jar-beans|booth|shelf|rich-store)\.jpg/g, 'hd-$1.jpg')
 
-// Order page photos: Gemini scenes with the jar first, then Rich's real tasting table and store shelf.
+// Order page photos: 2 Gemini jar scenes, then Rich's real tasting table and store shelf.
 const PHOTOS = [
   ['gem-kitchen.jpg', 'A jar of VidaRich and a cup of coffee on a marble kitchen island'],
   ['gem-marble.jpg', 'A jar of VidaRich on marble in window light'],
-  ['gem-wood-mug.jpg', 'A jar of VidaRich beside a cup of coffee and coffee beans on a wood table'],
-  ['gem-outdoor.jpg', 'A jar of VidaRich on an outdoor table in the sun'],
-  ['gem-beans.jpg', 'A jar of VidaRich on rustic wood with coffee beans'],
   ['hd-booth.jpg', 'Rich Calandra at a VidaRich tasting table'],
   ['hd-shelf.jpg', 'VidaRich on a store shelf'],
 ]
@@ -88,7 +85,7 @@ const photoCarousel = `
 <div class="x-carousel">
   <div class="car-wrap">
     <div class="car-track" tabindex="0" role="region" aria-label="Product photos. Scroll sideways for more.">${PHOTOS.map(([f, alt]) => `<figure class="car-slide"><img src="${A}${f}" alt="${alt}" style="object-position: ${f === 'gem-kitchen.jpg' || f === 'gem-wood-mug.jpg' ? '78%' : '50%'} 50%"></figure>`).join('')}</div>
-    <div class="car-nav"><button type="button" class="car-btn" data-car="-1" aria-label="Previous photo">←</button><span class="car-hint">${PHOTOS.length} photos · swipe or use the arrows</span><button type="button" class="car-btn" data-car="1" aria-label="Next photo">→</button></div>
+    <div class="car-nav"><button type="button" class="car-btn" data-car="-1" aria-label="Previous photo">←</button><span class="car-hint">${PHOTOS.length} photos</span><button type="button" class="car-btn" data-car="1" aria-label="Next photo">→</button></div>
   </div>
 </div>`
 
@@ -139,7 +136,7 @@ const yourDrink = `
   <div class="x-mugs vr-mugs">
     <div class="mug plain"><div class="ph"><img src="${A}pour.jpg" alt="A plain cup of coffee being poured"></div><b class="display">Your Drink</b><ul>${ADDS.map(([l]) => `<li><i aria-hidden="true">–</i><span>${l}</span><b>0</b></li>`).join('')}<li><i aria-hidden="true">–</i><span>Just the taste of your drink</span></li></ul></div>
     <div class="mug-vs" aria-hidden="true">vs</div>
-    <div class="mug vida"><div class="ph"><img src="${A}drink-scoop.jpg" alt="A scoop of VidaRich going into a white cup of coffee, beside the jar"></div><b class="display">Your Drink + VidaRich</b>
+    <div class="mug vida"><div class="ph"><img src="${A}hd-jar-hand.jpg" alt="A hand holding a jar of VidaRich over a cup of coffee"></div><b class="display">Your Drink + VidaRich</b>
       <ul>${ADDS.map(([l, v]) => `<li><i aria-hidden="true">✓</i><span>${l}</span><b>${v}</b></li>`).join('')}<li><i aria-hidden="true">✓</i><span>Light, creamy chocolate taste</span></li></ul>
       <a href="#" class="btn btn-light">Shop now · $59.98</a></div>
   </div>
@@ -147,7 +144,7 @@ const yourDrink = `
 
 const price = `
 <section class="sec pad x-band has-deco">${rings('r-tr')}
-  <div class="x-head"><h2 class="display">Less than half the price of your local coffee shoppe*</h2><p class="lead">The more jars you get, the less each serving costs.</p></div>
+  <div class="x-head"><h2 class="display">Less than half the price of your local coffee shoppe*</h2><p class="lead">The more jars you get, the less each serving costs. Subscribe to a 4/Pak and it drops to $1.49.</p></div>
   <div class="x-value">
     ${PACKS.map((p, i) => `<div class="v ${i === 2 ? 'best' : ''}">${i === 2 ? '<span class="v-tag">Best value</span>' : ''}<b class="display">${p.cup}</b><span>a serving with ${p.name}</span><small>${p.price}${p.save ? ` · ${p.save}` : ''}</small></div>`).join('')}
     <div class="v latte vr-shop">${ic('cup', 'v-ic')}<b class="display">$5.00–6.00</b><span>average coffee shop drink*</span><small>For one cup, every time.</small></div>
@@ -218,7 +215,7 @@ const mixShort = `
 
 const faq = `
 <section class="sec pad">
-  <div class="x-faq"><h2 class="display">Questions, answered</h2>
+  <div class="x-faq"><h2 class="display">Questions, answered</h2><p class="vr-draft">Rich, these are drafts. Change any of them.</p>
   <div class="faq-list">${FAQ.map(([q, a], i) => `<details${i === 0 ? ' open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div>
 </section>`
 

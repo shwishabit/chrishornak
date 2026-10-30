@@ -886,6 +886,9 @@
 .rvx.t-stone .muted { color: #5A544B; }
 
 .rv-sec-html { display: contents; }
+.rvx.t-r2 .x-quotes .q:not(.ph) { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.rvx.t-r2 .x-quotes .q:not(.ph) blockquote { font-size: clamp(21px, 1.9vw, 27px); line-height: 1.28; margin: 0; }
+.rvx .vr-draft { margin: 6px 0 16px; color: var(--x-muted); font-size: 15px; }
 .rvx .vr-count { display: inline-block; min-width: 6.4ch; text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Round 2 mouse-over effects. Mouse devices only, and off for anyone who asks for less motion. */
@@ -916,10 +919,10 @@
 /* VidaRich round 2: Option A with Rich's notes. Used with .t-green, and .t-brown on top for the jar colors. */
 .rvx.t-r2 {
   --x-foot-ink: #D1AF75;
-  --x-scrim: linear-gradient(90deg, rgba(20, 38, 30, 0.88) 0%, rgba(20, 38, 30, 0.68) 34%, rgba(20, 38, 30, 0) 60%);
+  --x-scrim: linear-gradient(90deg, rgba(20, 38, 30, 0.9) 0%, rgba(20, 38, 30, 0.76) 38%, rgba(20, 38, 30, 0) 62%);
 }
 .rvx.t-brown {
-  --x-scrim: linear-gradient(90deg, rgba(58, 38, 15, 0.9) 0%, rgba(58, 38, 15, 0.7) 34%, rgba(58, 38, 15, 0) 60%);
+  --x-scrim: linear-gradient(90deg, rgba(58, 38, 15, 0.92) 0%, rgba(58, 38, 15, 0.78) 38%, rgba(58, 38, 15, 0) 62%);
   --x-ink: #503617; --x-muted: #6B5A45; --x-line: #EEE6DA; --x-line-strong: #DCCDB6; --x-tint: #F8F3EA;
   --x-dark: #503617; --x-on-dark: #FBF4E6; --x-brand: #503617; --x-on-brand: #FBF4E6;
   --x-btn-bg: #503617; --x-btn-ink: #FBF4E6; --x-card-ink: #503617; --x-card-muted: #6B5A45;
@@ -932,7 +935,9 @@
 .rvx .vr-logo { display: block; height: 56px; width: auto; }
 .rvx .vr-logo-foot { height: clamp(96px, 13vw, 150px); margin-inline: auto; }
 .rvx .vr-hero > img { object-position: 50% 72%; }
-.rvx .vr-hero .copy { max-width: 56%; align-items: flex-start; }
+.rvx .vr-hero .copy { max-width: 44%; align-items: flex-start; }
+.rvx .vr-hero .lead { font-size: clamp(16px, 1.3vw, 18px); }
+.rvx .vr-hero h1 { font-size: clamp(38px, 3.9vw, 72px); line-height: 1.08; }
 .rvx .vr-hero .copy .btns { display: flex; flex-wrap: wrap; gap: 12px; }
 .rvx .vr-banner { position: absolute; right: 0; top: clamp(20px, 3.4vw, 44px); margin: 0; padding: 12px clamp(20px, 3vw, 36px) 12px 28px; border-radius: 999px 0 0 999px; background: var(--x-accent); color: #201E1B; font-size: clamp(18px, 2vw, 24px); font-weight: 800; }
 .rvx .vr-badges { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
@@ -1008,6 +1013,7 @@ a.tile { display: block; }
   .rvx .vr-hero .scrim { display: none; }
   .rvx .vr-banner { position: static; border-radius: 0; padding: 11px 16px; text-align: center; }
   .rvx .vr-hero .copy { max-width: none; padding-block: 28px 34px; }
+  .rvx .vr-hero h1 { font-size: clamp(38px, 11vw, 56px); }
   .rvx .vr-dose { width: 100%; }
   .rvx .vr-mixline { grid-template-columns: minmax(0, 1fr); }
 }
