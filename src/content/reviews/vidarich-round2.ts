@@ -136,7 +136,7 @@ const yourDrink = `
   <div class="x-mugs vr-mugs">
     <div class="mug plain"><div class="ph"><img src="${A}pour.jpg" alt="A plain cup of coffee being poured"></div><b class="display">Your Drink</b><ul>${ADDS.map(([l]) => `<li><i aria-hidden="true">–</i><span>${l}</span><b>0</b></li>`).join('')}<li><i aria-hidden="true">–</i><span>Just the taste of your drink</span></li></ul></div>
     <div class="mug-vs" aria-hidden="true">vs</div>
-    <div class="mug vida"><div class="ph"><img src="${A}hd-jar-hand.jpg" alt="A hand holding a jar of VidaRich over a cup of coffee"></div><b class="display">Your Drink + VidaRich</b>
+    <div class="mug vida"><div class="ph"><img src="${A}drink-empty-mug.jpg" alt="A hand tipping a scoop of VidaRich into an empty white mug, beside the jar"></div><b class="display">Your Drink + VidaRich</b>
       <ul>${ADDS.map(([l, v]) => `<li><i aria-hidden="true">✓</i><span>${l}</span><b>${v}</b></li>`).join('')}<li><i aria-hidden="true">✓</i><span>Light, creamy chocolate taste</span></li></ul>
       <a href="#" class="btn btn-light">Shop now · $59.98</a></div>
   </div>

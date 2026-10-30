@@ -991,6 +991,8 @@
 .rvx .vr-mix .name { font-size: 21px; }
 .rvx .vr-mixline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .rvx .vr-mugs { margin-top: 0; }
+.rvx .vr-mugs .mug .ph { aspect-ratio: 1 / 1; }
+.rvx .vr-mugs .mug.vida .ph img { object-position: 50% 62%; }
 .rvx.t-r2 .mug { border: 1px solid var(--x-line-strong); border-radius: 22px; }
 .rvx.t-r2 .mug.vida { border-color: var(--x-dark); box-shadow: none; }
 .rvx.t-r2 .mug .ph { border: 0; }
