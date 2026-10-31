@@ -268,7 +268,7 @@ const audience = 'For the coffee drinker who reads the label first. It answers â
 
 export const vidarichRound2: ReviewContent = {
   slug: 'vidarich-round2',
-  title: 'VidaRich: final look',
+  title: 'VidaRich: round 2',
   client: 'Rich Calandra, VidaRich',
   intro:
     'Rich, this is Option A with your notes in place, in green and in the jarâ€™s brown and gold. Look at both, then tell us which color you want on the Finish page. Tap Like or Change it beside any part. When you press Finalize, we build the real site from this page. The logo now uses the outline from your official logo, so it has more color.',
