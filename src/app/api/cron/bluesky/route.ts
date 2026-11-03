@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { alreadyPosted, previewPost, publishPost, todayInNewYork, validatePost } from '@/lib/bluesky'
 import { blueskyPosts } from '@/lib/bluesky-posts'
+import { siteConfig } from '@/lib/data'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -79,6 +80,10 @@ export async function GET(req: Request) {
   const canPickDate = dry || process.env.NODE_ENV !== 'production'
   const date = (canPickDate && url.searchParams.get('date')) || todayInNewYork()
   if (!dry) await warnIfRunningLow(date)
+  // Vercel's cron calls the *.vercel.app URL, which sits behind Vercel's login, so a
+  // fetch of /images/... from there returns the login page, not the image. Always load
+  // media from the public domain in production.
+  const base = process.env.NODE_ENV === 'production' ? siteConfig.domain : url.origin
   const post = blueskyPosts.find((p) => p.date === date)
   if (!post) return NextResponse.json({ ok: true, date, skipped: 'no post planned for this date' })
 
@@ -90,7 +95,7 @@ export async function GET(req: Request) {
 
   try {
     if (dry) {
-      return NextResponse.json({ ok: true, dry: true, date, parts: await previewPost(post, url.origin) })
+      return NextResponse.json({ ok: true, dry: true, date, parts: await previewPost(post, base) })
     }
 
     const handle = process.env.BLUESKY_HANDLE
@@ -101,7 +106,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: true, date, skipped: 'already on the feed' })
     }
     const warnings: string[] = []
-    const refs = await publishPost(post, { identifier: handle, password }, url.origin, warnings)
+    const refs = await publishPost(post, { identifier: handle, password }, base, warnings)
     if (warnings.length) {
       await emailChris(`Bluesky post went out without its video (${date})`, [
         `The ${date} post is live, but as text only.`,

@@ -144,6 +144,8 @@ async function readCard(uri: string): Promise<Card> {
 
 async function uploadBlob(url: string, token: string): Promise<Blob> {
   const { bytes, mime } = await fetchBytes(url)
+  // A login or error page can come back as 200 HTML. Name the real problem, not Bluesky's.
+  if (!mime.startsWith('image/')) throw new Error(`${url} came back as ${mime}, not an image`)
   if (bytes.length > MAX_BLOB_BYTES) throw new Error(`${url} is ${bytes.length} bytes (max ${MAX_BLOB_BYTES})`)
   const { blob } = await xrpc<{ blob: Blob }>('com.atproto.repo.uploadBlob', token, bytes as BodyInit, mime)
   return blob
@@ -163,7 +165,8 @@ type JobStatus = { jobId: string; state: string; blob?: Blob; error?: string; me
  * Waits for processing so the post shows the video at once instead of a blank player.
  */
 async function uploadVideo(url: string, session: Session): Promise<Blob> {
-  const { bytes } = await fetchBytes(url)
+  const { bytes, mime } = await fetchBytes(url)
+  if (!mime.startsWith('video/')) throw new Error(`${url} came back as ${mime}, not a video`)
   if (bytes.length > MAX_VIDEO_BYTES) throw new Error(`${url} is ${bytes.length} bytes (max ${MAX_VIDEO_BYTES})`)
 
   const pds = pdsOf(session)
