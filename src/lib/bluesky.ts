@@ -25,7 +25,6 @@ type Blob = Record<string, unknown>
 type Card = { uri: string; title: string; description: string; image?: string }
 
 const PDS = 'https://bsky.social'
-const APPVIEW = 'https://public.api.bsky.app'
 const VIDEO_SERVICE = 'https://video.bsky.app'
 export const MAX_GRAPHEMES = 300
 const MAX_PARTS = 4
@@ -230,14 +229,20 @@ async function buildEmbed(part: BlueskyPart, base: string, session: Session) {
   return undefined
 }
 
-/** True when the day's first post is already on the feed (a re-run, or Chris posted it by hand). */
+/**
+ * True when the day's first post is already on the account (a re-run, or Chris posted it by hand).
+ * Reads the account's own records on the PDS, which show a new post at once. The public feed
+ * (app view) lags by several seconds, which let two quick Run clicks post the 2026-11-03 entry twice.
+ */
 export async function alreadyPosted(handle: string, firstText: string): Promise<boolean> {
-  const url = `${APPVIEW}/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(handle)}&limit=30&filter=posts_no_replies`
+  const url = `${PDS}/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(handle)}&collection=app.bsky.feed.post&limit=30`
   const res = await fetch(url, { signal: AbortSignal.timeout(10_000) })
   if (!res.ok) throw new Error(`feed check failed (${res.status})`)
-  const { feed } = (await res.json()) as { feed: { post: { record: { text?: string } } }[] }
-  return feed.some((item) => item.post.record.text?.trim() === firstText.trim())
+  const { records } = (await res.json()) as { records: { value: { text?: string; reply?: unknown } }[] }
+  return records.some((r) => !r.value.reply && r.value.text?.trim() === firstText.trim())
 }
+
+export class AlreadyPostedError extends Error {}
 
 /** What would post, without logging in or posting: text, length, links, image size, card. */
 export async function previewPost(post: BlueskyPost, base: string) {
@@ -285,6 +290,11 @@ export async function publishPost(
       ...(facets.length ? { facets } : {}),
       ...(embed ? { embed } : {}),
       ...(refs.length ? { reply: { root: refs[0], parent: refs[refs.length - 1] } } : {}),
+    }
+    // Check again right before the first post goes out. Media uploads take seconds, and a
+    // second run started in that window would otherwise post a copy.
+    if (i === 0 && (await alreadyPosted(creds.identifier, part.text))) {
+      throw new AlreadyPostedError('already on the feed')
     }
     try {
       const { uri, cid } = await xrpc<Ref>(

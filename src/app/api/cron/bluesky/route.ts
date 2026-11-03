@@ -12,7 +12,7 @@
 
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { alreadyPosted, previewPost, publishPost, todayInNewYork, validatePost } from '@/lib/bluesky'
+import { AlreadyPostedError, alreadyPosted, previewPost, publishPost, todayInNewYork, validatePost } from '@/lib/bluesky'
 import { blueskyPosts } from '@/lib/bluesky-posts'
 import { siteConfig } from '@/lib/data'
 
@@ -118,6 +118,7 @@ export async function GET(req: Request) {
     }
     return NextResponse.json({ ok: true, date, posted: refs.map((r) => r.uri), warnings })
   } catch (err) {
+    if (err instanceof AlreadyPostedError) return NextResponse.json({ ok: true, date, skipped: err.message })
     const message = err instanceof Error ? err.message : String(err)
     if (!dry) await emailFailure(date, message)
     return NextResponse.json({ ok: false, date, error: message }, { status: 500 })
