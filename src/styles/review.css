@@ -124,6 +124,10 @@
 .rv-subtab { min-height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: transparent; color: var(--rv-ink); font: 700 15px var(--f-figtree), system-ui, sans-serif; cursor: pointer; }
 .rv-subtab[aria-current="page"] { background: var(--rv-ink); color: #fff; }
 @media (max-width: 700px) { .rv-opt-head { flex-wrap: wrap; } .rv-subtabs { width: 100%; } .rv-subtab { flex: 1; } }
+/* Many pages (a whole built site): the page buttons get their own full-width row and wrap. */
+.rv-opt-head:has(.rv-subtabs-many) { flex-wrap: wrap; }
+.rv-opt-head > .rv-subtabs.rv-subtabs-many { order: 3; flex: 0 0 100%; width: 100%; flex-wrap: wrap; border-radius: 26px; }
+.rv-subtabs-many .rv-subtab { flex: 1 1 auto; padding: 0 16px; white-space: nowrap; }
 
 /* The page + note column */
 .rv-stage {
@@ -1062,7 +1066,24 @@ a.tile { display: block; }
 .rq-answers dd { margin: 4px 0 0; line-height: 1.55; }
 .rq-count { color: var(--rv-muted); }
 .rq-card .rv-save:empty { display: none; }
+/* Launch review: preview button, page screenshots (computer + phone), search-title table */
+.rq-preview { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; max-width: 1760px; margin: -6px auto 0; padding: 0 clamp(16px, 2.5vw, 32px) 22px; }
+.rq-preview a { text-decoration: none; }
+.rq-preview span { color: var(--rv-muted); font-size: 14px; line-height: 1.5; max-width: 52ch; }
+.rq-shots { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.3fr); gap: 12px; align-items: start; }
+.rq-shot { display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--rv-line); background: #fff; }
+.rq-shot img { display: block; width: 100%; height: auto; }
+.rq-shot:focus-visible, .rq-shot-links a:focus-visible { outline: 3px solid var(--rv-focus); outline-offset: 2px; }
+.rq-shot-links { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; font-size: 15px; font-weight: 600; }
+.rq-shot-links a { color: var(--rv-ink); text-underline-offset: 3px; }
+.rq-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--rv-line); background: var(--rv-card); }
+.rq-table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 14px; line-height: 1.5; }
+.rq-table caption { text-align: left; padding: 14px 16px 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rv-muted); }
+.rq-table th, .rq-table td { text-align: left; vertical-align: top; padding: 10px 16px; border-top: 1px solid var(--rv-line); }
+.rq-table thead th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rv-muted); }
+.rq-table tbody th { font-weight: 700; white-space: nowrap; }
 @media (max-width: 640px) {
+  .rq-shots { grid-template-columns: minmax(0, 1fr) minmax(0, 0.42fr); gap: 8px; }
   .rq-heard { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .rq-reacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rq-card { padding: 16px; }

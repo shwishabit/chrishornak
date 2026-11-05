@@ -14,6 +14,9 @@ const REACTION_LABEL: Record<Reaction, string> = { '': '', like: 'Like', dislike
 
 const FINISH = 'finish'
 
+// A review with one option (e.g. a built site) drops the "Option S:" wording.
+const optTitle = (o: ReviewOption, single: boolean) => (single ? o.name : `Option ${o.key}: ${o.name}`)
+
 // The mockup HTML. Memoized so a shell re-render never rewrites it: a rewrite would
 // reset radio buttons, carousel scroll and any class added after mount.
 const SectionHtml = memo(function SectionHtml({ html }: { html: string }) {
@@ -84,6 +87,7 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
     if (t === FINISH) return 'Finish'
     const o = content.options.find((x) => t.startsWith(`${x.key}-`))
     const p = o?.pages.find((x) => t === `${o.key}-${x.key}`)
+    if (o && p && content.options.length === 1) return p.label
     return o && p ? `Option ${o.key} ${p.label.toLowerCase()}` : t
   }
 
@@ -113,7 +117,7 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
             <button key={o.key} type="button" className="rv-tab" aria-current={option?.key === o.key ? 'page' : undefined} onClick={() => go(`${o.key}-${o.pages[0].key}`)}>
               <span className="rv-tab-letter">{o.key}</span>
               <span className="rv-tab-text">
-                <b>Option {o.key}: {o.name}</b>
+                <b>{optTitle(o, content.options.length === 1)}</b>
                 <span>{o.story.split('. ')[0].replace(/\.$/, '')}</span>
               </span>
             </button>
@@ -146,6 +150,7 @@ export function ReviewShell({ token, content, initial }: { token: string; conten
             locked={locked}
             update={update}
             notesHidden={notesHidden}
+            single={content.options.length === 1}
           />
         ) : (
           <FinishView
@@ -215,7 +220,9 @@ function OptionView({
   locked,
   update,
   notesHidden,
+  single = false,
 }: {
+  single?: boolean
   option: ReviewOption
   page: ReviewPage
   onPage: (pageKey: string) => void
@@ -424,12 +431,10 @@ function OptionView({
     <div className="rv-option">
       <div className="rv-opt-head">
         <div>
-          <h2>
-            Option {option.key}: {option.name}
-          </h2>
+          <h2>{optTitle(option, single)}</h2>
           <p>{option.story}</p>
         </div>
-        <div className="rv-subtabs" role="group" aria-label={`Option ${option.key} pages`}>
+        <div className={`rv-subtabs ${option.pages.length > 3 ? 'rv-subtabs-many' : ''}`} role="group" aria-label={`Option ${option.key} pages`}>
           {option.pages.map((p) => (
             <button key={p.key} type="button" className="rv-subtab" aria-current={p.key === page.key ? 'page' : undefined} onClick={() => onPage(p.key)}>
               {p.label}
@@ -493,7 +498,7 @@ function OptionView({
       <div className="rv-overall">
         <Panel
           k={`${option.key}0`}
-          title={`Option ${option.key} overall: ${option.name}`}
+          title={single ? `${option.name}: overall` : `Option ${option.key} overall: ${option.name}`}
           comments={comments}
           save={saveState[`${option.key}0`]}
           locked={locked}
@@ -570,11 +575,9 @@ function FinishView({
           return (
             <div key={o.key} className="rv-sum-opt">
               <div className="rv-sum-h">
-                <b>
-                  Option {o.key} · {o.name}
-                </b>
+                <b>{content.options.length === 1 ? o.name : `Option ${o.key} · ${o.name}`}</b>
                 <button type="button" className="rv-link" onClick={() => onJump(`${o.key}-${o.pages[0].key}`)}>
-                  Open option {o.key}
+                  {content.options.length === 1 ? 'Back to the pages' : `Open option ${o.key}`}
                 </button>
               </div>
               <ul>
