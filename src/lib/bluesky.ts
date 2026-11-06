@@ -32,8 +32,10 @@ const MAX_PARTS = 4
 const MAX_BLOB_BYTES = 950_000
 // The PDS caps any blob at 50 MB. Our clips are a few MB; stay well under.
 const MAX_VIDEO_BYTES = 40_000_000
-// Video processing has to finish inside the cron's 60 s, after login and upload.
-const VIDEO_WAIT_MS = 40_000
+// Video processing has to finish inside the cron's 300 s (route.ts maxDuration), after login
+// and upload. 40 s was too short: on 2026-11-06 Bluesky's queue was slower and the post went out
+// as text only. 240 s leaves about a minute for login, upload and posting.
+const VIDEO_WAIT_MS = 240_000
 
 export function graphemeLength(text: string): number {
   return [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)].length
@@ -157,7 +159,7 @@ function pdsOf(session: Session): string {
   return session.didDoc?.service?.find((s) => s.id === '#atproto_pds')?.serviceEndpoint ?? PDS
 }
 
-type JobStatus = { jobId: string; state: string; blob?: Blob; error?: string; message?: string }
+type JobStatus = { jobId: string; state: string; progress?: number; blob?: Blob; error?: string; message?: string }
 
 /**
  * Upload through Bluesky's video service, which processes the clip and stores it on the PDS.
@@ -186,17 +188,23 @@ async function uploadVideo(url: string, session: Session): Promise<Blob> {
   if (job.blob) return job.blob
 
   const deadline = Date.now() + VIDEO_WAIT_MS
+  // The last thing the status check said, so a timeout email tells a slow queue from a broken check.
+  let last = 'no status check answered'
   while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 3000))
     const res = await fetch(`${VIDEO_SERVICE}/xrpc/app.bsky.video.getJobStatus?jobId=${encodeURIComponent(job.jobId!)}`, {
       signal: AbortSignal.timeout(10_000),
-    })
-    if (!res.ok) continue
+    }).catch(() => undefined)
+    if (!res?.ok) {
+      last = `status check failed (${res?.status ?? 'no answer'})`
+      continue
+    }
     const { jobStatus } = (await res.json()) as { jobStatus: JobStatus }
     if (jobStatus.blob) return jobStatus.blob
     if (jobStatus.state === 'JOB_STATE_FAILED') throw new Error(`video processing failed: ${jobStatus.error ?? jobStatus.message ?? 'no reason given'}`)
+    last = `last state ${jobStatus.state}${jobStatus.progress != null ? ` at ${jobStatus.progress}%` : ''}`
   }
-  throw new Error(`video still processing after ${VIDEO_WAIT_MS / 1000} s`)
+  throw new Error(`video still processing after ${VIDEO_WAIT_MS / 1000} s (${last})`)
 }
 
 async function buildEmbed(part: BlueskyPart, base: string, session: Session) {

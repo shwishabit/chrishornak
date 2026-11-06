@@ -18,8 +18,8 @@ import { siteConfig } from '@/lib/data'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-// Video days wait for Bluesky to process the clip (up to 40 s, see bluesky.ts).
-export const maxDuration = 60
+// Video days wait for Bluesky to process the clip (up to 240 s, see bluesky.ts).
+export const maxDuration = 300
 
 const MIN_DAYS_AHEAD = 3
 
