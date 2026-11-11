@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
-            Last updated: September 30, 2026
+            Last updated: November 11, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-sm leading-relaxed text-muted-foreground [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-foreground [&_h2]:mb-3 [&_p+p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5">
@@ -105,6 +105,13 @@ export default function PrivacyPage() {
                   Google Analytics Opt-out Browser Add-on
                 </a>
                 .
+              </p>
+              <p>
+                The games under /play/ (Block Sector) send anonymous play counts to this
+                site: when the game opens, how much of the intro was watched, and how far
+                each run got (wave, score, time). The game keeps a random ID on your device
+                so repeat visits can be counted. It sets no cookies and records no name, email
+                or IP address. Clearing your browser&apos;s site data resets the ID.
               </p>
               <p>
                 No advertising or third-party tracking cookies are used beyond what is
