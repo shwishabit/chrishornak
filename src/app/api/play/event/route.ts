@@ -1,6 +1,6 @@
 /* ── POST /api/play/event ─────────────────────────────────────────────────
  * Anonymous play counts for the games under /play/ (Block Sector first, 2026-11-11). The game sends one small event
- * with navigator.sendBeacon: page open, intro watched, run ended, left mid-run. Fire-and-forget: a failure here must
+ * with navigator.sendBeacon: page open, intro watched, run ended, left mid-run, and (2026-11-12) the one-tap rating after a run. Fire-and-forget: a failure here must
  * never touch the game.
  *
  * Anonymous by design: a random per-device id made by the game, no name, no email, no cookies, and the IP is used
@@ -42,8 +42,11 @@ const one = (...s: string[]): Field => ({ s })
 const SHAPE: Record<string, Record<string, Field>> = {
   open: { new: bool, day: int(3650), app: bool, runs: int(100000) },
   intro: { secs: int(600), len: int(600), how: one('end', 'skip', 'error'), from: one('first', 'howto') },
-  run: { n: int(100000), wave: int(999), score: int(1_000_000_000), secs: int(36000), takes: int(1_000_000), how: one('lost', 'ended', 'restart', 'menu', 'idle') },
+  // dead / rage / mood: Block Sector 3.48 quiet signals (taps that did nothing, fast-tap bursts in one spot, danger step at the end)
+  run: { n: int(100000), wave: int(999), score: int(1_000_000_000), secs: int(36000), takes: int(1_000_000), how: one('lost', 'ended', 'restart', 'menu', 'idle'), dead: int(100000), rage: int(10000), mood: int(9) },
   away: { wave: int(999), secs: int(36000) },
+  // 3.48 the one tap after a run (needs migration 0025: kind 'rate')
+  rate: { n: int(100000), feel: one('hard', 'right', 'easy'), wave: int(999), secs: int(36000) },
 }
 
 function clean(kind: string, raw: unknown): Record<string, number | boolean | string> {
