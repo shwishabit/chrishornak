@@ -33,17 +33,21 @@ const GAMES = new Set(['project-iq'])
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const BUILD = /^[\w.-]{1,32}$/
 
-type Field = { n: number } | { b: true } | { s: readonly string[] }
+type Field = { n: number } | { b: true } | { s: readonly string[] } | { re: RegExp }
 const int = (n: number): Field => ({ n })
 const bool: Field = { b: true }
 const one = (...s: string[]): Field => ({ s })
+const text = (re: RegExp): Field => ({ re })
 
 /** What each kind may carry. Numbers are whole numbers from 0 to the cap. */
 const SHAPE: Record<string, Record<string, Field>> = {
   open: { new: bool, day: int(3650), app: bool, runs: int(100000) },
   intro: { secs: int(600), len: int(600), how: one('end', 'skip', 'error'), from: one('first', 'howto') },
   // dead / rage / mood: Block Sector 3.48 quiet signals (taps that did nothing, fast-tap bursts in one spot, danger step at the end)
-  run: { n: int(100000), wave: int(999), score: int(1_000_000_000), secs: int(36000), takes: int(1_000_000), how: one('lost', 'ended', 'restart', 'menu', 'idle'), dead: int(100000), rage: int(10000), mood: int(9) },
+  run: { n: int(100000), wave: int(999), score: int(1_000_000_000), secs: int(36000), takes: int(1_000_000), how: one('lost', 'ended', 'restart', 'menu', 'idle'), dead: int(100000), rage: int(10000), mood: int(9),
+    // Block Sector 3.68: one row per puzzle, "level:type:misses:lost" comma-separated (type = 2-letter codes, + joins a hard sector's)
+    // (game_events.data must stay under 2 KB: migration 0024 check; 1,500 chars ≈ 160 puzzles)
+    pz: text(/^[0-9a-z:+,]{1,1500}$/), pzN: int(1000) },
   away: { wave: int(999), secs: int(36000) },
   // 3.48 the one tap after a run (needs migration 0025: kind 'rate')
   rate: { n: int(100000), feel: one('hard', 'right', 'easy'), wave: int(999), secs: int(36000) },
@@ -60,6 +64,8 @@ function clean(kind: string, raw: unknown): Record<string, number | boolean | st
       if (Number.isFinite(n)) out[k] = Math.max(0, Math.min(f.n, n))
     } else if ('b' in f) {
       out[k] = v === true
+    } else if ('re' in f) {
+      if (typeof v === 'string' && f.re.test(v)) out[k] = v
     } else if (typeof v === 'string' && f.s.includes(v)) {
       out[k] = v
     }
