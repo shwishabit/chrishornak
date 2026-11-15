@@ -47,7 +47,10 @@ const SHAPE: Record<string, Record<string, Field>> = {
   run: { n: int(100000), wave: int(999), score: int(1_000_000_000), secs: int(36000), takes: int(1_000_000), how: one('lost', 'ended', 'restart', 'menu', 'idle'), dead: int(100000), rage: int(10000), mood: int(9),
     // Block Sector 3.68: one row per puzzle, "level:type:misses:lost" comma-separated (type = 2-letter codes, + joins a hard sector's)
     // (game_events.data must stay under 2 KB: migration 0024 check; 1,500 chars ≈ 160 puzzles)
-    pz: text(/^[0-9a-z:+,]{1,1500}$/), pzN: int(1000) },
+    pz: text(/^[0-9a-z:+,]{1,1500}$/), pzN: int(1000),
+    // Block Sector 3.77-3.87: puzzles solved under / on / over par, the earned bomb (1 = par counts it, 2 = par ignores it)
+    // and how many were earned, and the puzzle height (sent only when it is not 3 rows)
+    pu: int(10000), po: int(10000), pv: int(10000), bonus: int(2), bonusN: int(10000), rows: int(9) },
   away: { wave: int(999), secs: int(36000) },
   // 3.48 the one tap after a run (needs migration 0025: kind 'rate')
   rate: { n: int(100000), feel: one('hard', 'right', 'easy'), wave: int(999), secs: int(36000) },
