@@ -158,3 +158,52 @@ test('schema @type: a specific business type names the trade', () => {
   // Plain words up front still come first.
   assert.equal(trade(ld('Dentist', `<title>Gleason Family Dentistry</title><p>412-555-0100</p>`))?.word, 'Dentistry')
 })
+
+/* Engine round 3 (2026-11-19, research #4): every ask candidate is scored, not first match wins. */
+test('ask: booking words on a phone button, ordering, and a guess is never a pass', () => {
+  const read = (html: string) => readB2bSignals(html, 'https://example.com/')
+  // ruffingautomotive.com: the only ask is a tel: button "Call to Schedule"; a bare number is not one.
+  assert.equal(read(`<a class="wp-block-button__link" href="tel:4125619911">Call to Schedule</a>`).demo, 'Call to Schedule')
+  assert.equal(read(`<a href="tel:4125619911">(412) 561-9911</a>`).demo, null)
+  // lagourmandinebakery.com / aladdinseatery.com: ordering is the ask for a bakery or restaurant.
+  assert.equal(read(`<a class="btn" href="/same-day-pick-up/bread">Order Now!</a>`).demo, 'Order Now!')
+  // The strongest candidate wins, not the first: a repeated hero button beats a footer-style phone line.
+  const two = read(`<header><a href="tel:4127938000">Call Us Today! (412)793-8000</a></header><h1>Plumbing</h1>
+    <a class="btn" href="/schedule">Schedule Service</a><a class="btn" href="/schedule">Schedule Service</a>`)
+  assert.equal(two.demo, 'Schedule Service')
+  // Unseen wording: an action word on a hero button, twice, is a guess (unclear), never a pass.
+  const g = read(`<h1>Loans made simple</h1><a class="btn btn-primary" href="/apply">Apply now</a><a class="btn" href="/apply">Apply now</a>`)
+  assert.equal(g.demo, null)
+  assert.deepEqual(g.unclear, ['ask'])
+  assert.equal(g.askGuess, 'Apply now')
+  // Contact words and plain links are never a guess.
+  const c = read(`<h1>Photos</h1><a class="btn" href="/contact">Get In Touch</a><a class="btn" href="/schedule">Class Schedule</a><a class="btn" href="/schedule">Class Schedule</a>`)
+  assert.equal(c.askGuess, null)
+  assert.deepEqual(c.unclear, [])
+})
+
+/* Engine round 3 (research #8): weighted site type, with unclear when neither side wins. */
+test('site type: shop code or a cart icon is a theme, not a store', () => {
+  const read = (html: string) => readB2bSignals(html, 'https://example.com/')
+  // group8a.com: an agency on Shopify (theme code, a cart notice) with a "Let's Talk" ask.
+  const agency = read(`<script src="https://cdn.shopify.com/x.js"></script><div id="cart-notification" aria-label="Item added to your cart">Add to cart</div>
+    <a href="/cart">Cart</a><h1>Growth agency</h1><a href="/contact">Let's Talk</a>`)
+  assert.equal(agency.siteType, 'service')
+  assert.deepEqual(agency.unclear, [])
+  // A florist: prices, a shop link, a cart and no booking ask is a store.
+  const prices = '<p>$45.00</p><p>$60.00</p><p>$85.00</p>'
+  const store = read(`<a href="/cart" class="header-cart">Cart</a><a href="/shop">Shop</a><h1>Fresh flowers</h1>${prices}`)
+  assert.equal(store.siteType, 'ecommerce')
+  // monexglobal.com: product schema and a shop link, but a booking ask too: unclear, leaning store.
+  const mixed = read(`<script type="application/ld+json">{"@type":"Product","name":"FX"}</script><a href="/products/fx">Products</a>
+    <h1>Global payments</h1><a href="/contact">Talk to a Specialist</a>`)
+  assert.equal(mixed.siteType, 'service')
+  assert.deepEqual(mixed.unclear, ['siteType'])
+  assert.equal(mixed.typeGuess, 'ecommerce')
+})
+
+test('ask + site type stay fast on unclosed tags', () => {
+  const start = performance.now()
+  for (const bad of ['<button ', '<button>', '<div role=button ', '<div role=button>', '<input type=submit ']) readB2bSignals(bad.repeat(20000), 'https://example.com/')
+  assert.ok(performance.now() - start < 2000, `took ${Math.round(performance.now() - start)} ms`)
+})

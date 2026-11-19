@@ -40,8 +40,16 @@ export interface B2bSignals {
   shop: string | null
   /** What kind of site this reads as; service unless 2+ store or software signals say otherwise. */
   siteType: SiteType
-  /** Why, in plain words ("Built on Shopify", "Prices on the page"); empty for service. */
+  /** Why, in plain words ("Built on Shopify", "Prices on the page"); empty for service. When
+   *  siteType is unclear, the store or software signals found (siteType stays service). */
   typeSignals: string[]
+  /** Reads the engine could not settle (2026-11-19): 'ask' = only weak hints of a direct ask
+   *  (see askGuess), 'siteType' = some store / software signals but not enough (see typeGuess). */
+  unclear: ('ask' | 'siteType')[]
+  /** With unclear 'ask': the best guess's words ("Apply now"); null otherwise. */
+  askGuess: string | null
+  /** With unclear 'siteType': the type the signals lean to; null otherwise. */
+  typeGuess: Exclude<SiteType, 'service'> | null
 }
 
 export type SiteType = 'service' | 'ecommerce' | 'saas'
@@ -56,8 +64,10 @@ const DEMO_WORDS_RE =
 // A service or local business's ask (2026-10-16: SGM's own "Tell us about your project" scored as a plain contact
 // link while "Start a project" to the same page scored as a direct ask). Estimates, appointments, call-backs and
 // "Call now" (a tel: link with call words; a bare phone number stays a contact detail, not an ask).
+// "Order now" / "Order online" / "Place a special order" (2026-11-19, engine round 3): ordering is
+// buying, for a bakery or a restaurant too, not only a store (a store's shop ask is read apart).
 const SERVICE_ASK_RE =
-  /\b(?:tell us about your (?:project|business|needs|goals)|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:[a-z-]+ )?(?:estimate|quote|consultation|review|audit|assessment|evaluation|analysis)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
+  /\b(?:tell us about your (?:project|business|needs|goals)|order (?:now|online|today|ahead)|place (?:an? |your )?(?:special |custom )?order|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:[a-z-]+ )?(?:estimate|quote|consultation|review|audit|assessment|evaluation|analysis)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
 // Broad ask words (2026-11-18, Chris: "look for certain words broadly rather than exact phrasing"): a short
 // button that starts with an action and names something on offer counts, however it's worded ("Claim my
 // free post", "Book your strategy session", "Plan your project"). Lead magnets and shop perks stay out.
@@ -235,40 +245,68 @@ export function readFirstScreen(html: string): FirstScreen {
   }
 }
 
-/* ── Site type: rules on the homepage's code, never AI. Two signals or more decide it; with
- * fewer it stays service (the check's B2B default). SGM lets the visitor change it. */
+/* ── Site type: rules on the homepage's code, never AI. SGM lets the visitor change it.
+ * Weighted signals (2026-11-19, research #8, after Wappalyzer's implies / excludes / requires):
+ * a store REQUIRES one strong signal of selling on the page (product schema, prices, a real
+ * add-to-cart button), weak ones add up (a platform, a cart link or icon, a shop link), and a
+ * service business's own ask anywhere on the page (book, quote, consultation) counts AGAINST it:
+ * store points minus 2 must reach 4. Shop code or a cart
+ * icon alone is a theme, not a store (group8a.com: an agency on Shopify; black13tattoo.com: a
+ * merch cart). Too little to decide = unclear: siteType stays service, typeGuess says the lean.
+ * Software keeps its old rule (2+ signals): no software site is labelled yet to tune it on. */
+const STORE_STRONG = 3
+const STORE_WIN = 4
+const SERVICE_ASK_WEIGHT = 2
+// The asks a store or an app makes too; any other direct ask is a service business's.
+const NOT_SERVICE_ASK_RE = /\b(?:demo|trial|sign ?up|free plan|start (?:for )?free|try (?:it |us )?(?:for )?free|get started|shop|buy|order|cart)\b/i
+
 function siteTypeOf(
   html: string,
-  f: { cart: boolean; addToCart: boolean; login: boolean; signup: boolean; appLink: boolean; pricing: boolean },
-): { siteType: SiteType; typeSignals: string[] } {
-  const store: string[] = []
+  f: { cart: boolean; addToCart: boolean; login: boolean; signup: boolean; appLink: boolean; pricing: boolean; shop: boolean; serviceAsk: boolean },
+): { siteType: SiteType; typeSignals: string[]; typeGuess: Exclude<SiteType, 'service'> | null } {
+  const store: [string, number][] = []
   const soft: string[] = []
-  if (/"@type"\s*:\s*"(?:Product|ProductGroup|Offer|AggregateOffer)"/.test(html)) store.push('Product details in the code (schema.org Product)')
+  if (/"@type"\s*:\s*"(?:Product|ProductGroup|Offer|AggregateOffer)"/.test(html)) store.push(['Product details in the code (schema.org Product)', STORE_STRONG])
   // Named platforms, as a bonus label when we recognize one — never the only way in.
   // There will always be another cart system we haven't named (Squarespace Commerce,
   // Wix, Big Cartel, Faire, Gumroad, Square, Ecwid, a custom build...), so the signals
   // below this read what the PAGE DOES (a cart control, a product grid, prices),
   // not which platform built it (Chris, 2026-10-16: platform-only detection is too narrow).
-  if (/cdn\.shopify\.com|Shopify\.theme|\.myshopify\.com/i.test(html)) store.push('Built on Shopify')
-  else if (/\bwoocommerce\b/i.test(html)) store.push('Built on WooCommerce')
-  else if (/cdn\d*\.bigcommerce\.com/i.test(html)) store.push('Built on BigCommerce')
-  else if (/etsystatic\.com|Etsy\.Context|\bEtsyApp\b/i.test(html)) store.push('Built on Etsy')
-  if (f.cart) store.push('A cart or checkout link')
+  if (/cdn\.shopify\.com|Shopify\.theme|\.myshopify\.com/i.test(html)) store.push(['Built on Shopify', 1])
+  else if (/\bwoocommerce\b/i.test(html)) store.push(['Built on WooCommerce', 1])
+  else if (/cdn\d*\.bigcommerce\.com/i.test(html)) store.push(['Built on BigCommerce', 1])
+  else if (/etsystatic\.com|Etsy\.Context|\bEtsyApp\b/i.test(html)) store.push(['Built on Etsy', 1])
+  if (f.cart) store.push(['A cart or checkout link', 1])
   // A cart/checkout/bag CONTROL by its class, id or data-attribute — platform-agnostic,
   // so a JS-triggered cart (href="#", no real /cart URL — e.g. Etsy's "cart-trigger") still
   // counts. Scoped to attribute values, not free text, to skip "cartoon"-style false hits.
   const hasCartControl = /\b(?:class|id|data-module|data-action|data-testid|aria-label)\s*=\s*["'][^"']*\b(?:cart|checkout|mini-cart|shopping-bag|basket)\b[^"']*["']/i.test(html)
-  if (hasCartControl) store.push('A cart or checkout control')
-  if (f.addToCart || /\badd[-_ ]to[-_ ](?:cart|bag|basket)\b|action\s*=\s*["'][^"']*\/cart\/add/i.test(html)) store.push('Add-to-cart buttons')
+  if (hasCartControl) store.push(['A cart or checkout control', 1])
+  // A real add-to-cart button (link words, a button, or a cart form) is strong; the words only in the
+  // theme's code ("Item added to your cart" notices, script strings) are weak.
+  if (f.addToCart || /<button\b[^<>]*>\s*(?:<[^<>]+>\s*){0,3}add to (?:cart|bag|basket)\b|action\s*=\s*["'][^"']*\/cart\/add/i.test(html)) store.push(['Add-to-cart buttons', STORE_STRONG])
+  else if (/\badd[-_ ]to[-_ ](?:cart|bag|basket)\b/i.test(html)) store.push(['Add-to-cart code', 1])
   const text = extractText(html)
-  if ((text.match(/(?:[$£€]\s?\d{1,5}[.,]\d{2}|\d{1,5}[.,]\d{2}\s?(?:USD|EUR|GBP|€))(?!\d)/g) ?? []).length >= 3) store.push('Prices on the page')
+  if ((text.match(/(?:[$£€]\s?\d{1,5}[.,]\d{2}|\d{1,5}[.,]\d{2}\s?(?:USD|EUR|GBP|€))(?!\d)/g) ?? []).length >= 3) store.push(['Prices on the page', STORE_STRONG])
+  if (f.shop) store.push(['A shop link', 1])
   if (/"@type"\s*:\s*"(?:SoftwareApplication|WebApplication|MobileApplication)"/.test(html)) soft.push('App details in the code (schema.org SoftwareApplication)')
   if (f.login && f.signup) soft.push('Log in and sign-up links')
   if (f.appLink) soft.push('Links to the app')
   if (f.pricing && /\b(?:per (?:month|user|seat)|\/\s?(?:mo|month|user)\b|billed (?:monthly|annually|yearly))/i.test(text)) soft.push('Monthly plans')
-  if (store.length >= 2 && store.length >= soft.length) return { siteType: 'ecommerce', typeSignals: store }
-  if (soft.length >= 2) return { siteType: 'saas', typeSignals: soft }
-  return { siteType: 'service', typeSignals: [] }
+
+  const storeScore = store.reduce((t, [, w]) => t + w, 0)
+  const strong = store.some(([, w]) => w >= STORE_STRONG)
+  const serviceScore = f.serviceAsk ? SERVICE_ASK_WEIGHT : 0
+  const storeSignals = store.map(([s]) => s)
+  // The win is net of the service ask: 4 store points and a booking ask is not enough (monexglobal.com).
+  const storeWins = strong && storeScore - serviceScore >= STORE_WIN
+  // Software: 2+ signals, as before; a store that wins and has more signals stays a store.
+  if (storeWins && store.length >= soft.length) return { siteType: 'ecommerce', typeSignals: storeSignals, typeGuess: null }
+  if (soft.length >= 2) return { siteType: 'saas', typeSignals: soft, typeGuess: null }
+  if (storeWins) return { siteType: 'ecommerce', typeSignals: storeSignals, typeGuess: null }
+  // Something store-like but not enough: a strong signal that lost on points, or many weak ones and no service ask.
+  if (storeScore >= STORE_WIN && (strong || !serviceScore)) return { siteType: 'service', typeSignals: storeSignals, typeGuess: 'ecommerce' }
+  return { siteType: 'service', typeSignals: [], typeGuess: null }
 }
 
 /** How far before a form its heading ("Get your free quote") is looked for. */
@@ -303,10 +341,104 @@ function readLeadFormAsk(html: string): string | null {
   return null
 }
 
+/* ── The ask: score every candidate (2026-11-19, research #4) ─────────────
+ * Every link, <button>, role="button" and submit input is a candidate, not
+ * first match wins. Points:
+ *   ask words (DEMO_WORDS_RE, SERVICE_ASK_RE, broadAsk) ............. 3, strong
+ *   a demo / sign-up page or a meeting host (Calendly…) .............. 3, strong
+ *   a tel: link with booking words ("Call to Schedule") .............. 3, strong
+ *   starts with an action word, short ("Apply now", "Join today") .... 1
+ *   goes to a booking-like page (/book, /quote, /appointment…) ....... 1
+ *   looks like a button by class or id (btn, button, cta, primary) .. 1
+ *   in the header or first screen (by source order, no pixels) ...... 1
+ *   the same words twice or more on the page ......................... 1
+ * Lead magnets, shop perks, log in and "Learn more" never count. The best
+ * strong candidate is the ask (most points, then first on the page). With no
+ * strong one, an action word plus weak points of 3+ make the ask UNCLEAR
+ * (askGuess): a guess is never a pass. Contact words stay the contact link. The lead form's ask stays the fallback. */
+const ASK_STRONG = 3
+const ASK_UNCLEAR = 3
+const ASK_PATH_RE = /\/(?:[\w-]*-)?(?:book(?:ing)?|schedule|appointments?|quote|estimate|consult(?:ation)?|get-started|start-a-project|request(?:-[\w-]+)?)(?:[\/.?#-]|$)/i
+const BUTTONISH_RE = /\b(?:class|id)\s*=\s*["']?[^"'>]*\b(?:btn|button|cta|primary)\b/i
+const TEL_BOOK_RE = /\b(?:schedule|book|appointment|estimate|quote|consult(?:ation)?)\b/i
+const NOT_A_BUTTON_RE = /^(?:(?:learn|read|see|view|find out|discover|explore) more|more|menu|close|open|submit|send|search|next|previous|back)\b/i
+/** How far past the headline the first screen reaches, for placing a candidate. */
+const ASK_FIRST_SCREEN = 3_000
+
+interface AskPick { ask: string | null; guess: string | null; serviceAsk: boolean }
+
+function bestAsk(html: string, pageUrl: string, pageHost: string): AskPick {
+  const h1End = html.search(/<\/h1>/i)
+  const headerEnd = html.search(/<\/header>/i)
+  const topEnd = Math.max(h1End, headerEnd) + ASK_FIRST_SCREEN
+  const found: { text: string; at: number; tag: string; href: string | null }[] = []
+  // One forward pass over opening tags ([^<>]* cannot run past the next tag, so broken pages stay
+  // linear); a tag's words run to its closing tag, found with indexOf.
+  const lower = html.toLowerCase()
+  // The next closing tag after a point, per tag name; tags only move forward, so each is searched once.
+  const nextClose = new Map<string, number>()
+  for (const m of html.matchAll(/<(a|button|input|[a-z][a-z0-9]*)\b([^<>]*)>/gi)) {
+    const name = m[1].toLowerCase()
+    const attrs = m[2]
+    const end = m.index! + m[0].length
+    const until = (close: string, max: number) => {
+      let i = nextClose.get(close)
+      if (i === undefined || (i >= 0 && i < end)) nextClose.set(close, (i = lower.indexOf(close, end)))
+      return i < 0 || i - end > max ? null : html.slice(end, i)
+    }
+    if (name === 'a') {
+      const href = attrs.match(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i)
+      const inner = href ? until('</a>', 4_000) : null
+      if (href && inner !== null) found.push({ text: words(inner), at: m.index!, tag: m[0], href: (href[1] ?? href[2] ?? href[3]).replace(/&amp;/g, '&').trim() })
+    } else if (name === 'input') {
+      const v = /\btype\s*=\s*["']?submit\b/i.test(attrs) && attrs.match(/\bvalue\s*=\s*(?:"([^"]*)"|'([^']*)')/i)
+      if (v) found.push({ text: words(v[1] ?? v[2]), at: m.index!, tag: m[0], href: null })
+    } else if (name === 'button' || /\brole\s*=\s*["']?button\b/i.test(attrs)) {
+      const inner = until(name === 'button' ? '</button>' : `</${name}>`, 400)
+      if (inner !== null) found.push({ text: words(inner), at: m.index!, tag: m[0], href: null })
+    }
+  }
+  const count = new Map<string, number>()
+  for (const c of found) if (c.text) count.set(c.text.toLowerCase(), (count.get(c.text.toLowerCase()) ?? 0) + 1)
+
+  let best: { text: string; score: number; at: number } | null = null
+  let guess: { text: string; score: number; at: number } | null = null
+  let serviceAsk = false
+  for (const c of found) {
+    const t = c.text
+    if (t.length > 60) continue
+    const tel = !!c.href && /^\s*tel:/i.test(c.href)
+    const at = c.href && !tel ? pathAndHost(c.href, pageUrl) : null
+    const own = !!at && (at.host === pageHost || at.host.endsWith(`.${pageHost}`))
+    let strong = false
+    if (tel) strong = SERVICE_ASK_RE.test(t) || TEL_BOOK_RE.test(t.replace(/[\d()+.\s-]{7,}/g, ' '))
+    else {
+      if (t && (DEMO_WORDS_RE.test(t) || SERVICE_ASK_RE.test(t) || broadAsk(t))) strong = true
+      if (at && ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host))) strong = true
+    }
+    if (!strong && (!t || NOT_AN_ASK_RE.test(t) || NOT_A_BUTTON_RE.test(t) || LOGIN_WORDS_RE.test(t) || SHOP_WORDS_RE.test(t) || CONTACT_WORDS_RE.test(t) || tel)) continue
+    const action = !!t && ASK_VERB_RE.test(t) && t.split(/\s+/).length <= 5
+    // A guess needs an action word: button looks, place and repeats alone are any link ("Class Schedule").
+    if (!strong && !action) continue
+    if (strong && t && !NOT_SERVICE_ASK_RE.test(t)) serviceAsk = true
+    let score = strong ? ASK_STRONG : 0
+    if (action) score++
+    if (own && at && ASK_PATH_RE.test(at.path)) score++
+    if (BUTTONISH_RE.test(c.tag)) score++
+    if (c.at <= topEnd) score++
+    if ((count.get(t.toLowerCase()) ?? 0) >= 2) score++
+    const pick = { text: t || 'Demo link', score, at: c.at }
+    if (strong) {
+      if (!best || score > best.score) best = pick
+    } else if (score >= ASK_UNCLEAR && (!guess || score > guess.score)) guess = pick
+  }
+  return { ask: best?.text ?? null, guess: best ? null : guess?.text ?? null, serviceAsk }
+}
+
 export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const pageHost = pathAndHost(pageUrl, pageUrl)?.host ?? ''
   let pricing: string | null = null
-  let demo: string | null = null
+  let demo: string | null
   let contact: string | null = null
   let caseStudies: string | null = null
   let shop: string | null = null
@@ -314,11 +446,6 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   const reviewSites = new Set<string>()
 
   for (const a of anchors(html)) {
-    // "Call now" is a real next step for a service business; pathAndHost drops tel: links, so read them first.
-    if (!demo && /^\s*tel:/i.test(a.href)) {
-      const t = words(a.inner)
-      if (t.length <= 60 && SERVICE_ASK_RE.test(t)) demo = t
-    }
     const at = pathAndHost(a.href, pageUrl)
     if (!at) continue
     const text = words(a.inner)
@@ -331,10 +458,6 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     if (!pricing && own && goesSomewhere && (PRICING_PATH_RE.test(at.path) || PRICING_WORDS_RE.test(text))) pricing = at.url
     if (!caseStudies && own && goesSomewhere && (CASE_PATH_RE.test(at.path) || CASE_WORDS_RE.test(text))) caseStudies = at.url
     if (!contact && own && goesSomewhere && (CONTACT_PATH_RE.test(at.path) || CONTACT_WORDS_RE.test(text))) contact = at.url
-    if (!demo) {
-      if (text.length <= 60 && (DEMO_WORDS_RE.test(text) || SERVICE_ASK_RE.test(text) || broadAsk(text))) demo = text
-      else if ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host)) demo = text || 'Demo link'
-    }
     if (!shop && text && text.length <= 40 && (SHOP_WORDS_RE.test(text) || (own && goesSomewhere && SHOP_PATH_RE.test(at.path)))) shop = text
     if (own && CART_PATH_RE.test(at.path)) seen.cart = true
     if (/^add to (?:cart|bag|basket)$/i.test(text)) seen.addToCart = true
@@ -350,10 +473,14 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     for (const [re, name] of REVIEW_SITES) if (re.test(at.host)) reviewSites.add(name)
   }
 
+  const pick = bestAsk(html, pageUrl, pageHost)
+  demo = pick.ask
   // A lead form is a next step too (2026-10-19: sbmarketinginc.com's "Contact us today for a free marketing
   // review!" sat above its form, not in a link). Only a form with ask words counts.
   if (!demo) demo = readLeadFormAsk(html)
+  const askGuess = demo ? null : pick.guess
 
-  const type = siteTypeOf(html, { ...seen, pricing: !!pricing })
-  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type }
+  const type = siteTypeOf(html, { ...seen, pricing: !!pricing, shop: !!shop, serviceAsk: pick.serviceAsk || (!!demo && !NOT_SERVICE_ASK_RE.test(demo)) })
+  const unclear: B2bSignals['unclear'] = [...(askGuess ? (['ask'] as const) : []), ...(type.typeGuess ? (['siteType'] as const) : [])]
+  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type, unclear, askGuess }
 }

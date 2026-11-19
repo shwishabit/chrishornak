@@ -148,20 +148,20 @@
     "uncNo": 0
    },
    "ask": {
-    "tp": 44,
+    "tp": 48,
     "fp": 0,
-    "fn": 6,
+    "fn": 2,
     "tn": 8,
     "uncYes": 0,
     "uncNo": 0
    },
    "siteType": {
     "tp": 3,
-    "fp": 3,
+    "fp": 0,
     "fn": 0,
-    "tn": 52,
+    "tn": 54,
     "uncYes": 0,
-    "uncNo": 0
+    "uncNo": 1
    }
   },
   "heldout": {
@@ -319,11 +319,11 @@
    },
    "siteType": {
     "tp": 1,
-    "fp": 4,
+    "fp": 0,
     "fn": 0,
-    "tn": 16,
+    "tn": 18,
     "uncYes": 0,
-    "uncNo": 0
+    "uncNo": 2
    }
   }
  },
@@ -389,7 +389,7 @@
    ],
    "unclear": [],
    "trade": "Agency",
-   "ask": "Talk with a strategist today",
+   "ask": "Get My Free Strategic Audit",
    "siteType": "service"
   },
   "disruptiveadvertising.com": {
@@ -518,7 +518,7 @@
    "unclear": [],
    "trade": "Agency",
    "ask": "Let's Talk",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "hawkemedia.com": {
    "yes": [
@@ -539,7 +539,7 @@
    ],
    "unclear": [],
    "trade": "Agency",
-   "ask": "Free Consultation",
+   "ask": "Let's Talk",
    "siteType": "service"
   },
   "ignitevisibility.com": {
@@ -589,6 +589,7 @@
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "track",
@@ -596,7 +597,7 @@
    ],
    "unclear": [],
    "trade": "Bakery",
-   "ask": null,
+   "ask": "Order Now!",
    "siteType": "service"
   },
   "lebovitzlaw.com": {
@@ -815,6 +816,7 @@
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -826,7 +828,7 @@
    ],
    "unclear": [],
    "trade": "Auto Repair",
-   "ask": null,
+   "ask": "Call to Schedule",
    "siteType": "service"
   },
   "schultheisbros.com": {
@@ -850,7 +852,7 @@
    ],
    "unclear": [],
    "trade": "Roofing",
-   "ask": "Call Us Today! (412)793-8000",
+   "ask": "Schedule Service",
    "siteType": "service"
   },
   "seerinteractive.com": {
@@ -912,7 +914,7 @@
    ],
    "unclear": [],
    "trade": "Agency",
-   "ask": "Book Reviews",
+   "ask": "Talk to an Expert",
    "siteType": "service"
   },
   "smartsites.com": {
@@ -958,7 +960,7 @@
    "unclear": [],
    "trade": "hair salon",
    "ask": "Book Now",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "swiftgrowth.marketing": {
    "yes": [
@@ -1018,7 +1020,7 @@
    ],
    "unclear": [],
    "trade": "Agency",
-   "ask": "SPEAK WITH AN INTERNET MARKETING CONSULTANT",
+   "ask": "GET FREE PROPOSAL",
    "siteType": "service"
   },
   "tjdentalpa.com": {
@@ -1078,7 +1080,7 @@
    ],
    "unclear": [],
    "trade": "Plumbing",
-   "ask": "Call now",
+   "ask": "Schedule Service Book",
    "siteType": "service"
   },
   "webfx.com": {
@@ -1152,10 +1154,12 @@
     "updated",
     "work"
    ],
-   "unclear": [],
+   "unclear": [
+    "siteType"
+   ],
    "trade": "Roofing",
    "ask": "Request A quote",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "peakroofingidaho.com": {
    "yes": [
@@ -1196,7 +1200,7 @@
    ],
    "unclear": [],
    "trade": "Veterinary",
-   "ask": "Request an Appointment",
+   "ask": "Request Appointment",
    "siteType": "service"
   },
   "farwestvet.com": {
@@ -1231,7 +1235,7 @@
    ],
    "unclear": [],
    "trade": "veterinary care",
-   "ask": "Call Us 512-291-1600",
+   "ask": "Request Appointment",
    "siteType": "service"
   },
   "center4chiropractic.com": {
@@ -1355,7 +1359,7 @@
    ],
    "unclear": [],
    "trade": "Pest Control",
-   "ask": "Call Us Now! 813-982-1922",
+   "ask": "Get A Free Quote",
    "siteType": "service"
   },
   "tri-spestcontrol.com": {
@@ -1446,7 +1450,7 @@
    "unclear": [],
    "trade": "Tattoo",
    "ask": "BOOK NOW",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "bigriveryoga.com": {
    "yes": [
@@ -1465,7 +1469,7 @@
    "unclear": [],
    "trade": "Yoga",
    "ask": "Book Now",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "nokomisyoga.com": {
    "yes": [
@@ -1527,7 +1531,9 @@
     "track",
     "trade"
    ],
-   "unclear": [],
+   "unclear": [
+    "ask"
+   ],
    "trade": "Florist",
    "ask": "Shop",
    "siteType": "ecommerce"
@@ -1546,7 +1552,9 @@
     "track",
     "trade"
    ],
-   "unclear": [],
+   "unclear": [
+    "ask"
+   ],
    "trade": "Florist",
    "ask": "Shop",
    "siteType": "ecommerce"
@@ -1570,10 +1578,12 @@
     "updated",
     "work"
    ],
-   "unclear": [],
+   "unclear": [
+    "siteType"
+   ],
    "trade": "Landscaping",
    "ask": "SCHEDULE A CALL",
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "hardisonlandscaping.com": {
    "yes": [
@@ -1681,7 +1691,7 @@
    "unclear": [],
    "trade": null,
    "ask": null,
-   "siteType": "ecommerce"
+   "siteType": "service"
   },
   "confluencefp.com": {
    "yes": [
@@ -1706,6 +1716,7 @@
   "jeffhancher.com": {
    "yes": [
     "about",
+    "ask",
     "focus",
     "https",
     "name",
@@ -1719,7 +1730,7 @@
     "trade"
    ],
    "trade": "Firm",
-   "ask": null,
+   "ask": "Order Now!",
    "siteType": "service"
   },
   "millersace.com": {
@@ -1762,6 +1773,7 @@
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "track",
@@ -1771,7 +1783,7 @@
     "trade"
    ],
    "trade": "Catering",
-   "ask": null,
+   "ask": "Order Now",
    "siteType": "service"
   },
   "bareskin-laser.com": {
@@ -1792,8 +1804,8 @@
    ],
    "unclear": [],
    "trade": "Practice",
-   "ask": "Let’s Talk",
-   "siteType": "ecommerce"
+   "ask": "BOOK TODAY",
+   "siteType": "service"
   },
   "bergerchiropracticwellness.com": {
    "yes": [
@@ -1853,7 +1865,7 @@
    ],
    "unclear": [],
    "trade": "Gym",
-   "ask": "Get Started",
+   "ask": "Get started",
    "siteType": "service"
   },
   "capstonequalityservices.com": {
@@ -1872,7 +1884,7 @@
    ],
    "unclear": [],
    "trade": "Contractor",
-   "ask": "Call us Today",
+   "ask": "Request Consultation",
    "siteType": "service"
   },
   "monexglobal.com": {
@@ -1893,9 +1905,11 @@
     "updated",
     "work"
    ],
-   "unclear": [],
+   "unclear": [
+    "siteType"
+   ],
    "trade": "financial service",
-   "ask": "Talk to a Specialist Get expert FX guidance from our team",
+   "ask": "Get Started",
    "siteType": "service"
   }
  }
