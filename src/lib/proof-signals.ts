@@ -377,7 +377,69 @@ const SERVICE_AREA_RE =
 // it names no kind of business (cts-pgh.com passed on "our company"), unless a trade comes first
 // ("marketing company", "IT services").
 const BUSINESS_TYPE_RE =
-  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming)\b/i
+  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|blog(?:ging)? (?:writing|writers?|services?)|blog posts?|content (?:writing|writers?|marketing|agenc(?:y|ies)|studios?)|copywrit(?:ing|ers?)|ghostwrit(?:ing|ers?)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto (?:repair|body|shops?|service|glass|detailing|dealers?|dealerships?|parts|mechanics?|insurance|care)|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming)\b/i
+
+/* ── What the business does (Says what you do) ──────────────────────────
+ * Up-front text first (page title, description, main headline), then the word
+ * the page repeats most, not the first one it happens to contain. Words glued
+ * into a compound don't count: bloghands.com read "auto" from "let
+ * auto-approve handle it" and "set it to auto" (2026-11-18).
+ * ─────────────────────────────────────────────────────────────────────── */
+const TRADE_SPOTS: [RegExp, string][] = [
+  [/<title[^>]*>([\s\S]*?)<\/title>/i, 'your page title'],
+  [/<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i, 'your page description'],
+  [/<meta\b[^>]*\bcontent=["']([^"']*)["'][^>]*\bname=["']description["']/i, 'your page description'],
+  [/<h1\b[^>]*>([\s\S]*?)<\/h1>/i, 'your headline'],
+]
+function tradeHits(text: string): RegExpMatchArray[] {
+  return [...text.matchAll(new RegExp(BUSINESS_TYPE_RE.source, 'gi'))].filter((m) => {
+    const before = text[m.index! - 1] ?? ''
+    const after = text.slice(m.index! + m[0].length, m.index! + m[0].length + 2)
+    return !/[-‑]/.test(before) && !/^[-‑]\w/.test(after)
+  })
+}
+// Industries the word list doesn't know (Chris 2026-11-18: "term + service(s)"): a few words, then a word
+// that names a kind of business ("Metal Stamping Services", "Payroll Software", "Drone Inspection
+// Company"). Up-front text only: in the body, "our services" is noise. Filler in front is dropped.
+const GENERIC_TRADE_RE =
+  /\b((?:[A-Za-z][A-Za-z&’'-]* ){0,3}[A-Za-z][A-Za-z&’'-]*) (services?|firms?|agenc(?:y|ies)|studios?|consult(?:ing|ants?)|contractors?|specialists?|clinics?|shops?|software|platform)\b/i
+// Not "Solutions" or "Company": they end many business names ("Computec Technical Solutions" passed on its own name).
+const TRADE_FILLER = /^(?:our|your|the|a|an|and|&|for|with|of|in|best|top|top-rated|rated|professional|quality|local|trusted|expert|premier|full|full-service|leading|affordable|reliable|custom|complete|certified|licensed|award-winning|small|business|welcome|to|home|about|contact)$/i
+function genericTrade(text: string): string | null {
+  const m = GENERIC_TRADE_RE.exec(text)
+  if (!m) return null
+  let words = m[1].split(' ')
+  // "Event Lighting Rentals and Staging Solutions": the trade is what comes after the last "and".
+  const join = words.map((w) => /^(?:and|&|or)$/i.test(w)).lastIndexOf(true)
+  if (join >= 0) words = words.slice(join + 1)
+  while (words.length && TRADE_FILLER.test(words[0])) words.shift()
+  return words.length ? `${words.slice(-2).join(' ')} ${m[2]}`.toLowerCase() : null
+}
+
+export function findTrade(html: string, pageText: string): { word: string; where: string | null; index: number } | null {
+  const spots = TRADE_SPOTS.map(([re, where]) => [re.exec(html)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ') ?? '', where] as const).filter(([t]) => t)
+  for (const [text, where] of spots) {
+    const hit = tradeHits(text)[0]
+    if (hit) return { word: hit[0], where, index: pageText.toLowerCase().indexOf(hit[0].toLowerCase()) }
+  }
+  for (const [text, where] of spots) {
+    const word = genericTrade(text)
+    if (word) return { word, where, index: pageText.toLowerCase().indexOf(word) }
+  }
+  const hits = tradeHits(pageText)
+  if (!hits.length) return null
+  const count = new Map<string, number>()
+  for (const h of hits) count.set(h[0].toLowerCase(), (count.get(h[0].toLowerCase()) ?? 0) + 1)
+  const n = (m: RegExpMatchArray) => count.get(m[0].toLowerCase()) ?? 0
+  const best = hits.reduce((a, b) => (n(b) > n(a) ? b : a))
+  return { word: best[0], where: null, index: best.index! }
+}
+function tradeEvidence(html: string, pageText: string): string | undefined {
+  const t = findTrade(html, pageText)
+  if (!t) return undefined
+  const near = t.index >= 0 ? `: ${around(pageText, t.index, t.word.length)}` : ''
+  return `Found “${t.word}”${t.where ? ` in ${t.where}` : ''}${near}`
+}
 
 /* ── Real people: a named person who works there ──────────────────────────
  * Until 2026-10-02 any "About us", "our team" or "partner" passed, so 20 of
@@ -576,7 +638,7 @@ export function readProofSignals(
   const hasAddressInfo = hasReachInfo(html, pageText)
   const hasServiceArea = SERVICE_AREA_RE.test(pageText)
   const hasOneName = readNames(html, pageText, jsonLdBlocks, pageUrl)?.agree ?? false
-  const hasBusinessType = BUSINESS_TYPE_RE.test(pageText)
+  const hasBusinessType = findTrade(html, pageText) !== null
 
   return {
     hasAboutLink,
@@ -664,7 +726,7 @@ export function readProofEvidence(
   out.hasServiceArea = inText(SERVICE_AREA_RE, pageText)
   const named = readNames(html, pageText, jsonLdBlocks, pageUrl)
   if (named?.agree) out.hasOneName = `Same name in the ${named.names.map((n) => n.where).join(', ')}: “${named.names[0].name.slice(0, 50)}”`
-  out.hasBusinessType = inText(BUSINESS_TYPE_RE, pageText)
+  out.hasBusinessType = tradeEvidence(html, pageText)
 
   for (const k of Object.keys(out) as (keyof ProofSignals)[]) if (!out[k]) delete out[k]
   return out

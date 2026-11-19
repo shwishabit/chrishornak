@@ -58,6 +58,15 @@ const DEMO_WORDS_RE =
 // "Call now" (a tel: link with call words; a bare phone number stays a contact detail, not an ask).
 const SERVICE_ASK_RE =
   /\b(?:tell us about your (?:project|business|needs|goals)|(?:get|request) (?:a |your |an )?(?:free )?(?:quote|estimate|proposal|consultation|call ?back|call|appointment|assessment|inspection)|free (?:[a-z-]+ )?(?:estimate|quote|consultation|review|audit|assessment|evaluation|analysis)|(?:book|schedule|request|make) (?:an |your )?(?:appointment|visit|service|inspection)|book (?:now|online|today)|schedule (?:now|online|today)|call (?:now|us(?: now| today)?|today))\b/i
+// Broad ask words (2026-11-18, Chris: "look for certain words broadly rather than exact phrasing"): a short
+// button that starts with an action and names something on offer counts, however it's worded ("Claim my
+// free post", "Book your strategy session", "Plan your project"). Lead magnets and shop perks stay out.
+const ASK_VERB_RE = /^(?:let(?:'|’)?s |please )?(?:book|schedule|request|get|claim|grab|start|try|apply|reserve|enrol{1,2}|hire|plan|arrange|unlock)\b/i
+const ASK_OFFER_RE = /\b(?:free|calls?|demos?|quotes?|consult(?:ation)?s?|proposals?|estimates?|trials?|samples?|audits?|assessments?|reviews?|appointments?|meetings?|sessions?|projects?|posts?|tours?|walkthroughs?|strateg(?:y|ies)|started|pricing|spots?|seats?)\b/i
+const ASK_TALK_RE = /^(?:let(?:'|’)?s (?:talk|chat|connect)|(?:talk|speak|chat) (?:to|with) )/i
+const NOT_AN_ASK_RE = /\b(?:shipping|returns|delivery|guides?|e-?books?|checklists?|templates?|tools?|newsletters?|webinars?|courses?|resources?|apps?|downloads?|directions|updates)\b/i
+export const broadAsk = (t: string): boolean =>
+  t.length <= 50 && t.split(/\s+/).length <= 7 && !NOT_AN_ASK_RE.test(t) && (ASK_TALK_RE.test(t) || (ASK_VERB_RE.test(t) && ASK_OFFER_RE.test(t)))
 const DEMO_PATH_RE = /\/(?:[\w-]*-)?(?:demo|request-demo|book-demo|free-trial|trial|signup|sign-up|contact-sales|talk-to-sales)(?:[\/.?#-]|$)/i
 // "/contact", "/contact-us", "/get-in-touch"; not "/contact-sales" (that is a demo path, above).
 const CONTACT_PATH_RE = /\/(?:contact(?:-us)?|get-in-touch)(?:[\/.?#]|$)/i
@@ -287,7 +296,7 @@ function readLeadFormAsk(html: string): string | null {
       ...[...inner.matchAll(/<(?:input|button)\b[^>]*\bvalue\s*=\s*["']([^"']+)["']/gi)].map((t) => words(t[1])),
     ]
     const ask = [...before, ...within].find(
-      (t) => t && t.length <= FORM_ASK_MAX_CHARS && (DEMO_WORDS_RE.test(t) || SERVICE_ASK_RE.test(t)),
+      (t) => t && t.length <= FORM_ASK_MAX_CHARS && (DEMO_WORDS_RE.test(t) || SERVICE_ASK_RE.test(t) || broadAsk(t)),
     )
     if (ask) return ask
   }
@@ -323,7 +332,7 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
     if (!caseStudies && own && goesSomewhere && (CASE_PATH_RE.test(at.path) || CASE_WORDS_RE.test(text))) caseStudies = at.url
     if (!contact && own && goesSomewhere && (CONTACT_PATH_RE.test(at.path) || CONTACT_WORDS_RE.test(text))) contact = at.url
     if (!demo) {
-      if (text.length <= 60 && (DEMO_WORDS_RE.test(text) || SERVICE_ASK_RE.test(text))) demo = text
+      if (text.length <= 60 && (DEMO_WORDS_RE.test(text) || SERVICE_ASK_RE.test(text) || broadAsk(text))) demo = text
       else if ((own && DEMO_PATH_RE.test(at.path)) || MEETING_HOST_RE.test(at.host)) demo = text || 'Demo link'
     }
     if (!shop && text && text.length <= 40 && (SHOP_WORDS_RE.test(text) || (own && goesSomewhere && SHOP_PATH_RE.test(at.path)))) shop = text
