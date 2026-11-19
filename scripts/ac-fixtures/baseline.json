@@ -1,0 +1,1492 @@
+{
+ "savedAt": "2026-11-18",
+ "note": "ac-fixtures score baseline: per check per split, plus each site’s yeses and trade word. score --gate fails when a check gets more wrong cells than this.",
+ "cells": {
+  "dev": {
+   "work": {
+    "tp": 22,
+    "fp": 2,
+    "fn": 7,
+    "tn": 28
+   },
+   "track": {
+    "tp": 45,
+    "fp": 1,
+    "fn": 1,
+    "tn": 12
+   },
+   "people": {
+    "tp": 28,
+    "fp": 0,
+    "fn": 14,
+    "tn": 18
+   },
+   "credentials": {
+    "tp": 39,
+    "fp": 0,
+    "fn": 6,
+    "tn": 14
+   },
+   "focus": {
+    "tp": 41,
+    "fp": 4,
+    "fn": 4,
+    "tn": 10
+   },
+   "reviewSites": {
+    "tp": 22,
+    "fp": 0,
+    "fn": 1,
+    "tn": 36
+   },
+   "seen": {
+    "tp": 24,
+    "fp": 1,
+    "fn": 2,
+    "tn": 33
+   },
+   "reviews": {
+    "tp": 36,
+    "fp": 1,
+    "fn": 1,
+    "tn": 21
+   },
+   "address": {
+    "tp": 52,
+    "fp": 0,
+    "fn": 0,
+    "tn": 8
+   },
+   "about": {
+    "tp": 49,
+    "fp": 0,
+    "fn": 2,
+    "tn": 8
+   },
+   "https": {
+    "tp": 60,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "updated": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "schema": {
+    "tp": 41,
+    "fp": 0,
+    "fn": 0,
+    "tn": 18
+   },
+   "trade": {
+    "tp": 57,
+    "fp": 0,
+    "fn": 0,
+    "tn": 2
+   },
+   "area": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "name": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "age": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "wikidata": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   }
+  },
+  "heldout": {
+   "work": {
+    "tp": 10,
+    "fp": 0,
+    "fn": 1,
+    "tn": 10
+   },
+   "track": {
+    "tp": 14,
+    "fp": 0,
+    "fn": 1,
+    "tn": 6
+   },
+   "people": {
+    "tp": 14,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7
+   },
+   "credentials": {
+    "tp": 14,
+    "fp": 0,
+    "fn": 1,
+    "tn": 6
+   },
+   "focus": {
+    "tp": 13,
+    "fp": 4,
+    "fn": 0,
+    "tn": 4
+   },
+   "reviewSites": {
+    "tp": 14,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7
+   },
+   "seen": {
+    "tp": 9,
+    "fp": 0,
+    "fn": 1,
+    "tn": 11
+   },
+   "reviews": {
+    "tp": 11,
+    "fp": 0,
+    "fn": 1,
+    "tn": 9
+   },
+   "address": {
+    "tp": 21,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "about": {
+    "tp": 19,
+    "fp": 0,
+    "fn": 0,
+    "tn": 2
+   },
+   "https": {
+    "tp": 21,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "updated": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "schema": {
+    "tp": 17,
+    "fp": 0,
+    "fn": 0,
+    "tn": 4
+   },
+   "trade": {
+    "tp": 21,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "area": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "name": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "age": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   },
+   "wikidata": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+   }
+  }
+ },
+ "sites": {
+  "davesmithauto.net": {
+   "yes": [
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "Auto Repair"
+  },
+  "directiveconsulting.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "directom.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Marketing Services"
+  },
+  "disruptiveadvertising.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "egconley.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "reviews",
+    "trade"
+   ],
+   "trade": "Accounting Firm"
+  },
+  "findoncpa.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Accounting Firm"
+  },
+  "frewplumbing.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "reviews",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "Plumbing"
+  },
+  "gleasonfamilydentistry.com": {
+   "yes": [
+    "address",
+    "area",
+    "credentials",
+    "https",
+    "people",
+    "reviews",
+    "track",
+    "trade"
+   ],
+   "trade": "Dentistry"
+  },
+  "grazemarketing.com": {
+   "yes": [
+    "address",
+    "focus",
+    "https",
+    "name",
+    "reviews",
+    "schema",
+    "seen",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "group8a.com": {
+   "yes": [
+    "about",
+    "https",
+    "name",
+    "people",
+    "schema",
+    "seen",
+    "trade",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "hawkemedia.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "ignitevisibility.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "kabodnar.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Attorney"
+  },
+  "lagourmandinebakery.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "track",
+    "trade"
+   ],
+   "trade": "Bakery"
+  },
+  "lebovitzlaw.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Attorneys"
+  },
+  "lewishairsalon.com": {
+   "yes": [
+    "address",
+    "https",
+    "name",
+    "schema",
+    "trade"
+   ],
+   "trade": "salon"
+  },
+  "nogood.io": {
+   "yes": [
+    "about",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "paperboxseo.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "pghdma.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "Agency"
+  },
+  "powerdigitalmarketing.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "powermarketingcompany.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "https",
+    "reviews",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Marketing Company"
+  },
+  "proudfoot-services.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Plumbing"
+  },
+  "reimaginemainstreet.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "trade",
+    "updated"
+   ],
+   "trade": "design services"
+  },
+  "rootstopetalsstudio.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "trade",
+    "updated"
+   ],
+   "trade": "Florist"
+  },
+  "ruffingautomotive.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "reviews",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Auto Repair"
+  },
+  "schultheisbros.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Roofing"
+  },
+  "seerinteractive.com": {
+   "yes": [
+    "about",
+    "credentials",
+    "focus",
+    "https",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "agency"
+  },
+  "siegemedia.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "singlegrain.com": {
+   "yes": [
+    "about",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "smartsites.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "studioboothsalon.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "https",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Salon"
+  },
+  "swiftgrowth.marketing": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "studio"
+  },
+  "threeriversdent.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "reviews",
+    "track",
+    "trade"
+   ],
+   "trade": "dent removal services"
+  },
+  "thriveagency.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "tjdentalpa.com": {
+   "yes": [
+    "about",
+    "address",
+    "https",
+    "reviewSites",
+    "trade"
+   ],
+   "trade": "Dental"
+  },
+  "victoriousseo.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "wahlheatingandcooling.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "Plumbing"
+  },
+  "webfx.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Agency"
+  },
+  "wildrisebakery.com": {
+   "yes": [
+    "https",
+    "trade"
+   ],
+   "trade": "Bakery"
+  },
+  "mtviewroofing.com": {
+   "yes": [
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Roofing"
+  },
+  "idahoroofingcontractors.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Roofing"
+  },
+  "peakroofingidaho.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Roofing"
+  },
+  "allandalevetclinic.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviewSites",
+    "reviews",
+    "track",
+    "trade"
+   ],
+   "trade": "Veterinary"
+  },
+  "farwestvet.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "people",
+    "track",
+    "trade"
+   ],
+   "trade": "Veterinary"
+  },
+  "staroftexasvet.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviewSites",
+    "schema",
+    "trade",
+    "updated"
+   ],
+   "trade": "Veterinary"
+  },
+  "center4chiropractic.com": {
+   "yes": [
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviews",
+    "track",
+    "trade"
+   ],
+   "trade": "Chiropractic"
+  },
+  "laurelhurstchiropractic.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Chiropractor"
+  },
+  "hartmanoutdoorphotography.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "seen",
+    "track",
+    "trade",
+    "work"
+   ],
+   "trade": "Photography"
+  },
+  "kathybeaverphotography.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Photographer"
+  },
+  "kirstenalexandriaphotography.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Photographer"
+  },
+  "crosspestcontrol.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade"
+   ],
+   "trade": "Pest Control"
+  },
+  "tri-spestcontrol.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Pest Control"
+  },
+  "alleycatpestcontrol.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "focus",
+    "https",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Pest Control"
+  },
+  "qhtattoos.com": {
+   "yes": [
+    "about",
+    "credentials",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Tattoo"
+  },
+  "pilgrimagetattoo.com": {
+   "yes": [
+    "about",
+    "address",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "work"
+   ],
+   "trade": "Tattoo"
+  },
+  "black13tattoo.com": {
+   "yes": [
+    "address",
+    "https",
+    "name",
+    "schema",
+    "trade",
+    "updated"
+   ],
+   "trade": "Tattoo"
+  },
+  "bigriveryoga.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Yoga"
+  },
+  "nokomisyoga.com": {
+   "yes": [
+    "address",
+    "area",
+    "focus",
+    "https",
+    "trade"
+   ],
+   "trade": "Yoga"
+  },
+  "kenwoodyogastudio.com": {
+   "yes": [
+    "about",
+    "address",
+    "https",
+    "people",
+    "trade"
+   ],
+   "trade": "Yoga"
+  },
+  "bloemdecor.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "https",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "work"
+   ],
+   "trade": "Florist"
+  },
+  "everestflowers.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Florist"
+  },
+  "sacflower.net": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "Florist"
+  },
+  "landvisiondesigns.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Landscaping"
+  },
+  "hardisonlandscaping.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviewSites",
+    "schema",
+    "trade",
+    "work"
+   ],
+   "trade": "Landscape"
+  },
+  "norrislandscaping.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviewSites",
+    "schema",
+    "track",
+    "trade",
+    "work"
+   ],
+   "trade": "Landscaping"
+  },
+  "angelinaspastries.com": {
+   "yes": [
+    "address",
+    "https",
+    "name",
+    "schema",
+    "trade"
+   ],
+   "trade": "Bakery"
+  },
+  "atamcmurray.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "School"
+  },
+  "blueskycsi.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "https",
+    "name",
+    "reviewSites",
+    "schema",
+    "trade"
+   ],
+   "trade": "closing services"
+  },
+  "cts-pgh.com": {
+   "yes": [
+    "address",
+    "focus",
+    "https"
+   ],
+   "trade": null
+  },
+  "southwestcommunitieschamber.org": {
+   "yes": [
+    "https"
+   ],
+   "trade": null
+  },
+  "confluencefp.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "accounting"
+  },
+  "jeffhancher.com": {
+   "yes": [
+    "about",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "reviews",
+    "schema",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Firm"
+  },
+  "millersace.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "https",
+    "name",
+    "reviewSites",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Shop"
+  },
+  "ajbuerkle.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "reviewSites",
+    "schema",
+    "track",
+    "trade"
+   ],
+   "trade": "HVAC"
+  },
+  "aladdinseatery.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "track",
+    "trade",
+    "updated"
+   ],
+   "trade": "Catering"
+  },
+  "bareskin-laser.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "name",
+    "people",
+    "schema",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Practice"
+  },
+  "bergerchiropracticwellness.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "focus",
+    "https",
+    "people",
+    "reviews",
+    "schema",
+    "trade"
+   ],
+   "trade": "Chiropractor"
+  },
+  "berniceaschweissllc.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "track",
+    "trade"
+   ],
+   "trade": "Firm"
+  },
+  "binbath.com": {
+   "yes": [
+    "area",
+    "https",
+    "trade",
+    "updated"
+   ],
+   "trade": "Cleaning"
+  },
+  "bootcampfit360.com": {
+   "yes": [
+    "about",
+    "address",
+    "focus",
+    "https",
+    "trade"
+   ],
+   "trade": "Gym"
+  },
+  "capstonequalityservices.com": {
+   "yes": [
+    "about",
+    "address",
+    "area",
+    "credentials",
+    "focus",
+    "https",
+    "schema",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "Contractor"
+  },
+  "monexglobal.com": {
+   "yes": [
+    "about",
+    "address",
+    "credentials",
+    "focus",
+    "https",
+    "people",
+    "reviewSites",
+    "reviews",
+    "schema",
+    "seen",
+    "track",
+    "trade",
+    "updated",
+    "work"
+   ],
+   "trade": "financial service"
+  }
+ }
+}

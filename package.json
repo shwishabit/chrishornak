@@ -10,7 +10,9 @@
     "build:check": "node scripts/build-check.mjs",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:engine": "npx tsx --test scripts/engine-pins.test.mts",
+    "eval:engine": "npx tsx scripts/ac-fixtures.mts score --gate"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",

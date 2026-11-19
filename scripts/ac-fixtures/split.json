@@ -1,0 +1,26 @@
+{
+ "note": "Held-out sites: never read while tuning. Picked 2026-11-18 by sha1(domain), 1 in 4 per group; frozen.",
+ "heldout": [
+  "alleycatpestcontrol.com",
+  "angelinaspastries.com",
+  "bareskin-laser.com",
+  "bergerchiropracticwellness.com",
+  "bigriveryoga.com",
+  "blueskycsi.com",
+  "directiveconsulting.com",
+  "directom.com",
+  "gleasonfamilydentistry.com",
+  "hartmanoutdoorphotography.com",
+  "idahoroofingcontractors.com",
+  "landvisiondesigns.com",
+  "lebovitzlaw.com",
+  "norrislandscaping.com",
+  "paperboxseo.com",
+  "reimaginemainstreet.com",
+  "rootstopetalsstudio.com",
+  "smartsites.com",
+  "staroftexasvet.com",
+  "tjdentalpa.com",
+  "wahlheatingandcooling.com"
+ ]
+}

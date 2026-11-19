@@ -286,12 +286,12 @@ const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
 const typesOf = (n: Node): string[] => [n['@type']].flat().map(str).filter(Boolean)
 const digitsOf = (s: string) => s.replace(/\D/g, '').slice(-10)
 
-/** The page's business entry: its type and name, or null. */
+/** The page's business entry: its type and name (types = every business type on it), or null. */
 function businessEntry(
   blocks: RegExpMatchArray | null,
   pageText: string,
   host: string,
-): { type: string; name: string } | null {
+): { type: string; name: string; types: string[] } | null {
   const pageWords = new Set(nameWords(pageText))
   const pagePhones = (pageText.match(new RegExp(PHONE_RE.source, 'g')) ?? []).map(digitsOf)
   for (const block of blocks ?? []) {
@@ -306,7 +306,7 @@ function businessEntry(
       const address = !!n.address
       if (!ownUrl && !sameAs && !phone && !address) continue
       if (phone && pagePhones.length && !pagePhones.includes(digitsOf(phone))) continue
-      return { type, name }
+      return { type, name, types: typesOf(n).filter((t) => ORG_TYPE_RE.test(t)) }
     }
   }
   return null
@@ -340,15 +340,21 @@ export function readNames(
   const site = html.match(/<meta[^>]+property=["']?og:site_name["']?[^>]*>/i)?.[0]
   const siteName = site ? attrOf(site, 'content').replace(/&amp;/g, '&').trim() : ''
   if (siteName) names.push({ where: 'share name', name: siteName })
-  const copy = pageText.match(/(?:©|&copy;|Copyright)\s*(?:\d{4}(?:\s*[-–]\s*\d{4})?\s*)?(?:by\s+)?([A-Z][\w&'’.,\- ]{1,50}?)(?=\s*(?:\.|,|\||All rights|All Rights|$))/)?.[1]
-  if (copy && !/^all rights/i.test(copy.trim())) names.push({ where: '© line', name: copy.trim() })
+  const copy = copyrightName(pageText)
+  if (copy) names.push({ where: '© line', name: copy })
   if (names.length < 2) return null
   return { names, agree: names.every((n) => sameName(n.name, names[0].name)) }
 }
 
+/** The name on the © line ("© 2025 Computec Technical Services. All rights reserved."), or null. */
+function copyrightName(pageText: string): string | null {
+  const copy = pageText.match(/(?:©|&copy;|Copyright)\s*(?:\d{4}(?:\s*[-–]\s*\d{4})?\s*)?(?:by\s+)?([A-Z][\w&'’.,\- ]{1,50}?)(?=\s*(?:\.|,|\||All rights|All Rights|$))/)?.[1]
+  return copy && !/^all rights/i.test(copy.trim()) ? copy.trim() : null
+}
+
 const businessEntryOf = (() => {
   let key: unknown[] = []
-  let value: { type: string; name: string } | null = null
+  let value: { type: string; name: string; types: string[] } | null = null
   return (blocks: RegExpMatchArray | null, pageText: string, host: string) => {
     if (key[0] !== blocks || key[1] !== pageText || key[2] !== host) {
       value = businessEntry(blocks, pageText, host)
@@ -416,14 +422,75 @@ function genericTrade(text: string): string | null {
   return words.length ? `${words.slice(-2).join(' ')} ${m[2]}`.toLowerCase() : null
 }
 
-export function findTrade(html: string, pageText: string): { word: string; where: string | null; index: number } | null {
+/* ── The business's own names (research #1, 2026-11-18) ──────────────────
+ * "Computec Technical Services" is a name, not a trade. Before the "term +
+ * services" rule reads the up-front text, every name the page gives itself is
+ * cut out: og:site_name, the schema's business names, the © line, the logo's
+ * alt text, and a run of title words that spells the web address or its
+ * initials (cts-pgh.com: "Welcome to Computec Technical Solutions!", its only
+ * name). Known trade words ("Smith Plumbing") still count: they say the trade.
+ * ─────────────────────────────────────────────────────────────────────── */
+const cleanName = (s: string) =>
+  s.replace(/&amp;/g, '&').split(/\s+[-–—|:]\s+|\s*\(/)[0].replace(/[,\s]+(?:llc|inc|ltd|co|corp|pllc|pc|llp|lp)\.?$/i, '').replace(/[!?.,]+$/, '').trim()
+function ownNames(html: string, pageText: string, blocks: RegExpMatchArray | null, host: string, title: string): string[] {
+  const names: string[] = []
+  const site = html.match(/<meta[^>]+property=["']?og:site_name["']?[^>]*>/i)?.[0]
+  if (site) names.push(attrOf(site, 'content'))
+  for (const block of blocks ?? []) for (const n of topNodes(block) ?? []) if (typesOf(n).some((t) => ORG_TYPE_RE.test(t))) names.push(str(n.name))
+  names.push(copyrightName(pageText) ?? '')
+  for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
+    const alt = attrOf(m[0], 'alt')
+    if (/logo/i.test(`${attrOf(m[0], 'class')} ${attrOf(m[0], 'id')} ${attrOf(m[0], 'src')} ${alt}`)) names.push(alt.replace(/\blogo\b/gi, ' '))
+  }
+  // Title words that spell the address ("Blog Hands" → bloghands.com) or its initials ("Computec Technical Solutions" → cts-pgh.com).
+  const label = host.replace(/^www\./, '').split('.')[0].toLowerCase()
+  const chunks = [label.replace(/-/g, ''), ...label.split('-')]
+  const words = title.split(/\s+/).map((w) => w.replace(/^[^\w&]+|[^\w&]+$/g, '')).filter(Boolean)
+  for (let i = 0; i < words.length; i++)
+    for (let j = i; j < Math.min(words.length, i + 5); j++) {
+      const run = words.slice(i, j + 1)
+      const initials = run.map((w) => w[0]).join('').toLowerCase()
+      if (run.join('').toLowerCase() === chunks[0] || (run.length > 1 && initials.length >= 3 && chunks.includes(initials))) names.push(run.join(' '))
+    }
+  return [...new Set(names.map(cleanName).filter((n) => n.length >= 3))]
+}
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/* ── The schema business type as evidence (research #5, 2026-11-18) ──────
+ * A checked business entry (businessEntry: its name is on the page, with a
+ * url, phone or address) that says "Dentist" or "AutoRepair" has told us the
+ * trade on purpose. Vague types (Organization, LocalBusiness) say nothing.
+ * ─────────────────────────────────────────────────────────────────────── */
+const VAGUE_TYPE_RE = /^(?:Person|Organization|LocalBusiness|ProfessionalService|Corporation|OnlineBusiness|NGO|EmergencyService)$/
+function schemaTrade(types: string[]): { word: string; type: string } | null {
+  const type = types.find((t) => !VAGUE_TYPE_RE.test(t))
+  if (!type) return null
+  const words = type.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').split(' ')
+  if (words.length > 1 && words[words.length - 1] === 'Business') words.pop() // "HVACBusiness" → "HVAC"
+  return { word: words.map((w) => (/^[A-Z]{2,}$/.test(w) ? w : w.toLowerCase())).join(' '), type }
+}
+
+/** blocks / pageUrl: the page's JSON-LD and address, for its schema type and its own names (read from html when left out). */
+export function findTrade(
+  html: string,
+  pageText: string,
+  blocks?: RegExpMatchArray | null,
+  pageUrl?: string,
+): { word: string; where: string | null; index: number } | null {
   const spots = TRADE_SPOTS.map(([re, where]) => [re.exec(html)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ') ?? '', where] as const).filter(([t]) => t)
   for (const [text, where] of spots) {
     const hit = tradeHits(text)[0]
     if (hit) return { word: hit[0], where, index: pageText.toLowerCase().indexOf(hit[0].toLowerCase()) }
   }
+  const ld = blocks === undefined ? findJsonLdBlocks(html) : blocks
+  const host = hostOf(pageUrl)
+  const typed = schemaTrade(businessEntryOf(ld, pageText, host)?.types ?? [])
+  if (typed) return { word: typed.word, where: `your page code, as the type “${typed.type}”`, index: pageText.toLowerCase().indexOf(typed.word.toLowerCase()) }
+  const title = spots.find(([, where]) => where === 'your page title')?.[0] ?? ''
+  const names = ownNames(html, pageText, ld, host, title)
   for (const [text, where] of spots) {
-    const word = genericTrade(text)
+    const unnamed = names.reduce((t, n) => t.replace(new RegExp(escapeRe(n), 'gi'), ' | '), text)
+    const word = genericTrade(unnamed)
     if (word) return { word, where, index: pageText.toLowerCase().indexOf(word) }
   }
   const hits = tradeHits(pageText)
@@ -434,8 +501,8 @@ export function findTrade(html: string, pageText: string): { word: string; where
   const best = hits.reduce((a, b) => (n(b) > n(a) ? b : a))
   return { word: best[0], where: null, index: best.index! }
 }
-function tradeEvidence(html: string, pageText: string): string | undefined {
-  const t = findTrade(html, pageText)
+function tradeEvidence(html: string, pageText: string, blocks: RegExpMatchArray | null, pageUrl?: string): string | undefined {
+  const t = findTrade(html, pageText, blocks, pageUrl)
   if (!t) return undefined
   const near = t.index >= 0 ? `: ${around(pageText, t.index, t.word.length)}` : ''
   return `Found “${t.word}”${t.where ? ` in ${t.where}` : ''}${near}`
@@ -638,7 +705,7 @@ export function readProofSignals(
   const hasAddressInfo = hasReachInfo(html, pageText)
   const hasServiceArea = SERVICE_AREA_RE.test(pageText)
   const hasOneName = readNames(html, pageText, jsonLdBlocks, pageUrl)?.agree ?? false
-  const hasBusinessType = findTrade(html, pageText) !== null
+  const hasBusinessType = findTrade(html, pageText, jsonLdBlocks, pageUrl) !== null
 
   return {
     hasAboutLink,
@@ -726,7 +793,7 @@ export function readProofEvidence(
   out.hasServiceArea = inText(SERVICE_AREA_RE, pageText)
   const named = readNames(html, pageText, jsonLdBlocks, pageUrl)
   if (named?.agree) out.hasOneName = `Same name in the ${named.names.map((n) => n.where).join(', ')}: “${named.names[0].name.slice(0, 50)}”`
-  out.hasBusinessType = tradeEvidence(html, pageText)
+  out.hasBusinessType = tradeEvidence(html, pageText, jsonLdBlocks, pageUrl)
 
   for (const k of Object.keys(out) as (keyof ProofSignals)[]) if (!out[k]) delete out[k]
   return out

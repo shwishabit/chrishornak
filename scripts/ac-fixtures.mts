@@ -4,10 +4,16 @@
  *
  *   npx tsx scripts/ac-fixtures.mts record a.com b.com …   read each homepage ONCE (plus the extra reads
  *                                                          the check makes) and save it; skips saved sites
- *   npx tsx scripts/ac-fixtures.mts score [--out run.json] [--group holdout]
+ *   npx tsx scripts/ac-fixtures.mts score [--out run.json] [--group holdout] [--save-baseline] [--gate] [--show-heldout]
  *                                                          score every labelled site (or one group) from the saved pages.
  *                                                          Groups: agency, pittsburgh (rules were tuned on these), holdout
- *                                                          (fresh sites, never used to tune: the honest number)
+ *                                                          (fresh sites when added; all groups have been tuned on since).
+ *                                                          Per check: accuracy, precision, recall, on DEV and HELD-OUT
+ *                                                          (split.json), and what moved since baseline.json.
+ *                                                          --gate exits 1 when any check has more wrong cells than the
+ *                                                          baseline; --save-baseline stores this run as the new baseline.
+ *   npx tsx scripts/ac-fixtures.mts split                  pick the held-out set once (frozen after)
+ *   npx tsx --test scripts/engine-pins.test.mts            pinned tests for known misses (no network)
  *   npx tsx scripts/ac-fixtures.mts refresh                 fetch ONLY the extra reads new code asks for that aren't saved
  *                                                          yet (e.g. About pages), once each; homepages are never re-read
  *   npx tsx scripts/ac-fixtures.mts findability [--out f.json] [--base g.json]
@@ -22,6 +28,7 @@
  * no answer and is printed as MISSING, so record it on purpose if it matters.
  * ─────────────────────────────────────────────────────────────────────── */
 
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import Module from 'node:module'
 import { dirname, join } from 'node:path'
@@ -165,17 +172,71 @@ function replayReader(fx: Fixture, missing: string[], skip?: string | null): Rea
   }
 }
 
-async function score(out?: string, group?: string, noAbout = false) {
+/* ── Dev and held-out (2026-11-18, research #7) ────────────────────────────
+ * split.json freezes ~1 in 4 labelled sites per group as HELD-OUT: never read
+ * while tuning. Score shows their numbers but hides their wrong cells and moved
+ * words unless --show-heldout, so a fix is tuned on dev only and held-out is
+ * the tripwire. Picked once by a hash of the domain (not by hand), then frozen;
+ * sites used in the pinned tests (engine-pins.test.mts) stay in dev. New
+ * labels go to dev unless added to the list on purpose.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+type Split = 'dev' | 'heldout'
+const SPLIT_FILE = join(DIR, 'split.json')
+const BASELINE_FILE = join(DIR, 'baseline.json')
+const PINNED_SITES = ['cts-pgh.com']
+
+function makeSplit() {
+  if (existsSync(SPLIT_FILE)) return console.log('split.json already exists: the held-out set is frozen. Delete it on purpose to re-pick.')
+  const labels: Record<string, Label> = JSON.parse(readFileSync(join(DIR, 'labels.json'), 'utf8'))
+  const byGroup = new Map<string, string[]>()
+  for (const [d, l] of Object.entries(labels)) if (!PINNED_SITES.includes(d)) byGroup.set(l.group, [...(byGroup.get(l.group) ?? []), d])
+  const hash = (d: string) => createHash('sha1').update(d).digest('hex')
+  const heldout = [...byGroup.values()].flatMap((ds) => ds.sort((a, b) => (hash(a) < hash(b) ? -1 : 1)).slice(0, Math.round(ds.length / 4))).sort()
+  writeFileSync(SPLIT_FILE, JSON.stringify({ note: 'Held-out sites: never read while tuning. Picked 2026-11-18 by sha1(domain), 1 in 4 per group; frozen.', heldout }, null, 1) + '\n')
+  console.log(`${heldout.length} held-out sites written to split.json`)
+}
+
+const splitOf = (() => {
+  let held: Set<string> | null = null
+  return (domain: string): Split => {
+    held ??= new Set(existsSync(SPLIT_FILE) ? (JSON.parse(readFileSync(SPLIT_FILE, 'utf8')).heldout as string[]) : [])
+    return held.has(domain) ? 'heldout' : 'dev'
+  }
+})()
+
+/** true positive / false positive / false negative / true negative; "positive" = the site shows it. */
+interface Cells { tp: number; fp: number; fn: number; tn: number }
+interface Baseline {
+  savedAt: string
+  note: string
+  cells: Record<Split, Record<string, Cells>>
+  /** Per site: the checks that passed, and the trade word the engine found. */
+  sites: Record<string, { yes: string[]; trade: string | null }>
+}
+const zero = (): Cells => ({ tp: 0, fp: 0, fn: 0, tn: 0 })
+const wrongOf = (c: Cells) => c.fp + c.fn
+const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '—').padStart(5)
+const tradeWord = (evidence?: string) => evidence?.match(/“([^”]+)”/)?.[1] ?? null
+
+async function score(out?: string, group?: string, noAbout = false, opts: { save?: boolean; gate?: boolean; showHeld?: boolean } = {}) {
   const labels: Record<string, Label> = JSON.parse(readFileSync(join(DIR, 'labels.json'), 'utf8'))
   // The scored checks, then the "good to know" ones (shown on the page, labelled the same way).
   const ids = [...PROOF_CHECKS, ...SHOWN_CHECKS].map((c) => c.id)
   const tally = Object.fromEntries(ids.map((id) => [id, { right: 0, falseNo: 0, falseYes: 0 }]))
+  const cells: Record<Split, Record<string, Cells>> = {
+    dev: Object.fromEntries(ids.map((id) => [id, zero()])),
+    heldout: Object.fromEntries(ids.map((id) => [id, zero()])),
+  }
+  const sites: Baseline['sites'] = {}
   const wrong: string[] = []
+  let heldWrong = 0
   const runs: Record<string, { proof: ProofId[] | null; evidence?: Record<string, string> }> = {}
   const notes: string[] = []
 
   for (const [domain, label] of Object.entries(labels)) {
     if (group && label.group !== group) continue
+    const split = splitOf(domain)
     if (!existsSync(fileOf(domain))) {
       notes.push(`${domain}: no saved page`)
       continue
@@ -194,13 +255,19 @@ async function score(out?: string, group?: string, noAbout = false) {
     const read = await readSite(asResult(fx.home), replayReader(fx, missing, skip), savedAt, Number.POSITIVE_INFINITY)
     for (const m of missing) notes.push(`${domain}: MISSING ${m}`)
     runs[domain] = { proof: read.proof, evidence: read.evidence }
+    sites[domain] = { yes: [...read.proof].sort(), trade: tradeWord(read.evidence.trade) }
     for (const id of ids) {
       const want = label.expect[id]
       if (want === undefined || want === null) continue
       const got = read.proof.includes(id)
+      cells[split][id][got ? (want ? 'tp' : 'fp') : want ? 'fn' : 'tn']++
       if (got === want) tally[id].right++
       else {
         tally[id][got ? 'falseYes' : 'falseNo']++
+        if (split === 'heldout' && !opts.showHeld) {
+          heldWrong++
+          continue
+        }
         const said = got ? `said yes: ${read.evidence[id] ?? '(no evidence)'}` : 'said no'
         wrong.push(`${got ? '!' : '✕'} ${id.padEnd(11)} ${domain.padEnd(28)} ${said}${label.why?.[id] ? `\n    label: ${label.why[id]}` : ''}`)
       }
@@ -215,9 +282,69 @@ async function score(out?: string, group?: string, noAbout = false) {
     console.log(`${id.padEnd(12)} ${String(t.right).padStart(5)}  ${String(t.falseNo).padStart(8)}  ${String(t.falseYes).padStart(9)}`)
   }
   console.log(`${'TOTAL'.padEnd(12)} ${String(r).padStart(5)}  ${String(fn).padStart(8)}  ${String(fy).padStart(9)}   (${((100 * r) / (r + fn + fy)).toFixed(1)}% right)`)
-  console.log(`\nWrong cells (✕ = missed, ! = passed but not there):\n${wrong.join('\n')}`)
+
+  // Per check, per split: accuracy, precision (of the yeses we gave, how many were right) and
+  // recall (of the sites that show it, how many we found). n = labelled cells.
+  const base: Baseline | null = !group && !noAbout && existsSync(BASELINE_FILE) ? JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) : null
+  const nSites = (s: Split) => Object.keys(sites).filter((d) => splitOf(d) === s).length
+  console.log(`\nPer check        DEV (${nSites('dev')} sites)                       HELD-OUT (${nSites('heldout')} sites)`)
+  console.log(`                 n   acc  prec  recall  wrong       n   acc  prec  recall  wrong`)
+  const row = (c: Cells, b?: Cells) => {
+    const n = c.tp + c.fp + c.fn + c.tn
+    const d = b ? wrongOf(c) - wrongOf(b) : 0
+    const delta = b && d ? ` (${d > 0 ? '+' : ''}${d})` : ''
+    return `${String(n).padStart(3)} ${pct(c.tp + c.tn, n)} ${pct(c.tp, c.tp + c.fp)}  ${pct(c.tp, c.tp + c.fn)}  ${(String(wrongOf(c)) + delta).padEnd(9)}`
+  }
+  const totals = (s: Split) => ids.reduce((t, id) => ({ tp: t.tp + cells[s][id].tp, fp: t.fp + cells[s][id].fp, fn: t.fn + cells[s][id].fn, tn: t.tn + cells[s][id].tn }), zero())
+  const baseTotals = (s: Split) => base && ids.reduce((t, id) => { const c = base.cells[s][id] ?? zero(); return { tp: t.tp + c.tp, fp: t.fp + c.fp, fn: t.fn + c.fn, tn: t.tn + c.tn } }, zero())
+  for (const id of ids) console.log(`${id.padEnd(15)} ${row(cells.dev[id], base?.cells.dev[id])}   ${row(cells.heldout[id], base?.cells.heldout[id])}`)
+  console.log(`${'ALL'.padEnd(15)} ${row(totals('dev'), baseTotals('dev') ?? undefined)}   ${row(totals('heldout'), baseTotals('heldout') ?? undefined)}`)
+
+  console.log(`\nWrong cells, dev${opts.showHeld ? ' + held-out' : ''} (✕ = missed, ! = passed but not there):\n${wrong.join('\n')}`)
+  if (heldWrong) console.log(`(+ ${heldWrong} held-out wrong cell(s), hidden: held-out is never read while tuning. --show-heldout shows them.)`)
+
+  // What moved since the stored baseline: yes/no flips and the trade word, site by site.
+  let regressed = false
+  if (base) {
+    const moved: string[] = []
+    let heldMoved = 0
+    for (const [d, now] of Object.entries(sites)) {
+      const was = base.sites[d]
+      if (!was) continue
+      const lines = [
+        ...now.yes.filter((id) => !was.yes.includes(id)).map((id) => `now yes ${id}`),
+        ...was.yes.filter((id) => !now.yes.includes(id)).map((id) => `now no  ${id}`),
+        ...(now.trade !== was.trade ? [`trade word “${was.trade ?? '-'}” → “${now.trade ?? '-'}”`] : []),
+      ]
+      if (!lines.length) continue
+      if (splitOf(d) === 'heldout' && !opts.showHeld) heldMoved++
+      else moved.push(`${d}: ${lines.join(' · ')}`)
+    }
+    console.log(`\nMoved since the baseline (${base.savedAt}):\n${moved.join('\n') || '(nothing on dev)'}`)
+    if (heldMoved) console.log(`(+ ${heldMoved} held-out site(s) moved, hidden)`)
+    for (const s of ['dev', 'heldout'] as Split[])
+      for (const id of ids) {
+        const b = base.cells[s][id]
+        if (b && wrongOf(cells[s][id]) > wrongOf(b)) {
+          regressed = true
+          console.log(`GATE: ${id} on ${s} has ${wrongOf(cells[s][id])} wrong cell(s), baseline ${wrongOf(b)}`)
+        }
+      }
+    if (!regressed) console.log('\nGATE: no check lost accuracy against the baseline.')
+  } else if (opts.gate) {
+    console.log('\nGATE: no baseline to compare (or --group / --no-about set). Run score --save-baseline first.')
+    regressed = true
+  }
+
   if (notes.length) console.log(`\nNotes:\n${notes.join('\n')}`)
   if (out) writeFileSync(out, JSON.stringify(runs, null, 1))
+  if (opts.save) {
+    if (group || noAbout) throw new Error('--save-baseline needs a full run (no --group, no --no-about)')
+    const b: Baseline = { savedAt: new Date().toLocaleDateString('en-CA'), note: 'ac-fixtures score baseline: per check per split, plus each site’s yeses and trade word. score --gate fails when a check gets more wrong cells than this.', cells, sites }
+    writeFileSync(BASELINE_FILE, JSON.stringify(b, null, 1) + '\n')
+    console.log(`\nBaseline saved to ${BASELINE_FILE}`)
+  }
+  if (opts.gate && regressed) process.exitCode = 1
 }
 
 /* ── digest ─────────────────────────────────────────────────────────────── */
@@ -303,7 +430,13 @@ async function findability(out?: string, base?: string) {
 const [cmd, ...args] = process.argv.slice(2)
 const flag = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined)
 if (cmd === 'record') await record(args)
-else if (cmd === 'score') await score(flag('--out'), flag('--group'), args.includes('--no-about'))
+else if (cmd === 'score')
+  await score(flag('--out'), flag('--group'), args.includes('--no-about'), {
+    save: args.includes('--save-baseline'),
+    gate: args.includes('--gate'),
+    showHeld: args.includes('--show-heldout'),
+  })
+else if (cmd === 'split') makeSplit()
 else if (cmd === 'refresh') await refresh()
 else if (cmd === 'findability') await findability(flag('--out'), flag('--base'))
 else if (cmd === 'digest') for (const d of args) digest(d)
