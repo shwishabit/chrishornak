@@ -32,7 +32,7 @@ export const vidarichRound4: ReviewContent = {
   title: 'VidaRich: your new site, round 4',
   client: 'Rich Calandra, VidaRich',
   intro:
-    'Rich, here is the site with your round 3 notes built in. New: the home page in your new order, Coffee Booster and Mushroom Coffee side by side with the label promises from your jar under them, the Superfood Blend with L-theanine and Learn more links, the benefits table, your promise, and the VidaRich Community sign-up ($10 off the first order with the code Newbie). Also new: a Mushroom Coffee coming-soon page and an Events page you fill in yourself. Same as before: pick a page at the top, tap Like, Don’t like or Change it next to each part, and type what you want changed. When you are done, go to Finish and press Finalize review.',
+    'Rich, here is the site with your round 3 notes built in. New: the home page in your new order, Coffee Booster and Mushroom Coffee side by side with the label promises from your jar under them, the Superfood Blend with L-theanine and Learn more links, the benefits table, your promise, and the VidaRich Community sign-up ($10 off the first order with the code Newbie). Also new: a Mushroom Coffee coming-soon page and an Events page you fill in yourself. Newest (November 18): a Wholesale tab with your new wholesale page. Same as before: pick a page at the top, tap Like, Don’t like or Change it next to each part, and type what you want changed. When you are done, go to Finish and press Finalize review.',
   assets: DIR,
   options: [
     {
@@ -88,9 +88,13 @@ export const vidarichRound4: ReviewContent = {
         page('newsletter', 'Newsletter', 'N', '/pages/contact?view=newsletter', [
           ["Join the VidaRich Community", 631, 1452],
         ]),
+        // Added 2026-11-18: the live wholesale page (linked in the top menu + footer).
+        page('wholesale', 'Wholesale', 'W', '/pages/wholesale', [
+          ["Wholesale: steps, store photo and the apply form", 1193, 3724],
+        ]),
       ],
     },
   ],
   fineprint:
-    'Pictures of the new site taken on November 9, 2026. Prices, reviews, stores and the Supplement Facts come from your Shopify store and your label. Coffee shop prices on the site: Joe Coffee, State of Coffee Q2 2026.',
+    'Pictures of the new site taken on November 9, 2026 (Wholesale tab: November 18, 2026). Prices, reviews, stores and the Supplement Facts come from your Shopify store and your label. Coffee shop prices on the site: Joe Coffee, State of Coffee Q2 2026.',
 }
