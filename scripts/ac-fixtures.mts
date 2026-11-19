@@ -47,6 +47,8 @@ const { fetchPageWithRetry, pageErrorMessage } = await import('../src/lib/fetch-
 const { liveReader, MAX_HTML, readSite } = await import('../src/lib/authority-read')
 const { PROOF_CHECKS, SHOWN_CHECKS, parseSite } = await import('../src/lib/authority-check')
 const { extractText, findAboutPage, findJsonLdBlocks } = await import('../src/lib/proof-signals')
+const { readB2bSignals } = await import('../src/lib/b2b-signals')
+type SiteType = import('../src/lib/b2b-signals').SiteType
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), 'ac-fixtures')
 const PAGES = join(DIR, 'pages')
@@ -65,9 +67,10 @@ interface Fixture {
 }
 interface Label {
   group: string
-  /** true = the site shows it · false = it doesn't · null = can't tell, not scored. */
-  expect: Partial<Record<ProofId, boolean | null>>
-  why?: Partial<Record<ProofId, string>>
+  /** true = the site shows it · false = it doesn't · null = can't tell, not scored.
+   *  `ask` and `siteType` (2026-11-19) are b2b-signals reads, scored beside the Authority Check. */
+  expect: Partial<Record<ProofId, boolean | null>> & { ask?: boolean | null; siteType?: SiteType | null }
+  why?: Partial<Record<ProofId | B2bId, string>>
 }
 
 const fileOf = (domain: string) => join(PAGES, `${domain}.json`)
@@ -212,9 +215,23 @@ interface Baseline {
   savedAt: string
   note: string
   cells: Record<Split, Record<string, Cells>>
-  /** Per site: the checks that passed, the ones unclear, and the trade word the engine found. */
-  sites: Record<string, { yes: string[]; unclear?: string[]; trade: string | null }>
+  /** Per site: the checks that passed, the ones unclear, the trade word, the ask words and site type the engine found. */
+  sites: Record<string, { yes: string[]; unclear?: string[]; trade: string | null; ask?: string | null; siteType?: string }>
 }
+
+/* ── The ask and site type (2026-11-19, engine round 3) ────────────────────
+ * Read by b2b-signals.ts on the saved homepage, as SGM's route does. `ask` is
+ * judged against the LABELLED site type (a store's shop ask counts, as SGM's
+ * directAskOf does), so an ask miss is never a site-type miss in disguise.
+ * `siteType` is a yes/no on "store or software": tp = the right non-service
+ * type, tn = service read as service, fn = a store/app read as service, fp =
+ * a service read as a store/app or the wrong one. Unclear = the engine's own
+ * `unclear` list (none until it has one).
+ * ─────────────────────────────────────────────────────────────────────── */
+type B2bId = 'ask' | 'siteType'
+const B2B_IDS: B2bId[] = ['ask', 'siteType']
+type B2bRead = ReturnType<typeof readB2bSignals> & { unclear?: string[] }
+const askOf = (b: B2bRead, type: SiteType) => (type === 'ecommerce' ? b.shop ?? b.demo : b.demo)
 const zero = (): Cells => ({ tp: 0, fp: 0, fn: 0, tn: 0, uncYes: 0, uncNo: 0 })
 const wrongOf = (c: Cells) => c.fp + c.fn
 const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '—').padStart(5)
@@ -223,7 +240,8 @@ const tradeWord = (evidence?: string) => evidence?.match(/“([^”]+)”/)?.[1]
 async function score(out?: string, group?: string, noAbout = false, opts: { save?: boolean; gate?: boolean; showHeld?: boolean } = {}) {
   const labels: Record<string, Label> = JSON.parse(readFileSync(join(DIR, 'labels.json'), 'utf8'))
   // The scored checks, then the "good to know" ones (shown on the page, labelled the same way).
-  const ids = [...PROOF_CHECKS, ...SHOWN_CHECKS].map((c) => c.id)
+  const proofIds = [...PROOF_CHECKS, ...SHOWN_CHECKS].map((c) => c.id)
+  const ids: string[] = [...proofIds, ...B2B_IDS]
   const tally = Object.fromEntries(ids.map((id) => [id, { right: 0, falseNo: 0, falseYes: 0 }]))
   const cells: Record<Split, Record<string, Cells>> = {
     dev: Object.fromEntries(ids.map((id) => [id, zero()])),
@@ -257,17 +275,39 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
     const read = await readSite(asResult(fx.home), replayReader(fx, missing, skip), savedAt, Number.POSITIVE_INFINITY)
     for (const m of missing) notes.push(`${domain}: MISSING ${m}`)
     runs[domain] = { proof: read.proof, evidence: read.evidence }
-    sites[domain] = { yes: [...read.proof].sort(), unclear: [...(read.unclear ?? [])].sort(), trade: tradeWord(read.evidence.trade) }
-    for (const id of ids) {
+    const b2b: B2bRead = readB2bSignals(fx.home.body, fx.home.finalUrl)
+    const labelType = label.expect.siteType ?? b2b.siteType
+    const ask = askOf(b2b, labelType)
+    sites[domain] = {
+      yes: [...read.proof, ...(ask ? ['ask'] : [])].sort(),
+      unclear: [...(read.unclear ?? []), ...(b2b.unclear ?? [])].sort(),
+      trade: tradeWord(read.evidence.trade),
+      ask: ask ?? null,
+      siteType: b2b.siteType,
+    }
+    // One cell per labelled check: got / want as yes-no, the engine's evidence, and whether it said unclear.
+    const verdicts: { id: string; want: boolean; got: boolean; unclear: boolean; evidence: string }[] = []
+    for (const id of proofIds) {
       const want = label.expect[id]
       if (want === undefined || want === null) continue
+      verdicts.push({ id, want, got: read.proof.includes(id), unclear: !!read.unclear?.includes(id), evidence: read.evidence[id] ?? '' })
+    }
+    if (typeof label.expect.ask === 'boolean')
+      verdicts.push({ id: 'ask', want: label.expect.ask, got: !!ask, unclear: !ask && !!b2b.unclear?.includes('ask'), evidence: ask ? `“${ask}”` : b2b.askGuess ? `guess “${b2b.askGuess}”` : '' })
+    const wantType = label.expect.siteType
+    if (wantType) {
+      const right = b2b.siteType === wantType
+      // As yes/no on "store or software": a wrong non-service type is a false yes.
+      const want = wantType !== 'service'
+      verdicts.push({ id: 'siteType', want, got: right ? want : !want || b2b.siteType !== 'service', unclear: !!b2b.unclear?.includes('siteType'), evidence: `${b2b.siteType}${b2b.typeSignals.length ? ` (${b2b.typeSignals.join('; ')})` : ''}, label ${wantType}` })
+    }
+    for (const { id, want, got, unclear, evidence } of verdicts) {
       // Unclear is neither right nor wrong: its own column (on a "yes" label it costs half points in SGM).
-      if (read.unclear?.includes(id)) {
+      if (unclear) {
         cells[split][id][want ? 'uncYes' : 'uncNo']++
-        if (split === 'dev' || opts.showHeld) unclearCells.push(`? ${id.padEnd(11)} ${domain.padEnd(28)} label ${want ? 'yes' : 'no'}: ${read.evidence[id] ?? ''}`)
+        if (split === 'dev' || opts.showHeld) unclearCells.push(`? ${id.padEnd(11)} ${domain.padEnd(28)} label ${want ? 'yes' : 'no'}: ${evidence}`)
         continue
       }
-      const got = read.proof.includes(id)
       cells[split][id][got ? (want ? 'tp' : 'fp') : want ? 'fn' : 'tn']++
       if (got === want) tally[id].right++
       else {
@@ -276,8 +316,9 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
           heldWrong++
           continue
         }
-        const said = got ? `said yes: ${read.evidence[id] ?? '(no evidence)'}` : 'said no'
-        wrong.push(`${got ? '!' : '✕'} ${id.padEnd(11)} ${domain.padEnd(28)} ${said}${label.why?.[id] ? `\n    label: ${label.why[id]}` : ''}`)
+        const said = got ? `said yes: ${evidence || '(no evidence)'}` : `said no${id === 'siteType' ? `: ${evidence}` : ''}`
+        const why = label.why?.[id as ProofId | B2bId]
+        wrong.push(`${got ? '!' : '✕'} ${id.padEnd(11)} ${domain.padEnd(28)} ${said}${why ? `\n    label: ${why}` : ''}`)
       }
     }
   }
@@ -328,6 +369,8 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
         ...was.yes.filter((id) => !now.yes.includes(id)).map((id) => (now.unclear?.includes(id) ? `now unclear ${id}` : `now no  ${id}`)),
         ...(now.unclear ?? []).filter((id) => !(was.unclear ?? []).includes(id) && !was.yes.includes(id)).map((id) => `now unclear ${id}`),
         ...(now.trade !== was.trade ? [`trade word “${was.trade ?? '-'}” → “${now.trade ?? '-'}”`] : []),
+        ...('ask' in was && now.ask !== was.ask ? [`ask “${was.ask ?? '-'}” → “${now.ask ?? '-'}”`] : []),
+        ...(was.siteType && now.siteType !== was.siteType ? [`site type ${was.siteType} → ${now.siteType}`] : []),
       ]
       if (!lines.length) continue
       if (splitOf(d) === 'heldout' && !opts.showHeld) heldMoved++

@@ -14,7 +14,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio, gallery or case studies; only service pages",
@@ -29,7 +31,9 @@
    "https": "final URL https://davesmithautoservice.com/",
    "schema": "AutoRepair JSON-LD",
    "focus": "links /brake-repair-pittsburgh/, /engine-repair-pittsburgh/, /auto-ac-repair-pittsburgh/, /pa-state-inspection-emissions/ + more",
-   "seen": "1 place(s): aaa.com/autorepair/shop/dave-smith-auto-llc-77172 (AAA Approved Auto Repair certification profile; also hosts reviews) (close call)"
+   "seen": "1 place(s): aaa.com/autorepair/shop/dave-smith-auto-llc-77172 (AAA Approved Auto Repair certification profile; also hosts reviews) (close call)",
+   "ask": "only \"Contact Us\" and phone number; no book/quote words",
+   "siteType": "auto repair"
   }
  },
  "directiveconsulting.com": {
@@ -47,7 +51,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "client logo wall (Amazon, Cisco, Samsung) + /success-stories/ Case Studies link",
@@ -62,7 +68,9 @@
    "https": "https://directiveconsulting.com/",
    "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite",
    "focus": "links /services/content-marketing-agency/, /services/paid-media-agency/, /services/pr-agency/, /services/shopping-agency/ + more",
-   "seen": "1 place(s): ca.linkedin.com/company/directive-consulting"
+   "seen": "1 place(s): ca.linkedin.com/company/directive-consulting",
+   "ask": "'Unlock My Audit' and 'Explore Partnership' both go to a book-intro-call page",
+   "siteType": "B2B marketing agency"
   }
  },
  "directom.com": {
@@ -80,7 +88,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /case-studies/jv-manufacturing/; client logo wall (Highmark, UGA, SAE)",
@@ -95,7 +105,9 @@
    "https": "https://www.directom.com/",
    "schema": "JSON-LD Organization (with address, telephone)",
    "focus": "links /services/seo/, /services/ppc/, /services/web-design/, /services/cro/ + more",
-   "seen": "1 place(s): linkedin.com/company/direct-online-marketing/; Google Premier/Semrush/ITA badges link only to own /partnerships/ pages"
+   "seen": "1 place(s): linkedin.com/company/direct-online-marketing/; Google Premier/Semrush/ITA badges link only to own /partnerships/ pages",
+   "ask": "'Get My Free Strategic Audit' button; form headed 'Schedule your free digital marketing strategy consultation'",
+   "siteType": "digital marketing agency"
   }
  },
  "disruptiveadvertising.com": {
@@ -113,7 +125,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "client logo wall (Guitar Center, Adobe, KPMG) + /client-marketing-results/ link",
@@ -128,7 +142,9 @@
    "https": "https://disruptiveadvertising.com/",
    "schema": "JSON-LD @type Organization",
    "focus": "links /seo-services/, /advertising-services/ppc-management/, /social-media-advertising/, /amazon-marketing-services/ + more",
-   "seen": "1 place(s): linkedin.com/company/disruptive-advertising/; Inc 500 / DesignRush / Clutch award badges are images with no link"
+   "seen": "1 place(s): linkedin.com/company/disruptive-advertising/; Inc 500 / DesignRush / Clutch award badges are images with no link",
+   "ask": "only \"Contact Us\", phone, and \"Indispensable Marketer Audit\" (a tool/quiz style offer); no book/quote/proposal ask",
+   "siteType": "digital marketing agency"
   }
  },
  "egconley.com": {
@@ -146,7 +162,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio or client list (Industries list is services)",
@@ -161,7 +179,9 @@
    "https": "https://www.egconley.com/",
    "schema": "JSON-LD section empty",
    "focus": "links /bookkeeping.php, /payrollservice.php, /audits.php, /taxprep.php, /estateplan.php + more",
-   "seen": "0 place(s): no outside listing links; only client portal (netlinksolution) and own egconleyblog.com"
+   "seen": "0 place(s): no outside listing links; only client portal (netlinksolution) and own egconleyblog.com",
+   "ask": "button/form \"Schedule A Consultation\" (#modalConsult)",
+   "siteType": "accounting firm"
   }
  },
  "findoncpa.com": {
@@ -179,7 +199,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio, case studies or client list",
@@ -194,7 +216,9 @@
    "https": "https://www.findoncpa.com/",
    "schema": "Organization JSON-LD with telephone and PostalAddress",
    "focus": "links /pages/services/tax-services-..., /accounting-services-..., /bookkeeping-services-..., /payroll-services-..., /business-consulting-...",
-   "seen": "1 place(s): linkedin.com/company/findon-cpa/; PICPA/AICPA membership mentioned on About with no link"
+   "seen": "1 place(s): linkedin.com/company/findon-cpa/; PICPA/AICPA membership mentioned on About with no link",
+   "ask": "\"BOOK A CONSULTATION\" -> contact page; \"Call Now!\"",
+   "siteType": "CPA firm"
   }
  },
  "frewplumbing.com": {
@@ -212,7 +236,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio or gallery; services pages only (close call: stock-like man_by_sink photo)",
@@ -227,7 +253,9 @@
    "https": "https://www.frewplumbing.com/",
    "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only",
    "focus": "links /services/plumbing/, /services/cooling/, /services/heating/, /services/iaq/",
-   "seen": "1 place(s): linkedin.com/company/frew-plumbing-heating-and-cooling-inc-/about/"
+   "seen": "1 place(s): linkedin.com/company/frew-plumbing-heating-and-cooling-inc-/about/",
+   "ask": "\"CALL NOW 412-761-5711\" tel link and \"Request callback\" form button",
+   "siteType": "plumbing/HVAC"
   }
  },
  "gleasonfamilydentistry.com": {
@@ -245,7 +273,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "only office/stock-style photos named Gleason-60 etc; no portfolio or before/after",
@@ -260,7 +290,9 @@
    "https": "https://www.gleasonfamilydentistry.com/",
    "schema": "JSON-LD section empty",
    "focus": "only /services and /technology (CEREC); Preventative/Restorative/Cosmetic/Specialty are not links",
-   "seen": "0 place(s): no outside listing links; patients-choice-winner.png image with no link"
+   "seen": "0 place(s): no outside listing links; patients-choice-winner.png image with no link",
+   "ask": "'Call: (412) 731-8700' tel: button",
+   "siteType": "dental practice"
   }
  },
  "grazemarketing.com": {
@@ -278,7 +310,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "link https://grazemarketing.com/our-work/ (Our Work)",
@@ -293,7 +327,9 @@
    "https": "final URL https://grazemarketing.com/",
    "schema": "Organization JSON-LD",
    "focus": "links /web-development-agency/, /google-ads-agency-michigan/, /michigan-seo-company/, /facebook-advertising-agency/ + more",
-   "seen": "1 place(s): linkedin.com/company/graze-marketing/"
+   "seen": "1 place(s): linkedin.com/company/graze-marketing/",
+   "ask": "\"Schedule a Call\" -> calendar.app.google; \"GET STARTED\"",
+   "siteType": "marketing agency"
   }
  },
  "group8a.com": {
@@ -311,7 +347,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "OUR WORK section with CASE STUDY blocks and client logos (Liverpool, Baby Brezza)",
@@ -326,7 +364,9 @@
    "https": "final URL https://group8a.com/",
    "schema": "Organization JSON-LD",
    "focus": "only /pages/services and /pages/affiliate-services; Paid Search/Paid Social/Email etc. are not links",
-   "seen": "1 place(s): linkedin.com/company/group-8a"
+   "seen": "1 place(s): linkedin.com/company/group-8a",
+   "ask": "\"Let's Talk\" / \"LET'S CONNECT\" -> /pages/contact-us",
+   "siteType": "agency; Shopify code is theme only, no products"
   }
  },
  "hawkemedia.com": {
@@ -344,7 +384,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "/case-studies/k-swiss/ , /case-studies/crocs/ links; client logo wall",
@@ -359,7 +401,9 @@
    "https": "https://hawkemedia.com/",
    "schema": "JSON-LD @type Organization",
    "focus": "links /services/seo/, /services/paid-search/, /services/public-relations/, /services/web-design/ + many more",
-   "seen": "2+ place(s): forbes.com/sites/forbesagencycouncil/..., rollingstone.com/culture-council/..., adweek.com/agencyspy/..., google.com/partners/agency?id=8349185200, linkedin.com/company/hawkemedia"
+   "seen": "2+ place(s): forbes.com/sites/forbesagencycouncil/..., rollingstone.com/culture-council/..., adweek.com/agencyspy/..., google.com/partners/agency?id=8349185200, linkedin.com/company/hawkemedia",
+   "ask": "\"Free Consultation\" and \"Let's Get Started\" -> /free-consultation",
+   "siteType": "marketing agency"
   }
  },
  "ignitevisibility.com": {
@@ -377,7 +421,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /case-studies and /clients; client logo wall (Experian, Jazzercise, Inspire Brands)",
@@ -392,7 +438,9 @@
    "https": "final URL https://ignitevisibility.com/",
    "schema": "Organization JSON-LD",
    "focus": "links /services/seo/, /services/local-seo/, /services/pay-per-click-management/, /services/digital-pr/ + more",
-   "seen": "1 place(s): linkedin.com/company/ignite-visibility/; award badges are unlinked images"
+   "seen": "1 place(s): linkedin.com/company/ignite-visibility/; award badges are unlinked images",
+   "ask": "\"REQUEST A FREE PROPOSAL\", \"GET YOUR FREE DIGITAL MARKETING PROPOSAL\", \"Request Free Audit\"",
+   "siteType": "marketing agency"
   }
  },
  "kabodnar.com": {
@@ -410,7 +458,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no case results or portfolio, just practice areas",
@@ -425,7 +475,9 @@
    "https": "https://www.kabodnar.com/",
    "schema": "JSON-LD type LegalService",
    "focus": "links /practice-areas/personal-injury/, /estate-law/, /probate/, /family-law/divorce/, /dui/ + more",
-   "seen": "0 place(s): only facebook + twitter"
+   "seen": "0 place(s): only facebook + twitter",
+   "ask": "\"REACH OUT TO ME\" -> #consultation; form block \"Facing a Legal Issue? Let's talk solutions\"; call link",
+   "siteType": "law firm"
   }
  },
  "lagourmandinebakery.com": {
@@ -443,7 +495,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: product photos have no alt and there is no portfolio; a menu is not past work",
@@ -458,7 +512,9 @@
    "https": "https://lagourmandinebakery.com/",
    "schema": "JSON-LD section empty",
    "focus": "menu categories /same-day-pick-up/breakfast-catering, /danishes, /pasteries, /cakes, /bread, /beverages",
-   "seen": "0 place(s): order.online, menus.fyi, squareup gift cards are vendors"
+   "seen": "0 place(s): order.online, menus.fyi, squareup gift cards are vendors",
+   "ask": "\"Order Now!\" / \"Place Special Order Now\" buttons -> /special-orders, /same-day-pick-up (restaurant-style order online)",
+   "siteType": "bakery with pick-up ordering and cart, treated like a restaurant; E-gift cards only a side item"
   }
  },
  "lebovitzlaw.com": {
@@ -476,7 +532,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "/case-results/ link: \"Documented outcomes from our practice\"",
@@ -491,7 +549,9 @@
    "https": "https://lebovitzlaw.com/",
    "schema": "JSON-LD @type Organization (with employee Person)",
    "focus": "links /wills-estates-trusts-probate/, /real-estate-issues/, /business-law/, /family-law-and-divorce/, /personal-injury-lawyer-pittsburgh/ + sub-pages",
-   "seen": "2+ place(s): linkedin.com/company-beta/22314881/, JSON-LD sameAs martindale.com/attorney/stephen-h-lebovitz-1556830/ (+ justia, wikidata)"
+   "seen": "2+ place(s): linkedin.com/company-beta/22314881/, JSON-LD sameAs martindale.com/attorney/stephen-h-lebovitz-1556830/ (+ justia, wikidata)",
+   "ask": "'Schedule a Consultation' button",
+   "siteType": "law firm"
   }
  },
  "lewishairsalon.com": {
@@ -509,7 +569,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no gallery/portfolio; only salon/stylist portraits",
@@ -524,7 +586,9 @@
    "https": "https://lewishairsalon.com/",
    "schema": "JSON-LD @type LocalBusiness",
    "focus": "single /services page; haircuts/color/treatments not linked",
-   "seen": "0 place(s): no outside links except godaddy builder"
+   "seen": "0 place(s): no outside links except godaddy builder",
+   "ask": "\"Book online\" and \"Book an Appointment\" -> /book-online",
+   "siteType": "hair salon"
   }
  },
  "nogood.io": {
@@ -542,7 +606,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /case-study/bytedance/, /results/; client logos Nike, TikTok, MongoDB",
@@ -557,7 +623,9 @@
    "https": "https://nogood.io/",
    "schema": "JSON-LD Organization (NoGood)",
    "focus": "links /seo/, /ppc-agency/, /paid-social-agency/, /answer-engine-optimization-aeo/ + more",
-   "seen": "1 place(s): linkedin.com/company/nogood/; Shorty/Webby/Drum award logos unlinked"
+   "seen": "1 place(s): linkedin.com/company/nogood/; Shorty/Webby/Drum award logos unlinked",
+   "ask": "\"Get Started\" button -> /contact-us",
+   "siteType": "growth marketing agency"
   }
  },
  "paperboxseo.com": {
@@ -575,7 +643,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "link /case-studies/; client logo wall under 'Trusted by 67+ Startups and Agencies'",
@@ -590,7 +660,9 @@
    "https": "https://paperboxseo.com/",
    "schema": "JSON-LD type ProfessionalService / LocalBusiness",
    "focus": "links /services/ai-seo-services/, /services/local-seo/, /services/technical-seo/, /services/link-building/ + more",
-   "seen": "1 place(s): linkedin.com/company/paper-box-seo/; Top Clutch badges are unlinked images"
+   "seen": "1 place(s): linkedin.com/company/paper-box-seo/; Top Clutch badges are unlinked images",
+   "ask": "'Schedule a Call' to calendar link, 'Schedule a Consultation', 'Let's Get Started'",
+   "siteType": "SEO agency"
   }
  },
  "pghdma.com": {
@@ -608,7 +680,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Our Work: 30 live client sites, e.g. malickbrothersexteriors.com Visit Site",
@@ -623,7 +697,9 @@
    "https": "https://pghdma.com/",
    "schema": "Organization + ProfessionalService JSON-LD",
    "focus": "links /services/web-design/, /services/seo/, /services/ppc-management/, /services/local-seo/, /services/email-marketing/",
-   "seen": "1 place(s): google.com/partners/agency?id=2718339696; linkedin.com/in/pghdma is a personal-style /in/ URL (not counted)"
+   "seen": "1 place(s): google.com/partners/agency?id=2718339696; linkedin.com/in/pghdma is a personal-style /in/ URL (not counted)",
+   "ask": "\"Get a Free Consultation\" and \"Start a Project\" -> /contact-us",
+   "siteType": "digital marketing agency"
   }
  },
  "powerdigitalmarketing.com": {
@@ -641,7 +717,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "/case-studies/ link (Our Impact) plus client logo wall (asics, crocs, Graza)",
@@ -656,7 +734,9 @@
    "https": "final URL https://powerdigitalmarketing.com/",
    "schema": "Organization JSON-LD",
    "focus": "links /services/seo/, /services/paid-media/, /services/public-relations/, /services/email-marketing/ + more",
-   "seen": "0 place(s): only facebook/youtube/instagram/tiktok in sameAs; no listing or press links"
+   "seen": "0 place(s): only facebook/youtube/instagram/tiktok in sameAs; no listing or press links",
+   "ask": "\"Work with us\" / \"Accelerate your business\" buttons -> /work-with-us/; popup \"Lock in a free audit\"; close call, could be read as soft",
+   "siteType": "digital marketing agency"
   }
  },
  "powermarketingcompany.com": {
@@ -674,7 +754,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "DRIVING REAL RESULTS: Franchise 2036% ROAS case results; client logo wall",
@@ -689,7 +771,9 @@
    "https": "https://www.powermarketingcompany.com/",
    "schema": "JSON-LD is WebSite only",
    "focus": "every service tile (Social Media Advertising, Email, SEO, Podcasting...) links to the single /services page",
-   "seen": "1 place(s): linkedin.com/company/power-marketing-company/; open.spotify.com show is their own podcast (not counted)"
+   "seen": "1 place(s): linkedin.com/company/power-marketing-company/; open.spotify.com show is their own podcast (not counted)",
+   "ask": "only \"CONTACT\" / \"CONTACT US\" -> /contact and a generic message form; \"Book your free consultation\" appears only in the meta description, not on the page",
+   "siteType": "digital marketing agency"
   }
  },
  "proudfoot-services.com": {
@@ -707,7 +791,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: 'Gallery' /portfolio-items/ links are service pages with AdobeStock stock photos, not past jobs",
@@ -722,7 +808,9 @@
    "https": "https://proudfoot-services.com/",
    "schema": "Organization, Place, Plumber JSON-LD",
    "focus": "links /portfolio-items/hvac-pittsburgh-pa/, /plumbing-repair/, /hot-water-heaters/, /maintenance-plans/ (service pages despite portfolio URL)",
-   "seen": "0 place(s): no listing links; dev2.oncore.ventures is the web vendor"
+   "seen": "0 place(s): no listing links; dev2.oncore.ventures is the web vendor",
+   "ask": "\"SCHEDULE SERVICE\" nav -> /schedule-service/ plus \"Call Us\" tel link",
+   "siteType": "plumbing, heating and air service"
   }
  },
  "reimaginemainstreet.com": {
@@ -740,7 +828,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: only 3 client logos tied to testimonials (alt text wrong, 'Concordia Lutheran Ministries'); no portfolio or case studies",
@@ -755,7 +845,9 @@
    "https": "https://reimaginemainstreet.com/",
    "schema": "Organization (name RMS) in JSON-LD @graph",
    "focus": "links /social-media-marketing/, /search-engine-optimization/, /email-marketing-management/, /reputation-management/ + more",
-   "seen": "1 place(s): linkedin.com/company/reimagine-main-street/; testimonial links go to clients' own sites"
+   "seen": "1 place(s): linkedin.com/company/reimagine-main-street/; testimonial links go to clients' own sites",
+   "ask": "only 'CONTACT RMS' / contact; bare phone and email",
+   "siteType": "marketing agency"
   }
  },
  "rootstopetalsstudio.com": {
@@ -773,7 +865,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "ecommerce"
   },
   "why": {
    "work": "close call: product photos and service pages (weddings/events) only; no portfolio or gallery link",
@@ -788,7 +882,9 @@
    "https": "https://rootstopetalsstudio.com/",
    "schema": "JSON-LD type Florist",
    "focus": "links /collections/bouquets-and-arrangements, /collections/funeral-arrangements, /pages/wedding-florist-in-oakmont-pa, /pages/plant-studio, /pages/flower-workshops + more",
-   "seen": "0 place(s): eventbrite ticket link is a vendor; only facebook/instagram otherwise"
+   "seen": "0 place(s): eventbrite ticket link is a vendor; only facebook/instagram otherwise",
+   "ask": "'ORDER FLOWER DELIVERY OR PICKUP', 'Shop Now For Pickup or Delivery', collections links, add to cart",
+   "siteType": "Shopify florist with product grid, prices, cart as main job"
   }
  },
  "ruffingautomotive.com": {
@@ -806,7 +902,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: services pages and shop photos without alt; no portfolio or case studies",
@@ -821,7 +919,9 @@
    "https": "https://ruffingautomotive.com/",
    "schema": "JSON-LD only WebPage/ImageObject/BreadcrumbList/WebSite",
    "focus": "links /services/brake-repair/, /services/oil-change/, /services/transmission-repair/, /services/tires/ + more",
-   "seen": "0 place(s): no outside listing links; autoshopsolutions.com is the web vendor"
+   "seen": "0 place(s): no outside listing links; autoshopsolutions.com is the web vendor",
+   "ask": "\"Call to Schedule\" tel:4125619911 button",
+   "siteType": "auto repair shop"
   }
  },
  "schultheisbros.com": {
@@ -839,7 +939,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "/see-our-work/ link \"See Our Work\"",
@@ -854,7 +956,9 @@
    "https": "final URL https://www.schultheisbros.com/",
    "schema": "HVACBusiness + RoofingContractor JSON-LD",
    "focus": "links /air-conditioning/installation/, /heating/furnace-installation/, /roofing/roof-repair-maintenance/, /gutter-systems/ + more",
-   "seen": "1 place(s): linkedin.com/company/schultheis-brothers-company; manufacturer badges (Trane, Velux) unlinked"
+   "seen": "1 place(s): linkedin.com/company/schultheis-brothers-company; manufacturer badges (Trane, Velux) unlinked",
+   "ask": "\"Book Now! Schedule Service\" button and \"Schedule Service\" in menu, plus Call tel",
+   "siteType": "HVAC and roofing contractor"
   }
  },
  "seerinteractive.com": {
@@ -872,7 +976,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /work/case-studies; 4 case study cards; client logo wall (amfam, drexel, time, intuit)",
@@ -887,7 +993,9 @@
    "https": "final URL https://www.seerinteractive.com/",
    "schema": "Organization JSON-LD",
    "focus": "links /work/seo, /work/paid-media, /work/analytics, /work/cro, /generative-engine-optimization",
-   "seen": "1 place(s): linkedin.com/company/seer-interactive/; 'cited by' links go to bare homepages forbes.com, emarketer.com, fastcompany.com and bcorporation.net/en-us/, not articles or a profile (close call)"
+   "seen": "1 place(s): linkedin.com/company/seer-interactive/; 'cited by' links go to bare homepages forbes.com, emarketer.com, fastcompany.com and bcorporation.net/en-us/, not articles or a profile (close call)",
+   "ask": "\"Let's get started\" and \"Get started with Seer\" -> /contact, \"Let's Talk\"",
+   "siteType": "digital marketing agency"
   }
  },
  "siegemedia.com": {
@@ -905,7 +1013,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /work/instacart-content-marketing etc. 'View case study'; client logos",
@@ -920,7 +1030,9 @@
    "https": "https://www.siegemedia.com/",
    "schema": "JSON-LD type Organization",
    "focus": "links /services/geo, /services/digital-pr, /services/content-marketing, /services/reddit-marketing, /services/web-design",
-   "seen": "1 place(s): linkedin.com/company/siege-media (dribbble/twitter/youtube are social)"
+   "seen": "1 place(s): linkedin.com/company/siege-media (dribbble/twitter/youtube are social)",
+   "ask": "\"Let's Talk\" and \"Get an Assessment\" -> /business-form",
+   "siteType": "content/GEO agency"
   }
  },
  "singlegrain.com": {
@@ -938,7 +1050,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Case Studies nav + 'See All Case Studies', results grid (+112.5% Increase in total sales)",
@@ -953,7 +1067,9 @@
    "https": "https://www.singlegrain.com/",
    "schema": "LocalBusiness JSON-LD (Single Grain, LLC)",
    "focus": "links /services/seo/, /services/technical-seo/, /services/tiktok-ads-agency/, /cro-agency/",
-   "seen": "1 place(s): linkedin.com/company/single-grain-llc (Apple Podcasts/Spotify links are its own shows)"
+   "seen": "1 place(s): linkedin.com/company/single-grain-llc (Apple Podcasts/Spotify links are its own shows)",
+   "ask": "getStartedModal lead form with \"Free Consult\" field; description \"Get your free growth audit\"; saved links cut, close call",
+   "siteType": "marketing agency"
   }
  },
  "smartsites.com": {
@@ -971,7 +1087,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "alt \"HQ Custom Design case study\"; \"See all 411 case studies\"; Our Work nav",
@@ -986,7 +1104,9 @@
    "https": "https://www.smartsites.com/",
    "schema": "ProfessionalService JSON-LD (unquoted type= attribute)",
    "focus": "links /organic-seo/, /ppc-marketing/, /email-marketing/, /social-media-marketing/, /web-design/",
-   "seen": "1 place(s): linkedin.com/company/smartsites; Forbes Advisor/Clutch/DesignRush/Inc. 5000 named with no link"
+   "seen": "1 place(s): linkedin.com/company/smartsites; Forbes Advisor/Clutch/DesignRush/Inc. 5000 named with no link",
+   "ask": "'Get a free proposal' button, 'Book a meeting', form headed 'Get a free proposal'",
+   "siteType": "digital marketing agency"
   }
  },
  "studioboothsalon.com": {
@@ -1004,7 +1124,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "/pages/our-work link \"Explore our work\"",
@@ -1019,7 +1141,9 @@
    "https": "final URL https://studioboothsalon.com/",
    "schema": "HairSalon/DaySpa/BeautySalon JSON-LD",
    "focus": "links /pages/massage, /pages/facials, /pages/lash-extensions, /pages/hair, /pages/nails, /pages/waxing",
-   "seen": "2+ place(s): 'As seen on' apnews.com/press-release/..., usatoday.com/press-release/..., barchart.com/story/news/..., streetinsider.com (close call: syndicated press releases)"
+   "seen": "2+ place(s): 'As seen on' apnews.com/press-release/..., usatoday.com/press-release/..., barchart.com/story/news/..., streetinsider.com (close call: syndicated press releases)",
+   "ask": "\"Book Now\" and \"Book your appointment\" -> login.meevo.com online booking",
+   "siteType": "hair salon and day spa; product brands page is a side listing"
   }
  },
  "swiftgrowth.marketing": {
@@ -1037,7 +1161,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "client logo wall: alt SkillsTX, Rehab Essentials, ProTech, SCI",
@@ -1052,7 +1178,9 @@
    "https": "https://swiftgrowth.marketing/",
    "schema": "JSON-LD @type Organization",
    "focus": "links /brand-strategy, /seo-ai-visibility, /paid-media, /email-marketing, /web-design-development",
-   "seen": "1 place(s): linkedin.com/company/86689597/"
+   "seen": "1 place(s): linkedin.com/company/86689597/",
+   "ask": "\"Let's Talk\" and \"Start a Conversation\" -> /contact (also \"Get in touch\"); close call",
+   "siteType": "brand studio / marketing agency"
   }
  },
  "threeriversdent.com": {
@@ -1070,7 +1198,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "link /video-examples-of-dent-repair/ (own repair videos); close call, no gallery text",
@@ -1085,7 +1215,9 @@
    "https": "https://www.threeriversdent.com/",
    "schema": "JSON-LD WebPage/WebSite/BreadcrumbList only",
    "focus": "links /paintless-dent-repair-pittsburgh/, /bumper-repair/, /hail-damage-repair-in-pittsburgh-pa/, /hail-repair/",
-   "seen": "2+ place(s): certifiedpdr.com ('Master technician status'), napdrt.com (association), pdrcollege.com; root-domain links, not profiles (close call)"
+   "seen": "2+ place(s): certifiedpdr.com ('Master technician status'), napdrt.com (association), pdrcollege.com; root-domain links, not profiles (close call)",
+   "ask": "only \"Contact\" -> /about-us and a bare phone number; \"Call Now\" appears only in the meta description",
+   "siteType": "paintless dent repair service"
   }
  },
  "thriveagency.com": {
@@ -1103,7 +1235,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links /case-studies/ and /case-study/qualis/ 'Read Qualis Roofing's Case Study'",
@@ -1118,7 +1252,9 @@
    "https": "https://thriveagency.com/",
    "schema": "LocalBusiness/Organization JSON-LD",
    "focus": "links /digital-marketing-services/search-engine-optimization-seo/, /pay-per-click-ppc/, /social-media/, /web-design/",
-   "seen": "2+ place(s): JSON-LD sameAs linkedin.com/company/thrive-agency, dnb.com/business-directory/..., crunchbase.com/organization/thrive-internet-marketing-agency-587d"
+   "seen": "2+ place(s): JSON-LD sameAs linkedin.com/company/thrive-agency, dnb.com/business-directory/..., crunchbase.com/organization/thrive-internet-marketing-agency-587d",
+   "ask": "\"SEND MY FREE PROPOSAL\" -> /contact, \"Get your free proposal!\"",
+   "siteType": "digital marketing agency"
   }
  },
  "tjdentalpa.com": {
@@ -1136,7 +1272,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "services icons only, no portfolio/gallery",
@@ -1151,7 +1289,9 @@
    "https": "https://tjdentalpa.com/",
    "schema": "JSON-LD @type Dentist, but the block doesn't parse (stray text after a value); since 2026-10-02 the block must parse",
    "focus": "nav is only anchors #about, #services, #process; no sub-pages",
-   "seen": "0 place(s): only facebook in sameAs"
+   "seen": "0 place(s): only facebook in sameAs",
+   "ask": "only a bare phone number, address, email and in-page 'contact' anchor; no book button or form in the saved facts",
+   "siteType": "dental practice"
   }
  },
  "victoriousseo.com": {
@@ -1169,7 +1309,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "links to /case-studies/unionbay/, /case-studies/agora/",
@@ -1184,7 +1326,9 @@
    "https": "https://victorious.com/",
    "schema": "JSON-LD @type Organization",
    "focus": "links /services/seo/, /services/answer-engine-optimization/, /services/seo-content/, /services/seo/technical-seo/",
-   "seen": "2+ place(s): linkedin.com/company/victorious-seo, JSON-LD sameAs crunchbase.com/organization/victorious, wikidata.org/wiki/Q141178654"
+   "seen": "2+ place(s): linkedin.com/company/victorious-seo, JSON-LD sameAs crunchbase.com/organization/victorious, wikidata.org/wiki/Q141178654",
+   "ask": "\"Book a Call\" -> /free-consultation/, \"Schedule a call now\", \"Get pricing\"",
+   "siteType": "SEO agency"
   }
  },
  "wahlheatingandcooling.com": {
@@ -1202,7 +1346,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Real Work, Real Homes: Actual installs from actual Pittsburgh homes; alt 'Tankless water heater installation'",
@@ -1217,7 +1363,9 @@
    "https": "final URL https://wahlheatingandcooling.com/",
    "schema": "HVACBusiness JSON-LD (plus Organization)",
    "focus": "links /heating/, /air-conditioning/, /plumbing-services/, /water-heating-services/, /sewers/",
-   "seen": "1 place(s): JSON-LD sameAs linkedin.com/company/wahl-heating-cooling-and-plumbing; partner badges link to own pages; 'BBB A+' unlinked"
+   "seen": "1 place(s): JSON-LD sameAs linkedin.com/company/wahl-heating-cooling-and-plumbing; partner badges link to own pages; 'BBB A+' unlinked",
+   "ask": "'Call now', 'Schedule Service Online', 'Request Service', 'Book it' buttons",
+   "siteType": "HVAC and plumbing contractor"
   }
  },
  "webfx.com": {
@@ -1235,7 +1383,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "link /portfolio/case-studies/ 'Explore Our Case Studies'; client logos",
@@ -1250,7 +1400,9 @@
    "https": "https://www.webfx.com/",
    "schema": "JSON-LD type Organization",
    "focus": "links /seo/services/, /ppc/services/, /content-marketing/services/, /local-seo/services/",
-   "seen": "2+ place(s): linkedin.com/company/webfxinc, JSON-LD sameAs crunchbase.com/organization/webfx"
+   "seen": "2+ place(s): linkedin.com/company/webfxinc, JSON-LD sameAs crunchbase.com/organization/webfx",
+   "ask": "\"Get a Proposal\" and \"Get My Free Proposal\" -> /free-quote/",
+   "siteType": "digital marketing agency"
   }
  },
  "wildrisebakery.com": {
@@ -1268,7 +1420,9 @@
    "https": true,
    "schema": null,
    "focus": null,
-   "seen": false
+   "seen": false,
+   "ask": null,
+   "siteType": null
   },
   "why": {
    "https": "final URL https://www.wildrisebakery.com/",
@@ -1276,7 +1430,9 @@
    "schema": "no JSON-LD in saved page, but page is empty so can't tell",
    "focus": "saved page is empty (title 'Home | Wild Rise Bakery' only, no text or links)",
    "seen": "0 place(s): no links captured",
-   "reviewSites": "[count 0: no links captured]"
+   "reviewSites": "[count 0: no links captured]",
+   "ask": "saved page is nearly empty (no links or text); description says \"Pre-order online\" but the page cannot show it",
+   "siteType": "page empty, type not visible (bakery by description)"
   }
  },
  "mtviewroofing.com": {
@@ -1294,7 +1450,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "'Take a look at some of our recent work' + alt 'New Roof in Boise Idaho' photos",
@@ -1309,7 +1467,9 @@
    "https": "https://mtviewroofing.com/",
    "schema": "JSON-LD Organization 'Mountain View Roofing'",
    "focus": "one /types-of-roofs-we-do/ page plus /the-roofing-process/; metal, tile and flat roofing are named in text with no links",
-   "seen": "0 place(s): none"
+   "seen": "0 place(s): none",
+   "ask": "\"Call Now\" tel:208-353-2952 link",
+   "siteType": "roofing contractor"
   }
  },
  "idahoroofingcontractors.com": {
@@ -1327,7 +1487,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "'Past Projects... Check out our gallery' + /featured-projects/ link and project write-ups",
@@ -1342,7 +1504,9 @@
    "https": "https://www.idahoroofingcontractors.com/",
    "schema": "JSON-LD RoofingContractor and Organization",
    "focus": "links /services/roof-replacement-services/, /services/repair/, /services/new-construction/, /services/flat-roofing/, /services/storm-damage/",
-   "seen": "1 place(s): linkedin.com/company/idaho-roofing-contractors-inc; 'Boise Metro Chamber' named with no link"
+   "seen": "1 place(s): linkedin.com/company/idaho-roofing-contractors-inc; 'Boise Metro Chamber' named with no link",
+   "ask": "'Request A quote' buttons, 'Let's Talk'",
+   "siteType": "roofing contractor"
   }
  },
  "peakroofingidaho.com": {
@@ -1360,7 +1524,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "nav link /gallery/ 'Gallery' on same site",
@@ -1375,7 +1541,9 @@
    "https": "https://peakroofingidaho.com/",
    "schema": "JSON-LD RoofingContractor and Organization",
    "focus": "links /residential-roof-replacement/, /residential-roof-repair/, /residential-roof-inspection/",
-   "seen": "0 place(s): only facebook"
+   "seen": "0 place(s): only facebook",
+   "ask": "\"Free Inspection\" -> /contact-us, \"Get a Free Roof Inspection\", form headed \"Request A Roofing Inspection\"",
+   "siteType": "roofing contractor"
   }
  },
  "allandalevetclinic.com": {
@@ -1393,7 +1561,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Services pages and stock-style photos only; no portfolio/gallery",
@@ -1408,7 +1578,9 @@
    "https": "https://www.allandalevetclinic.com/",
    "schema": "JSON-LD VeterinaryCare + LocalBusiness, but the block starts with a '// Pablo BB' comment so it doesn't parse; since 2026-10-02 the block must parse",
    "focus": "links /services/wellness.html, /services/senior-pet-care.html, /services/surgery-dentistry.html, /services/diagnostics.html, /services/rehabilitation-therapy.html",
-   "seen": "0 place(s): none (facebook only)"
+   "seen": "0 place(s): none (facebook only)",
+   "ask": "\"Request Appointment\" -> /forms/appointment.html",
+   "siteType": "veterinary clinic"
   }
  },
  "farwestvet.com": {
@@ -1426,7 +1598,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Services/pet library only; no portfolio",
@@ -1441,7 +1615,9 @@
    "https": "https://farwestvet.com/",
    "schema": "JSON-LD section empty",
    "focus": "a single /services.pml page; other nav pages are info/forms",
-   "seen": "0 place(s): none; vin.com/evetsites.com are the site vendor"
+   "seen": "0 place(s): none; vin.com/evetsites.com are the site vendor",
+   "ask": "\"Request Appointment\" -> /request-appointment.pml (menu)",
+   "siteType": "veterinary clinic"
   }
  },
  "staroftexasvet.com": {
@@ -1459,7 +1635,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "No portfolio/case studies; services and team only",
@@ -1474,7 +1652,9 @@
    "https": "final URL https://staroftexasvet.com/",
    "schema": "JSON-LD type VeterinaryCare + LocalBusiness",
    "focus": "services are anchors on one page (/services/#Acupuncture, #Nutritional_Consults); /fear-free-care/, /cat-friendly/, /end-of-life/ read as approach/resource pages (close call)",
-   "seen": "0 place(s): social only (fb, tiktok, insta, pinterest, youtube)"
+   "seen": "0 place(s): social only (fb, tiktok, insta, pinterest, youtube)",
+   "ask": "'Request Appointment' button, 'Call Us' tel link, 'Call Now Button'",
+   "siteType": "veterinary clinic; online store is a side link"
   }
  },
  "center4chiropractic.com": {
@@ -1492,7 +1672,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "No portfolio; services, forms, team pages only",
@@ -1507,7 +1689,9 @@
    "https": "final URL https://www.center4chiropractic.com/",
    "schema": "JSON-LD section empty",
    "focus": "links /chiropractors.html, /acupuncturists.html, /massage.html, one page per discipline (close call: may be team-listing pages)",
-   "seen": "0 place(s): none (facebook only)"
+   "seen": "0 place(s): none (facebook only)",
+   "ask": "\"Schedule Online\" / \"SCHEDULE NOW\" -> /schedule.html",
+   "siteType": "chiropractic clinic"
   }
  },
  "laurelhurstchiropractic.com": {
@@ -1525,7 +1709,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Close call: /gallery 'View More Images' is office/stock-style images, no past-work evidence",
@@ -1540,7 +1726,9 @@
    "https": "final URL https://www.laurelhurstchiropractic.com/",
    "schema": "JSON-LD LocalBusiness with foundingDate",
    "focus": "links /auto-injury-chiropractic-care, /back-pain-chiropractic-treatment, /pediatric-chiropractic-care, /prenatal-chiropractic-care, /massage-therapy-services",
-   "seen": "0 place(s): facebook/instagram only"
+   "seen": "0 place(s): facebook/instagram only",
+   "ask": "\"Request Appointment\" -> /request-appointment, plus Request Appointment hero form",
+   "siteType": "chiropractic practice"
   }
  },
  "hartmanoutdoorphotography.com": {
@@ -1558,7 +1746,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "Link /portfolio/asheville-boone-wedding-photography/ and featured wedding posts (Gini + Jordan, Emily + Will)",
@@ -1573,7 +1763,9 @@
    "https": "final URL https://www.hartmanoutdoorphotography.com/",
    "schema": "JSON-LD only WebPage, ImageObject, BreadcrumbList, WebSite",
    "focus": "nav is About/Blog/FAQ/Clients/Portfolio/Contact; the homepage links are blog posts, not offering pages",
-   "seen": "1 place(s): junebugweddings.com/best-wedding-photographers/top-photographers/ (best-of list)"
+   "seen": "1 place(s): junebugweddings.com/best-wedding-photographers/top-photographers/ (best-of list)",
+   "ask": "only 'Contact' nav link and blog posts; no book or inquire ask",
+   "siteType": "wedding photographer"
   }
  },
  "kathybeaverphotography.com": {
@@ -1591,7 +1783,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Portfolio nav link and gallery images alt 'Hannah & Kevan Engagement | Max Patch', 'Jay & Aubrey'",
@@ -1606,7 +1800,9 @@
    "https": "final URL https://kathybeaverphotography.com/",
    "schema": "JSON-LD Organization (Kathy Beaver Photography)",
    "focus": "links /wedding-pricing/, /asheville-engagement-photographer-2/, /asheville-family-portrait-pricing/, /creative-shoppe/",
-   "seen": "2+ place(s): 'as seen on' glitterybride.com/whimsical-inspired-wedding-at-asheville-glamping/, glamourandgraceblog.com/2019/painting-inspired-wedding-ideas/ (southernliving.com/weddings is a generic section)"
+   "seen": "2+ place(s): 'as seen on' glitterybride.com/whimsical-inspired-wedding-at-asheville-glamping/, glamourandgraceblog.com/2019/painting-inspired-wedding-ideas/ (southernliving.com/weddings is a generic section)",
+   "ask": "\"BOOK\" -> /contact-4; \"Now booking 2023 weddings\"",
+   "siteType": "wedding photographer; small shop is a side offer"
   }
  },
  "kirstenalexandriaphotography.com": {
@@ -1624,7 +1820,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "Homepage shows own wedding/elopement photos (alt: 'bride and groom sharing private vows on a mountain')",
@@ -1639,7 +1837,9 @@
    "https": "https://kirstenalexandriaphotography.com/",
    "schema": "Organization and ProfessionalService JSON-LD",
    "focus": "links /asheville-wedding-packages/, /asheville-elopement-photographer/, /asheville-engagement-photographer/, /film-wedding-photographer/",
-   "seen": "2+ place(s): photobugcommunity.com (Junebug honorable mention), bestofavl.com/listing/2023/photographer, travelguidesasheville.com, romanticasheville.com, exploreasheville.com/listings/..."
+   "seen": "2+ place(s): photobugcommunity.com (Junebug honorable mention), bestofavl.com/listing/2023/photographer, travelguidesasheville.com, romanticasheville.com, exploreasheville.com/listings/...",
+   "ask": "\"Get In Touch\", \"Contact for full pricing\", form headed \"Get In Touch\"; no book/inquire-for-date ask",
+   "siteType": "wedding photographer"
   }
  },
  "crosspestcontrol.com": {
@@ -1657,7 +1857,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Close call false: only stock-style service images, no portfolio/projects",
@@ -1672,7 +1874,9 @@
    "https": "https://www.crosspestcontrol.com/",
    "schema": "LocalBusiness JSON-LD",
    "focus": "links /services/bed-bug-control, /services/mosquito-control, /services/rodent-control, /services/termite-control",
-   "seen": "2+ place(s): linkedin.com/company/cross-pest-control-of-tampa, npmapestworld.org, npmaqualitypro.org, flpma.org (association logos)"
+   "seen": "2+ place(s): linkedin.com/company/cross-pest-control-of-tampa, npmapestworld.org, npmaqualitypro.org, flpma.org (association logos)",
+   "ask": "\"Get A Free Quote\" -> /free-quote",
+   "siteType": "pest control"
   }
  },
  "tri-spestcontrol.com": {
@@ -1690,7 +1894,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Close call false: only stock Getty pest images, no past work",
@@ -1705,7 +1911,9 @@
    "https": "https://www.tri-spestcontrol.com/",
    "schema": "LocalBusiness JSON-LD",
    "focus": "links /mosquitos, /cockroaches, /termite-company, /lawn-care, /chinch-bugs",
-   "seen": "1 place(s): linkedin.com/company/pest-control-tampa/about/"
+   "seen": "1 place(s): linkedin.com/company/pest-control-tampa/about/",
+   "ask": "\"Request your FREE ESTIMATE\" -> /pest-control-free-estimate",
+   "siteType": "pest control service"
   }
  },
  "alleycatpestcontrol.com": {
@@ -1723,7 +1931,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "No portfolio, only blog posts and tiny offer graphics",
@@ -1738,7 +1948,9 @@
    "https": "https://www.alleycatpestcontrol.com/",
    "schema": "Organization in JSON-LD @graph",
    "focus": "only /services/ and /silverfish-pest-control/; /wood-destroying-organisms/ etc. sit under 'Pest Info' (close call)",
-   "seen": "0 place(s): pestworldforkids.org 'Fun for kids' is an education site, not a listing"
+   "seen": "0 place(s): pestworldforkids.org 'Fun for kids' is an education site, not a listing",
+   "ask": "header 'call us: 813-671-3838' with tel: link (call words + tel link); otherwise only Contact us",
+   "siteType": "local pest control business"
   }
  },
  "qhtattoos.com": {
@@ -1756,7 +1968,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "Close call false: images are studio/storefront/aftercare, no tattoo portfolio on homepage",
@@ -1771,7 +1985,9 @@
    "https": "https://qhtattoos.com/",
    "schema": "TattooParlor and Organization JSON-LD",
    "focus": "only /tattoos and /piercing; /aftercare is product care advice (close call)",
-   "seen": "0 place(s): facebook/instagram only; 'award-winning' unlinked"
+   "seen": "0 place(s): facebook/instagram only; 'award-winning' unlinked",
+   "ask": "only \"Contact Us\" -> /contact; service links are \"View Tattoo Services\"",
+   "siteType": "tattoo and piercing studio"
   }
  },
  "pilgrimagetattoo.com": {
@@ -1789,7 +2005,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "alt: 'Psychedelic neo-traditional panther ... tattooed on a calf by English Cousins'; Portfolio links",
@@ -1804,7 +2022,9 @@
    "https": "https://www.pilgrimagetattoo.com/",
    "schema": "TattooParlor + LocalBusiness JSON-LD",
    "focus": "one-page site: nav is anchors (#artists, #booking, #aftercare); only internal page is guest-artist.html; artist bios are team, not offerings",
-   "seen": "0 place(s): only instagram.com profiles, getporter.io booking, flodesk/mailchimp lists"
+   "seen": "0 place(s): only instagram.com profiles, getporter.io booking, flodesk/mailchimp lists",
+   "ask": "\"Request an appointment\" -> web.getporter.io/shop/pilgrimage-tattoo/request",
+   "siteType": "tattoo studio"
   }
  },
  "black13tattoo.com": {
@@ -1822,7 +2042,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "Close call: untitled MainTattoos_*.jpg gallery images and /artists links; no alt text",
@@ -1837,7 +2059,9 @@
    "https": "https://www.black13tattoo.com/",
    "schema": "Organization and LocalBusiness JSON-LD",
    "focus": "links /artists/<name> (team bios), /appointment, /walkins, /faq, /news; no per-offering pages",
-   "seen": "0 place(s): 'Voted Nashville Scene's Best of Nashville' text has no link; only instagram.com/black13tattoo and own merch domain black13brand.com"
+   "seen": "0 place(s): 'Voted Nashville Scene's Best of Nashville' text has no link; only instagram.com/black13tattoo and own merch domain black13brand.com",
+   "ask": "\"BOOK NOW\" -> /appointment",
+   "siteType": "tattoo parlor; merch is a side link"
   }
  },
  "bigriveryoga.com": {
@@ -1855,7 +2079,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio or gallery; stock-like class photos only",
@@ -1870,7 +2096,9 @@
    "https": "https://www.bigriveryoga.com/",
    "schema": "Organization and LocalBusiness JSON-LD",
    "focus": "links /private-yoga-events-retreats, /yoga-on-demand, /minneapolis-thai-massage-therapy-chris-gordon, /yoga-workshops-retreats-enrollment, /yelapa-mexico-yoga-retreat-2027",
-   "seen": "0 place(s): only facebook.com/BigRiverYoga, instagram.com/bigriveryoga, momence booking"
+   "seen": "0 place(s): only facebook.com/BigRiverYoga, instagram.com/bigriveryoga, momence booking",
+   "ask": "'Book Now', 'BOOK A CLASS' buttons",
+   "siteType": "yoga studio; gift cards are minor"
   }
  },
  "nokomisyoga.com": {
@@ -1888,7 +2116,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio or gallery",
@@ -1903,7 +2133,9 @@
    "https": "https://nokomisyoga.com/",
    "schema": "no JSON-LD",
    "focus": "links kidsyoga.htm 'Mom & Baby', yogatherapy.htm 'Yoga Therapy', yogaworkshops.htm 'Workshops/Events' (plus classes.htm) (close call: old site, workshops page is events)",
-   "seen": "0 place(s): only facebook.com/Nokomis-Yoga-61503333092"
+   "seen": "0 place(s): only facebook.com/Nokomis-Yoga-61503333092",
+   "ask": "only \"drop in any class\" text, schedule/rates links, email link, PayPal gift certificate form; no book/register ask",
+   "siteType": "yoga studio"
   }
  },
  "kenwoodyogastudio.com": {
@@ -1921,7 +2153,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio",
@@ -1936,7 +2170,9 @@
    "https": "https://www.kenwoodyogastudio.com/",
    "schema": "WebSite JSON-LD only",
    "focus": "every nav item (Schedule, Class Descriptions, About) links back to the homepage; classes described inline; only other page /sign-up",
-   "seen": "0 place(s): only instagram.com/kenwoodyoga"
+   "seen": "0 place(s): only instagram.com/kenwoodyoga",
+   "ask": "\"Sign Up\" / \"Save My Place\" -> /sign-up",
+   "siteType": "yoga studio"
   }
  },
  "bloemdecor.com": {
@@ -1954,7 +2190,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "ecommerce"
   },
   "why": {
    "work": "Nav links /gallery and wedding/dailies galleries",
@@ -1969,7 +2207,9 @@
    "https": "https://bloemdecor.com/",
    "schema": "JSON-LD Florist/LocalBusiness/Organization",
    "focus": "links category pages /celebrations-of-life/, /occasions/anniversary/, /occasions/birthday/, /occasions/get-well/, /occasions/sympathy-and-funeral/, /flower/peonies/",
-   "seen": "0 place(s): bloomnation.com/florist/bloem-dcor-florist/ is the site's own platform/marketplace vendor (close call); rest are instagram/facebook/tiktok/youtube/pinterest"
+   "seen": "0 place(s): bloomnation.com/florist/bloem-dcor-florist/ is the site's own platform/marketplace vendor (close call); rest are instagram/facebook/tiktok/youtube/pinterest",
+   "ask": "\"Shop Online\" / \"See all flowers\" with product grid, cart",
+   "siteType": "florist selling arrangements online, prices, cart"
   }
  },
  "everestflowers.com": {
@@ -1987,7 +2227,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "ecommerce"
   },
   "why": {
    "work": "close call: only product catalog; no gallery/portfolio link",
@@ -2002,7 +2244,9 @@
    "https": "https://everestflowers.com/",
    "schema": "JSON-LD Florist/LocalBusiness/Organization",
    "focus": "links /anniversary-flowers/, /birthday-flowers/, /sympathy-and-funeral-flowers/, /wedding-flowers/, /funerals/, /weddings/ plus product-type categories",
-   "seen": "0 place(s): bloomnation.com/florist/everest-florist-gifts/ is the platform/marketplace vendor (close call); rest social"
+   "seen": "0 place(s): bloomnation.com/florist/everest-florist-gifts/ is the platform/marketplace vendor (close call); rest social",
+   "ask": "\"Shop\" / \"See all flowers\", product grid with prices, cart",
+   "siteType": "florist selling online"
   }
  },
  "sacflower.net": {
@@ -2020,7 +2264,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "ecommerce"
   },
   "why": {
    "work": "close call: product catalog only; no gallery/portfolio link",
@@ -2035,7 +2281,9 @@
    "https": "https://sacflower.net/",
    "schema": "JSON-LD Florist/LocalBusiness/Organization",
    "focus": "links /anniversary-flowers/, /birthday-flowers/, /get-well-flowers/, /sympathy-and-funeral-flowers/, /wedding-flowers/, /custom-flower-arrangements/",
-   "seen": "0 place(s): bloomnation.com/florist/the-flower-shop-9/ is the platform/marketplace vendor (close call); otherwise only instagram"
+   "seen": "0 place(s): bloomnation.com/florist/the-flower-shop-9/ is the platform/marketplace vendor (close call); otherwise only instagram",
+   "ask": "\"Shop\" nav -> /sacramento-florist-flower-delivery/, \"See all flowers\", cart link, priced products",
+   "siteType": "florist storefront with product grid, 16 prices, cart, checkout"
   }
  },
  "landvisiondesigns.com": {
@@ -2053,7 +2301,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "nav link /see-our-work/ ('See Our Work')",
@@ -2068,7 +2318,9 @@
    "https": "https://www.landvisiondesigns.com/",
    "schema": "JSON-LD Organization + LocalBusiness",
    "focus": "links /landscape-design-installation/, /masonry-construction/, /decks/, /custom-pools-spas/, /outdoor-kitchens/, /landscape-lighting/ and more",
-   "seen": "1 place(s): houzz.com/pro/landvisiondesigns (Houzz profile, shown as a 'Follow' icon) (close call)"
+   "seen": "1 place(s): houzz.com/pro/landvisiondesigns (Houzz profile, shown as a 'Follow' icon) (close call)",
+   "ask": "'SCHEDULE A CALL' button",
+   "siteType": "landscaping design-build firm"
   }
  },
  "hardisonlandscaping.com": {
@@ -2086,7 +2338,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "nav /portfolio and 'VIEW OUR WORK' link",
@@ -2101,7 +2355,9 @@
    "https": "https://www.hardisonlandscaping.com/",
    "schema": "JSON-LD LocalBusiness",
    "focus": "links /holly-springs-nc/landscape-design, /landscape-installation, /outdoor-living, /patios, /sod-installation, /landscape-installation/landscape-lighting (service pages under a city path)",
-   "seen": "0 place(s): only facebook, instagram, youtube"
+   "seen": "0 place(s): only facebook, instagram, youtube",
+   "ask": "\"Request An ESTIMATE\" -> /contact; \"Get Started Now\"",
+   "siteType": "landscaping contractor"
   }
  },
  "norrislandscaping.com": {
@@ -2119,7 +2375,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "'Our Work' with /gallery-commercial-landscaping links; Portfolio menu",
@@ -2134,7 +2392,9 @@
    "https": "https://norrislandscaping.com/",
    "schema": "JSON-LD Organization (name, url, description)",
    "focus": "links /commercial-industrial-grounds-maintenance/, /irrigation/, /hydroseeding/, /outdoor-living-hardscapes/, /water-features/, /outdoor-lighting/",
-   "seen": "0 place(s): NCNLA, Angie's List badges are images with no link; About lists NCNLA membership as text only; social icons are '#'"
+   "seen": "0 place(s): NCNLA, Angie's List badges are images with no link; About lists NCNLA membership as text only; social icons are '#'",
+   "ask": "only 'Contact Us' button and bare phone/email",
+   "siteType": "landscaping company"
   }
  },
  "angelinaspastries.com": {
@@ -2152,7 +2412,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: only menu PDF and 'Latest Goodies' photo with no alt; no portfolio",
@@ -2167,7 +2429,9 @@
    "https": "https://angelinaspastries.com/",
    "schema": "JSON-LD @type LocalBusiness",
    "focus": "single page; 'Check out our daily menu' is an anchor (#3e57...) and a menu PDF",
-   "seen": "0 place(s): only facebook and instagram"
+   "seen": "0 place(s): only facebook and instagram",
+   "ask": "only 'Contact Us!' form, 'Check out our daily menu', 'Get directions', bare phone number; no order/reserve",
+   "siteType": "local bakery, no shop or cart"
   }
  },
  "atamcmurray.com": {
@@ -2185,7 +2449,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "link /videos-&-photo-gallery 'Videos Photo Gallery'",
@@ -2200,7 +2466,9 @@
    "https": "https://atamcmurray.com/",
    "schema": "JSON-LD @type LocalBusiness",
    "focus": "links /ata-tigers-ages-4-7, /karate-kids-ages-7-13, /weapons-program, /xtreme-martial-arts-xma, /brazilian-jiu-jitsu, /birthday-parties",
-   "seen": "0 place(s): only facebook, instagram, tiktok; GoDaddy builder link"
+   "seen": "0 place(s): only facebook, instagram, tiktok; GoDaddy builder link",
+   "ask": "h1 \"Try your FREE class today!\" and \"Try Our 4 Week Intro\" offer link to /ola/services/4-week-introduction-program-special",
+   "siteType": "martial arts academy, classes"
   }
  },
  "blueskycsi.com": {
@@ -2218,7 +2486,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio or past work; locations/resources only",
@@ -2233,7 +2503,9 @@
    "https": "https://www.blueskycsi.com/",
    "schema": "JSON-LD @type LocalBusiness",
    "focus": "nav is About, Reviews, Team, Resources, FAQ, Wire Fraud Alert, Locations; /fidelity-national-title-insurance and /first-american-title-insurance are underwriter info pages (only 2 anyway)",
-   "seen": "0 place(s): only facebook and instagram; BBB counted as review"
+   "seen": "0 place(s): only facebook and instagram; BBB counted as review",
+   "ask": "only 'Contact Our Team' / Contact Us",
+   "siteType": "title closing services firm"
   }
  },
  "cts-pgh.com": {
@@ -2251,7 +2523,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": null,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio; links are unlabeled services pages",
@@ -2266,7 +2540,9 @@
    "https": "https://www.cts-pgh.com/",
    "schema": "no JSON-LD",
    "focus": "image links to cabling.html, seccam.html, accesscontrol.html, itman.html, avinstall.html, techconsult.html, pcbuild.html",
-   "seen": "0 place(s): image-map icon to linkedin.com/pub/computec-technical-solutions-inc/... is a /pub/ (personal-style) profile, not a /company/ page (close call); other is facebook"
+   "seen": "0 place(s): image-map icon to linkedin.com/pub/computec-technical-solutions-inc/... is a /pub/ (personal-style) profile, not a /company/ page (close call); other is facebook",
+   "ask": "links are image-only (no words), no visible CTA text in saved page; cannot tell",
+   "siteType": "IT/cabling services per page names (cabling, seccam, itman)"
   }
  },
  "southwestcommunitieschamber.org": {
@@ -2284,7 +2560,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": null,
+   "siteType": null
   },
   "why": {
    "https": "final URL https://rtpserdadu4dhoki.com/",
@@ -2292,7 +2570,9 @@
    "schema": "only WebSite JSON-LD",
    "focus": "domain now redirects to rtpserdadu4dhoki.com, an Indonesian gambling spam page (dadu4d); no offering pages (close call: fixture is not the real chamber site)",
    "seen": "0 place(s): only ael.ink/... 'DAFTARKAN SEKARANG' spam link",
-   "reviewSites": "[count 0: no review platform links]"
+   "reviewSites": "[count 0: no review platform links]",
+   "ask": "page is a hijacked Indonesian gambling spam page (\"DAFTARKAN SEKARANG\" register button); not a real business page, so a direct ask cannot be judged",
+   "siteType": "hijacked spam page, no real business type"
   }
  },
  "confluencefp.com": {
@@ -2310,7 +2590,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": true
+   "seen": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "track": "schema foundingDate 2018 (8 years)",
@@ -2324,7 +2606,9 @@
    "https": "https://www.confluencefp.com/",
    "schema": "FinancialService/Organization JSON-LD",
    "focus": "links /services/individuals-and-families/financial-planning/, /investment-management/, /services/retirement-plan-services/, /services/non-profit-organizations/",
-   "seen": "1 place(s): linkedin.com/company/confluence-financial-partners/ (sameAs adviserinfo.sec.gov is the bare regulator homepage, not a profile; Steelers mention has no link)"
+   "seen": "1 place(s): linkedin.com/company/confluence-financial-partners/ (sameAs adviserinfo.sec.gov is the bare regulator homepage, not a profile; Steelers mention has no link)",
+   "ask": "\"Request A Meeting\" and \"Get Started Now\" -> /schedule-your-complimentary-consultation",
+   "siteType": "wealth management firm"
   }
  },
  "jeffhancher.com": {
@@ -2342,7 +2626,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "close-call false: no portfolio/case studies; testimonials are not own work",
@@ -2357,7 +2643,9 @@
    "schema": "LocalBusiness JSON-LD 'Jeff Hancher Enterprises'",
    "focus": "links /leadership-system, /workshops, /speaking-engagements (+ /keynote-speaking), /executive-forum, /products",
    "seen": "0 place(s): linkedin.com/in/jeff-hancher/ is a personal profile; firmfeedbackbook.com is his own book domain; podcast is on-site (/allposts)",
-   "reviewSites": "[count 0: video testimonials on-site, no review platform links]"
+   "reviewSites": "[count 0: video testimonials on-site, no review platform links]",
+   "ask": "\"Order Now!\" (book), \"Register Here\" (event); no service-booking link",
+   "siteType": "speaker/leadership consultant; book and products are secondary"
   }
  },
  "millersace.com": {
@@ -2375,7 +2663,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": null
   },
   "why": {
    "credentials": "'certified service repair center for STIHL'; 'Authorized STIHL Service Center'",
@@ -2388,7 +2678,9 @@
    "people": "About page: Owned and operated by Greg and Chip Gold",
    "track": "About page: Serving our community for 130+ years; first store 1889",
    "focus": "only hub pages /departments/, /services/, /featured-products/, /featured-brands/; department tiles (grills, paint, outdoor power) and service icons are not linked; millersace.stihldealer.net is a vendor subsite (close call)",
-   "seen": "0 place(s): About page mentions Washington County Chamber of Commerce and J.D. Power awards with no link; only facebook"
+   "seen": "0 place(s): About page mentions Washington County Chamber of Commerce and J.D. Power awards with no link; only facebook",
+   "ask": "nav text \"Shop Online\" (no link captured in saved links; \"Contact Us\" also in nav); weak evidence",
+   "siteType": "local hardware store: departments, services, featured products, no prices or cart; products and services about equal"
   }
  },
  "ajbuerkle.com": {
@@ -2406,7 +2698,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "close call: no portfolio/gallery; only service pages and a video splash",
@@ -2421,7 +2715,9 @@
    "https": "https://www.ajbuerkle.com/",
    "schema": "JSON-LD @type LocalBusiness",
    "focus": "links /plumbing, /heating, /air-conditioning, /bathroom-remodeling (city plumbing pages excluded)",
-   "seen": "0 place(s): only facebook; BBB counted as review; Rotary/BBB association listed as text only"
+   "seen": "0 place(s): only facebook; BBB counted as review; Rotary/BBB association listed as text only",
+   "ask": "\"Request Service\" -> /request-service-form, plus request form",
+   "siteType": "HVAC/plumbing contractor"
   }
  },
  "aladdinseatery.com": {
@@ -2439,7 +2735,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "menu and catering links only, no past-work gallery",
@@ -2454,7 +2752,9 @@
    "https": "https://aladdins.com/",
    "schema": "JSON-LD section is empty",
    "focus": "only /our-menu/ and /catering-menu/ (2 menu pages); /locations/, /franchising/, gift-card vendor are not offering categories (close call)",
-   "seen": "0 place(s): only facebook, twitter, instagram"
+   "seen": "0 place(s): only facebook, twitter, instagram",
+   "ask": "\"Order Now\" / \"Order Online\" -> /locations?ordering=1",
+   "siteType": "restaurant"
   }
  },
  "bareskin-laser.com": {
@@ -2472,7 +2772,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "nav link /before-and-after/ | Before & After",
@@ -2487,7 +2789,9 @@
    "https": "https://bareskin-laser.com/",
    "schema": "JSON-LD @type Organization 'BARE Skin & Laser'",
    "focus": "links /injectable-botox-and-neuro-modulators/, /dermal-fillers/, /rejuvenation-co2-lasers/, /rejuvenation-skinpen/, /body-laser-hair-removal/, /rejuvenation-chemical-peel/",
-   "seen": "0 place(s): noonaesthetics.com, zoskinhealth.com practice-ref, skinbetter.pro are product vendors; rest social"
+   "seen": "0 place(s): noonaesthetics.com, zoskinhealth.com practice-ref, skinbetter.pro are product vendors; rest social",
+   "ask": "'BOOK TODAY', 'BOOK NOW', 'BOOK A BEAUTY CONSULTATION PACKAGE TODAY' buttons",
+   "siteType": "aesthetic skin care practice; cart is a side shop"
   }
  },
  "bergerchiropracticwellness.com": {
@@ -2505,7 +2809,9 @@
    "https": true,
    "schema": true,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "no portfolio; only a virtual office tour link",
@@ -2520,7 +2826,9 @@
    "https": "https://www.bergerchiropracticwellness.com/",
    "schema": "JSON-LD @type MedicalClinic",
    "focus": "one /services-techniqueshtml page; 'Phase 1: Relief Care / Phase 2: Corrective Care / Phase 3: Wellness Care' are stages of one care plan in the New Patient Center, not separate offerings (close call)",
-   "seen": "0 place(s): sameAs and 'Button Text' icons are placeholder root domains (linkedin.com, psychologytoday.com), not profiles of this clinic"
+   "seen": "0 place(s): sameAs and 'Button Text' icons are placeholder root domains (linkedin.com, psychologytoday.com), not profiles of this clinic",
+   "ask": "'CALL NOW' tel: button; description asks for an appointment",
+   "siteType": "chiropractic clinic"
   }
  },
  "berniceaschweissllc.com": {
@@ -2538,7 +2846,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "credentials": "Title: \"Top Ranked CPA Firm\" (ranking claim)",
@@ -2551,7 +2861,9 @@
    "track": "About page: Founded in 2017; founder 'more than four decades of public accounting experience'",
    "focus": "Advisory and Consulting / Accounting / Taxes are anchors on one page (/our-services#Accounting, #Taxes)",
    "seen": "0 place(s): AICPA/PICPA memberships and awards on About are text only, no links",
-   "reviewSites": "[count 0: no review platform links]"
+   "reviewSites": "[count 0: no review platform links]",
+   "ask": "lead form headed \"Reach out to Schedule a FREE Consultation\"",
+   "siteType": "CPA firm"
   }
  },
  "binbath.com": {
@@ -2569,7 +2881,9 @@
    "https": true,
    "schema": false,
    "focus": false,
-   "seen": false
+   "seen": false,
+   "ask": false,
+   "siteType": "service"
   },
   "why": {
    "trade": "\"We clean, sanitize and deodorize your residential trash bins\"",
@@ -2577,7 +2891,9 @@
    "address": "close call false: Contact Us link is # only, no phone or street",
    "focus": "homepage is a city picker: /boston, /cleveland, /detroit, /omaha, /pittsburgh (location pages)",
    "seen": "0 place(s): no outside links",
-   "reviewSites": "[count 0: no review platform links]"
+   "reviewSites": "[count 0: no review platform links]",
+   "ask": "only area-picker links and \"Contact Us\" (#); no book/quote words",
+   "siteType": "trash bin cleaning service"
   }
  },
  "bootcampfit360.com": {
@@ -2595,7 +2911,9 @@
    "https": true,
    "schema": false,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "trade": "\"Bootcamp Gym in McMurray, PA\"",
@@ -2608,7 +2926,9 @@
    "reviews": "close call false: 'Trusted and Loved' heading only, no quotes, stars or count",
    "people": "About page: Casie Niederberger Head Coach, Owner; Chuck Caldwell Coach; Kait Kicinski Coach",
    "focus": "links /programs/bootcamp, /programs/small-group-strength-training, /programs/nutrition-coaching, /programs/team-training, /programs/summer-kid-camps, /programs/preschool-classes",
-   "seen": "0 place(s): journal.crossfit.com icon is a template leftover, not a listing of this gym; rest facebook/instagram, pushpress vendor"
+   "seen": "0 place(s): journal.crossfit.com icon is a template leftover, not a listing of this gym; rest facebook/instagram, pushpress vendor",
+   "ask": "\"Get started\" -> /programs/get-started; \"FREE WEEK OF BOOTCAMP\", \"Free Trial Class\"",
+   "siteType": "gym"
   }
  },
  "capstonequalityservices.com": {
@@ -2626,7 +2946,9 @@
    "https": true,
    "schema": true,
    "focus": true,
-   "seen": false
+   "seen": false,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "work": "link /gallery | View More Projects; gallery-home alts of real kitchens, decks",
@@ -2641,18 +2963,24 @@
    "reviewSites": "close call false: only maps.google.com?q=street address link; sameAs is Facebook/Instagram [count 0: maps.google.com/maps?q=204+Old+Oak+Road... is an address directions link; saved /reviews page has no outside review links]",
    "track": "close call false: \"years of experience\" with no number; no counts",
    "focus": "links /attic-conversions, /bathroom-remodeling, /kitchen-remodeling, /home-additions, /deck-construction, /tile-installation and more",
-   "seen": "0 place(s): only facebook and instagram (also sameAs)"
+   "seen": "0 place(s): only facebook and instagram (also sameAs)",
+   "ask": "\"Request Consultation\" -> /request-consultation",
+   "siteType": "general contractor"
   }
  },
  "monexglobal.com": {
   "group": "reported",
   "expect": {
    "people": true,
-   "address": true
+   "address": true,
+   "ask": true,
+   "siteType": "service"
   },
   "why": {
    "people": "Team page /about/analyst-team names analysts (not linked from home or About; in the sitemap). Reported by Chris 2026-10-05",
-   "address": "Contact page /contact lists phones and office addresses. Reported by Chris 2026-10-05"
+   "address": "Contact page /contact lists phones and office addresses. Reported by Chris 2026-10-05",
+   "ask": "\"Get Started\" button -> /contact; \"Talk to a Specialist\"; \"Get started with Monex\" -> /how-it-works",
+   "siteType": "FX and payments financial service (has Login/Sign Up but main pitch is a financial service firm)"
   }
  }
 }

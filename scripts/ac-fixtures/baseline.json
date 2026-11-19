@@ -146,6 +146,22 @@
     "tn": 0,
     "uncYes": 0,
     "uncNo": 0
+   },
+   "ask": {
+    "tp": 44,
+    "fp": 0,
+    "fn": 6,
+    "tn": 8,
+    "uncYes": 0,
+    "uncNo": 0
+   },
+   "siteType": {
+    "tp": 3,
+    "fp": 3,
+    "fn": 0,
+    "tn": 52,
+    "uncYes": 0,
+    "uncNo": 0
    }
   },
   "heldout": {
@@ -292,6 +308,22 @@
     "tn": 0,
     "uncYes": 0,
     "uncNo": 0
+   },
+   "ask": {
+    "tp": 13,
+    "fp": 0,
+    "fn": 2,
+    "tn": 6,
+    "uncYes": 0,
+    "uncNo": 0
+   },
+   "siteType": {
+    "tp": 1,
+    "fp": 4,
+    "fn": 0,
+    "tn": 16,
+    "uncYes": 0,
+    "uncNo": 0
    }
   }
  },
@@ -310,12 +342,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Auto Repair"
+   "trade": "Auto Repair",
+   "ask": null,
+   "siteType": "service"
   },
   "directiveconsulting.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -329,12 +364,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Unlock My Audit",
+   "siteType": "service"
   },
   "directom.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -350,7 +388,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Talk with a strategist today",
+   "siteType": "service"
   },
   "disruptiveadvertising.com": {
    "yes": [
@@ -369,12 +409,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": null,
+   "siteType": "service"
   },
   "egconley.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -382,12 +425,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Accounting Firm"
+   "trade": "Accounting Firm",
+   "ask": "Schedule A Consultation",
+   "siteType": "service"
   },
   "findoncpa.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -400,12 +446,15 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Accounting Firm"
+   "trade": "Accounting Firm",
+   "ask": "BOOK A CONSULTATION",
+   "siteType": "service"
   },
   "frewplumbing.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -415,7 +464,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Plumbing"
+   "trade": "Plumbing",
+   "ask": "CALL NOW 412-761-5711",
+   "siteType": "service"
   },
   "gleasonfamilydentistry.com": {
    "yes": [
@@ -429,11 +480,14 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Dentistry"
+   "trade": "Dentistry",
+   "ask": null,
+   "siteType": "service"
   },
   "grazemarketing.com": {
    "yes": [
     "address",
+    "ask",
     "focus",
     "https",
     "name",
@@ -445,11 +499,14 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "GET STARTED",
+   "siteType": "service"
   },
   "group8a.com": {
    "yes": [
     "about",
+    "ask",
     "https",
     "name",
     "people",
@@ -459,12 +516,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Let's Talk",
+   "siteType": "ecommerce"
   },
   "hawkemedia.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -478,12 +538,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Free Consultation",
+   "siteType": "service"
   },
   "ignitevisibility.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -498,12 +561,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Get Started",
+   "siteType": "service"
   },
   "kabodnar.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -515,7 +581,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Attorney"
+   "trade": "Attorney",
+   "ask": "Facing a Legal Issue? Let's talk solutions",
+   "siteType": "service"
   },
   "lagourmandinebakery.com": {
    "yes": [
@@ -527,13 +595,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Bakery"
+   "trade": "Bakery",
+   "ask": null,
+   "siteType": "service"
   },
   "lebovitzlaw.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -548,22 +619,28 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Attorneys"
+   "trade": "Attorneys",
+   "ask": "Schedule a Consultation",
+   "siteType": "service"
   },
   "lewishairsalon.com": {
    "yes": [
     "address",
+    "ask",
     "https",
     "name",
     "schema",
     "trade"
    ],
    "unclear": [],
-   "trade": "salon"
+   "trade": "salon",
+   "ask": "Book online",
+   "siteType": "service"
   },
   "nogood.io": {
    "yes": [
     "about",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -577,13 +654,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Get Started",
+   "siteType": "service"
   },
   "paperboxseo.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -597,13 +677,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Schedule a Call",
+   "siteType": "service"
   },
   "pghdma.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -617,12 +700,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Get a Free Consultation",
+   "siteType": "service"
   },
   "powerdigitalmarketing.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -638,7 +724,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Lock in a free audit before you go.",
+   "siteType": "service"
   },
   "powermarketingcompany.com": {
    "yes": [
@@ -654,13 +742,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Marketing Company"
+   "trade": "Marketing Company",
+   "ask": null,
+   "siteType": "service"
   },
   "proudfoot-services.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "https",
     "name",
@@ -673,7 +764,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Plumbing"
+   "trade": "Plumbing",
+   "ask": "SCHEDULE SERVICE",
+   "siteType": "service"
   },
   "reimaginemainstreet.com": {
    "yes": [
@@ -692,13 +785,16 @@
    "unclear": [
     "trade"
    ],
-   "trade": "design services"
+   "trade": "design services",
+   "ask": null,
+   "siteType": "service"
   },
   "rootstopetalsstudio.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "focus",
     "https",
     "name",
@@ -710,7 +806,9 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Florist"
+   "trade": "Florist",
+   "ask": "Continue shopping",
+   "siteType": "ecommerce"
   },
   "ruffingautomotive.com": {
    "yes": [
@@ -727,13 +825,16 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Auto Repair"
+   "trade": "Auto Repair",
+   "ask": null,
+   "siteType": "service"
   },
   "schultheisbros.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -748,11 +849,14 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Roofing"
+   "trade": "Roofing",
+   "ask": "Call Us Today! (412)793-8000",
+   "siteType": "service"
   },
   "seerinteractive.com": {
    "yes": [
     "about",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -765,12 +869,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "agency"
+   "trade": "agency",
+   "ask": "Let's Talk",
+   "siteType": "service"
   },
   "siegemedia.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "name",
@@ -783,11 +890,14 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Lets Talk",
+   "siteType": "service"
   },
   "singlegrain.com": {
    "yes": [
     "about",
+    "ask",
     "focus",
     "https",
     "name",
@@ -801,12 +911,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Book Reviews",
+   "siteType": "service"
   },
   "smartsites.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -821,12 +934,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Get a free proposal",
+   "siteType": "service"
   },
   "studioboothsalon.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "https",
     "people",
@@ -840,13 +956,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "hair salon"
+   "trade": "hair salon",
+   "ask": "Book Now",
+   "siteType": "ecommerce"
   },
   "swiftgrowth.marketing": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "https",
     "name",
     "people",
@@ -857,7 +976,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Studio"
+   "trade": "Studio",
+   "ask": "Start a Conversation",
+   "siteType": "service"
   },
   "threeriversdent.com": {
    "yes": [
@@ -872,12 +993,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "dent removal services"
+   "trade": "dent removal services",
+   "ask": null,
+   "siteType": "service"
   },
   "thriveagency.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -893,7 +1017,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "SPEAK WITH AN INTERNET MARKETING CONSULTANT",
+   "siteType": "service"
   },
   "tjdentalpa.com": {
    "yes": [
@@ -904,13 +1030,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Dental"
+   "trade": "Dental",
+   "ask": null,
+   "siteType": "service"
   },
   "victoriousseo.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -925,13 +1054,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Book a Call",
+   "siteType": "service"
   },
   "wahlheatingandcooling.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -945,12 +1077,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Plumbing"
+   "trade": "Plumbing",
+   "ask": "Call now",
+   "siteType": "service"
   },
   "webfx.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -965,7 +1100,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Agency"
+   "trade": "Agency",
+   "ask": "Get a Proposal",
+   "siteType": "service"
   },
   "wildrisebakery.com": {
    "yes": [
@@ -973,12 +1110,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Bakery"
+   "trade": "Bakery",
+   "ask": null,
+   "siteType": "service"
   },
   "mtviewroofing.com": {
    "yes": [
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -989,13 +1129,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Roofing"
+   "trade": "Roofing",
+   "ask": "Call Now",
+   "siteType": "service"
   },
   "idahoroofingcontractors.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1010,13 +1153,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Roofing"
+   "trade": "Roofing",
+   "ask": "Request A quote",
+   "siteType": "ecommerce"
   },
   "peakroofingidaho.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "focus",
     "https",
     "name",
@@ -1030,12 +1176,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Roofing"
+   "trade": "Roofing",
+   "ask": "Get a Free Roof Inspection",
+   "siteType": "service"
   },
   "allandalevetclinic.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1046,12 +1195,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Veterinary"
+   "trade": "Veterinary",
+   "ask": "Request an Appointment",
+   "siteType": "service"
   },
   "farwestvet.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "people",
@@ -1059,12 +1211,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Veterinary"
+   "trade": "Veterinary",
+   "ask": "Request Appointment",
+   "siteType": "service"
   },
   "staroftexasvet.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1075,11 +1230,14 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "veterinary care"
+   "trade": "veterinary care",
+   "ask": "Call Us 512-291-1600",
+   "siteType": "service"
   },
   "center4chiropractic.com": {
    "yes": [
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1089,13 +1247,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Chiropractic"
+   "trade": "Chiropractic",
+   "ask": "Schedule Online",
+   "siteType": "service"
   },
   "laurelhurstchiropractic.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1107,7 +1268,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Chiropractor"
+   "trade": "Chiropractor",
+   "ask": "Request Appointment",
+   "siteType": "service"
   },
   "hartmanoutdoorphotography.com": {
    "yes": [
@@ -1126,12 +1289,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Photography"
+   "trade": "Photography",
+   "ask": null,
+   "siteType": "service"
   },
   "kathybeaverphotography.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1145,7 +1311,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Photographer"
+   "trade": "Photographer",
+   "ask": "let's chat",
+   "siteType": "service"
   },
   "kirstenalexandriaphotography.com": {
    "yes": [
@@ -1165,12 +1333,15 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Photographer"
+   "trade": "Photographer",
+   "ask": null,
+   "siteType": "service"
   },
   "crosspestcontrol.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1183,13 +1354,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Pest Control"
+   "trade": "Pest Control",
+   "ask": "Call Us Now! 813-982-1922",
+   "siteType": "service"
   },
   "tri-spestcontrol.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1202,7 +1376,9 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Pest Control"
+   "trade": "Pest Control",
+   "ask": "Request your FREE ESTIMATE",
+   "siteType": "service"
   },
   "alleycatpestcontrol.com": {
    "yes": [
@@ -1216,7 +1392,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Pest Control"
+   "trade": "Pest Control",
+   "ask": null,
+   "siteType": "service"
   },
   "qhtattoos.com": {
    "yes": [
@@ -1231,12 +1409,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Tattoo"
+   "trade": "Tattoo",
+   "ask": null,
+   "siteType": "service"
   },
   "pilgrimagetattoo.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "https",
     "name",
     "people",
@@ -1248,11 +1429,14 @@
     "work"
    ],
    "unclear": [],
-   "trade": "tattoo parlor"
+   "trade": "tattoo parlor",
+   "ask": "Request an appointment",
+   "siteType": "service"
   },
   "black13tattoo.com": {
    "yes": [
     "address",
+    "ask",
     "https",
     "name",
     "schema",
@@ -1260,12 +1444,15 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Tattoo"
+   "trade": "Tattoo",
+   "ask": "BOOK NOW",
+   "siteType": "ecommerce"
   },
   "bigriveryoga.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "name",
@@ -1276,7 +1463,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Yoga"
+   "trade": "Yoga",
+   "ask": "Book Now",
+   "siteType": "ecommerce"
   },
   "nokomisyoga.com": {
    "yes": [
@@ -1287,23 +1476,29 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Yoga"
+   "trade": "Yoga",
+   "ask": null,
+   "siteType": "service"
   },
   "kenwoodyogastudio.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "https",
     "people",
     "trade"
    ],
    "unclear": [],
-   "trade": "Yoga"
+   "trade": "Yoga",
+   "ask": "Sign Up",
+   "siteType": "service"
   },
   "bloemdecor.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "https",
     "reviewSites",
@@ -1314,12 +1509,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Florist"
+   "trade": "Florist",
+   "ask": "Shop Online",
+   "siteType": "ecommerce"
   },
   "everestflowers.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1330,12 +1528,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Florist"
+   "trade": "Florist",
+   "ask": "Shop",
+   "siteType": "ecommerce"
   },
   "sacflower.net": {
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "people",
@@ -1346,13 +1547,16 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Florist"
+   "trade": "Florist",
+   "ask": "Shop",
+   "siteType": "ecommerce"
   },
   "landvisiondesigns.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1367,13 +1571,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Landscaping"
+   "trade": "Landscaping",
+   "ask": "SCHEDULE A CALL",
+   "siteType": "ecommerce"
   },
   "hardisonlandscaping.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1384,7 +1591,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Landscape"
+   "trade": "Landscape",
+   "ask": "Call Us Today",
+   "siteType": "service"
   },
   "norrislandscaping.com": {
    "yes": [
@@ -1403,7 +1612,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Landscaping"
+   "trade": "Landscaping",
+   "ask": null,
+   "siteType": "service"
   },
   "angelinaspastries.com": {
    "yes": [
@@ -1414,7 +1625,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Bakery"
+   "trade": "Bakery",
+   "ask": null,
+   "siteType": "service"
   },
   "atamcmurray.com": {
    "yes": [
@@ -1430,7 +1643,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "School"
+   "trade": "School",
+   "ask": null,
+   "siteType": "service"
   },
   "blueskycsi.com": {
    "yes": [
@@ -1444,7 +1659,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "closing services"
+   "trade": "closing services",
+   "ask": null,
+   "siteType": "service"
   },
   "cts-pgh.com": {
    "yes": [
@@ -1453,20 +1670,25 @@
     "https"
    ],
    "unclear": [],
-   "trade": null
+   "trade": null,
+   "ask": null,
+   "siteType": "service"
   },
   "southwestcommunitieschamber.org": {
    "yes": [
     "https"
    ],
    "unclear": [],
-   "trade": null
+   "trade": null,
+   "ask": null,
+   "siteType": "ecommerce"
   },
   "confluencefp.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1477,7 +1699,9 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Wealth Management"
+   "trade": "Wealth Management",
+   "ask": "Get Started Now",
+   "siteType": "service"
   },
   "jeffhancher.com": {
    "yes": [
@@ -1494,7 +1718,9 @@
    "unclear": [
     "trade"
    ],
-   "trade": "Firm"
+   "trade": "Firm",
+   "ask": null,
+   "siteType": "service"
   },
   "millersace.com": {
    "yes": [
@@ -1509,13 +1735,16 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Shop"
+   "trade": "Shop",
+   "ask": null,
+   "siteType": "service"
   },
   "ajbuerkle.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1525,7 +1754,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "HVAC"
+   "trade": "HVAC",
+   "ask": "Request Service",
+   "siteType": "service"
   },
   "aladdinseatery.com": {
    "yes": [
@@ -1539,12 +1770,15 @@
    "unclear": [
     "trade"
    ],
-   "trade": "Catering"
+   "trade": "Catering",
+   "ask": null,
+   "siteType": "service"
   },
   "bareskin-laser.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1557,13 +1791,16 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Practice"
+   "trade": "Practice",
+   "ask": "Let’s Talk",
+   "siteType": "ecommerce"
   },
   "bergerchiropracticwellness.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "focus",
     "https",
     "people",
@@ -1572,12 +1809,15 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "medical clinic"
+   "trade": "medical clinic",
+   "ask": "CALL NOW",
+   "siteType": "service"
   },
   "berniceaschweissllc.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1586,7 +1826,9 @@
     "trade"
    ],
    "unclear": [],
-   "trade": "Firm"
+   "trade": "Firm",
+   "ask": "Bernice A Schweiss Free Consultation",
+   "siteType": "service"
   },
   "binbath.com": {
    "yes": [
@@ -1596,24 +1838,30 @@
     "updated"
    ],
    "unclear": [],
-   "trade": "Cleaning"
+   "trade": "Cleaning",
+   "ask": null,
+   "siteType": "service"
   },
   "bootcampfit360.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "focus",
     "https",
     "trade"
    ],
    "unclear": [],
-   "trade": "Gym"
+   "trade": "Gym",
+   "ask": "Get Started",
+   "siteType": "service"
   },
   "capstonequalityservices.com": {
    "yes": [
     "about",
     "address",
     "area",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1623,12 +1871,15 @@
     "work"
    ],
    "unclear": [],
-   "trade": "Contractor"
+   "trade": "Contractor",
+   "ask": "Call us Today",
+   "siteType": "service"
   },
   "monexglobal.com": {
    "yes": [
     "about",
     "address",
+    "ask",
     "credentials",
     "focus",
     "https",
@@ -1643,7 +1894,9 @@
     "work"
    ],
    "unclear": [],
-   "trade": "financial service"
+   "trade": "financial service",
+   "ask": "Talk to a Specialist Get expert FX guidance from our team",
+   "siteType": "service"
   }
  }
 }
