@@ -11,6 +11,10 @@ import {
 } from '@/lib/fetch-guard'
 import { parseAudit, type FetchedPage } from '@/lib/audit-parser'
 import { computeCategoryScore, computeOverallScore } from '@/lib/audit-scoring'
+import { TimeLimitError, withinTime } from '@/lib/time-limit'
+
+/** Parse + score on the server for a keyed caller (SGM). A real 1–2 MB page takes well under a second. */
+const SCORE_MS = 6000
 
 /* ── Configuration ──────────────────────────────────────────────────────── */
 
@@ -227,7 +231,16 @@ export async function GET(request: NextRequest) {
 
   // A keyed caller (SGM's server) gets the scores instead of the raw page: the
   // browser normally scores it (AuditTool.tsx), a server can't (Grill Me 2026-10-06).
-  if (keyed) return NextResponse.json(scoreAudit(body), { status: 200, headers })
+  if (keyed) {
+    // A page built to be slow can't hold the server past its time (time-limit.ts, code audit 2026-11-19).
+    try {
+      return NextResponse.json(withinTime(SCORE_MS, () => scoreAudit(body)), { status: 200, headers })
+    } catch (e) {
+      if (!(e instanceof TimeLimitError)) throw e
+      console.error(`audit score stopped for ${body.url}: ${e.message}`)
+      return NextResponse.json({ error: 'We couldn’t finish reading this page.' }, { status: 502, headers })
+    }
+  }
 
   return NextResponse.json(body, { status: 200, headers })
 }

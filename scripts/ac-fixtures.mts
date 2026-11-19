@@ -205,16 +205,17 @@ const splitOf = (() => {
   }
 })()
 
-/** true positive / false positive / false negative / true negative; "positive" = the site shows it. */
-interface Cells { tp: number; fp: number; fn: number; tn: number }
+/** true positive / false positive / false negative / true negative; "positive" = the site shows it.
+ *  uncYes / uncNo: the engine said unclear on a site labelled yes / no (not right, not wrong). */
+interface Cells { tp: number; fp: number; fn: number; tn: number; uncYes: number; uncNo: number }
 interface Baseline {
   savedAt: string
   note: string
   cells: Record<Split, Record<string, Cells>>
-  /** Per site: the checks that passed, and the trade word the engine found. */
-  sites: Record<string, { yes: string[]; trade: string | null }>
+  /** Per site: the checks that passed, the ones unclear, and the trade word the engine found. */
+  sites: Record<string, { yes: string[]; unclear?: string[]; trade: string | null }>
 }
-const zero = (): Cells => ({ tp: 0, fp: 0, fn: 0, tn: 0 })
+const zero = (): Cells => ({ tp: 0, fp: 0, fn: 0, tn: 0, uncYes: 0, uncNo: 0 })
 const wrongOf = (c: Cells) => c.fp + c.fn
 const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '—').padStart(5)
 const tradeWord = (evidence?: string) => evidence?.match(/“([^”]+)”/)?.[1] ?? null
@@ -230,6 +231,7 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
   }
   const sites: Baseline['sites'] = {}
   const wrong: string[] = []
+  const unclearCells: string[] = []
   let heldWrong = 0
   const runs: Record<string, { proof: ProofId[] | null; evidence?: Record<string, string> }> = {}
   const notes: string[] = []
@@ -255,10 +257,16 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
     const read = await readSite(asResult(fx.home), replayReader(fx, missing, skip), savedAt, Number.POSITIVE_INFINITY)
     for (const m of missing) notes.push(`${domain}: MISSING ${m}`)
     runs[domain] = { proof: read.proof, evidence: read.evidence }
-    sites[domain] = { yes: [...read.proof].sort(), trade: tradeWord(read.evidence.trade) }
+    sites[domain] = { yes: [...read.proof].sort(), unclear: [...(read.unclear ?? [])].sort(), trade: tradeWord(read.evidence.trade) }
     for (const id of ids) {
       const want = label.expect[id]
       if (want === undefined || want === null) continue
+      // Unclear is neither right nor wrong: its own column (on a "yes" label it costs half points in SGM).
+      if (read.unclear?.includes(id)) {
+        cells[split][id][want ? 'uncYes' : 'uncNo']++
+        if (split === 'dev' || opts.showHeld) unclearCells.push(`? ${id.padEnd(11)} ${domain.padEnd(28)} label ${want ? 'yes' : 'no'}: ${read.evidence[id] ?? ''}`)
+        continue
+      }
       const got = read.proof.includes(id)
       cells[split][id][got ? (want ? 'tp' : 'fp') : want ? 'fn' : 'tn']++
       if (got === want) tally[id].right++
@@ -288,20 +296,24 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
   const base: Baseline | null = !group && !noAbout && existsSync(BASELINE_FILE) ? JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) : null
   const nSites = (s: Split) => Object.keys(sites).filter((d) => splitOf(d) === s).length
   console.log(`\nPer check        DEV (${nSites('dev')} sites)                       HELD-OUT (${nSites('heldout')} sites)`)
-  console.log(`                 n   acc  prec  recall  wrong       n   acc  prec  recall  wrong`)
+  console.log(`  (acc / prec / recall over the cells that got a yes or no; unclear = said "unclear", label yes/no)`)
+  console.log(`                 n   acc  prec  recall  wrong     unclear     n   acc  prec  recall  wrong     unclear`)
   const row = (c: Cells, b?: Cells) => {
     const n = c.tp + c.fp + c.fn + c.tn
     const d = b ? wrongOf(c) - wrongOf(b) : 0
     const delta = b && d ? ` (${d > 0 ? '+' : ''}${d})` : ''
-    return `${String(n).padStart(3)} ${pct(c.tp + c.tn, n)} ${pct(c.tp, c.tp + c.fp)}  ${pct(c.tp, c.tp + c.fn)}  ${(String(wrongOf(c)) + delta).padEnd(9)}`
+    const unc = c.uncYes + c.uncNo ? `${c.uncYes}/${c.uncNo}` : '-'
+    return `${String(n).padStart(3)} ${pct(c.tp + c.tn, n)} ${pct(c.tp, c.tp + c.fp)}  ${pct(c.tp, c.tp + c.fn)}  ${(String(wrongOf(c)) + delta).padEnd(9)} ${unc.padEnd(7)}`
   }
-  const totals = (s: Split) => ids.reduce((t, id) => ({ tp: t.tp + cells[s][id].tp, fp: t.fp + cells[s][id].fp, fn: t.fn + cells[s][id].fn, tn: t.tn + cells[s][id].tn }), zero())
-  const baseTotals = (s: Split) => base && ids.reduce((t, id) => { const c = base.cells[s][id] ?? zero(); return { tp: t.tp + c.tp, fp: t.fp + c.fp, fn: t.fn + c.fn, tn: t.tn + c.tn } }, zero())
+  const sum = (list: Cells[]) => list.reduce((t, c) => ({ tp: t.tp + c.tp, fp: t.fp + c.fp, fn: t.fn + c.fn, tn: t.tn + c.tn, uncYes: t.uncYes + (c.uncYes ?? 0), uncNo: t.uncNo + (c.uncNo ?? 0) }), zero())
+  const totals = (s: Split) => sum(ids.map((id) => cells[s][id]))
+  const baseTotals = (s: Split) => base && sum(ids.map((id) => base.cells[s][id] ?? zero()))
   for (const id of ids) console.log(`${id.padEnd(15)} ${row(cells.dev[id], base?.cells.dev[id])}   ${row(cells.heldout[id], base?.cells.heldout[id])}`)
   console.log(`${'ALL'.padEnd(15)} ${row(totals('dev'), baseTotals('dev') ?? undefined)}   ${row(totals('heldout'), baseTotals('heldout') ?? undefined)}`)
 
   console.log(`\nWrong cells, dev${opts.showHeld ? ' + held-out' : ''} (✕ = missed, ! = passed but not there):\n${wrong.join('\n')}`)
   if (heldWrong) console.log(`(+ ${heldWrong} held-out wrong cell(s), hidden: held-out is never read while tuning. --show-heldout shows them.)`)
+  if (unclearCells.length) console.log(`\nUnclear cells:\n${unclearCells.join('\n')}`)
 
   // What moved since the stored baseline: yes/no flips and the trade word, site by site.
   let regressed = false
@@ -313,7 +325,8 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
       if (!was) continue
       const lines = [
         ...now.yes.filter((id) => !was.yes.includes(id)).map((id) => `now yes ${id}`),
-        ...was.yes.filter((id) => !now.yes.includes(id)).map((id) => `now no  ${id}`),
+        ...was.yes.filter((id) => !now.yes.includes(id)).map((id) => (now.unclear?.includes(id) ? `now unclear ${id}` : `now no  ${id}`)),
+        ...(now.unclear ?? []).filter((id) => !(was.unclear ?? []).includes(id) && !was.yes.includes(id)).map((id) => `now unclear ${id}`),
         ...(now.trade !== was.trade ? [`trade word “${was.trade ?? '-'}” → “${now.trade ?? '-'}”`] : []),
       ]
       if (!lines.length) continue
@@ -328,6 +341,12 @@ async function score(out?: string, group?: string, noAbout = false, opts: { save
         if (b && wrongOf(cells[s][id]) > wrongOf(b)) {
           regressed = true
           console.log(`GATE: ${id} on ${s} has ${wrongOf(cells[s][id])} wrong cell(s), baseline ${wrongOf(b)}`)
+        }
+        // A pass that turns "unclear" is a soft miss (half points in SGM): it is not a wrong cell, so
+        // without this a change could turn misses into unclears and still pass (audit 2026-11-19).
+        if (b && cells[s][id].uncYes > (b.uncYes ?? 0)) {
+          regressed = true
+          console.log(`GATE: ${id} on ${s} has ${cells[s][id].uncYes} "yes" site(s) marked unclear, baseline ${b.uncYes ?? 0}: check them, then --save-baseline if right`)
         }
       }
     if (!regressed) console.log('\nGATE: no check lost accuracy against the baseline.')

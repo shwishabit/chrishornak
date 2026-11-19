@@ -25,11 +25,42 @@ function lastOf<R>(fn: (html: string) => R): (html: string) => R {
   }
 }
 
+/* Tags out, in one pass each. Same text as the regexes they replace (/<script[\s\S]*?<\/script>/gi,
+ * /<style…/, /<[^>]+>/g; checked on every saved page), but those re-scan to the end of the page from
+ * every unclosed "<" or "<script": 150 KB of crafted tags took 0.8 s, 2 MB would pass the 25 s limit
+ * (code audit 2026-11-19). Once no closer is left after a point, nothing after it can match: stop. */
+function dropBlocks(s: string, open: RegExp, close: RegExp): string {
+  let out = ''
+  let last = 0
+  open.lastIndex = 0
+  for (let m = open.exec(s); m; m = open.exec(s)) {
+    close.lastIndex = m.index + m[0].length
+    const c = close.exec(s)
+    if (!c) break
+    out += s.slice(last, m.index)
+    last = open.lastIndex = c.index + c[0].length
+  }
+  return out + s.slice(last)
+}
+function dropTags(s: string): string {
+  let out = ''
+  let last = 0
+  for (let pos = 0; ; ) {
+    const lt = s.indexOf('<', pos)
+    if (lt < 0) break
+    const gt = s.indexOf('>', lt + 1)
+    if (gt < 0) break
+    if (gt === lt + 1) {
+      pos = lt + 1 // "<>" is not a tag
+      continue
+    }
+    out += `${s.slice(last, lt)} `
+    last = pos = gt + 1
+  }
+  return out + s.slice(last)
+}
 const stripTags = (html: string): string =>
-  html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
+  dropTags(dropBlocks(dropBlocks(html, /<script/gi, /<\/script>/gi), /<style/gi, /<\/style>/gi))
     .replace(/&[a-z]+;/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
@@ -49,6 +80,17 @@ export function findJsonLdBlocks(html: string): RegExpMatchArray | null {
   return html.match(
     /<script[^>]*type=["']?application\/ld\+json["']?[^>]*>[\s\S]*?<\/script>/gi,
   )
+}
+
+/**
+ * The content of the first <meta> tag whose name / property is `value`, or null. Each tag is read
+ * whole first, at most 4,000 characters (the longest real one in the saved pages is 575), then its
+ * attributes: one regex that hunted for name= and content= across the page took 10–24 s on a page of
+ * unclosed "<meta " tags (code audit 2026-11-19). Content with an apostrophe ("Bob's") reads whole.
+ */
+export function metaContent(html: string, key: 'name' | 'property', value: string): string | null {
+  for (const m of html.matchAll(/<meta\b[^>]{0,4000}>/gi)) if (attrOf(m[0], key).toLowerCase() === value) return attrOf(m[0], 'content').replace(/&amp;/g, '&').trim()
+  return null
 }
 
 /** One attribute of a tag, quoted or not, or ''. */
@@ -128,6 +170,8 @@ export interface ProofSignals {
   hasOneName: boolean
   /** Entity clarity: a plain business-type word (plumber, bakery, agency…). */
   hasBusinessType: boolean
+  /** A trade word was found, but only weakly lower on the page (findTrade clear: false). Authority Check marks "Says what you do" unclear. */
+  hasUnclearTrade: boolean
 }
 
 
@@ -337,8 +381,7 @@ export function readNames(
   const names: { where: string; name: string }[] = []
   const entry = businessEntryOf(blocks, pageText, hostOf(pageUrl))
   if (entry) names.push({ where: 'schema', name: entry.name })
-  const site = html.match(/<meta[^>]+property=["']?og:site_name["']?[^>]*>/i)?.[0]
-  const siteName = site ? attrOf(site, 'content').replace(/&amp;/g, '&').trim() : ''
+  const siteName = metaContent(html, 'property', 'og:site_name') ?? ''
   if (siteName) names.push({ where: 'share name', name: siteName })
   const copy = copyrightName(pageText)
   if (copy) names.push({ where: '© line', name: copy })
@@ -383,7 +426,7 @@ const SERVICE_AREA_RE =
 // it names no kind of business (cts-pgh.com passed on "our company"), unless a trade comes first
 // ("marketing company", "IT services").
 const BUSINESS_TYPE_RE =
-  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|blog(?:ging)? (?:writing|writers?|services?)|blog posts?|content (?:writing|writers?|marketing|agenc(?:y|ies)|studios?)|copywrit(?:ing|ers?)|ghostwrit(?:ing|ers?)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto (?:repair|body|shops?|service|glass|detailing|dealers?|dealerships?|parts|mechanics?|insurance|care)|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming)\b/i
+  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|blog(?:ging)? (?:writing|writers?|services?)|blog posts?|content (?:writing|writers?|marketing|agenc(?:y|ies)|studios?)|copywrit(?:ing|ers?)|ghostwrit(?:ing|ers?)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto (?:repair|body|shops?|service|glass|detailing|dealers?|dealerships?|parts|mechanics?|insurance|care)|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming|wealth management|investment management|financial (?:planning|planners?|advis(?:ors?|ers?|ory))|keynote speak(?:ers?|ing)|leadership (?:development|training|coaching))\b/i
 
 /* ── What the business does (Says what you do) ──────────────────────────
  * Up-front text first (page title, description, main headline), then the word
@@ -391,11 +434,10 @@ const BUSINESS_TYPE_RE =
  * into a compound don't count: bloghands.com read "auto" from "let
  * auto-approve handle it" and "set it to auto" (2026-11-18).
  * ─────────────────────────────────────────────────────────────────────── */
-const TRADE_SPOTS: [RegExp, string][] = [
-  [/<title[^>]*>([\s\S]*?)<\/title>/i, 'your page title'],
-  [/<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i, 'your page description'],
-  [/<meta\b[^>]*\bcontent=["']([^"']*)["'][^>]*\bname=["']description["']/i, 'your page description'],
-  [/<h1\b[^>]*>([\s\S]*?)<\/h1>/i, 'your headline'],
+const TRADE_SPOTS: [(html: string) => string | undefined, string][] = [
+  [(html) => /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1], 'your page title'],
+  [(html) => metaContent(html, 'name', 'description') ?? undefined, 'your page description'],
+  [(html) => /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1], 'your headline'],
 ]
 function tradeHits(text: string): RegExpMatchArray[] {
   return [...text.matchAll(new RegExp(BUSINESS_TYPE_RE.source, 'gi'))].filter((m) => {
@@ -434,8 +476,7 @@ const cleanName = (s: string) =>
   s.replace(/&amp;/g, '&').split(/\s+[-–—|:]\s+|\s*\(/)[0].replace(/[,\s]+(?:llc|inc|ltd|co|corp|pllc|pc|llp|lp)\.?$/i, '').replace(/[!?.,]+$/, '').trim()
 function ownNames(html: string, pageText: string, blocks: RegExpMatchArray | null, host: string, title: string): string[] {
   const names: string[] = []
-  const site = html.match(/<meta[^>]+property=["']?og:site_name["']?[^>]*>/i)?.[0]
-  if (site) names.push(attrOf(site, 'content'))
+  names.push(metaContent(html, 'property', 'og:site_name') ?? '')
   for (const block of blocks ?? []) for (const n of topNodes(block) ?? []) if (typesOf(n).some((t) => ORG_TYPE_RE.test(t))) names.push(str(n.name))
   names.push(copyrightName(pageText) ?? '')
   for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -461,7 +502,8 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
  * url, phone or address) that says "Dentist" or "AutoRepair" has told us the
  * trade on purpose. Vague types (Organization, LocalBusiness) say nothing.
  * ─────────────────────────────────────────────────────────────────────── */
-const VAGUE_TYPE_RE = /^(?:Person|Organization|LocalBusiness|ProfessionalService|Corporation|OnlineBusiness|NGO|EmergencyService)$/
+// Also every "…Organization" / "…Establishment" ("EducationalOrganization", "FoodEstablishment"): a category, not a trade (audit 2026-11-19).
+const VAGUE_TYPE_RE = /^(?:Person|LocalBusiness|ProfessionalService|Corporation|OnlineBusiness|NGO|EmergencyService|\w*Organization|\w*Establishment)$/
 function schemaTrade(types: string[]): { word: string; type: string } | null {
   const type = types.find((t) => !VAGUE_TYPE_RE.test(t))
   if (!type) return null
@@ -476,35 +518,154 @@ export function findTrade(
   pageText: string,
   blocks?: RegExpMatchArray | null,
   pageUrl?: string,
-): { word: string; where: string | null; index: number } | null {
-  const spots = TRADE_SPOTS.map(([re, where]) => [re.exec(html)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ') ?? '', where] as const).filter(([t]) => t)
-  for (const [text, where] of spots) {
-    const hit = tradeHits(text)[0]
-    if (hit) return { word: hit[0], where, index: pageText.toLowerCase().indexOf(hit[0].toLowerCase()) }
+): Trade | null {
+  return tradeOf(html, pageText, blocks === undefined ? findJsonLdBlocks(html) : blocks, hostOf(pageUrl))
+}
+
+/* ── Points by place (research #2 + #3, 2026-11-18) ───────────────────────
+ * Every trade word the page gives is a candidate, with points for where it
+ * sits: page title, headline and the schema type 3, page description 2;
+ * in the body 1 for a mention in the first 600 characters and 0.25 for each
+ * one after, 2 at most. A "term + services" guess gets 3/4 of its place's
+ * points. Repeats in more places add up; the most points win. Weights are
+ * ours, tuned on the dev sites (no source gives numbers).
+ * Unclear (half points in SGM; Chris: "if our tool can't figure it out,
+ * search and AI bots likely can't either"): nothing up front says it and
+ * the winner is thin (under 2 points) or another word is close behind.
+ * ─────────────────────────────────────────────────────────────────────── */
+export interface Trade {
+  word: string
+  /** Where the winning word sits; null = only in the body text. */
+  where: string | null
+  index: number
+  /** false = unclear: only a few mentions lower on the page, or two trades about equal there. */
+  clear: boolean
+  /** Unclear because of a close second: that word. */
+  rival: string | null
+  /** The word was found only inside the business's own name: a guess, so unclear (clear: false). */
+  fromName: boolean
+  /** Body mentions of the winning word. */
+  mentions: number
+}
+const PLACE_POINTS: Record<string, number> = { 'your page title': 3, 'your headline': 3, 'your page description': 2 }
+const SCHEMA_POINTS = 3
+const GENERIC_SHARE = 0.75
+/** A "term + services" guess found only inside the business's name: as much as a description guess, never clear. */
+const NAME_POINTS = 1.5
+const BODY_START = 600
+const BODY_FIRST = 1
+const BODY_EACH = 0.25
+const BODY_MAX = 2
+const CLEAR_AT = 2
+const CLOSE = 0.8
+// One key per trade: a word's stem, so "plumber" / "plumbers" / "plumbing" and "gym" / "gyms" are one
+// candidate, while "consulting" and "construction" stay two (a 4-letter prefix merged them: audit 2026-11-19).
+// "chiropractic" / "chiropractor", "dentist" / "dentistry", "landscape" / "landscaping" too.
+const stem = (w: string) => {
+  let s = w.toLowerCase().replace(/ies$/, 'y')
+  for (let prev = ''; prev !== s; ) {
+    prev = s
+    if (/s$/.test(s) && s.length > 3) s = s.slice(0, -1)
+    else {
+      const cut = s.replace(/(?:ing|er|or|ist|ant|ic|ry|y|al|e)$/, '')
+      if (cut.length >= 4) s = cut
+    }
   }
-  const ld = blocks === undefined ? findJsonLdBlocks(html) : blocks
-  const host = hostOf(pageUrl)
+  return s
+}
+const tradeKey = (w: string) => w.split(/\s+/).map(stem).join(' ')
+
+const tradeOf = lastOfKeyed(function tradeOf(html: string, pageText: string, ld: RegExpMatchArray | null, host: string): Trade | null {
+  // at = where the word first sits in the body text (-1 = not there), for the evidence snippet.
+  type Cand = { word: string; where: string | null; best: number; points: number; body: number; mentions: number; at: number; generic?: boolean; fromName?: boolean }
+  const cands = new Map<string, Cand>()
+  const add = (word: string, where: string | null, points: number, generic = false) => {
+    const key = tradeKey(word)
+    const c = cands.get(key) ?? { word, where, best: 0, points: 0, body: 0, mentions: 0, at: -1, generic }
+    if (where && points > c.best) Object.assign(c, { word, where, best: points })
+    c.points += points
+    cands.set(key, c)
+  }
+  const spots = TRADE_SPOTS.map(([read, where]) => [read(html)?.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ') ?? '', where] as const).filter(([t]) => t)
+  const seenSpot = new Set<string>() // the two description patterns are one place
+  for (const [text, where] of spots) {
+    if (seenSpot.has(where)) continue
+    seenSpot.add(where)
+    const hits = tradeHits(text)
+    for (const key of new Set(hits.map((h) => tradeKey(h[0])))) add(hits.find((h) => tradeKey(h[0]) === key)![0], where, PLACE_POINTS[where])
+  }
   const typed = schemaTrade(businessEntryOf(ld, pageText, host)?.types ?? [])
-  if (typed) return { word: typed.word, where: `your page code, as the type “${typed.type}”`, index: pageText.toLowerCase().indexOf(typed.word.toLowerCase()) }
+  if (typed) add(typed.word, `your page code, as the type “${typed.type}”`, SCHEMA_POINTS)
   const title = spots.find(([, where]) => where === 'your page title')?.[0] ?? ''
   const names = ownNames(html, pageText, ld, host, title)
+  seenSpot.clear()
+  let nameGuess: string | null = null
   for (const [text, where] of spots) {
-    const unnamed = names.reduce((t, n) => t.replace(new RegExp(escapeRe(n), 'gi'), ' | '), text)
-    const word = genericTrade(unnamed)
-    if (word) return { word, where, index: pageText.toLowerCase().indexOf(word) }
+    if (seenSpot.has(where)) continue
+    seenSpot.add(where)
+    // Whole words only: a short name ("Sun") must not cut "Sunroom" down to "room" (audit 2026-11-19).
+    const word = genericTrade(names.reduce((t, n) => t.replace(new RegExp(`(?<![A-Za-z0-9])${escapeRe(n)}(?![A-Za-z0-9])`, 'gi'), ' | '), text))
+    if (word && !cands.has(tradeKey(word))) add(word, where, PLACE_POINTS[where] * GENERIC_SHARE, true)
+    // Found only inside the business's own name ("Acme Metal Stamping Services", "Computec Technical
+    // Services"): we can't tell a trade from a brand word, so it is a guess, unclear (Chris 2026-11-19).
+    else if (!word) nameGuess ??= genericTrade(text)
   }
-  const hits = tradeHits(pageText)
-  if (!hits.length) return null
-  const count = new Map<string, number>()
-  for (const h of hits) count.set(h[0].toLowerCase(), (count.get(h[0].toLowerCase()) ?? 0) + 1)
-  const n = (m: RegExpMatchArray) => count.get(m[0].toLowerCase()) ?? 0
-  const best = hits.reduce((a, b) => (n(b) > n(a) ? b : a))
-  return { word: best[0], where: null, index: best.index! }
+  if (nameGuess && !cands.has(tradeKey(nameGuess)))
+    cands.set(tradeKey(nameGuess), { word: nameGuess, where: null, best: 0, points: NAME_POINTS, body: 0, mentions: 0, at: -1, generic: true, fromName: true })
+  for (const h of tradeHits(pageText)) {
+    const key = tradeKey(h[0])
+    if (!cands.has(key)) cands.set(key, { word: h[0], where: null, best: 0, points: 0, body: 0, mentions: 0, at: -1 })
+    const c = cands.get(key)!
+    c.mentions++
+    if (c.at < 0) c.at = h.index!
+    const p = Math.min(BODY_MAX - c.body, h.index! < BODY_START && c.mentions === 1 ? BODY_FIRST : BODY_EACH)
+    c.body += p
+    c.points += p
+  }
+  // "Accounting" inside an up-front "Accounting Firm" is the same trade: its points go to the longer known
+  // phrase. Not into a "term + services" guess ("Pittsburgh Plumbing Services" would carry the city).
+  const spaced = (w: string) => ` ${w.toLowerCase()} `
+  for (const [key, a] of cands) {
+    const into = [...cands.values()].filter((b) => b !== a && b.where && !b.generic && spaced(b.word).includes(spaced(a.word))).sort((x, y) => y.word.length - x.word.length)[0]
+    if (!into) continue
+    into.points += a.points
+    into.mentions += a.mentions
+    if (into.at < 0 || (a.at >= 0 && a.at < into.at)) into.at = a.at
+    cands.delete(key)
+  }
+  if (!cands.size) return null
+  // Words up front win over words only in the body, however often the body repeats one: 8 body
+  // mentions of "consulting" beat a description's "Metal stamping services" (audit 2026-11-19).
+  const all = [...cands.values()]
+  const upFront = all.filter((c) => c.where)
+  const [top, next] = (upFront.length ? upFront : all).sort((a, b) => b.points - a.points)
+  const close = !!next && next.points >= CLOSE * top.points
+  const clear = !top.fromName && (!!top.where || (top.points >= CLEAR_AT && !close))
+  // The real match in the body first: indexOf found "spa" inside "workspace".
+  const at = top.at >= 0 ? top.at : pageText.search(new RegExp(`(?<![A-Za-z])${escapeRe(top.word)}(?![A-Za-z])`, 'i'))
+  return { word: top.word, where: top.where, index: at, clear, rival: !clear && close && !top.fromName ? next.word : null, mentions: top.mentions, fromName: !!top.fromName }
+})
+/** lastOf for several arguments: findTrade runs for the signal and again for its evidence. */
+function lastOfKeyed<A extends unknown[], R>(fn: (...a: A) => R): (...a: A) => R {
+  let key: A | undefined
+  let value: R
+  return (...a) => {
+    if (!key || a.some((v, i) => v !== key![i])) {
+      value = fn(...a)
+      key = a
+    }
+    return value
+  }
 }
 function tradeEvidence(html: string, pageText: string, blocks: RegExpMatchArray | null, pageUrl?: string): string | undefined {
   const t = findTrade(html, pageText, blocks, pageUrl)
   if (!t) return undefined
   const near = t.index >= 0 ? `: ${around(pageText, t.index, t.word.length)}` : ''
+  if (t.fromName) return `Found “${t.word}” only in your business name, never on its own in your title, description or headline${near}`
+  if (!t.clear)
+    return t.rival
+      ? `Found “${t.word}” and “${t.rival}” about equally, only lower on the page, never in your title, description or headline${near}`
+      : `Found “${t.word}” only lower on the page (${t.mentions === 1 ? 'once' : `${t.mentions} times`}), never in your title, description or headline${near}`
   return `Found “${t.word}”${t.where ? ` in ${t.where}` : ''}${near}`
 }
 
@@ -705,7 +866,9 @@ export function readProofSignals(
   const hasAddressInfo = hasReachInfo(html, pageText)
   const hasServiceArea = SERVICE_AREA_RE.test(pageText)
   const hasOneName = readNames(html, pageText, jsonLdBlocks, pageUrl)?.agree ?? false
-  const hasBusinessType = findTrade(html, pageText, jsonLdBlocks, pageUrl) !== null
+  const trade = findTrade(html, pageText, jsonLdBlocks, pageUrl)
+  const hasBusinessType = trade !== null
+  const hasUnclearTrade = !!trade && !trade.clear
 
   return {
     hasAboutLink,
@@ -718,6 +881,7 @@ export function readProofSignals(
     hasServiceArea,
     hasOneName,
     hasBusinessType,
+    hasUnclearTrade,
   }
 }
 

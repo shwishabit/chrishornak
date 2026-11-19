@@ -38,6 +38,7 @@ import {
   type SiteResult,
 } from '@/lib/authority-check'
 import { readB2bSignals } from '@/lib/b2b-signals'
+import { TimeLimitError, withinTime } from '@/lib/time-limit'
 import { getSupabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
@@ -202,6 +203,19 @@ export async function GET(request: NextRequest) {
 
 /* ── Read sites: Ahrefs + Open PageRank + each homepage, in parallel ─────── */
 
+/** The B2B read, or nothing when a page built to be slow runs past its time (time-limit.ts, code audit 2026-11-19). */
+function b2bOf(body: string, url: string): { b2b?: ReturnType<typeof readB2bSignals> } {
+  try {
+    return { b2b: withinTime(B2B_READ_MS, () => readB2bSignals(body, url)) }
+  } catch (e) {
+    if (!(e instanceof TimeLimitError)) throw e
+    console.error(`authority-check b2b read stopped for ${url}: ${e.message}`)
+    return {}
+  }
+}
+/** A real 1–2 MB page takes ~20 ms. */
+const B2B_READ_MS = 2000
+
 async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boolean, b2b = false) {
   const bares = sites.map((s) => s.bare)
 
@@ -266,13 +280,14 @@ async function readSites(sites: SiteInput[], deadline: number, firstIsYou: boole
       dr: drs.status === 'ok' ? (drs.dr.get(s.bare) ?? null) : null,
       ...(drs.status === 'ok' && drs.failed.has(s.bare) ? { drFailed: true } : {}),
       proof: read?.proof ?? null,
+      ...(read?.unclear.length ? { unclear: read.unclear } : {}),
       ...(read?.trackLevel ? { trackLevel: read.trackLevel } : {}),
       ...(read?.freshLevel ? { freshLevel: read.freshLevel } : {}),
       ...(read?.reviewSiteCount ? { reviewSiteCount: read.reviewSiteCount } : {}),
       ...(read?.seen.length ? { seenCount: read.seen.length } : {}),
       ...(read ? { evidence: read.evidence } : {}),
       ...(read?.updated ? { updated: read.updated } : {}),
-      ...(b2b && read ? { b2b: readB2bSignals(pages[i]!.body, pages[i]!.finalUrl) } : {}),
+      ...(b2b && read ? b2bOf(pages[i]!.body, pages[i]!.finalUrl) : {}),
       // Your own card gets the owner's wording; a rival's keeps the short one.
       ...(err ? { pageError: i === 0 && firstIsYou && pageFailed(pages[0]) ? yourPageError(pages[0], s.host) : err } : {}),
     }

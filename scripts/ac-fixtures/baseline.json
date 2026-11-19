@@ -1,5 +1,5 @@
 {
- "savedAt": "2026-11-18",
+ "savedAt": "2026-11-19",
  "note": "ac-fixtures score baseline: per check per split, plus each site’s yeses and trade word. score --gate fails when a check gets more wrong cells than this.",
  "cells": {
   "dev": {
@@ -7,109 +7,145 @@
     "tp": 22,
     "fp": 2,
     "fn": 7,
-    "tn": 28
+    "tn": 28,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "track": {
     "tp": 45,
     "fp": 1,
     "fn": 1,
-    "tn": 12
+    "tn": 12,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "people": {
     "tp": 28,
     "fp": 0,
     "fn": 14,
-    "tn": 18
+    "tn": 18,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "credentials": {
     "tp": 39,
     "fp": 0,
     "fn": 6,
-    "tn": 14
+    "tn": 14,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "focus": {
     "tp": 41,
     "fp": 4,
     "fn": 4,
-    "tn": 10
+    "tn": 10,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "reviewSites": {
     "tp": 22,
     "fp": 0,
     "fn": 1,
-    "tn": 36
+    "tn": 36,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "seen": {
     "tp": 24,
     "fp": 1,
     "fn": 2,
-    "tn": 33
+    "tn": 33,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "reviews": {
     "tp": 36,
     "fp": 1,
     "fn": 1,
-    "tn": 21
+    "tn": 21,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "address": {
     "tp": 52,
     "fp": 0,
     "fn": 0,
-    "tn": 8
+    "tn": 8,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "about": {
     "tp": 49,
     "fp": 0,
     "fn": 2,
-    "tn": 8
+    "tn": 8,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "https": {
     "tp": 60,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "updated": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "schema": {
     "tp": 41,
     "fp": 0,
     "fn": 0,
-    "tn": 18
+    "tn": 18,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "trade": {
-    "tp": 57,
+    "tp": 55,
     "fp": 0,
     "fn": 0,
-    "tn": 2
+    "tn": 2,
+    "uncYes": 2,
+    "uncNo": 0
    },
    "area": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "name": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "age": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "wikidata": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    }
   },
   "heldout": {
@@ -117,109 +153,145 @@
     "tp": 10,
     "fp": 0,
     "fn": 1,
-    "tn": 10
+    "tn": 10,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "track": {
     "tp": 14,
     "fp": 0,
     "fn": 1,
-    "tn": 6
+    "tn": 6,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "people": {
     "tp": 14,
     "fp": 0,
     "fn": 0,
-    "tn": 7
+    "tn": 7,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "credentials": {
     "tp": 14,
     "fp": 0,
     "fn": 1,
-    "tn": 6
+    "tn": 6,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "focus": {
     "tp": 13,
     "fp": 4,
     "fn": 0,
-    "tn": 4
+    "tn": 4,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "reviewSites": {
     "tp": 14,
     "fp": 0,
     "fn": 0,
-    "tn": 7
+    "tn": 7,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "seen": {
     "tp": 9,
     "fp": 0,
     "fn": 1,
-    "tn": 11
+    "tn": 11,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "reviews": {
     "tp": 11,
     "fp": 0,
     "fn": 1,
-    "tn": 9
+    "tn": 9,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "address": {
     "tp": 21,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "about": {
     "tp": 19,
     "fp": 0,
     "fn": 0,
-    "tn": 2
+    "tn": 2,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "https": {
     "tp": 21,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "updated": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "schema": {
     "tp": 17,
     "fp": 0,
     "fn": 0,
-    "tn": 4
+    "tn": 4,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "trade": {
-    "tp": 21,
+    "tp": 20,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 1,
+    "uncNo": 0
    },
    "area": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "name": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "age": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    },
    "wikidata": {
     "tp": 0,
     "fp": 0,
     "fn": 0,
-    "tn": 0
+    "tn": 0,
+    "uncYes": 0,
+    "uncNo": 0
    }
   }
  },
@@ -237,6 +309,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Auto Repair"
   },
   "directiveconsulting.com": {
@@ -255,6 +328,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "directom.com": {
@@ -275,7 +349,8 @@
     "updated",
     "work"
    ],
-   "trade": "Marketing Services"
+   "unclear": [],
+   "trade": "Agency"
   },
   "disruptiveadvertising.com": {
    "yes": [
@@ -293,6 +368,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "egconley.com": {
@@ -305,6 +381,7 @@
     "reviews",
     "trade"
    ],
+   "unclear": [],
    "trade": "Accounting Firm"
   },
   "findoncpa.com": {
@@ -322,6 +399,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Accounting Firm"
   },
   "frewplumbing.com": {
@@ -336,6 +414,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Plumbing"
   },
   "gleasonfamilydentistry.com": {
@@ -349,6 +428,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Dentistry"
   },
   "grazemarketing.com": {
@@ -364,6 +444,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "group8a.com": {
@@ -377,6 +458,7 @@
     "trade",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "hawkemedia.com": {
@@ -395,6 +477,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "ignitevisibility.com": {
@@ -414,6 +497,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "kabodnar.com": {
@@ -430,6 +514,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Attorney"
   },
   "lagourmandinebakery.com": {
@@ -441,6 +526,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Bakery"
   },
   "lebovitzlaw.com": {
@@ -461,6 +547,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Attorneys"
   },
   "lewishairsalon.com": {
@@ -471,6 +558,7 @@
     "schema",
     "trade"
    ],
+   "unclear": [],
    "trade": "salon"
   },
   "nogood.io": {
@@ -488,6 +576,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "paperboxseo.com": {
@@ -507,6 +596,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "pghdma.com": {
@@ -526,6 +616,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "powerdigitalmarketing.com": {
@@ -546,6 +637,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "powermarketingcompany.com": {
@@ -561,6 +653,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Marketing Company"
   },
   "proudfoot-services.com": {
@@ -579,6 +672,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Plumbing"
   },
   "reimaginemainstreet.com": {
@@ -593,8 +687,10 @@
     "reviews",
     "schema",
     "seen",
-    "trade",
     "updated"
+   ],
+   "unclear": [
+    "trade"
    ],
    "trade": "design services"
   },
@@ -613,6 +709,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Florist"
   },
   "ruffingautomotive.com": {
@@ -629,6 +726,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Auto Repair"
   },
   "schultheisbros.com": {
@@ -649,6 +747,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Roofing"
   },
   "seerinteractive.com": {
@@ -665,6 +764,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "agency"
   },
   "siegemedia.com": {
@@ -682,6 +782,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "singlegrain.com": {
@@ -699,6 +800,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "smartsites.com": {
@@ -718,6 +820,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "studioboothsalon.com": {
@@ -736,7 +839,8 @@
     "updated",
     "work"
    ],
-   "trade": "Salon"
+   "unclear": [],
+   "trade": "hair salon"
   },
   "swiftgrowth.marketing": {
    "yes": [
@@ -752,7 +856,8 @@
     "track",
     "trade"
    ],
-   "trade": "studio"
+   "unclear": [],
+   "trade": "Studio"
   },
   "threeriversdent.com": {
    "yes": [
@@ -766,6 +871,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "dent removal services"
   },
   "thriveagency.com": {
@@ -786,6 +892,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "tjdentalpa.com": {
@@ -796,6 +903,7 @@
     "reviewSites",
     "trade"
    ],
+   "unclear": [],
    "trade": "Dental"
   },
   "victoriousseo.com": {
@@ -816,6 +924,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "wahlheatingandcooling.com": {
@@ -835,6 +944,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Plumbing"
   },
   "webfx.com": {
@@ -854,6 +964,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Agency"
   },
   "wildrisebakery.com": {
@@ -861,6 +972,7 @@
     "https",
     "trade"
    ],
+   "unclear": [],
    "trade": "Bakery"
   },
   "mtviewroofing.com": {
@@ -876,6 +988,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Roofing"
   },
   "idahoroofingcontractors.com": {
@@ -896,6 +1009,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Roofing"
   },
   "peakroofingidaho.com": {
@@ -915,6 +1029,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Roofing"
   },
   "allandalevetclinic.com": {
@@ -930,6 +1045,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Veterinary"
   },
   "farwestvet.com": {
@@ -942,6 +1058,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Veterinary"
   },
   "staroftexasvet.com": {
@@ -957,7 +1074,8 @@
     "trade",
     "updated"
    ],
-   "trade": "Veterinary"
+   "unclear": [],
+   "trade": "veterinary care"
   },
   "center4chiropractic.com": {
    "yes": [
@@ -970,6 +1088,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Chiropractic"
   },
   "laurelhurstchiropractic.com": {
@@ -987,6 +1106,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Chiropractor"
   },
   "hartmanoutdoorphotography.com": {
@@ -1005,6 +1125,7 @@
     "trade",
     "work"
    ],
+   "unclear": [],
    "trade": "Photography"
   },
   "kathybeaverphotography.com": {
@@ -1023,6 +1144,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Photographer"
   },
   "kirstenalexandriaphotography.com": {
@@ -1042,6 +1164,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Photographer"
   },
   "crosspestcontrol.com": {
@@ -1059,6 +1182,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Pest Control"
   },
   "tri-spestcontrol.com": {
@@ -1077,6 +1201,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Pest Control"
   },
   "alleycatpestcontrol.com": {
@@ -1090,6 +1215,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Pest Control"
   },
   "qhtattoos.com": {
@@ -1104,6 +1230,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Tattoo"
   },
   "pilgrimagetattoo.com": {
@@ -1120,7 +1247,8 @@
     "trade",
     "work"
    ],
-   "trade": "Tattoo"
+   "unclear": [],
+   "trade": "tattoo parlor"
   },
   "black13tattoo.com": {
    "yes": [
@@ -1131,6 +1259,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Tattoo"
   },
   "bigriveryoga.com": {
@@ -1146,6 +1275,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Yoga"
   },
   "nokomisyoga.com": {
@@ -1156,6 +1286,7 @@
     "https",
     "trade"
    ],
+   "unclear": [],
    "trade": "Yoga"
   },
   "kenwoodyogastudio.com": {
@@ -1166,6 +1297,7 @@
     "people",
     "trade"
    ],
+   "unclear": [],
    "trade": "Yoga"
   },
   "bloemdecor.com": {
@@ -1181,6 +1313,7 @@
     "trade",
     "work"
    ],
+   "unclear": [],
    "trade": "Florist"
   },
   "everestflowers.com": {
@@ -1196,6 +1329,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Florist"
   },
   "sacflower.net": {
@@ -1211,6 +1345,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Florist"
   },
   "landvisiondesigns.com": {
@@ -1231,6 +1366,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Landscaping"
   },
   "hardisonlandscaping.com": {
@@ -1247,6 +1383,7 @@
     "trade",
     "work"
    ],
+   "unclear": [],
    "trade": "Landscape"
   },
   "norrislandscaping.com": {
@@ -1265,6 +1402,7 @@
     "trade",
     "work"
    ],
+   "unclear": [],
    "trade": "Landscaping"
   },
   "angelinaspastries.com": {
@@ -1275,6 +1413,7 @@
     "schema",
     "trade"
    ],
+   "unclear": [],
    "trade": "Bakery"
   },
   "atamcmurray.com": {
@@ -1290,6 +1429,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "School"
   },
   "blueskycsi.com": {
@@ -1303,6 +1443,7 @@
     "schema",
     "trade"
    ],
+   "unclear": [],
    "trade": "closing services"
   },
   "cts-pgh.com": {
@@ -1311,12 +1452,14 @@
     "focus",
     "https"
    ],
+   "unclear": [],
    "trade": null
   },
   "southwestcommunitieschamber.org": {
    "yes": [
     "https"
    ],
+   "unclear": [],
    "trade": null
   },
   "confluencefp.com": {
@@ -1333,7 +1476,8 @@
     "trade",
     "updated"
    ],
-   "trade": "accounting"
+   "unclear": [],
+   "trade": "Wealth Management"
   },
   "jeffhancher.com": {
    "yes": [
@@ -1345,8 +1489,10 @@
     "reviews",
     "schema",
     "track",
-    "trade",
     "updated"
+   ],
+   "unclear": [
+    "trade"
    ],
    "trade": "Firm"
   },
@@ -1362,6 +1508,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Shop"
   },
   "ajbuerkle.com": {
@@ -1377,6 +1524,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "HVAC"
   },
   "aladdinseatery.com": {
@@ -1386,8 +1534,10 @@
     "focus",
     "https",
     "track",
-    "trade",
     "updated"
+   ],
+   "unclear": [
+    "trade"
    ],
    "trade": "Catering"
   },
@@ -1406,6 +1556,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Practice"
   },
   "bergerchiropracticwellness.com": {
@@ -1420,7 +1571,8 @@
     "schema",
     "trade"
    ],
-   "trade": "Chiropractor"
+   "unclear": [],
+   "trade": "medical clinic"
   },
   "berniceaschweissllc.com": {
    "yes": [
@@ -1433,6 +1585,7 @@
     "track",
     "trade"
    ],
+   "unclear": [],
    "trade": "Firm"
   },
   "binbath.com": {
@@ -1442,6 +1595,7 @@
     "trade",
     "updated"
    ],
+   "unclear": [],
    "trade": "Cleaning"
   },
   "bootcampfit360.com": {
@@ -1452,6 +1606,7 @@
     "https",
     "trade"
    ],
+   "unclear": [],
    "trade": "Gym"
   },
   "capstonequalityservices.com": {
@@ -1467,6 +1622,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "Contractor"
   },
   "monexglobal.com": {
@@ -1486,6 +1642,7 @@
     "updated",
     "work"
    ],
+   "unclear": [],
    "trade": "financial service"
   }
  }

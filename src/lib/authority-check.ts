@@ -327,6 +327,8 @@ export interface SiteResult {
   seenCount?: number
   /** The checks found. null = the homepage could not be read. */
   proof: ProofId[] | null
+  /** Found, but too weakly to pass: "Says what you do" with its trade only lower on the page. Not in proof; evidence says why. */
+  unclear?: ProofId[]
   /** What each found check matched, in a few words (the phrase behind each ✓). */
   evidence?: Partial<Record<ProofId, string>>
   /** Why a rival's homepage could not be read, in a few words. */

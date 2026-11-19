@@ -12,8 +12,11 @@ import { anchors, extractText, findAboutPage, findJsonLdBlocks, isHttpsUrl, read
 import { FRESH_DAYS, FRESH_PART_DAYS, PROOF_CHECKS, SHOWN_CHECKS, proofFromSignals, type ProofId, type SiteResult, type Updated } from './authority-check'
 import { findOfferPages, findSeenElsewhere } from './standing-signals'
 import { readFreshness, resolveSitemap, startFreshness } from './freshness'
+import { timeBudget } from './time-limit'
 
 export const MAX_HTML = 2 * 1024 * 1024 // 2 MB, same as /api/audit
+/** Time to read one site's HTML (home, About, contact, team pages), in all. A real 1–2 MB page takes ~20 ms. */
+export const PARSE_BUDGET_MS = 4000
 
 // The second-round reads are shorter, so a check stays inside maxDuration.
 const REVIEWS_PAGE_TIMEOUT = 5_000
@@ -106,6 +109,8 @@ export function readProof(
   rep: Reputation,
 ): {
   proof: ProofId[]
+  /** Found, but too weakly to pass ("Says what you do" only so far). Not in proof. */
+  unclear: ProofId[]
   evidence: NonNullable<SiteResult['evidence']>
   trackLevel: 0 | 1 | 2
   reviewSiteCount: number
@@ -121,8 +126,9 @@ export function readProof(
   const exp = readExperienceSignals(html, finalUrl)
   const offers = findOfferPages(html, finalUrl)
   const seen = findSeenElsewhere([{ html, url: finalUrl }])
+  const signals = readProofSignals(html, text, blocks, finalUrl)
   const proof = proofFromSignals({
-    ...readProofSignals(html, text, blocks, finalUrl),
+    ...signals,
     isHttps: https,
     hasReviewsShown: !!rep.shown,
     hasReviewSites: rep.sites.length > 0,
@@ -142,12 +148,15 @@ export function readProof(
     ...(offers.length >= 3 ? { hasFocus: offersEvidence(offers) } : {}),
     ...(seen.length ? { hasSeen: seenEvidence(seen) } : {}),
   }
+  // A trade found only weakly lower on the page is neither a pass nor a miss: unclear (SGM gives half points).
+  const unclear: ProofId[] = signals.hasUnclearTrade ? ['trade'] : []
+  const passed = proof.filter((id) => !unclear.includes(id))
   const evidence: NonNullable<SiteResult['evidence']> = {}
   for (const c of [...PROOF_CHECKS, ...SHOWN_CHECKS]) {
     const e = found[c.signal as keyof typeof found]
     if (proof.includes(c.id) && e) evidence[c.id] = e
   }
-  return { proof, evidence, trackLevel: exp.trackLevel, reviewSiteCount: rep.sites.length, seen }
+  return { proof: passed, unclear, evidence, trackLevel: exp.trackLevel, reviewSiteCount: rep.sites.length, seen }
 }
 
 /** "5 pages: /services/seo, /services/ppc, /services/web-design …" */
@@ -428,27 +437,36 @@ export async function readSite(
   const reader = memoReader(base, page)
   // Later reads only start inside this budget, so a check stays inside the route's 25 s.
   const html = page.body
-  const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
-  const missing = !home.hasPeople || !home.hasLicences || !readExperienceSignals(html, page.finalUrl).trackRecord
-  const aboutUrl = missing ? findAboutPage(html, page.finalUrl) : null
-  const contactUrl = home.hasAddressInfo ? null : findContactPage(html, page.finalUrl)
+  // Reading the HTML gets a few seconds in all; a page built to be slow throws TimeLimitError,
+  // and the route says it couldn't finish reading the site (time-limit.ts, code audit 2026-11-19).
+  const timed = timeBudget(PARSE_BUDGET_MS)
+  const { home, aboutUrl, contactUrl, reviews } = timed(() => {
+    const home = readProofSignals(html, extractText(html), findJsonLdBlocks(html), page.finalUrl)
+    const missing = !home.hasPeople || !home.hasLicences || !readExperienceSignals(html, page.finalUrl).trackRecord
+    return {
+      home,
+      aboutUrl: missing ? findAboutPage(html, page.finalUrl) : null,
+      contactUrl: home.hasAddressInfo ? null : findContactPage(html, page.finalUrl),
+      reviews: readReviewSignals(html, page.finalUrl),
+    }
+  })
   // robots.txt, /sitemap.xml and the blog feed start now, beside the other first-round reads.
   const fresh = startFreshness(page, reader)
   const [rep, about, contact] = await Promise.all([
-    readReputation(readReviewSignals(html, page.finalUrl), reader),
+    readReputation(reviews, reader),
     aboutUrl ? reader.page(aboutUrl) : null,
     contactUrl ? reader.page(contactUrl) : null,
   ])
-  const read = readProof(html, page.finalUrl, rep)
-  if (ok(about)) addFromAbout(read, about)
-  if (ok(contact)) addFromContact(read, contact)
+  const read = timed(() => readProof(html, page.finalUrl, rep))
+  if (ok(about)) timed(() => addFromAbout(read, about))
+  if (ok(contact)) timed(() => addFromContact(read, contact))
   // The sitemap serves both the team page (when nobody is named) and Recently updated.
   const sitemap = await resolveSitemap(page, fresh, reader, deadline)
   const [team, updated] = await Promise.all([
     !read.proof.includes('people') && Date.now() <= deadline ? readTeamPage(sitemap, reader, deadline) : null,
     readFreshness(sitemap, fresh, reader, now, deadline),
   ])
-  if (team) addFromTeam(read, team)
+  if (team) timed(() => addFromTeam(read, team))
   addUpdated(read, updated, now)
   return read
 }
