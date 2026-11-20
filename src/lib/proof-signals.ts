@@ -745,6 +745,11 @@ const SCHEMA_PERSON_RE = /"(?:founders?|employees?|members?|alumni)"\s*:\s*[[{][
 // Or a Person with a job title: {"@type": "Person", "name": "Chris Hornak", "jobTitle": "Marketing Strategist"}.
 // Review authors are Persons too, but carry no job title.
 const SCHEMA_PERSON_NODE_RE = /"@type"\s*:\s*"Person"[^{}]*/g
+// "I'm Rich Calandra, owner, formulator and…" (vidarich.com/pages/about, 2026-11-20) was missed: "Rich" isn't
+// on the first-name list (an everyday word), and every name-with-a-role rule needs a listed first name.
+// A self-introduction with a staff role is strong enough on its own, so it needs no first-name match, and it
+// is read before quotes are cut. "…, owner of Acme" stays out: that's how a client testimonial signs itself.
+const SELF_INTRO_RE = new RegExp(`\\bI(?:'|’)m\\s+${FULL},\\s*(?:the\\s+)?${ROLE_MOD}${STAFF_ROLE}\\b(?!\\s+(?:of|at)\\b)`)
 
 const isFirstName = (w: string) => FIRST_NAMES.has(w.toLowerCase())
 
@@ -822,11 +827,13 @@ function readPerson(html: string, jsonLdBlocks: RegExpMatchArray | null): string
   }
   const found = named(text)
   if (found) return `Found “${found.name}”: ${around(text, found.at, found.name.length + 20)}`
+  const ownText = extractText(own)
+  const intro = SELF_INTRO_RE.exec(ownText)
+  if (intro && !NOT_A_NAME.test(intro[1])) return `Found “${intro[1].trim()}”: ${around(ownText, intro.index, intro[0].length)}`
   // A personal LinkedIn link whose address spells a name on the page: linkedin.com/in/svetlanawhitener
   // + "Svetlana Whitener" (inlightcoaching.com, 2026-10-06). Covers first names the Census list lacks.
   // Reads the text before the quote cut: the link is the site's own (quote blocks are already out),
   // so the name it spells is staff, and a stray quote mark can't hide it (InLight's did).
-  const ownText = extractText(own)
   for (const { href } of anchors(own)) {
     const slug = href.match(/linkedin\.com\/in\/([^/?#]+)/i)?.[1]
     if (!slug) continue

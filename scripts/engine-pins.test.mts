@@ -12,7 +12,8 @@ import { dirname, join } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { broadAsk, readB2bSignals } from '../src/lib/b2b-signals'
-import { extractText, findJsonLdBlocks, findTrade } from '../src/lib/proof-signals'
+import { extractText, findJsonLdBlocks, findPerson, findTrade } from '../src/lib/proof-signals'
+import { reviewSiteOf } from '../src/lib/review-signals'
 
 const trade = (html: string, url = 'https://example.com/') =>
   findTrade(html, extractText(html), findJsonLdBlocks(html), url)
@@ -287,4 +288,22 @@ test('nonprofit: an agency that serves nonprofits stays a service business', () 
   const b = readB2bSignals(html, 'https://acme.com/')
   assert.equal(b.siteType, 'service')
   assert.equal(b.typeGuess, null)
+})
+
+/* vidarich.com/pages/about, 2026-11-20: Real people missed the owner: "Rich" isn't on the first-name
+ * list, and every name-with-a-role rule needed a listed first name. */
+test('people: an owner introducing himself is staff, even with an unlisted first name', () => {
+  const html = `<h1>The Rich in VidaRich</h1><p>&ldquo;I'm Rich Calandra, owner, formulator and, go figure, the "Rich" of VidaRich Nutrition.&rdquo;</p>`
+  assert.match(findPerson(html, null) ?? '', /Rich Calandra/)
+  // "owner of …" is how a client testimonial signs itself: the new rule leaves it out.
+  const quote = `<p>&ldquo;I'm Brix Calandra, owner of Acme Bakery, and this changed our mornings.&rdquo;</p>`
+  assert.equal(findPerson(quote, null), null)
+})
+
+/* vidarich.com, 2026-11-20: a Judge.me public store page is a review profile (Review spread). */
+test('review spread: a Judge.me store page counts, the widget scripts do not', () => {
+  assert.equal(reviewSiteOf('https://judge.me/reviews/stores/vidarich.com'), 'Judge.me')
+  assert.equal(reviewSiteOf('https://app.judge.me/reviews/stores/vidarich.com'), 'Judge.me')
+  assert.equal(reviewSiteOf('https://cdn.judge.me/widget_preloader.js'), null)
+  assert.equal(reviewSiteOf('https://judge.me/privacy'), null)
 })

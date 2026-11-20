@@ -154,6 +154,9 @@ export function reviewSiteOf(url: string): string | null {
   if (host.endsWith('yelp.com') && path.startsWith('/biz/')) return 'Yelp'
   if (host === 'bbb.org' && /\/(?:profile|business-reviews)\//.test(path)) return 'BBB'
   if (host.endsWith('trustpilot.com') && path.startsWith('/review/')) return 'Trustpilot'
+  // A Shopify store's public Judge.me page of verified buyers' reviews: judge.me/reviews/stores/vidarich.com
+  // (2026-11-20). The widget's own settings name this page too; only a real link or sameAs counts.
+  if ((host === 'judge.me' || host === 'app.judge.me') && path.startsWith('/reviews/stores/')) return 'Judge.me'
   if ((host === 'angi.com' || host === 'angieslist.com') && path.startsWith('/companylist/')) return 'Angi'
   if (host === 'homeadvisor.com' && path.startsWith('/rated.')) return 'HomeAdvisor'
   if (host.endsWith('houzz.com') && /^\/(?:pro|professionals)\//.test(path)) return 'Houzz'
