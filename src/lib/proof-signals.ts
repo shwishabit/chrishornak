@@ -263,17 +263,26 @@ export function findAboutPage(html: string, pageUrl: string): string | null {
   }
   return second ?? fallback
 }
-const TESTIMONIAL_RE = /testimonial|review|client|customer.said|what.people.say/i
+// Findability's "Testimonials or reviews" (AI trust signals). Until 2026-11-19 any "client" or "review" in the
+// page CODE passed, so the AI part said "reviews found" while the proof part said none (centralinaedd.org).
+// Now: review words in the visible text, a testimonial / review block by its class or id, or 2+ quotes.
+const TESTIMONIAL_RE =
+  /\b(?:testimonials?|(?:customer|client|google|patient|5-star|five-star) reviews|\d[\d,]* reviews|read (?:our |more |all )?reviews|reviews from (?:our )?(?:clients|customers)|what (?:our )?(?:clients|customers|people|patients|families|partners|students|members|parents) (?:say|are saying|think)|customer stories)\b/i
+const TESTIMONIAL_BLOCK_RE = /\b(?:class|id)\s*=\s*["']?[^"'>]*(?<![a-z])(?:testimonial|review)s?(?![a-z-]*(?:-?(?:nav|arrow|button|form)))/i
+const hasQuotesOf = (html: string, pageText: string) =>
+  TESTIMONIAL_RE.test(pageText) || TESTIMONIAL_BLOCK_RE.test(html) || (html.match(/<blockquote/gi) ?? []).length >= 2
+// Money received ("$400,000 EDA Award", "a $2M grant award") is funding, not a credential (2026-11-19, centralinaedd.org).
+const NOT_MONEY_AWARD = String.raw`(?<!\$\s?[\d,.]+\s?(?:[kKmMbB]|million|thousand|billion)?\s(?:[A-Za-z&-]+\s){0,3})`
 // Widened 2026-10-02 (Authority Check fixture test): "awards" (plural), certification, partner
 // status, Inc. 5000, "12+ years running"; "founded" / "established" now need a year, so
 // "an established brand" and "Founded Swift Growth" stop passing.
-const CREDENTIALS_RE =
-  /\b(certified|certifications?|licensed|accredited|accreditation|awards?|award-winning|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4}|\d+\+? years? (?:of |in )?(?:[a-z-]+ ){0,3}?experience|\d+\+? years running|(?:founded|established|est\.)(?: in)? \d{4}|since \d{4})\b/i
+const CREDENTIALS_RE = new RegExp(String.raw`\b(certified|certifications?|licensed|accredited|accreditation|${NOT_MONEY_AWARD}awards?(?! (?:to|of \$))|award-winning|` +
+  String.raw`(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4}|\d+\+? years? (?:of |in )?(?:[a-z-]+ ){0,3}?experience|\d+\+? years running|(?:founded|established|est\.)(?: in)? \d{4}|since \d{4})\b`, 'i')
 // The Authority Check's Credentials: the same without years. A start year or "20 years of experience"
 // is time in business, which Track record scores (SEO panel, 6 of 6, 2026-10-02); Findability's
 // "credentials or experience" keeps them.
-const LICENCE_RE =
-  /\b(certified|certifications?|licensed|accredited|accreditation|awards?|award-winning|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4})\b/i
+const LICENCE_RE = new RegExp(String.raw`\b(certified|certifications?|licensed|accredited|accreditation|${NOT_MONEY_AWARD}awards?(?! (?:to|of \$))|award-winning|` +
+  String.raw`(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo) partner|inc\.? ?5000|voted (?:[\w'’]+ ){0,5}?best|best of (?:[a-z]+ )?\d{4})\b`, 'i')
 // The same, read from what images are called: alt, title, file name (badges are images).
 const IMAGE_CREDENTIALS_RE =
   /\b(badges?|certified|certification|accredited|awards?|winner|aaha|(?:premier|certified|google|meta|microsoft|hubspot|shopify|tiktok|amazon|klaviyo|official|preferred|authorized|select) partner|inc\.? ?5000|clutch|upcity|designrush|goodfirms|bbb|best of \d{4}|top rated)\b/i // not "David Kadosh | Partner" (a client's job title)
@@ -309,9 +318,9 @@ function pageShowsName(name: string, pageWords: Set<string>): boolean {
   return words.filter((w) => pageWords.has(w)).length / words.length >= 2 / 3
 }
 
-type Node = Record<string, unknown>
+export type Node = Record<string, unknown>
 /** A JSON-LD block's top-level entries (an array, an @graph, or the one object), or null when it doesn't parse. */
-function topNodes(block: string): Node[] | null {
+export function topNodes(block: string): Node[] | null {
   let data: unknown
   try {
     data = JSON.parse(block.replace(/^<script[^>]*>|<\/script>$/gi, '').trim())
@@ -327,7 +336,7 @@ function topNodes(block: string): Node[] | null {
 }
 
 const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
-const typesOf = (n: Node): string[] => [n['@type']].flat().map(str).filter(Boolean)
+export const typesOf = (n: Node): string[] => [n['@type']].flat().map(str).filter(Boolean)
 const digitsOf = (s: string) => s.replace(/\D/g, '').slice(-10)
 
 /** The page's business entry: its type and name (types = every business type on it), or null. */
@@ -426,7 +435,7 @@ const SERVICE_AREA_RE =
 // it names no kind of business (cts-pgh.com passed on "our company"), unless a trade comes first
 // ("marketing company", "IT services").
 const BUSINESS_TYPE_RE =
-  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|blog(?:ging)? (?:writing|writers?|services?)|blog posts?|content (?:writing|writers?|marketing|agenc(?:y|ies)|studios?)|copywrit(?:ing|ers?)|ghostwrit(?:ing|ers?)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto (?:repair|body|shops?|service|glass|detailing|dealers?|dealerships?|parts|mechanics?|insurance|care)|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming|wealth management|investment management|financial (?:planning|planners?|advis(?:ors?|ers?|ory))|keynote speak(?:ers?|ing)|leadership (?:development|training|coaching))\b/i
+  /\b((?:marketing|advertising|seo|web design|design|branding|software|it|staffing|trucking|consulting) (?:compan(?:y|ies)|services)|blog(?:ging)? (?:writing|writers?|services?)|blog posts?|content (?:writing|writers?|marketing|agenc(?:y|ies)|studios?)|copywrit(?:ing|ers?)|ghostwrit(?:ing|ers?)|(?:marketing|brand|business|seo|content|digital) strategists?|web designers?|agenc(?:y|ies)|(?:law |accounting |architecture |engineering |design |marketing |consulting )?firms?|consultants?|consulting|freelanc(?:e|er|ers|ing)|studios?|practice|shops?|stores?|restaurants?|salons?|spas?|clinics?|gyms?|church(?:es)?|schools?|contractors?|dentists?|dental|dentistry|doctors?|lawyers?|attorneys?|plumbers?|plumbing|electricians?|electrical|movers|moving|cleaners|cleaning|bakery|bakeries|brewery|breweries|florists?|veterinar(?:y|ians?)|daycare|auto (?:repair|body|shops?|service|glass|detailing|dealers?|dealerships?|parts|mechanics?|insurance|care)|automotive|insurance|accountants?|accounting|bookkeeping|roofers?|roofing|hvac|heating and (?:air|cooling)|landscap(?:e|er|ers|ing)|photograph(?:er|ers|y)|caterers?|catering|fitness|wellness|therap(?:y|ies|ists?)|coach(?:es|ing)?|nonprofit|realtors?|real estate|architects?|architecture|engineers?|engineering|construction|builders?|remodel(?:ing|ers?)|tattoos?|piercing|yoga|pilates|pest control|exterminators?|chiropractors?|chiropractic|massage|barbers?|barbershop|optometr(?:ists?|y)|pharmac(?:y|ies)|grooming|wealth management|investment management|financial (?:planning|planners?|advis(?:ors?|ers?|ory))|keynote speak(?:ers?|ing)|leadership (?:development|training|coaching)|(?:economic|community|workforce) development|non-profit|not-for-profit|charit(?:y|ies)|food banks?|food pantr(?:y|ies)|chambers? of commerce|councils? of governments?|regional councils?)\b/i
 
 /* ── What the business does (Says what you do) ──────────────────────────
  * Up-front text first (page title, description, main headline), then the word
@@ -690,8 +699,11 @@ const NOT_A_NAME = /^(?:The|Our|Your|Of|And|For|With|In|At|On|To|Office|Dental|F
 /** A word list in any capitalisation, without the i flag (that flag would let the name pattern match any word). */
 const ci = (s: string) => s.replace(/[a-z]/g, (c) => `[${c}${c.toUpperCase()}]`)
 const STAFF_ROLE = ci(
-  `(?:co-?founders?|founders?|owners?|co-owners?|proprietor|ceo|president|principal|managing (?:partner|director|attorney)|master (?:plumber|electrician|technician)|attorney at law|lead stylist|stylist|head chef|executive chef|realtor|broker|lead technician|dentist|hygienist|physician|chiropractor|optometrist|veterinarian|accountant|photographer|instructor|therapist|counselor|(?:marketing |brand |business )?strategist|consultant|coach|designer|advisor)`,
+  `(?:co-?founders?|founders?|owners?|co-owners?|proprietor|ceo|president|principal|managing (?:partner|director|attorney)|master (?:plumber|electrician|technician)|attorney at law|lead stylist|stylist|head chef|executive chef|realtor|broker|lead technician|dentist|hygienist|physician|chiropractor|optometrist|veterinarian|accountant|photographer|instructor|therapist|counselor|(?:marketing |brand |business )?strategist|consultant|coach|designer|advisor|(?:executive|program|development) director|board chair)`,
 )
+// Words in front of a role ("Interim President", "Vice President", "Acting Executive Director"): part of the
+// role, not the name (2026-11-19: centralinaedd.org read "Denise Strosser Interim" from "Denise Strosser Interim President").
+const ROLE_MOD = `(?:${ci('(?:interim|acting|vice|deputy|senior|associate|assistant|founding|chief)')}\\s+){0,2}`
 const POST_NOMINAL = `(?:DDS|DMD|MD|DO|DC|DPM|OD|CPA|Esq\\.?|JD|PE|RN|NP|PA-C|LCSW|LPC|LMFT|PhD|CFP|AIA|DVM|RDH|CPSS)`
 // Degree or licence letters after a name are a credential too: "Jane Smith, DC" (center4chiropractic.com).
 const DEGREE_RE = new RegExp(`${FULL},\\s*${POST_NOMINAL}\\b`)
@@ -699,7 +711,7 @@ const DEGREE_RE = new RegExp(`${FULL},\\s*${POST_NOMINAL}\\b`)
 // In order: a staff role first, so the evidence names staff before a "Dr." from a client's review.
 const PERSON_RES: { re: RegExp; listed: boolean }[] = [
   // "Jane Smith, Owner", "Alex & Michael Melen Co-founders", "Elisa | Owner & Founder"
-  { re: new RegExp(`${FULL}\\s*(?:[,|:–—-]\\s*)?(?:(?:the|our)\\s+)?(?:&\\s*)?${STAFF_ROLE}\\b`), listed: true },
+  { re: new RegExp(`${FULL}\\s*(?:[,|:–—-]\\s*)?(?:(?:the|our)\\s+)?(?:&\\s*)?${ROLE_MOD}${STAFF_ROLE}\\b`), listed: true },
   // "Ron Founder" (a first name and a role)
   { re: new RegExp(`\\b(${CAP})\\s*(?:[,|:–—-]\\s*)?${ci('(?:co-?founder|founder|owner|ceo)')}\\b`), listed: true },
   // "Founder & CEO Jane Smith", "our owner, Jane Smith"
@@ -854,9 +866,7 @@ export function readProofSignals(
   pageUrl?: string,
 ): ProofSignals {
   const hasAboutLink = findAboutLink(html, pageUrl) !== undefined
-  const hasTestimonials =
-    TESTIMONIAL_RE.test(html) ||
-    (html.match(/<blockquote/gi) ?? []).length >= 2
+  const hasTestimonials = hasQuotesOf(html, pageText)
   const badge = imageWords(html).some((w) => IMAGE_CREDENTIALS_RE.test(w))
   const hasCredentials = CREDENTIALS_RE.test(pageText) || DEGREE_RE.test(pageText) || badge
   const hasLicences = LICENCE_RE.test(pageText) || DEGREE_RE.test(pageText) || badge
@@ -925,15 +935,9 @@ export function readProofEvidence(
     out.hasAboutLink = `A link to “${about.href.slice(0, 60)}”${words ? ` (“${words.slice(0, 30)}”)` : ''}`
   }
 
-  const word = TESTIMONIAL_RE.exec(html)
-  if (word) {
-    const visible = new RegExp(word[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').exec(pageText)
-    out.hasTestimonials = visible
-      ? `Found “${visible[0]}”: ${around(pageText, visible.index, visible[0].length)}`
-      : `Only the word “${word[0]}” in the page code, not in the visible text`
-  } else if ((html.match(/<blockquote/gi) ?? []).length >= 2) {
-    out.hasTestimonials = 'Two or more quotes on the page'
-  }
+  out.hasTestimonials =
+    inText(TESTIMONIAL_RE, pageText) ??
+    (TESTIMONIAL_BLOCK_RE.test(html) ? 'A testimonial or review block on the page' : (html.match(/<blockquote/gi) ?? []).length >= 2 ? 'Two or more quotes on the page' : undefined)
 
   const badge = imageWords(html).find((w) => IMAGE_CREDENTIALS_RE.test(w))
   out.hasCredentials =

@@ -207,3 +207,84 @@ test('ask + site type stay fast on unclosed tags', () => {
   for (const bad of ['<button ', '<button>', '<div role=button ', '<div role=button>', '<input type=submit ']) readB2bSignals(bad.repeat(20000), 'https://example.com/')
   assert.ok(performance.now() - start < 2000, `took ${Math.round(performance.now() - start)} ms`)
 })
+
+/* ── centralinaedd.org, 2026-11-19: a public economic development district graded as a business ── */
+import { readProofEvidence } from '../src/lib/proof-signals'
+import { findOfferPages } from '../src/lib/standing-signals'
+import { parseAudit, type FetchedPage } from '../src/lib/audit-parser'
+
+const auditItem = (html: string, label: string) => {
+  const page = { url: 'https://example.org/', requestedUrl: 'https://example.org/', html, robotsTxt: '', sitemapXml: '', llmsTxt: '', headers: {}, statusCode: 200, isHttps: true, responseTimeMs: 100 } as FetchedPage
+  const all = JSON.parse(JSON.stringify(parseAudit(page))) as { categories: { items: { label: string; value: string; status: string }[] }[] }
+  return all.categories.flatMap((c) => c.items).find((i) => i.label === label)
+}
+
+test('a role word in front of the role is not part of the name', () => {
+  const html = '<main><p>The small but mighty team includes: Denise Strosser Interim President Chief Operating Officer Shanta Watkins Board Clerk</p></main>'
+  assert.match(readProofEvidence(html, extractText(html), null).hasPeople ?? '', /“Denise Strosser”/)
+})
+
+test('money received is a grant, not a credential award', () => {
+  const grant = '<p>Centralina EDD Receives $400,000 EDA Award to Strengthen Regional Economic Resilience</p>'
+  assert.equal(readProofEvidence(grant, extractText(grant), null).hasLicences, undefined)
+  const award = '<p>Winner of the 2024 Pittsburgh Business Award for service.</p>'
+  assert.match(readProofEvidence(award, extractText(award), null).hasLicences ?? '', /Award/)
+})
+
+test('reviews need review words people can see, not "client" in the code', () => {
+  const code = '<div class="client-logo-wrap" data-client="x"><p>We partner with local governments.</p></div>'
+  assert.equal(readProofEvidence(code, extractText(code), null).hasTestimonials, undefined)
+  const real = '<h2>What our clients say</h2><p>Great work.</p>'
+  assert.ok(readProofEvidence(real, extractText(real), null).hasTestimonials)
+})
+
+test('board and news pages are not offer pages', () => {
+  const html = '<nav><a href="/board-of-directors/">Board</a><a href="/the-latest/">The Latest</a><a href="/economic-strategy/">Strategy</a><a href="/regional-economic-conditions/">Data</a></nav>'
+  const pages = findOfferPages(html, 'https://centralinaedd.org/')
+  assert.deepEqual(pages.sort(), ['/economic-strategy', '/regional-economic-conditions'])
+})
+
+test('Findability agrees with Google: zoom off, unnamed links, template images', () => {
+  const head = '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Example nonprofit page title</title>'
+  assert.equal(auditItem(head, 'Viewport setup')?.status, 'warn')
+  assert.equal(auditItem('<meta name="viewport" content="width=device-width, initial-scale=1">', 'Viewport setup')?.status, 'pass')
+  const links = '<a href="/a"><i class="icon"></i></a><a href="/b"><svg></svg></a><a href="/c"><span></span></a><a href="/d" aria-label="Facebook"><svg></svg></a><a href="/e">Our programs</a>'
+  assert.equal(auditItem(links, 'Link purpose')?.value, '3 links with no words')
+  const imgs = '<img src="/a.jpg" alt="A"><img src="{{{ data.sizes.thumbnail.url }}}">'
+  assert.doesNotMatch(JSON.stringify(auditItem(imgs, 'Image descriptions')), /data\.sizes/)
+})
+
+test('the first line is never cut mid-word', () => {
+  const html = '<h1>Creating Prosperity for All</h1><p>The Centralina Economic Development District (EDD) was established to support the economic development of the greater Charlotte region by partnering with local governments, economic developers and partners</p>'
+  const sub = readB2bSignals(html, 'https://centralinaedd.org/').firstScreen.subline ?? ''
+  assert.ok(sub.length <= 181 && /\b(?:governments,|economic)$/.test(sub), sub)
+})
+
+test('nonprofit: Donate + 501(c)(3) reads as a nonprofit with its own ask and proof', () => {
+  const html = `<title>Hope Pantry</title><nav><a href="/about">About</a><a href="https://hopepantry.org/donate">Donate</a><a href="/volunteer">Volunteer</a><a href="/annual-report">Annual Report</a></nav>
+    <h1>No neighbor goes hungry</h1><p>Hope Pantry is a 501(c)(3) nonprofit. Gifts are tax-deductible.</p><p>Last year 12,000 meals served and 1,500 families helped.</p>
+    <a href="https://www.charitynavigator.org/ein/123">Charity Navigator</a>`
+  const b = readB2bSignals(html, 'https://hopepantry.org/')
+  assert.equal(b.siteType, 'nonprofit')
+  assert.equal(b.give, 'Donate')
+  assert.deepEqual([...b.nonprofit.proof].sort(), ['credentials', 'reviewSites', 'track', 'work'])
+  assert.equal(b.nonprofit.trackLevel, 2)
+})
+
+test('nonprofit: a public district with no Donate button is unclear, so the picker opens', () => {
+  const html = `<title>CEDD | Centralina Economic Development District</title><nav><a href="/about/">About</a><a href="/board-of-directors/">Board</a><a href="/contact/">Contact</a></nav>
+    <h1>Creating Prosperity for All</h1><p>Supporting the region by partnering with local governments.</p><p>Centralina EDD Receives $400,000 EDA Award to Strengthen Regional Economic Resilience</p>`
+  const b = readB2bSignals(html, 'https://centralinaedd.org/')
+  assert.equal(b.siteType, 'service')
+  assert.equal(b.typeGuess, 'nonprofit')
+  assert.ok(b.unclear.includes('siteType'))
+  assert.deepEqual(b.nonprofit.proof, ['credentials'])
+})
+
+test('nonprofit: an agency that serves nonprofits stays a service business', () => {
+  const html = `<title>Acme Marketing Agency</title><nav><a href="/services/seo">SEO</a><a href="/contact">Book a call</a></nav>
+    <h1>Marketing for 501(c)(3) organizations</h1><p>We help nonprofits grow. Our mission is to help.</p>`
+  const b = readB2bSignals(html, 'https://acme.com/')
+  assert.equal(b.siteType, 'service')
+  assert.equal(b.typeGuess, null)
+})

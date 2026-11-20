@@ -196,6 +196,19 @@ export async function GET(request: NextRequest) {
   // A keyed caller (SGM's server) has no browser to score in, so it also gets the four E-E-A-T
   // parts per site, in the same order as [you, ...rivals]. No key = the same answer as before.
   if (keyed) {
+    // The same parts with the nonprofit proof added (impact, funders, Candid, grants), for SGM's
+    // "Nonprofit or public group" type: the engine's read or the visitor's pick (2026-11-19).
+    const np = mine.b2b?.nonprofit
+    if (np && mine.proof) {
+      const proof = [...new Set([...mine.proof, ...np.proof])]
+      const s = {
+        ...mine,
+        proof,
+        trackLevel: Math.max(mine.trackLevel ?? 0, mine.proof.includes('track') ? 0 : np.trackLevel) as 0 | 1 | 2,
+        reviewSiteCount: (mine.reviewSiteCount ?? (mine.proof.includes('reviewSites') ? 1 : 0)) + np.ratingSites.length,
+      }
+      np.scores = scoresOf(s, result)
+    }
     return NextResponse.json({ ...result, scores: [mine, ...result.rivals].map((s) => scoresOf(s, result)) }, { status: 200 })
   }
   return NextResponse.json(result, { status: 200 })

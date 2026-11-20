@@ -117,10 +117,61 @@ function isRealImage(imgTag: string): boolean {
   const src = attr(imgTag, 'src') ?? ''
   if (!src) return false
   if (src.startsWith('data:')) return false
+  // A template placeholder, not a picture: "{{{ data.sizes.thumbnail.url }}}" (WordPress media templates, centralinaedd.org 2026-11-19).
+  if (/\{\{|\$\{|<%/.test(src)) return false
   if (/\.(gif)(\?|$)/i.test(src) && /1x1|spacer|pixel|tracking|blank/i.test(src)) return false
   // Filter common tracking pixel patterns
   if (/facebook\.com\/tr|google-analytics|doubleclick|pixel|beacon/i.test(src)) return false
   return true
+}
+
+/** Decode the HTML entities WordPress and others put in titles ("Home &#8211; Acme"). */
+function decodeEntities(s: string): string {
+  const named: Record<string, string> = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', ndash: '–', mdash: '—', raquo: '»', laquo: '«', middot: '·', bull: '•', vert: '|', verbar: '|' }
+  return s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&([a-z]+);/gi, (m, n) => named[n.toLowerCase()] ?? m)
+}
+
+/** Words that name a menu slot, not a page. Searchers never type them. */
+const GENERIC_TITLE_PART = /^(home(\s*page)?|homepage|welcome|index|main|start|untitled|default|website|my site|site title|page title)$/i
+
+const norm = (s: string) => s.toLowerCase().replace(/\.(com|org|net|co|io|us|biz|info)\b/g, '').replace(/[^a-z0-9]/g, '')
+
+/** The site's own names: og:site_name, application-name, and the domain's root word. */
+function siteNames(html: string, url: string): string[] {
+  const names = [meta(html, 'og:site_name'), meta(html, 'application-name')].filter((x): x is string => Boolean(x?.trim()))
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '')
+    names.push(host.split('.').slice(0, -1).join('.') || host)
+  } catch {}
+  return [...new Set(names.map((n) => norm(decodeEntities(n))).filter(Boolean))]
+}
+
+type TitleNaming =
+  | { kind: 'ok' }
+  | { kind: 'generic-only' }
+  | { kind: 'home-plus-name'; generic: string; name: string }
+  | { kind: 'name-only' }
+  | { kind: 'has-generic'; generic: string }
+
+/** Does the title say what the page is, or only "Home" and the site's name? */
+function titleNaming(title: string, html: string, url: string): TitleNaming {
+  const parts = title.split(/\s+[-–—:|·•»~]\s+|\s*[|·•»]\s*/).map((p) => p.trim()).filter(Boolean)
+  const brands = siteNames(html, url)
+  const isBrand = (p: string) => brands.includes(norm(p))
+  const generic = parts.filter((p) => GENERIC_TITLE_PART.test(p))
+  const rest = parts.filter((p) => !GENERIC_TITLE_PART.test(p))
+  const topical = rest.filter((p) => !isBrand(p))
+
+  if (!rest.length) return { kind: 'generic-only' }
+  // "Home – Acme": a generic word plus one other part. Even when the site name tags are missing,
+  // that one part is the name, so the title never says what the page is.
+  if (generic.length && (topical.length === 0 || rest.length === 1)) return { kind: 'home-plus-name', generic: generic[0], name: rest.join(' | ') }
+  if (!generic.length && topical.length === 0) return { kind: 'name-only' }
+  if (generic.length) return { kind: 'has-generic', generic: generic[0] }
+  return { kind: 'ok' }
 }
 
 /* ── 1. Search ───────────────────────────────────────────────────────── */
@@ -168,11 +219,13 @@ function parseSearch(page: FetchedPage): AuditItem[] {
 
   // 2. Page title (high weight — most visible element in search results)
   //    Graduated scoring: ≤60 pass, 61-80 warn (sliding score), >80 fail
-  //    Also flags generic titles ("Homepage") and too-short titles
-  const title = getTag(html, 'title')
-  const isGenericTitle = title
-    ? /^(home\s*page|welcome|untitled|website|my site|site title|page title)$/i.test(title.trim())
-    : false
+  //    Also flags generic titles ("Homepage"), too-short titles, and titles that never name the page.
+  //    Chris, 2026-11-11 (ruralhome.org passed with "Home – <business name>"): a title must say what
+  //    the page is. "Home" + the site name, or the site name alone, is not optimized, whatever its length.
+  const rawTitle = getTag(html, 'title')
+  const title = rawTitle ? decodeEntities(rawTitle).replace(/\s+/g, ' ').trim() || null : null
+  const naming = title ? titleNaming(title, html, url) : null
+  const isGenericTitle = naming?.kind === 'generic-only'
 
   if (!title) {
     items.push({
@@ -192,6 +245,38 @@ function parseSearch(page: FetchedPage): AuditItem[] {
       weight: 1.5,
       recommendation:
         'Your title says "' + title + '" — that tells search engines and visitors nothing about what this page is. Replace it with a clear, specific title that describes your business or the page content.',
+    })
+  } else if (naming?.kind === 'home-plus-name') {
+    items.push({
+      label: 'Page title',
+      status: 'fail',
+      value: `Only "${naming.generic}" + the site name (${title.length} characters) — doesn't say what the page is`,
+      extracted: `<title>${title}</title>`,
+      weight: 1.5,
+      recommendation:
+        `Your title is "${title}". "${naming.generic}" is a word for the menu, not for searchers, and the rest is just your name. Google and buyers learn nothing about what you offer. Lead with what this page is (your main service or topic, in the words people search), then your name: "<what you do> | ${naming.name}".`,
+    })
+  } else if (naming?.kind === 'name-only') {
+    items.push({
+      label: 'Page title',
+      status: 'warn',
+      value: `Only the site name (${title.length} characters) — doesn't say what the page is`,
+      extracted: `<title>${title}</title>`,
+      score: 0.4,
+      weight: 1.5,
+      recommendation:
+        `Your title is just your name. Only people who already know you search for that. Add what this page is (your main service or topic, in the words people search) before your name: "<what you do> | ${title}".`,
+    })
+  } else if (naming?.kind === 'has-generic') {
+    items.push({
+      label: 'Page title',
+      status: 'warn',
+      value: `Spends space on "${naming.generic}" (${title.length} characters) — a wasted word`,
+      extracted: `<title>${title}</title>`,
+      score: 0.7,
+      weight: 1.5,
+      recommendation:
+        `Your title spends space on "${naming.generic}", which no one searches for. Drop it and keep the words that say what the page is, then your name.`,
     })
   } else if (title.length < 15) {
     items.push({
@@ -1555,7 +1640,21 @@ function parseMobile(page: FetchedPage): AuditItem[] {
 
   // 1. Viewport
   const viewport = meta(html, 'viewport')
-  if (viewport && /width=device-width/i.test(viewport)) {
+  // Zoom turned off: user-scalable=no, or maximum-scale under 5 (Google's and axe's rule, so the parts agree;
+  // centralinaedd.org 2026-11-19 passed here with maximum-scale=1 while both failed it).
+  const maxScale = viewport ? Number(viewport.match(/maximum-scale\s*=\s*([\d.]+)/i)?.[1] ?? NaN) : NaN
+  const noZoom = !!viewport && (/user-scalable\s*=\s*(?:no|0)\b/i.test(viewport) || maxScale < 5)
+  if (viewport && /width=device-width/i.test(viewport) && noZoom) {
+    items.push({
+      label: 'Viewport setup',
+      status: 'warn',
+      value: 'Set, but zoom is turned off',
+      weight: 0.5,
+      extracted: `<meta name="viewport" content="${viewport}" />`,
+      recommendation:
+        'Your viewport tag stops people from zooming in on phones (maximum-scale below 5 or user-scalable=no). People with low vision need to zoom. Remove maximum-scale and user-scalable from the tag.',
+    })
+  } else if (viewport && /width=device-width/i.test(viewport)) {
     items.push({
       label: 'Viewport setup',
       status: 'pass',
@@ -2161,15 +2260,37 @@ function parseAccessibility(page: FetchedPage): AuditItem[] {
   // 5. Link purpose — generic link text like "click here", "read more", "learn more"
   const linkRe = /<a\b[^>]*>([\s\S]*?)<\/a>/gi
   const links: string[] = []
+  // Links a screen reader can't name: no words, no aria-label / title, no image with alt text inside
+  // (axe's link-name; 2026-11-19: centralinaedd.org had 10 while this said "All links have descriptive text").
+  let unnamed = 0
   let linkMatch
   while ((linkMatch = linkRe.exec(html)) !== null) {
-    const text = linkMatch[1].replace(/<[^>]+>/g, '').trim().toLowerCase()
+    const text = linkMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;|&#160;/g, ' ').trim().toLowerCase()
     if (text) links.push(text)
+    else {
+      const tag = linkMatch[0].slice(0, linkMatch[0].indexOf('>') + 1)
+      const named =
+        /\b(?:aria-label|aria-labelledby|title)\s*=\s*["']?\s*[^\s"'>]/i.test(tag) ||
+        /<img\b[^>]*\balt\s*=\s*["']\s*[^\s"']/i.test(linkMatch[1]) ||
+        /<svg\b[\s\S]*?<title>\s*\S/i.test(linkMatch[1]) ||
+        /\baria-label\s*=\s*["']\s*[^\s"']/i.test(linkMatch[1])
+      const hidden = /\b(?:aria-hidden\s*=\s*["']?true|tabindex\s*=\s*["']?-1)\b/i.test(tag)
+      if (!named && !hidden && /\bhref\s*=/i.test(tag)) unnamed++
+    }
   }
   const genericPhrases = /^(click here|here|read more|more|learn more|link|this|click|go|download|submit|info|details|page)$/i
   const genericLinks = links.filter((t) => genericPhrases.test(t))
 
-  if (links.length === 0) {
+  if (unnamed > 0) {
+    items.push({
+      label: 'Link purpose',
+      status: unnamed > 2 ? 'fail' : 'warn',
+      value: `${unnamed} link${unnamed > 1 ? 's' : ''} with no words`,
+      ...(genericLinks.length ? { extracted: `Also generic: ${[...new Set(genericLinks)].slice(0, 5).map((t) => `"${t}"`).join(', ')}` } : {}),
+      recommendation:
+        'Some links have no words a screen reader can say: usually an icon or image link with no label. Add an aria-label ("Our Facebook page") or alt text on the image inside the link.',
+    })
+  } else if (links.length === 0) {
     items.push({
       label: 'Link purpose',
       status: 'pass',

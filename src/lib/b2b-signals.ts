@@ -19,7 +19,7 @@
  * Homepage only: these all live in the nav, hero or footer. No server-only imports.
  * ─────────────────────────────────────────────────────────────────────── */
 
-import { anchors, extractText } from './proof-signals'
+import { anchors, extractText, findJsonLdBlocks, topNodes, typesOf } from './proof-signals'
 
 export interface B2bSignals {
   /** The pricing page found, or null. */
@@ -50,9 +50,29 @@ export interface B2bSignals {
   askGuess: string | null
   /** With unclear 'siteType': the type the signals lean to; null otherwise. */
   typeGuess: Exclude<SiteType, 'service'> | null
+  /** A nonprofit's own ask ("Donate", "Volunteer", "Get involved"), or null. SGM counts it as the direct ask for a nonprofit (2026-11-19). */
+  give: string | null
+  /** The nonprofit equivalents of the proof checks, read on every site so SGM can score a visitor's
+   *  "Nonprofit or public group" pick without a new read. proof = check ids they fill; scores = the
+   *  E-E-A-T with them added (set by the API route, which has the authority read). */
+  nonprofit: NonprofitProof
 }
 
-export type SiteType = 'service' | 'ecommerce' | 'saas'
+export type SiteType = 'service' | 'ecommerce' | 'saas' | 'nonprofit'
+
+export interface NonprofitProof {
+  /** Proof check ids the nonprofit signs fill: work (impact / annual report), track (impact numbers),
+   *  reviews (funders, partners or stories), reviewSites (Candid, Charity Navigator…), credentials (grants, 501(c)(3)). */
+  proof: ('work' | 'track' | 'reviews' | 'reviewSites' | 'credentials')[]
+  /** The phrase behind each, in the Authority Check's evidence shape ("Found “…”: …"). */
+  evidence: Partial<Record<NonprofitProof['proof'][number], string>>
+  /** Impact numbers found: 2+ is a strong track record (10 points), 1 is 6. */
+  trackLevel: 0 | 1 | 2
+  /** Charity-rating sites linked (counts like review sites). */
+  ratingSites: string[]
+  /** E-E-A-T with these added; null until the route sets it. */
+  scores?: unknown
+}
 
 // "/membership-pricing" counts; "/maintenance-plans" and "/payment-plans" don't (fixture test, 2026-10-06).
 const PRICING_PATH_RE = /\/(?:(?:[\w-]*-)?(?:pricing|prices)|plans(?:-(?:and-)?pricing)?)(?:[\/.?#-]|$)/i
@@ -215,7 +235,8 @@ export function readFirstScreen(html: string): FirstScreen {
   const headline = h1 ? words(h1[1]).slice(0, 200) || null : null
   const after = h1 ? extractText(html.slice(h1.index! + h1[0].length, h1.index! + h1[0].length + 20_000)) : ''
   const near = after.slice(0, FIRST_SCREEN_CHARS)
-  const subline = near.match(/^(.{20,180}?[.!?])(?:\s|$)/)?.[1] ?? (near ? near.slice(0, 180).trim() || null : null)
+  // No sentence end in reach: cut at the last whole word, never mid-word ("economi…", centralinaedd.org 2026-11-19).
+  const subline = near.match(/^(.{20,180}?[.!?])(?:\s|$)/)?.[1] ?? (near ? (near.length > 180 ? near.slice(0, 181).replace(/\s+\S*$/, '') : near).trim() || null : null)
   // No h1 at all: fall back to the page title, which is still what a buyer reads first in the tab and the search result.
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
   const above = h1 ? textAboveHeadline(html, h1.index!) : ''
@@ -262,7 +283,7 @@ const NOT_SERVICE_ASK_RE = /\b(?:demo|trial|sign ?up|free plan|start (?:for )?fr
 
 function siteTypeOf(
   html: string,
-  f: { cart: boolean; addToCart: boolean; login: boolean; signup: boolean; appLink: boolean; pricing: boolean; shop: boolean; serviceAsk: boolean },
+  f: { cart: boolean; addToCart: boolean; login: boolean; signup: boolean; appLink: boolean; pricing: boolean; shop: boolean; serviceAsk: boolean; nonprofit: { signals: [string, number][]; onPage: boolean } },
 ): { siteType: SiteType; typeSignals: string[]; typeGuess: Exclude<SiteType, 'service'> | null } {
   const store: [string, number][] = []
   const soft: string[] = []
@@ -300,13 +321,145 @@ function siteTypeOf(
   const storeSignals = store.map(([s]) => s)
   // The win is net of the service ask: 4 store points and a booking ask is not enough (monexglobal.com).
   const storeWins = strong && storeScore - serviceScore >= STORE_WIN
+  // A nonprofit or public group first: one that also sells merch or offers services is still one (2026-11-19).
+  // Words alone never decide it: an agency that writes "we serve 501(c)(3) organizations" and "our mission"
+  // is not a nonprofit. One sign must be the page's own build: a Donate link, a .org / .gov address, a Board page…
+  const np = f.nonprofit.signals
+  const npScore = np.reduce((t, [, w]) => t + w, 0)
+  const npSignals = np.map(([s]) => s)
+  if (f.nonprofit.onPage && np.length >= 2 && np.some(([, w]) => w >= NP_STRONG) && npScore >= NP_WIN) return { siteType: 'nonprofit', typeSignals: npSignals, typeGuess: null }
+  const npLean = f.nonprofit.onPage && np.length >= 2 && npScore >= NP_UNCLEAR && !storeWins && soft.length < 2
   // Software: 2+ signals, as before; a store that wins and has more signals stays a store.
   if (storeWins && store.length >= soft.length) return { siteType: 'ecommerce', typeSignals: storeSignals, typeGuess: null }
   if (soft.length >= 2) return { siteType: 'saas', typeSignals: soft, typeGuess: null }
   if (storeWins) return { siteType: 'ecommerce', typeSignals: storeSignals, typeGuess: null }
   // Something store-like but not enough: a strong signal that lost on points, or many weak ones and no service ask.
-  if (storeScore >= STORE_WIN && (strong || !serviceScore)) return { siteType: 'service', typeSignals: storeSignals, typeGuess: 'ecommerce' }
+  const storeLean = storeScore >= STORE_WIN && (strong || !serviceScore)
+  if (npLean && (!storeLean || npScore >= storeScore)) return { siteType: 'service', typeSignals: npSignals, typeGuess: 'nonprofit' }
+  if (storeLean) return { siteType: 'service', typeSignals: storeSignals, typeGuess: 'ecommerce' }
   return { siteType: 'service', typeSignals: [], typeGuess: null }
+}
+
+/* ── Nonprofit or public group (2026-11-19, Chris: centralinaedd.org was graded as a business) ──
+ * Rules on the homepage, never AI, weighted like the store read. Strong (3): nonprofit or government
+ * schema, "501(c)(3)" / "tax-deductible", a Donate / Give link or a donation tool (Donorbox, Givebutter…),
+ * a charity-rating link (Candid, Charity Navigator), a .gov address. Weak (1): a .org address, a Board /
+ * governance page, an annual report, a volunteer link, "our mission", member or local governments
+ * named, a grant received. A nonprofit needs 2+ signals, one strong, 4+ points; 2+ signals and 3+
+ * points without that = unclear (SGM opens the type picker). A single "501(c)(3)" on an agency
+ * that serves nonprofits is one signal: nothing. */
+const NP_STRONG = 3
+const NP_WIN = 4
+const NP_UNCLEAR = 3
+// Top-level schema entries only: a firm's "recognizedBy": {"@type": "GovernmentOrganization"} (the SEC) is not the firm (confluencefp.com).
+const NP_TYPE_RE = /^(?:NGO|NonprofitOrganization|GovernmentOrganization|GovernmentOffice)$/
+const npSchema = (html: string) =>
+  (findJsonLdBlocks(html) ?? []).some((b) => (topNodes(b) ?? []).some((n) => typesOf(n).some((t) => NP_TYPE_RE.test(t)) || 'nonprofitStatus' in n))
+const NP_STATUS_RE = /\b(?:501\s?\(?c\)?\s?\(?3\)?|tax[- ]deductible|tax[- ]exempt (?:organi[sz]ation|charity|nonprofit))/i
+// A nonprofit's own ask: give, volunteer, join, apply for help. Short link or button words.
+const GIVE_WORDS_RE =
+  /^(?:donate(?: now| today| here| online)?|give(?: now| today| online| monthly)?|make a (?:gift|donation)|ways to give|support (?:us|our (?:work|mission|cause))|volunteer(?: with us| today| now)?|get involved|become a (?:member|partner|sponsor|volunteer|donor|mentor|foster(?: parent)?)|join (?:us|today|now)|partner with us|request (?:assistance|help|technical assistance)|apply for (?:a |an )?(?:grant|loan|program|assistance|funding|help))$/i
+const DONATE_WORDS_RE = /^(?:donate\b|give(?: now| today| online| monthly)?$|make a (?:gift|donation)|ways to give)/i
+const DONATION_HOST_RE =
+  /(?:^|\.)(?:donorbox\.org|givebutter\.com|givelively\.org|classy\.org|networkforgood\.com|bloomerang\.co|every\.org|zeffy\.com|qgiv\.com|kindful\.com|fundraiseup\.com|donordrive\.com|onecause\.com|blackbaud\.com|bbms\.blackbaud\.com|flipcause\.com|givesmart\.com|pledge\.to)$/i
+const CHARITY_RATING: [RegExp, string][] = [
+  [/(?:^|\.)(?:candid\.org|guidestar\.org)$/i, 'Candid'],
+  [/(?:^|\.)charitynavigator\.org$/i, 'Charity Navigator'],
+  [/(?:^|\.)greatnonprofits\.org$/i, 'GreatNonprofits'],
+  [/(?:^|\.)give\.org$/i, 'BBB Wise Giving'],
+]
+const BOARD_PATH_RE = /\/(?:[\w-]*-)?(?:board(?:-of-(?:directors|trustees|commissioners))?|governance|trustees)(?:[\/.?#-]|$)/i
+const REPORT_PATH_RE = /\/(?:[\w-]*-)?(?:annual-reports?|impact(?:-reports?)?|our-impact|financials?|form-990|990s?|success-stories|stories-of-[\w-]+)(?:[\/.?#-]|$)/i
+const REPORT_WORDS_RE = /^(?:(?:read |see |view |our )?(?:annual reports?|impact reports?|our impact|impact|financials|form 990|success stories))$/i
+const VOLUNTEER_RE = /^(?:volunteer\b|get involved)/i
+const MISSION_RE = /\bour mission\b|\bmission is to\b/i
+const PUBLIC_RE = /\b(?:local governments|member (?:governments|counties|municipalities|jurisdictions)|units of local government|(?:city|county|state|federal) (?:agencies|partners))\b/i
+// Money received: "$400,000 EDA Award", "awarded a $2 million grant", "received $50K in funding".
+const GRANT_RE =
+  /\$\s?[\d,.]+\s?(?:[kKmM]\b|million|billion|thousand)?\s(?:[A-Za-z&-]+\s){0,3}(?:grants?|awards?|in (?:funding|grants))\b|\b(?:received|awarded|wins?|won|secures?|secured)\s(?:an?\s)?(?:[A-Za-z&$\d,.-]+\s){0,4}(?:grants?|award)\b/i
+// Impact numbers: "1,200 families served", "$4 million invested", "350 jobs created".
+const IMPACT_RE =
+  /\b\d[\d,.]*\+?\s?(?:million|billion|thousand|k)?\s(?:people|individuals|families|children|kids|youth|students|veterans|seniors|neighbors|residents|meals|homes|houses|jobs|businesses|communities|counties|volunteers|members|projects|grants|households|patients|animals|trees|acres|clients)\s(?:have been\s|were\s)?(?:served|helped|fed|housed|created|supported|reached|funded|trained|placed|assisted|built|rescued|planted|preserved|retained|protected|impacted)\b|\$\s?[\d,.]+\s?(?:million|billion|thousand|[kKmM]\b)?\s(?:invested|raised|awarded|leveraged|distributed|granted|in (?:grants|funding|investment|loans))\b/gi
+// A funders / partners section: a heading, then 3+ logos (countClientLogos' window).
+const FUNDER_HEADING_RE =
+  /\b(?:our (?:funders|sponsors|supporters|partners|community partners|funding partners)|(?:thank you to|thanks to) our (?:sponsors|funders|supporters|partners)|supported by|funded by|made possible by|in partnership with|partner organi[sz]ations)\b/i
+const STORY_RE = /\b(?:stories of (?:hope|impact|change)|(?:client|family|member|student|community) stories|(?:her|his|their) story|meet (?:\w+,? )?(?:one of )?(?:our|the) (?:families|clients|students|neighbors|participants))\b/i
+
+interface NonprofitRead { signals: [string, number][]; onPage: boolean; give: string | null; proof: NonprofitProof }
+
+function readNonprofit(html: string, text: string, pageUrl: string, pageHost: string): NonprofitRead {
+  const signals: [string, number][] = []
+  let onPage = false
+  // text = true for signs read from the words alone (status, mission, local governments, a grant).
+  const add = (s: string, w: number, text = false) => { if (!text) onPage = true; if (!signals.some(([x]) => x === s)) signals.push([s, w]) }
+  if (npSchema(html)) add('Nonprofit or government details in the code (schema.org)', NP_STRONG)
+  const status = text.match(NP_STATUS_RE)
+  if (status) add(`“${status[0]}” on the page`, NP_STRONG, true)
+  if (/\.gov$/i.test(pageHost)) add('A .gov address', NP_STRONG)
+  else if (/\.org$/i.test(pageHost)) add('A .org address', 1)
+  if (MISSION_RE.test(text)) add('A mission statement', 1, true)
+  if (PUBLIC_RE.test(text)) add('Works with local governments', 1, true)
+  const grant = text.match(GRANT_RE)
+  if (grant) add('A grant received', 1, true)
+
+  let give: string | null = null
+  let report: { url: string; words: string } | null = null
+  const ratings = new Set<string>()
+  for (const a of anchors(html)) {
+    const at = pathAndHost(a.href, pageUrl)
+    if (!at) continue
+    const w = words(a.inner)
+    const own = at.host === pageHost || at.host.endsWith(`.${pageHost}`)
+    if (DONATION_HOST_RE.test(at.host) || (/(?:^|\.)paypal\.com$/i.test(at.host) && /\/donate/i.test(at.path))) add('A donation link', NP_STRONG)
+    for (const [re, name] of CHARITY_RATING) if (re.test(at.host)) { ratings.add(name); add(`A ${name} link`, NP_STRONG) }
+    if (w && w.length <= 40 && GIVE_WORDS_RE.test(w)) {
+      give ??= w
+      if (DONATE_WORDS_RE.test(w)) add('A Donate link', NP_STRONG)
+      else if (VOLUNTEER_RE.test(w)) add('A Volunteer link', 1)
+    }
+    if (own && BOARD_PATH_RE.test(at.path)) add('A Board or governance page', 1)
+    if (own && !report && (REPORT_PATH_RE.test(at.path) || (w && REPORT_WORDS_RE.test(w)))) report = { url: at.url, words: w || at.path }
+  }
+  // Buttons too ("Donate" as a <button> that opens a form).
+  // [^<>]* and a short body keep broken pages linear (engine pin: "stay fast on unclosed tags").
+  if (!give) for (const m of html.matchAll(/<button\b[^<>]*>((?:[^<]|<(?!\/button>)){0,200}?)<\/button>/gi)) {
+    const w = words(m[1])
+    if (w && w.length <= 40 && GIVE_WORDS_RE.test(w)) { give = w; if (DONATE_WORDS_RE.test(w)) add('A Donate button', NP_STRONG); break }
+  }
+  // Charity seals are often images only (Candid's Seal of Transparency).
+  for (const m of html.matchAll(/<img\b[^<>]*>/gi)) {
+    const tag = m[0]
+    if (/candid|guidestar|seal[-_ ]of[-_ ]transparency/i.test(tag)) { ratings.add('Candid'); add('A Candid seal', NP_STRONG) }
+    if (/charity[-_ ]?navigator/i.test(tag)) { ratings.add('Charity Navigator'); add('A Charity Navigator badge', NP_STRONG) }
+  }
+  if (report) add('An annual or impact report', 1)
+
+  const proof: NonprofitProof = { proof: [], evidence: {}, trackLevel: 0, ratingSites: [...ratings] }
+  const found = (s: string, at: number) => {
+    const start = Math.max(0, at - 40)
+    const snip = text.slice(start, at + s.length + 40).replace(/^\S*\s/, '').replace(/\s\S*$/, '').trim()
+    return `Found “${s.trim()}”: …${snip}…`
+  }
+  if (report) { proof.proof.push('work'); proof.evidence.work = `Found “${report.words}”: a link to ${pathAndHost(report.url, pageUrl)?.path ?? report.url}` }
+  const impacts = [...text.matchAll(IMPACT_RE)]
+  if (impacts.length) {
+    proof.proof.push('track')
+    proof.trackLevel = new Set(impacts.map((m) => m[0].toLowerCase())).size >= 2 ? 2 : 1
+    proof.evidence.track = found(impacts[0][0], impacts[0].index!)
+  }
+  // Funders or partners named with 3+ logos, or stories of people helped: the nonprofit's reviews.
+  let funders = 0
+  for (const m of html.matchAll(/>([^<]{3,120})</g)) {
+    if (!FUNDER_HEADING_RE.test(m[1])) continue
+    funders = Math.max(funders, (html.slice(m.index! + m[0].length, m.index! + m[0].length + 6_000).match(/<(?:img|svg)\b/gi) ?? []).length)
+  }
+  const story = text.match(STORY_RE)
+  if (funders >= 3) { proof.proof.push('reviews'); proof.evidence.reviews = `Found “${FUNDER_HEADING_RE.exec(text)?.[0] ?? 'Our partners'}”: ${Math.min(funders, 30)} logos` }
+  else if (story) { proof.proof.push('reviews'); proof.evidence.reviews = found(story[0], story.index!) }
+  if (ratings.size) { proof.proof.push('reviewSites'); proof.evidence.reviewSites = `Links to your ${[...ratings].join(', ')} profile${ratings.size > 1 ? 's' : ''}` }
+  if (grant) { proof.proof.push('credentials'); proof.evidence.credentials = found(grant[0], grant.index!) }
+  else if (status) { proof.proof.push('credentials'); proof.evidence.credentials = found(status[0], status.index!) }
+  return { signals, onPage, give, proof }
 }
 
 /** How far before a form its heading ("Get your free quote") is looked for. */
@@ -480,7 +633,9 @@ export function readB2bSignals(html: string, pageUrl: string): B2bSignals {
   if (!demo) demo = readLeadFormAsk(html)
   const askGuess = demo ? null : pick.guess
 
-  const type = siteTypeOf(html, { ...seen, pricing: !!pricing, shop: !!shop, serviceAsk: pick.serviceAsk || (!!demo && !NOT_SERVICE_ASK_RE.test(demo)) })
-  const unclear: B2bSignals['unclear'] = [...(askGuess ? (['ask'] as const) : []), ...(type.typeGuess ? (['siteType'] as const) : [])]
-  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type, unclear, askGuess }
+  const np = readNonprofit(html, extractText(html).replace(/\s+/g, ' '), pageUrl, pageHost)
+  const type = siteTypeOf(html, { ...seen, pricing: !!pricing, shop: !!shop, serviceAsk: pick.serviceAsk || (!!demo && !NOT_SERVICE_ASK_RE.test(demo)), nonprofit: { signals: np.signals, onPage: np.onPage } })
+  // A nonprofit's ask is its own: with one, the guess at a business ask doesn't make it unclear.
+  const unclear: B2bSignals['unclear'] = [...(askGuess && !(type.siteType === 'nonprofit' && np.give) ? (['ask'] as const) : []), ...(type.typeGuess ? (['siteType'] as const) : [])]
+  return { pricing, demo, contact, reviewSites: [...reviewSites], clientLogos: countClientLogos(html), caseStudies, firstScreen: readFirstScreen(html), shop, ...type, unclear, askGuess, give: np.give, nonprofit: np.proof }
 }
